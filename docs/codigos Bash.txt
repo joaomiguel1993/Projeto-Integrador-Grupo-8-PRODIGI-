@@ -1,4 +1,46 @@
 COMANDOS GIT (GitHub)
+Fluxo correto (equipa)
+🔹 Quando TU fazes alterações:
+git add .
+git commit -m "mensagem"
+git push
+🔹 Quando os teus colegas querem atualizar:
+git pull
+
+👉 Isso traz o teu código para o PC deles
+
+⚠️ MAS ATENÇÃO (muito importante)
+
+Se eles tiverem alterações locais não commitadas, o git pull pode dar:
+
+conflitos ❌
+
+ou erros como o que viste
+
+💡 Regra de ouro
+
+Antes de dar pull, eles devem fazer uma destas:
+
+👉 Opção 1 (segura)
+git add .
+git commit -m "trabalho local"
+git pull
+👉 Opção 2 (se não querem guardar o que fizeram)
+git reset --hard
+git pull
+🔥 Resumo simples
+Situação	Comando
+Atualizar projeto	git pull
+Enviar alterações	git push
+Apagar alterações locais	git reset --hard
+🧠 Dica de equipa (muito importante)
+
+👉 Combina isto com o grupo:
+
+“Antes de dar pull → commit ou reset”
+
+“Não editar os mesmos ficheiros ao mesmo tempo”
+
 🔹 git add .
 
 👉 Adiciona todos os ficheiros para serem enviados
