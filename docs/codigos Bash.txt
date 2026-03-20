@@ -105,3 +105,8 @@ python -m uvicorn main:app --reload
 👉 Para base de dados:
 
 psql -U postgres -d projeto -f backend/SQL/createTables.sql
+
+
+Instalar Drive 
+pip install psycopg2-binary
+

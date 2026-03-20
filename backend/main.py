@@ -3,38 +3,48 @@ from db import get_connection
 
 app = FastAPI()
 
+def run_query(query):
+    try:
+        con = get_connection()
+        cur = con.cursor()
+
+        cur.execute(query)
+
+        colunas = [desc[0] for desc in cur.description]
+        dados = cur.fetchall()
+
+        resultado = [dict(zip(colunas, row)) for row in dados]
+
+        return resultado
+
+    except Exception as e:
+        return {"erro": str(e)}
+
+    finally:
+        cur.close()
+        con.close()
+
 # ---------------------------
 # TESTE
 # ---------------------------
 @app.get("/")
 def home():
-    return {"msg": "API a funcionar 🔥"}
+    return {"msg": "API a funcionar"}
 
 # ---------------------------
 # UTENTES
 # ---------------------------
 @app.get("/utentes")
 def get_utentes():
-    con = get_connection()
-    cur = con.cursor()
-
-    cur.execute("SELECT * FROM Utente;")
-    data = cur.fetchall()
-
-    cur.close()
-    con.close()
-
-    return data
+    return run_query("SELECT * FROM Utente;")
+    
 
 # ---------------------------
 # EXERCICIO B
 # ---------------------------
 @app.get("/exercicio-b")
 def exercicio_b():
-    con = get_connection()
-    cur = con.cursor()
-
-    query = """
+    return run_query("""
     SELECT
         a.numutent,
         a.Idadeatual,
@@ -47,25 +57,13 @@ def exercicio_b():
         AND a.idadeatual > 60
         AND b.DataHoraEntr >= '2025-04-01 00:00:00'
         AND b.DataHoraEntr <= '2025-04-03 00:00:00';
-    """
-
-    cur.execute(query)
-    data = cur.fetchall()
-
-    cur.close()
-    con.close()
-
-    return data
-
+    """)
 # ---------------------------
 # EXERCICIO C
 # ---------------------------
 @app.get("/exercicio-c")
 def exercicio_c():
-    con = get_connection()
-    cur = con.cursor()
-
-    query = """
+   return run_query( """
     SELECT 
         a.DataHoraInicio,
         a.DataHoraFim,
@@ -93,47 +91,29 @@ def exercicio_c():
     WHERE 
         a.Tipo = 'Triagem'
         AND DataHoraFim >= '2025-01-01 00:00:00';
-    """
+    """)
 
-    cur.execute(query)
-    data = cur.fetchall()
-
-    cur.close()
-    con.close()
-
-    return data
+    
 
 # ---------------------------
 # EXERCICIO D
 # ---------------------------
 @app.get("/exercicio-d")
 def exercicio_d():
-    con = get_connection()
-    cur = con.cursor()
-
-    query = """
+   return run_query( """
     SELECT Tipo, COUNT(*) as NrAtos
     FROM Ato
     GROUP BY Tipo;
     """
-
-    cur.execute(query)
-    data = cur.fetchall()
-
-    cur.close()
-    con.close()
-
-    return data
+    )
+    
 
 # ---------------------------
 # EXERCICIO E
 # ---------------------------
 @app.get("/exercicio-e")
 def exercicio_e():
-    con = get_connection()
-    cur = con.cursor()
-
-    query = """
+    return run_query( """
     SELECT 
         f.NumFunc,
         COUNT(a.NumFuncPresc) AS TotalPrescricoes,
@@ -148,30 +128,15 @@ def exercicio_e():
     GROUP BY 
         f.NumFunc, a.tipo
     HAVING COUNT(a.NumFuncPresc) > 10;
-    """
+    """)
 
-    cur.execute(query)
-    data = cur.fetchall()
-
-    cur.close()
-    con.close()
-
-    return data
+    
 
 # ---------------------------
 # EXERCICIO F (VIEW)
 # ---------------------------
 @app.get("/exercicio-f")
 def exercicio_f():
-    con = get_connection()
-    cur = con.cursor()
+    return run_query("SELECT * FROM FuncionarioDetalhes;")
 
-    query = "SELECT * FROM FuncionarioDetalhes;"
-
-    cur.execute(query)
-    data = cur.fetchall()
-
-    cur.close()
-    con.close()
-
-    return data
+    
