@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from backend.db import get_connection
 from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -10,7 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app = FastAPI()
+
 
 def run_query(query):
     try:
