@@ -22,6 +22,16 @@ cria ligação ao branch main
 
 👉 Mostra:
 
+git pull
+
+👉 Isso faz:
+
+vai ao GitHub
+
+busca as alterações
+
+atualiza o projeto loca
+
 ficheiros alterados
 
 se há coisas por enviar
