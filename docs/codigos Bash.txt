@@ -1,0 +1,107 @@
+COMANDOS GIT (GitHub)
+🔹 git add .
+
+👉 Adiciona todos os ficheiros para serem enviados
+
+🔹 git commit -m "mensagem"
+
+👉 Guarda uma “versão” do projeto
+(ex: "update", "backend pronto")
+
+🔹 git push
+
+👉 Envia tudo para o GitHub
+
+🔹 git push -u origin main
+
+👉 Primeira vez que ligas ao GitHub
+
+cria ligação ao branch main
+
+🔹 git status
+
+👉 Mostra:
+
+ficheiros alterados
+
+se há coisas por enviar
+
+🔹 git rm -r --cached venv
+
+👉 Remove a pasta venv do Git (sem apagar do PC)
+
+📁 COMANDOS DE NAVEGAÇÃO
+🔹 cd backend
+
+👉 Entra na pasta backend
+
+🔹 cd ..
+
+👉 Volta para a pasta anterior
+
+🐍 COMANDOS PYTHON / BACKEND
+🔹 pip install fastapi uvicorn
+
+👉 Instala o backend (API)
+
+🔹 pip install psycopg2
+
+👉 Liga Python ao PostgreSQL
+
+🔹 python -m uvicorn main:app --reload
+
+👉 Liga o servidor backend
+
+main → ficheiro main.py
+
+app → variável do FastAPI
+
+--reload → reinicia automaticamente
+
+🗄️ COMANDOS BASE DE DADOS (PostgreSQL)
+🔹 psql --version
+
+👉 Ver se PostgreSQL está instalado
+
+🔹 psql -U postgres -d projeto -f ficheiro.sql
+
+👉 Executa ficheiro SQL
+
+Exemplo:
+
+psql -U postgres -d projeto -f backend/SQL/createTables.sql
+🧪 COMANDOS ÚTEIS (DEBUG)
+🔹 pip install
+
+👉 Instalar qualquer biblioteca
+
+🔹 python ficheiro.py
+
+👉 Executar um script Python
+
+🧼 .gitignore (não é comando, mas importante)
+venv/
+__pycache__/
+*.pyc
+
+👉 Serve para:
+
+não enviar lixo para GitHub
+
+evitar erros de colegas
+
+🔥 RESUMO SIMPLES
+
+👉 Para trabalhar no dia-a-dia:
+
+git add .
+git commit -m "update"
+git push
+
+👉 Para backend:
+
+python -m uvicorn main:app --reload
+
+👉 Para base de dados:
+
+psql -U postgres -d projeto -f backend/SQL/createTables.sql
