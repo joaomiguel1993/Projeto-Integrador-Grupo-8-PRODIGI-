@@ -107,6 +107,9 @@ python -m uvicorn main:app --reload
 psql -U postgres -d projeto -f backend/SQL/createTables.sql
 
 
+python -m uvicorn backend.main:app --reload --> para inicar server BD
+
 Instalar Drive 
 pip install psycopg2-binary
-
+pip install uvicorn
+pip install fastapi
