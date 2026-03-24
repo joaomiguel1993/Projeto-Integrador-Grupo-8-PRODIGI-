@@ -1,10 +1,3 @@
-# 🏥 Sistema Integrado de Apoio à Gestão de Urgências Hospitalares
-
-**Projeto Integrador — PRODIGI | Grupo 8**  
-Curso: PRODIGI | Ano letivo: 2025/2026
-
----
-
 ## 📁 Estrutura do Repositório
 
 ```
@@ -77,12 +70,8 @@ cd Projeto-Integrador-Grupo-8-PRODIGI-
 Renomear o ficheiro `alterar nome para .env.txt` para `.env` e preencher:
 
 ```
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=urgencias
-DB_USER=postgres
-DB_PASSWORD=a_tua_password
-SECRET_KEY=uma_chave_secreta
+POSTGRES18_PORT=XXXX          # porta do PostgreSQL no teu PC
+POSTGRES18_PASSWORD=XXXXXX  # password do utilizador postgres
 ```
 
 ### 3. Instalar dependências do backend
@@ -107,7 +96,7 @@ backend/SQL/populateDB.sql
 ### 5. Iniciar o servidor
 
 ```bash
-uvicorn main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 API disponível em: [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -152,7 +141,7 @@ App móvel em Kotlin que consome a API REST para consulta e registo de episódio
 
 ## 👥 Grupo 8
 
-- Membro 1
-- Membro 2
-- Membro 3
-- Membro 4
+- João Martins
+- João Sacramento
+- Luis Franco
+- Pedro Antunes
