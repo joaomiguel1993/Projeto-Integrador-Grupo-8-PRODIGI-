@@ -89,12 +89,31 @@ venv\Scripts\activate        # Windows
 source venv/bin/activate     # Mac/Linux
 pip install -r requirements.txt
 ```
+  ## 📦 Bibliotecas Instaladas (requirements.txt)
+
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+  | Biblioteca | Para que serve |
+  |---|---|
+  | `fastapi` | Framework do backend / API [web:5] |
+  | `uvicorn` | Servidor ASGI que executa o FastAPI |
+  | `psycopg2-binary` | Driver para conectar Python ao PostgreSQL |
+  | `python-dotenv` | Carrega variáveis do ficheiro .env |
+  | `pydantic` | Validação e serialização de dados (usado pelo FastAPI) |
+  | `python-jose` | Geração e verificação de tokens JWT (autenticação) [web:10] |
+  | `passlib[bcrypt]` | Hashing e verificação segura de passwords com bcrypt [web:5][web:9] |
+
 
 Ou instalar manualmente:
 
 ```bash
 pip install fastapi uvicorn psycopg2-binary
 ```
+
+
+
 
 ### 4. Criar a base de dados
 
