@@ -4,3 +4,4 @@ __pycache__/
 *.exe
 docs/Programas/
 .env
+*.sh
