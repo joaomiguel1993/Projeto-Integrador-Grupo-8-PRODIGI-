@@ -4,5 +4,4 @@ __pycache__/
 *.pyc
 *.exe
 docs/Programas/
-.env
 *.sh
