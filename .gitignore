@@ -4,5 +4,5 @@ __pycache__/
 *.pyc
 *.exe
 docs/Programas/
-*.sh
+update_prof.sh
 Texto.txt
