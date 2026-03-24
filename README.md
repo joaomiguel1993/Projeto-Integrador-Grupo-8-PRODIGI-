@@ -172,44 +172,6 @@ git push
 
 ---
 
-## 👥 Fluxo de Equipa (muito importante)
-
-### 🔹 Quando TU fazes alterações:
-```bash
-git add .
-git commit -m "mensagem"
-git push
-```
-
-### 🔹 Quando os teus colegas querem atualizar:
-```bash
-git pull
-```
-> 👉 Isso traz o teu código para o PC deles.
-
-### ⚠️ Atenção: Antes de dar `git pull`
-
-Se tiverem alterações locais não commitadas, o `git pull` pode gerar conflitos ❌
-
-**Opção 1 — Guardar o trabalho local (recomendado):**
-```bash
-git add .
-git commit -m "trabalho local"
-git pull
-```
-
-**Opção 2 — Descartar alterações locais:**
-```bash
-git reset --hard
-git pull
-```
-
-### 🧠 Regra de ouro da equipa
-> "Antes de dar pull → commit ou reset"
-> "Não editar os mesmos ficheiros ao mesmo tempo"
-
----
-
 ## 📁 Comandos de Navegação (Terminal)
 
 | Comando | O que faz |
