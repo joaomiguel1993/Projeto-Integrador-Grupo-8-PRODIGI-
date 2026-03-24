@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ~/Desktop/PRODIGI/1-Projeto_Integrador/Projeto-Integrador-Grupo-8-PRODIGI-
+cd ~/e/LUIS/PROGRAMA PRODIGI/PROJETO INTEGRADOR/PROJETO/Projeto-Integrador-Grupo-8-PRODIGI-
 rm -rf docs/teste_wine
 git clone https://github.com/ncgarcia/teste_wine.git docs/teste_wine
 git add docs/teste_wine
