@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Classification Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wine Classification Demo</h1>
+        <p>Enter the wine characteristics to predict its class using our Decision Tree model</p>
+        
+        <form id="wineForm">
+            <div class="feature-grid">
+                <div class="form-group">
+                    <label for="alcohol">Alcohol</label>
+                    <input type="number" id="alcohol" name="alcohol" step="0.01" value="14.23" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="malic_acid">Malic Acid</label>
+                    <input type="number" id="malic_acid" name="malic_acid" step="0.01" value="1.71" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ash">Ash</label>
+                    <input type="number" id="ash" name="ash" step="0.01" value="2.43" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="alcalinity_of_ash">Alcalinity of Ash</label>
+                    <input type="number" id="alcalinity_of_ash" name="alcalinity_of_ash" step="0.01" value="15.6" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="magnesium">Magnesium</label>
+                    <input type="number" id="magnesium" name="magnesium" step="0.01" value="127.0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="total_phenols">Total Phenols</label>
+                    <input type="number" id="total_phenols" name="total_phenols" step="0.01" value="2.80" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="flavanoids">Flavanoids</label>
+                    <input type="number" id="flavanoids" name="flavanoids" step="0.01" value="3.06" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nonflavanoid_phenols">Nonflavanoid Phenols</label>
+                    <input type="number" id="nonflavanoid_phenols" name="nonflavanoid_phenols" step="0.01" value="0.28" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="proanthocyanins">Proanthocyanins</label>
+                    <input type="number" id="proanthocyanins" name="proanthocyanins" step="0.01" value="2.29" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="color_intensity">Color Intensity</label>
+                    <input type="number" id="color_intensity" name="color_intensity" step="0.01" value="5.64" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hue">Hue</label>
+                    <input type="number" id="hue" name="hue" step="0.01" value="1.04" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="od280_od315_of_diluted_wines">OD280/OD315 of Diluted Wines</label>
+                    <input type="number" id="od280_od315_of_diluted_wines" name="od280_od315_of_diluted_wines" step="0.01" value="3.92" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="proline">Proline</label>
+                    <input type="number" id="proline" name="proline" step="0.01" value="1065.0" required>
+                </div>
+            </div>
+            
+            <button type="submit">Predict Wine Class</button>
+        </form>
+        
+        <div id="result" class="result">
+            <h3>Prediction Result:</h3>
+            <p><strong>Predicted Class:</strong> <span id="prediction"></span></p>
+            <p><strong>Class Name:</strong> <span id="className"></span></p>
+            <p><strong>Confidence:</strong> <span id="confidence"></span>%</p>
+            <p><strong>Probabilities:</strong></p>
+            <ul id="probabilities"></ul>
+        </div>
+        
+        <div id="loading" class="loading">
+            Predicting...
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('wineForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            // Collect form data
+            const formData = {
+                alcohol: parseFloat(document.getElementById('alcohol').value),
+                malic_acid: parseFloat(document.getElementById('malic_acid').value),
+                ash: parseFloat(document.getElementById('ash').value),
+                alcalinity_of_ash: parseFloat(document.getElementById('alcalinity_of_ash').value),
+                magnesium: parseFloat(document.getElementById('magnesium').value),
+                total_phenols: parseFloat(document.getElementById('total_phenols').value),
+                flavanoids: parseFloat(document.getElementById('flavanoids').value),
+                nonflavanoid_phenols: parseFloat(document.getElementById('nonflavanoid_phenols').value),
+                proanthocyanins: parseFloat(document.getElementById('proanthocyanins').value),
+                color_intensity: parseFloat(document.getElementById('color_intensity').value),
+                hue: parseFloat(document.getElementById('hue').value),
+                od280_od315_of_diluted_wines: parseFloat(document.getElementById('od280_od315_of_diluted_wines').value),
+                proline: parseFloat(document.getElementById('proline').value)
+            };
+            
+            // Send request to FastAPI backend
+            fetch('http://localhost:8000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading state
+                document.getElementById('loading').style.display = 'none';
+                
+                // Show result
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result success';
+                
+                // Update UI with results
+                document.getElementById('prediction').textContent = data.prediction;
+                document.getElementById('className').textContent = data.class_name;
+                
+                // Find highest probability for confidence
+                const maxProb = Math.max(...data.probability) * 100;
+                document.getElementById('confidence').textContent = maxProb.toFixed(2);
+                
+                // Display probabilities
+                const probList = document.getElementById('probabilities');
+                probList.innerHTML = '';
+                data.probability.forEach((prob, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `Class ${index} (${data.class_name === `class_${index}` ? 'predicted' : ''}): ${(prob * 100).toFixed(2)}%`;
+                    probList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                // Hide loading state
+                document.getElementById('loading').style.display = 'none';
+                
+                // Show error
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>Error:</h3><p>${error.message}</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
