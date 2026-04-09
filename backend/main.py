@@ -1,11 +1,12 @@
+# backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from .db import run_query, get_connection
+from backend.db import run_query, get_connection
+from backend.routers import utentes, episodios, triagem, internados, proficionais
 
 
 app = FastAPI(
-    title="PRODIGI – Gestão de Urgências Hospitalares",
+    title="PRODIGI G08 – Gestão de Urgências Hospitalares",
     description="API para gestão de utentes, episódios e triagem.",
     version="0.1.0"
 )
@@ -19,17 +20,13 @@ app.add_middleware(
 )
 
 
-# ---------------------------
-# TESTE
-# ---------------------------
 @app.get("/")
 def home():
     return {"msg": "API a funcionar"}
 
 
-# ---------------------------
-# INCLUIR ROTEADORES AQUI
-# ---------------------------
-from .routers import utentes
-
-app.include_router(utentes.router)
+app.include_router(utentes.router, prefix="/api")
+app.include_router(episodios.router, prefix="/api")
+app.include_router(triagem.router, prefix="/api")
+app.include_router(internados.router, prefix="/api")
+app.include_router(proficionais.router, prefix="/api")

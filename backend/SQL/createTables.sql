@@ -75,5 +75,13 @@ commit;
 
 
 
-
+CREATE TABLE Internados (
+    NumUtent INT NOT NULL,
+    NomeHosp VARCHAR(100) NOT NULL,
+    DataInternamento TIMESTAMP NOT NULL,
+    DataAlta TIMESTAMP,
+    PRIMARY KEY (NumUtent, DataInternamento),
+    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent),
+    FOREIGN KEY (NomeHosp) REFERENCES Hospital(Nome)
+);
 
