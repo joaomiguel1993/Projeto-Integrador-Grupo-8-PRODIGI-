@@ -1,3 +1,4 @@
+
 # 🏥 PRODIGI — Projeto Integrador Grupo 8
 
 Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto Integrador.
@@ -40,7 +41,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── docs/                         ✅ ficheiros de apoio
 │
-├── .env (local, não subir)        ❌ configurar
+├── .env (local, não subir)       ❌ configurar
 ├── .gitignore                    ✅ já existe
 ├── README.md                     este ficheiro
 └── update_prof.sh                ✅ já existe
@@ -59,19 +60,71 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 | Inteligência Artificial | scikit-learn |
 | Controlo de versões | Git + GitHub |
 | Editor de código | VS Code |
+| Containerização | Docker + Docker Compose |
 
 ---
 
-## 🚀 Como executar o projeto localmente
+## 🚀 Como executar o projeto
 
-### 1. Clonar o repositório
+### Opção 1: Docker (Recomendado)
+
+Este projeto pode ser executado com Docker Compose, iniciando automaticamente a aplicação FastAPI, a base de dados PostgreSQL e o pgAdmin.
+
+#### Pré-requisitos
+
+- Docker Desktop instalado
+
+#### Configuração
+
+Na raiz do projeto, cria um ficheiro `.env` com base no ficheiro `.env.example`.
+
+```env
+POSTGRES18_PORT=5432
+POSTGRES18_PASSWORD=COLOCA_AQUI_A_PASSWORD
+
+POSTGRES_USER=postgres
+POSTGRES_DB=Projeto_Integrador_G08
+POSTGRES_HOST=db
+
+PGADMIN_EMAIL=teu_email@exemplo.com
+PGADMIN_PASSWORD=coloca_uma_password_aqui
+```
+
+#### Executar com Docker
+
+```bash
+docker compose up --build
+```
+
+#### Parar os containers
+
+```bash
+docker compose down
+```
+
+#### Reiniciar tudo do zero
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+#### Serviços disponíveis
+
+- API FastAPI: http://localhost:8000
+- Documentação Swagger: http://localhost:8000/docs
+- pgAdmin: http://localhost:8080
+
+### Opção 2: Instalação Manual (Desenvolvimento)
+
+#### 1. Clonar o repositório
 
 ```bash
 git clone https://github.com/joaomiguel1993/Projeto-Integrador-Grupo-8-PRODIGI-.git
 cd Projeto-Integrador-Grupo-8-PRODIGI-
 ```
 
-### 2. Configurar variáveis de ambiente
+#### 2. Configurar variáveis de ambiente
 
 Renomear o ficheiro `alterar nome para .env.txt` para `.env` e preencher:
 
@@ -80,64 +133,50 @@ POSTGRES18_PORT=XXXX          # porta do PostgreSQL no teu PC
 POSTGRES18_PASSWORD=XXXXXX    # password do utilizador postgres
 ```
 
-### 3. Instalar dependências do backend
+#### 3. Instalar dependências do backend
 
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate        # Windows
+venv\Scriptsctivate        # Windows
 source venv/bin/activate     # Mac/Linux
 pip install -r requirements.txt
 ```
-  ## 📦 Bibliotecas Instaladas (requirements.txt)
 
-  ```bash
-  pip install -r requirements.txt
-  ```
+#### 4. Criar a base de dados
 
-  | Biblioteca | Para que serve |
-  |---|---|
-  | `fastapi` | Framework do backend / API [web:5] |
-  | `uvicorn` | Servidor ASGI que executa o FastAPI |
-  | `psycopg2-binary` | Driver para conectar Python ao PostgreSQL |
-  | `python-dotenv` | Carrega variáveis do ficheiro .env |
-  | `pydantic` | Validação e serialização de dados (usado pelo FastAPI) |
-  | `python-jose` | Geração e verificação de tokens JWT (autenticação) [web:10] |
-  | `passlib[bcrypt]` | Hashing e verificação segura de passwords com bcrypt [web:5][web:9] |
-
-
-Ou instalar manualmente:
-
-```bash
-pip install fastapi uvicorn psycopg2-binary
-```
-
-
-
-
-### 4. Criar a base de dados
-
-Abrir o pgAdmin, criar uma base de dados chamada `urgencias` e executar os ficheiros:
+Abrir o pgAdmin, criar uma base de dados chamada `Projeto_Integrador_G08` e executar os ficheiros:
 
 ```
 backend/SQL/createTables.sql
 backend/SQL/populateDB.sql
 ```
 
-Ou via terminal:
-
-```bash
-psql -U postgres -d projeto -f backend/SQL/createTables.sql
-psql -U postgres -d projeto -f backend/SQL/populateDB.sql
-```
-
-### 5. Iniciar o servidor backend
+#### 5. Iniciar o servidor backend
 
 ```bash
 python -m uvicorn backend.main:app --reload
 ```
 
-API disponível em: [http://localhost:8000/docs](http://localhost:8000/docs)
+API disponível em: http://localhost:8000/docs
+
+---
+
+## 📦 Bibliotecas Instaladas (requirements.txt)
+
+```bash
+pip install -r requirements.txt
+```
+
+| Biblioteca | Para que serve |
+|---|---|
+| `fastapi` | Framework do backend / API |
+| `uvicorn` | Servidor ASGI que executa o FastAPI |
+| `psycopg2-binary` | Driver para conectar Python ao PostgreSQL |
+| `python-dotenv` | Carrega variáveis do ficheiro .env |
+| `pydantic` | Validação e serialização de dados (usado pelo FastAPI) |
+| `python-jose` | Geração e verificação de tokens JWT (autenticação) |
+| `passlib[bcrypt]` | Hashing e verificação segura de passwords com bcrypt |
 
 ---
 
