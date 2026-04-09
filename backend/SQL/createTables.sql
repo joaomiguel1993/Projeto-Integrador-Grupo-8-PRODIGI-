@@ -85,3 +85,10 @@ CREATE TABLE Internados (
     FOREIGN KEY (NomeHosp) REFERENCES Hospital(Nome)
 );
 
+CREATE TABLE Utilizador (
+    Username VARCHAR(50) PRIMARY KEY,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Role VARCHAR(20) NOT NULL CHECK (Role IN ('rececionista', 'enfermeiro', 'medico', 'administrador')),
+    NumFunc INT,
+    FOREIGN KEY (NumFunc) REFERENCES Funcionario(NumFunc)
+);

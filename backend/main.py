@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.db import run_query, get_connection
-from backend.routers import utentes, episodios, triagem, internados, proficionais
+from backend.routers import utentes, episodios, triagem, internados, proficionais, auth
 
 
 app = FastAPI(
@@ -30,3 +30,4 @@ app.include_router(episodios.router, prefix="/api")
 app.include_router(triagem.router, prefix="/api")
 app.include_router(internados.router, prefix="/api")
 app.include_router(proficionais.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
