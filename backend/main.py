@@ -1,8 +1,14 @@
 from fastapi import FastAPI
-from backend.db import get_connection
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from .db import get_connection
+
+
+app = FastAPI(
+    title="PRODIGI G08 – Gestão de Urgências Hospitalares",
+    description="API para gestão de utentes, episódios e triagem.",
+    version="0.1.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -11,7 +17,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 def run_query(query):
@@ -35,6 +40,7 @@ def run_query(query):
         cur.close()
         con.close()
 
+
 # ---------------------------
 # TESTE
 # ---------------------------
@@ -42,112 +48,21 @@ def run_query(query):
 def home():
     return {"msg": "API a funcionar"}
 
+
 # ---------------------------
 # UTENTES
 # ---------------------------
 @app.get("/utentes")
 def get_utentes():
     return run_query("SELECT * FROM Utente;")
-    
+
 
 # ---------------------------
-# EXERCICIO B
-# ---------------------------
-# @app.get("/exercicio-b")
-# def exercicio_b():
-#     return run_query("""
-#     SELECT
-#         a.numutent,
-#         a.Idadeatual,
-#         a.localidade,
-#         b.codepurgenc,
-#         b.DataHoraEntr
-#     FROM Utente a, EpUrgencia b
-#     WHERE 
-#         a.numutent = b.numutent
-#         AND a.idadeatual > 60
-#         AND b.DataHoraEntr >= '2025-04-01 00:00:00'
-#         AND b.DataHoraEntr <= '2025-04-03 00:00:00';
-#     """)
-# # ---------------------------
-# # EXERCICIO C
-# # ---------------------------
-# @app.get("/exercicio-c")
-# def exercicio_c():
-#    return run_query( """
-#     SELECT 
-#         a.DataHoraInicio,
-#         a.DataHoraFim,
-#         b.NumFunc,
-#         b.TipoFunc
-#     FROM Ato a
-#     JOIN Realiza r 
-#         ON a.CodEpUrgenc = r.CodEpUrgenc 
-#         AND a.NomeHosp = r.NomeHosp 
-#         AND a.DataHoraInicio = r.DataHoraInicio
-#     JOIN Funcionario b 
-#         ON r.NumFunc = b.NumFunc
-#     WHERE 
-#         a.Tipo = 'Triagem'
-#         AND DataHoraFim >= '2025-01-01 00:00:00'
-#     UNION
-#     SELECT 
-#         a.DataHoraInicio,
-#         a.DataHoraFim,
-#         b.NumFunc,
-#         b.TipoFunc
-#     FROM Ato a
-#     JOIN Funcionario b 
-#         ON a.NumFuncPresc = b.NumFunc
-#     WHERE 
-#         a.Tipo = 'Triagem'
-#         AND DataHoraFim >= '2025-01-01 00:00:00';
-#     """)
-
-    
-
-# # ---------------------------
-# # EXERCICIO D
-# # ---------------------------
-# @app.get("/exercicio-d")
-# def exercicio_d():
-#    return run_query( """
-#     SELECT Tipo, COUNT(*) as NrAtos
-#     FROM Ato
-#     GROUP BY Tipo;
-#     """
-#     )
-    
-
-# # ---------------------------
-# # EXERCICIO E
-# # ---------------------------
-# @app.get("/exercicio-e")
-# def exercicio_e():
-#     return run_query( """
-#     SELECT 
-#         f.NumFunc,
-#         COUNT(a.NumFuncPresc) AS TotalPrescricoes,
-#         a.tipo
-#     FROM Ato a
-#     JOIN Funcionario f 
-#         ON a.NumFuncPresc = f.NumFunc
-#     WHERE 
-#         a.Tipo = 'Exame'
-#         AND a.DataHoraInicio >= '2024-01-01 00:00:00'
-#         AND a.DataHoraFim <= '2024-12-31 23:59:59'
-#     GROUP BY 
-#         f.NumFunc, a.tipo
-#     HAVING COUNT(a.NumFuncPresc) > 10;
-#     """)
-
-    
-
-# # ---------------------------
-# # EXERCICIO F (VIEW)
-# # ---------------------------
-# @app.get("/exercicio-f")
-# def exercicio_f():
-#     return run_query("SELECT * FROM FuncionarioDetalhes;") 
-
-  
+# AQUI VAI FICAR OS OUTROS ENDPOINTS
+# Depois criamos:
+# - routers/utentes.py
+# - routers/auth.py
+# e registamos:
+# from backend.routers import utentes, auth
+# app.include_router(utentes.router, prefix="/api/utentes")
+# app.include_router(auth.router, prefix="/api/auth")
