@@ -1,8 +1,10 @@
-import psycopg2
 import os
+from pathlib import Path
+import psycopg2
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 port_postgres = os.getenv("POSTGRES18_PORT", "5432")
 password_postgres = os.getenv("POSTGRES18_PASSWORD")
