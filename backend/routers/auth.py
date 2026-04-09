@@ -1,117 +1,118 @@
-from datetime import timedelta
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
-from backend.db import run_query, get_connection
-from backend.auth.security import verify_password, hash_password, create_access_token
+from backend.auth.security import hash_password, verify_password
+from backend.db import get_connection
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Autenticação"]
-)
+router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 
 class RegisterRequest(BaseModel):
-    username: str
-    password: str
-    role: str
-    numfunc: int | None = None
+    username: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=4, max_length=255)
+    role: str = Field(..., min_length=1, max_length=20)
+    numfunc: Optional[int] = None
 
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=1, max_length=255)
 
 
 @router.post("/register")
 def register(data: RegisterRequest):
-    verificar_query = """
-        SELECT username
-        FROM utilizador
-        WHERE username = %s;
-    """
-    existe = run_query(verificar_query, (data.username,))
+    allowed_roles = {"rececionista", "enfermeiro", "medico", "administrador"}
 
-    if isinstance(existe, dict) and "erro" in existe:
-        raise HTTPException(status_code=400, detail=existe["erro"])
+    if data.role not in allowed_roles:
+        raise HTTPException(status_code=400, detail="Role inválido.")
 
-    if existe:
-        raise HTTPException(
-            status_code=400,
-            detail="Já existe um utilizador com esse username"
-        )
+    conn = get_connection()
+    cur = conn.cursor()
 
-    password_hash = hash_password(data.password)
-
-    con = None
-    cur = None
     try:
-        con = get_connection()
-        cur = con.cursor()
+        cur.execute(
+            """
+            SELECT username
+            FROM utilizador
+            WHERE username = %s;
+            """,
+            (data.username,)
+        )
+        existing_user = cur.fetchone()
 
-        insert_query = """
+        if existing_user:
+            raise HTTPException(status_code=409, detail="Username já existe.")
+
+        password_hash = hash_password(data.password)
+
+        cur.execute(
+            """
             INSERT INTO utilizador (username, passwordhash, role, numfunc)
             VALUES (%s, %s, %s, %s);
-        """
-        cur.execute(insert_query, (
-            data.username,
-            password_hash,
-            data.role,
-            data.numfunc
-        ))
-        con.commit()
+            """,
+            (data.username, password_hash, data.role, data.numfunc)
+        )
 
-        return {"msg": "Utilizador criado com sucesso"}
+        conn.commit()
 
+        return {
+            "message": "Utilizador registado com sucesso.",
+            "username": data.username,
+            "role": data.role
+        }
+
+    except HTTPException:
+        conn.rollback()
+        raise
     except Exception as e:
-        if con:
-            con.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-
+        conn.rollback()
+        if "violates foreign key constraint" in str(e):
+            raise HTTPException(
+                status_code=400,
+                detail="Numero de funcionário inválido: esse funcionário não existe."
+            )
+        raise HTTPException(status_code=500, detail=f"Erro no registo: {str(e)}")
     finally:
-        if cur:
-            cur.close()
-        if con:
-            con.close()
+        cur.close()
+        conn.close()
 
 
 @router.post("/login")
 def login(data: LoginRequest):
-    query = """
-        SELECT username, passwordhash, role
-        FROM utilizador
-        WHERE username = %s;
-    """
-    resultado = run_query(query, (data.username,))
+    conn = get_connection()
+    cur = conn.cursor()
 
-    if isinstance(resultado, dict) and "erro" in resultado:
-        raise HTTPException(status_code=400, detail=resultado["erro"])
-
-    if not resultado:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Utilizador ou password inválidos"
+    try:
+        cur.execute(
+            """
+            SELECT username, passwordhash, role
+            FROM utilizador
+            WHERE username = %s;
+            """,
+            (data.username,)
         )
+        user = cur.fetchone()
 
-    utilizador = resultado[0]
+        if not user:
+            raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-    if not verify_password(data.password, utilizador["passwordhash"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Utilizador ou password inválidos"
-        )
+        username, password_hash, role = user
 
-    access_token = create_access_token(
-        data={
-            "sub": utilizador["username"],
-            "role": utilizador["role"]
-        },
-        expires_delta=timedelta(minutes=30)
-    )
+        if not verify_password(data.password, password_hash):
+            raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "role": utilizador["role"]
-    }
+        return {
+            "message": "Login efetuado com sucesso.",
+            "username": username,
+            "role": role
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro no login: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()

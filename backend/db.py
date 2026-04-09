@@ -2,13 +2,14 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv()
 
-port_postgres = os.getenv("POSTGRES18_PORT")
+port_postgres = os.getenv("POSTGRES18_PORT", "5432")
 password_postgres = os.getenv("POSTGRES18_PASSWORD")
-host_postgres = os.getenv("POSTGRES_HOST", "localhost")
+host_postgres = os.getenv("POSTGRES_HOST", "db")
 db_name = os.getenv("POSTGRES_DB", "Projeto_Integrador_G08")
 db_user = os.getenv("POSTGRES_USER", "postgres")
+
 
 def get_connection():
     return psycopg2.connect(
@@ -18,6 +19,7 @@ def get_connection():
         host=host_postgres,
         port=port_postgres
     )
+
 
 def run_query(query, params=None):
     con = None
