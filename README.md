@@ -7,6 +7,7 @@ Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto
 
 ## 📁 Estrutura do Repositório
 
+
 ```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
@@ -50,282 +51,186 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+
+---
+
+## 🛠️ Stack Tecnológico
 
 | Camada | Tecnologia |
-|---|---|
-| Base de dados | PostgreSQL + pgAdmin |
-| Backend / API | FastAPI (Python) |
-| Frontend Web | HTML + CSS + JavaScript |
-| App Móvel | Android (Kotlin) |
-| Inteligência Artificial | scikit-learn |
-| Controlo de versões | Git + GitHub |
-| Editor de código | VS Code |
-| Containerização | Docker + Docker Compose |
+|--------|------------|
+| **Base de dados** | PostgreSQL + pgAdmin |
+| **Backend / API** | FastAPI (Python) |
+| **Frontend Web** | HTML + CSS + JavaScript |
+| **App Móvel** | Android (Kotlin) |
+| **IA** | scikit-learn |
+| **Controlo de versões** | Git + GitHub |
+| **Editor** | VS Code |
+| **Containerização** | Docker + Docker Compose |
 
 ---
 
-## 🚀 Como executar o projeto
+## 🚀 Iniciar o Projeto
 
-### Opção 1: Docker (Recomendado)
-
-Este projeto pode ser executado com Docker Compose, iniciando automaticamente a aplicação FastAPI, a base de dados PostgreSQL e o pgAdmin.
-
-#### Pré-requisitos
-- Docker Desktop instalado.
-
-#### Configuração
-
-Na raiz do projeto, cria um ficheiro `.env` com base no ficheiro `.env.example`.
-
-```env
-POSTGRES18_PORT=5432
-POSTGRES18_PASSWORD=COLOCA_AQUI_A_PASSWORD
-POSTGRES_USER=postgres
-POSTGRES_DB=Projeto_Integrador_G08
-POSTGRES_HOST=db
-PGADMIN_EMAIL=teu_email@exemplo.com
-PGADMIN_PASSWORD=coloca_uma_password_aqui
-SECRET_KEY=100espacos
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-#### Executar com Docker
+### 🐳 **Docker (Recomendado)**
 
 ```bash
+# 1. Configurar .env
+cp .env.example .env
+# Editar .env com passwords
+
+# 2. Executar
 docker compose up --build
-```
 
-#### Parar os containers
-
-```bash
+# Parar
 docker compose down
+
+# Reset volumes (apaga BD)
+docker compose down -v && docker compose up --build
 ```
 
-#### Reiniciar tudo do zero
+**URLs:**
+- **API**: http://localhost:8000
+- **Swagger**: http://localhost:8000/docs
+- **pgAdmin**: http://localhost:8080
+
+### 💻 **Manual (Dev Local)**
 
 ```bash
-docker compose down -v
-docker compose up --build
-```
-
-#### Serviços disponíveis
-
-- API FastAPI: http://localhost:8000
-- Documentação Swagger: http://localhost:8000/docs
-- pgAdmin: http://localhost:8080
-
-### Opção 2: Instalação Manual (Desenvolvimento)
-
-#### 1. Clonar o repositório
-
-```bash
+# 1. Clonar + .env
 git clone https://github.com/joaomiguel1993/Projeto-Integrador-Grupo-8-PRODIGI-.git
 cd Projeto-Integrador-Grupo-8-PRODIGI-
-```
+cp .env.example .env  # Configurar PostgreSQL local
 
-#### 2. Configurar variáveis de ambiente
-
-Renomear ou criar o ficheiro `.env` na raiz do projeto e preencher:
-
-```env
-POSTGRES18_PORT=XXXX          # porta do PostgreSQL no teu PC
-POSTGRES18_PASSWORD=XXXXXX    # password do utilizador postgres
-POSTGRES_USER=postgres
-POSTGRES_DB=Projeto_Integrador_G08
-POSTGRES_HOST=db
-PGADMIN_EMAIL=teu_email@exemplo.com
-PGADMIN_PASSWORD=uma_password_segura
-SECRET_KEY=100espacos
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-#### 3. Instalar dependências do backend
-
-```bash
+# 2. Backend
 cd backend
 python -m venv .venv
-.venv\Scripts\activate       # Windows
-source .venv/bin/activate     # Mac/Linux
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+uvicorn main:app --reload  # http://localhost:8000/docs
+
+# 3. BD (pgAdmin)
+# createTables.sql → populateDB.sql
 ```
-
-#### 4. Criar a base de dados
-
-Abrir o pgAdmin, criar uma base de dados chamada `Projeto_Integrador_G08` e executar os ficheiros:
-
-```text
-backend/SQL/createTables.sql
-backend/SQL/populateDB.sql
-```
-
-#### 5. Iniciar o servidor backend
-
-```bash
-python -m uvicorn backend.main:app --reload
-```
-
-API disponível em: http://localhost:8000/docs
 
 ---
 
-## 📦 Bibliotecas Instaladas (requirements.txt)
+## 🔌 Endpoints Disponíveis
 
-```bash
-pip install -r requirements.txt
-```
+| Módulo | Status | Endpoints Principais |
+|--------|--------|---------------------|
+| **Auth** | ✅ | `POST /api/auth/register`, `POST /api/auth/login` |
+| **Utentes** | ✅ | `GET/POST/PUT/DEL /api/utentes/` |
+| **Episódios** | ✅ | `GET/POST/PUT/DEL /api/episodios/` |
+| **Triagem** | ✅ | `POST /api/triagem/manchester` |
+| **Internados** | ✅ | `GET /api/internados/disponiveis` |
+| **Profissionais** | ✅ | `GET /api/proficionais/{role}` |
 
-| Biblioteca | Para que serve |
-|---|---|
-| `fastapi` | Framework do backend / API |
-| `uvicorn` | Servidor ASGI que executa o FastAPI |
-| `psycopg2-binary` | Driver para conectar Python ao PostgreSQL |
-| `python-dotenv` | Carrega variáveis do ficheiro `.env` |
-| `pydantic` | Validação e serialização de dados |
-| `python-jose` | Geração e verificação de tokens JWT |
-| `passlib[bcrypt]` | Hashing e verificação segura de passwords |
+**Roles**: `rececionista` | `enfermeiro` | `medico` | `administrador`
 
 ---
 
-## 📋 Módulos do Sistema
+## 📋 Roadmap (Pendentes ❌)
 
-### 🗄️ Módulo de Dados
-Modelo relacional PostgreSQL com tabelas para utentes, episódios, triagem, atos clínicos, prescrições, internamento e profissionais.
-
-### ⚙️ Módulo Backend / API
-FastAPI com endpoints REST organizados por routers. Responsável pela lógica de negócio e exposição de serviços.
-
-### 🔐 Módulo de Autenticação e Autorização
-Autenticação básica com registo e login. Roles disponíveis: `rececionista`, `enfermeiro`, `medico`, `administrador`.
-
-### 🏥 Módulo de Gestão Clínica
-Gestão de episódios de urgência, triagem (prioridade Manchester), atos clínicos e prescrições.
-
-### 🤖 Módulo de Inteligência Artificial
-Modelo de previsão de tempo de espera com scikit-learn, integrado como endpoint da API.
-
-### 🌐 Módulo Frontend Web
-Interface web com páginas de login, receção, triagem, dashboard e gestão de episódios.
-
-### 📱 Módulo Android
-App móvel em Kotlin que consome a API REST para consulta e registo de episódios.
+| Componente | Responsável | Prazo | Prioridade |
+|------------|-------------|-------|------------|
+| `backend/models/` | Todos | **12/04** | 🔴 Alta |
+| `web/login.html` | Frontend | 14/04 | 🔴 Alta |
+| `web/triagem.html` | Frontend | 15/04 | 🟡 Média |
+| `web/dashboard.html` | Frontend | 16/04 | 🟡 Média |
+| `android/` | Mobile | 20/04 | 🟢 Baixa |
+| `ia/modelo.py` | IA | 22/04 | 🟢 Baixa |
 
 ---
 
-## 🔌 Endpoints principais
+## 🔄 **Git - Comandos Essenciais**
 
-### Autenticação
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-
-### Routers existentes
-- `utentes`
-- `episodios`
-- `triagem`
-- `internados`
-- `proficionais`
-
----
-
-## 🗂️ Comandos Git (GitHub)
-
-### 🔹 Fluxo do dia-a-dia
+### 🌟 **Fluxo Diário (5s)**
 
 ```bash
 git add .
-git commit -m "mensagem"   # ex: "update", "backend pronto"
+git commit -m "feat: triagem UI"
 git push
 ```
 
-### 🔹 Referência rápida de comandos
+### ⚡ **Cheatsheet Completo**
 
-| Comando | O que faz |
-|---|---|
-| `git add .` | Adiciona todos os ficheiros para envio |
-| `git commit -m "msg"` | Guarda uma versão do projeto |
-| `git push` | Envia alterações para o GitHub |
-| `git pull` | Atualiza o projeto local com o que está no GitHub |
-| `git status` | Mostra ficheiros alterados e pendentes |
-| `git reset --hard` | Apaga todas as alterações locais não commitadas |
-| `git push -u origin main` | Primeira ligação ao GitHub (branch main) |
-| `git rm -r --cached venv` | Remove a pasta `venv` do Git sem apagar do PC |
+| Situação | Comando |
+|----------|---------|
+| **Ver status** | `git status` |
+| **Ver mudanças** | `git diff` |
+| **Pull atualizações** | `git pull` |
+| **Apagar mudanças** | `git reset --hard` |
+| **Histórico** | `git log --oneline` |
+| **Desfazer commit** | `git reset HEAD~1` |
+| **Primeiro push** | `git push -u origin main` |
 
----
-
-## 📁 Comandos de Navegação (Terminal)
-
-| Comando | O que faz |
-|---|---|
-| `cd backend` | Entra na pasta `backend` |
-| `cd ..` | Volta para a pasta anterior |
-| `dir` (Windows) / `ls` (Mac/Linux) | Lista ficheiros da pasta atual |
-
----
-
-## 🐍 Comandos Python / Backend
+### 🆘 **Emergências**
 
 ```bash
-# Instalar dependências
-pip install fastapi uvicorn psycopg2-binary
+# Apagar TUDO local (cuidado!)
+git fetch origin
+git reset --hard origin/main
 
-# Instalar qualquer outra biblioteca
-pip install <nome-da-biblioteca>
-
-# Executar um script Python
-python ficheiro.py
-
-# Iniciar o servidor backend
-python -m uvicorn backend.main:app --reload
+# Remover venv do git (sem apagar pasta)
+git rm -r --cached .venv/
+git commit -m "remove venv"
 ```
 
-> `main` → ficheiro `main.py` | `app` → variável FastAPI | `--reload` → reinicia automaticamente ao guardar
+---
+
+## 🐍 **Python / Backend - Quick Commands**
+
+```bash
+# Dependências
+pip install -r requirements.txt
+pip freeze > requirements.txt  # Atualizar
+
+# Servidor
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Debug
+python -c "from db import engine; print(engine)"
+```
+
+**Bibliotecas principais:**
+
+fastapi # API Framework
+uvicorn # Server
+psycopg2 # PostgreSQL
+pydantic # Models/Validação
+python-jose # JWT
+passlib # Passwords
+
 
 ---
 
-## 🗄️ Comandos PostgreSQL
+## 🗄️ **PostgreSQL - Quick SQL**
 
 ```bash
-# Verificar se PostgreSQL está instalado
-psql --version
+# Conectar
+psql -U postgres -d Projeto_Integrador_G08
 
-# Executar ficheiro SQL
+# Executar ficheiros
 psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/createTables.sql
-psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/populateDB.sql
+
+# Ver tabelas
+\dt
+SELECT * FROM utentes LIMIT 5;
 ```
 
 ---
 
-## 🧼 .gitignore (não é comando, mas é importante)
+## 📅 **Cronograma Oficial**
 
-O ficheiro `.gitignore` evita que ficheiros desnecessários sejam enviados para o GitHub.
-
-```text
-.venv/
-__pycache__/
-*.pyc
-.env
-```
-
-> Serve para não enviar lixo para o GitHub e evitar erros nos PCs dos colegas.
+| **Fase** | **Data** | **Peso** | **Status** |
+|----------|----------|----------|------------|
+| Intermédia | 17 Abr 2026 | 10% | 📈 Em progresso |
+| Defesa | 25-26 Mai 2026 | 70% | ⏳ Planeado |
+| Apresentação | 28 Mai 2026 | 5% | ⏳ Planeado |
+| Relatório | 28 Mai 2026 | 15% | ⏳ Planeado |
 
 ---
 
-## 📅 Datas de Entrega
+## 👥 **Grupo 8**
+**João Martins** • **João Sacramento** • **Luis Franco** • **Pedro Antunes**
 
-| Entrega | Data | Peso |
-|---|---|---|
-| Entrega intermédia | 17 de abril de 2026 | 10% |
-| Discussão & defesa | 25 e 26 de maio de 2026 | 70% |
-| Apresentação turma | 28 de maio de 2026 | 5% |
-| Relatório final | 28 de maio de 2026 | 15% |
-
----
-
-## 👥 Grupo 8
-
-- João Martins
-- João Sacramento
-- Luis Franco
-- Pedro Antunes
