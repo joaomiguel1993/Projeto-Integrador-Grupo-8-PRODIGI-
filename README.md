@@ -7,25 +7,26 @@ Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto
 
 ## 📁 Estrutura do Repositório
 
-```
+```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── backend/
 │   ├── SQL/
 │   │   ├── createTables.sql      ✅ já existe
 │   │   └── populateDB.sql        ✅ já existe
-│   ├── routers/                  ✅ criar (endpoints por módulo)
-│   │   ├── utentes.py✅
-│   │   ├── episodios.py✅
-│   │   ├── triagem.py✅
-│   │   ├── internamento.py✅
-│   │   ├── profissionais.py✅
-│   │   └── auth.py❌
+│   ├── routers/                  ✅ endpoints por módulo
+│   │   ├── utentes.py            ✅
+│   │   ├── episodios.py          ✅
+│   │   ├── triagem.py            ✅
+│   │   ├── internados.py         ✅
+│   │   ├── proficionais.py       ✅
+│   │   └── auth.py               ✅
 │   ├── models/                   ❌ criar (modelos Pydantic)
-│   ├── auth/                     ❌ criar (JWT + roles)
+│   ├── auth/
+│   │   └── security.py           ✅
 │   ├── db.py                     ✅ já existe
 │   ├── main.py                   ✅ já existe
-│   └── requirements.txt          ❌ criar
+│   └── requirements.txt          ✅ já existe
 │
 ├── web/
 │   ├── Urgencias.html            ✅ já existe
@@ -41,7 +42,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── docs/                         ✅ ficheiros de apoio
 │
-├── .env (local, não subir)       ❌ configurar
+├── .env (local, não subir)       ✅ configurar
 ├── .gitignore                    ✅ já existe
 ├── README.md                     este ficheiro
 └── update_prof.sh                ✅ já existe
@@ -71,8 +72,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 Este projeto pode ser executado com Docker Compose, iniciando automaticamente a aplicação FastAPI, a base de dados PostgreSQL e o pgAdmin.
 
 #### Pré-requisitos
-
-- Docker Desktop instalado
+- Docker Desktop instalado.
 
 #### Configuração
 
@@ -81,13 +81,14 @@ Na raiz do projeto, cria um ficheiro `.env` com base no ficheiro `.env.example`.
 ```env
 POSTGRES18_PORT=5432
 POSTGRES18_PASSWORD=COLOCA_AQUI_A_PASSWORD
-
 POSTGRES_USER=postgres
 POSTGRES_DB=Projeto_Integrador_G08
 POSTGRES_HOST=db
-
 PGADMIN_EMAIL=teu_email@exemplo.com
 PGADMIN_PASSWORD=coloca_uma_password_aqui
+SECRET_KEY=100espacos
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 #### Executar com Docker
@@ -126,20 +127,28 @@ cd Projeto-Integrador-Grupo-8-PRODIGI-
 
 #### 2. Configurar variáveis de ambiente
 
-Renomear o ficheiro `alterar nome para .env.txt` para `.env` e preencher:
+Renomear ou criar o ficheiro `.env` na raiz do projeto e preencher:
 
-```
+```env
 POSTGRES18_PORT=XXXX          # porta do PostgreSQL no teu PC
 POSTGRES18_PASSWORD=XXXXXX    # password do utilizador postgres
+POSTGRES_USER=postgres
+POSTGRES_DB=Projeto_Integrador_G08
+POSTGRES_HOST=db
+PGADMIN_EMAIL=teu_email@exemplo.com
+PGADMIN_PASSWORD=uma_password_segura
+SECRET_KEY=100espacos
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 #### 3. Instalar dependências do backend
 
 ```bash
 cd backend
-python -m venv venv
-venv\Scriptsctivate        # Windows
-source venv/bin/activate     # Mac/Linux
+python -m venv .venv
+.venv\Scripts\activate       # Windows
+source .venv/bin/activate     # Mac/Linux
 pip install -r requirements.txt
 ```
 
@@ -147,7 +156,7 @@ pip install -r requirements.txt
 
 Abrir o pgAdmin, criar uma base de dados chamada `Projeto_Integrador_G08` e executar os ficheiros:
 
-```
+```text
 backend/SQL/createTables.sql
 backend/SQL/populateDB.sql
 ```
@@ -173,10 +182,10 @@ pip install -r requirements.txt
 | `fastapi` | Framework do backend / API |
 | `uvicorn` | Servidor ASGI que executa o FastAPI |
 | `psycopg2-binary` | Driver para conectar Python ao PostgreSQL |
-| `python-dotenv` | Carrega variáveis do ficheiro .env |
-| `pydantic` | Validação e serialização de dados (usado pelo FastAPI) |
-| `python-jose` | Geração e verificação de tokens JWT (autenticação) |
-| `passlib[bcrypt]` | Hashing e verificação segura de passwords com bcrypt |
+| `python-dotenv` | Carrega variáveis do ficheiro `.env` |
+| `pydantic` | Validação e serialização de dados |
+| `python-jose` | Geração e verificação de tokens JWT |
+| `passlib[bcrypt]` | Hashing e verificação segura de passwords |
 
 ---
 
@@ -189,7 +198,7 @@ Modelo relacional PostgreSQL com tabelas para utentes, episódios, triagem, atos
 FastAPI com endpoints REST organizados por routers. Responsável pela lógica de negócio e exposição de serviços.
 
 ### 🔐 Módulo de Autenticação e Autorização
-Autenticação com JWT. Roles disponíveis: `rececionista`, `enfermeiro`, `medico`, `administrador`.
+Autenticação básica com registo e login. Roles disponíveis: `rececionista`, `enfermeiro`, `medico`, `administrador`.
 
 ### 🏥 Módulo de Gestão Clínica
 Gestão de episódios de urgência, triagem (prioridade Manchester), atos clínicos e prescrições.
@@ -202,6 +211,21 @@ Interface web com páginas de login, receção, triagem, dashboard e gestão de 
 
 ### 📱 Módulo Android
 App móvel em Kotlin que consome a API REST para consulta e registo de episódios.
+
+---
+
+## 🔌 Endpoints principais
+
+### Autenticação
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+### Routers existentes
+- `utentes`
+- `episodios`
+- `triagem`
+- `internados`
+- `proficionais`
 
 ---
 
@@ -267,8 +291,8 @@ python -m uvicorn backend.main:app --reload
 psql --version
 
 # Executar ficheiro SQL
-psql -U postgres -d projeto -f backend/SQL/createTables.sql
-psql -U postgres -d projeto -f backend/SQL/populateDB.sql
+psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/createTables.sql
+psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/populateDB.sql
 ```
 
 ---
@@ -277,8 +301,8 @@ psql -U postgres -d projeto -f backend/SQL/populateDB.sql
 
 O ficheiro `.gitignore` evita que ficheiros desnecessários sejam enviados para o GitHub.
 
-```
-venv/
+```text
+.venv/
 __pycache__/
 *.pyc
 .env
