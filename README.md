@@ -14,13 +14,13 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   ├── SQL/
 │   │   ├── createTables.sql      ✅ já existe
 │   │   └── populateDB.sql        ✅ já existe
-│   ├── routers/                  ❌ criar (endpoints por módulo)
-│   │   ├── utentes.py
-│   │   ├── episodios.py
-│   │   ├── triagem.py
-│   │   ├── internamento.py
-│   │   ├── profissionais.py
-│   │   └── auth.py
+│   ├── routers/                  ✅ criar (endpoints por módulo)
+│   │   ├── utentes.py✅
+│   │   ├── episodios.py✅
+│   │   ├── triagem.py✅
+│   │   ├── internamento.py✅
+│   │   ├── profissionais.py✅
+│   │   └── auth.py❌
 │   ├── models/                   ❌ criar (modelos Pydantic)
 │   ├── auth/                     ❌ criar (JWT + roles)
 │   ├── db.py                     ✅ já existe
