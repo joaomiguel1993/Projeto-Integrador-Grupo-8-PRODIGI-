@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .db import get_connection
+from .db import run_query, get_connection
 
 
 app = FastAPI(
-    title="PRODIGI G08 – Gestão de Urgências Hospitalares",
+    title="PRODIGI – Gestão de Urgências Hospitalares",
     description="API para gestão de utentes, episódios e triagem.",
     version="0.1.0"
 )
@@ -19,28 +19,6 @@ app.add_middleware(
 )
 
 
-def run_query(query):
-    try:
-        con = get_connection()
-        cur = con.cursor()
-
-        cur.execute(query)
-
-        colunas = [desc[0] for desc in cur.description]
-        dados = cur.fetchall()
-
-        resultado = [dict(zip(colunas, row)) for row in dados]
-
-        return resultado
-
-    except Exception as e:
-        return {"erro": str(e)}
-
-    finally:
-        cur.close()
-        con.close()
-
-
 # ---------------------------
 # TESTE
 # ---------------------------
@@ -50,19 +28,8 @@ def home():
 
 
 # ---------------------------
-# UTENTES
+# INCLUIR ROTEADORES AQUI
 # ---------------------------
-@app.get("/utentes")
-def get_utentes():
-    return run_query("SELECT * FROM Utente;")
+from .routers import utentes
 
-
-# ---------------------------
-# AQUI VAI FICAR OS OUTROS ENDPOINTS
-# Depois criamos:
-# - routers/utentes.py
-# - routers/auth.py
-# e registamos:
-# from backend.routers import utentes, auth
-# app.include_router(utentes.router, prefix="/api/utentes")
-# app.include_router(auth.router, prefix="/api/auth")
+app.include_router(utentes.router)

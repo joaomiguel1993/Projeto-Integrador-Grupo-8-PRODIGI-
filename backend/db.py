@@ -20,3 +20,18 @@ def get_connection():
         host=host_postgres,
         port=port_postgres
     )
+
+def run_query(query):
+    try:
+        con = get_connection()
+        cur = con.cursor()
+        cur.execute(query)
+        colunas = [desc[0] for desc in cur.description]
+        dados = cur.fetchall()
+        resultado = [dict(zip(colunas, row)) for row in dados]
+        return resultado
+    except Exception as e:
+        return {"erro": str(e)}
+    finally:
+        cur.close()
+        con.close()
