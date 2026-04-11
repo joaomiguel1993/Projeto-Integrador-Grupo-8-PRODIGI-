@@ -96,16 +96,23 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 
 ## 🛠️ Stack Tecnológico
 
-| Camada | Tecnologia |
-|--------|------------|
-| **Base de dados** | PostgreSQL + pgAdmin |
-| **Backend / API** | FastAPI (Python) |
-| **Frontend Web** | HTML + CSS + JavaScript |
-| **App Móvel** | Android (Kotlin) |
-| **IA** | scikit-learn |
-| **Controlo de versões** | Git + GitHub |
-| **Editor** | VS Code |
-| **Containerização** | Docker + Docker Compose |
+| Camada | Tecnologia | Status |
+|--------|------------|--------|
+| **Base de dados** | PostgreSQL + pgAdmin | ✅ Implementado |
+| **Backend / API** | FastAPI (Python 3.12+) | ✅ Implementado (routers ativos) |
+| **Frontend Web** | HTML5 + CSS3 + JavaScript (Vanilla) | ⚠️ Parcial (Urgencias.html) |
+| **App Móvel** | Android (Kotlin/Java) | ❌ Planeado |
+| **IA/ML** | scikit-learn + pandas + numpy | ❌ Planeado |
+| **Controlo de versões** | Git + GitHub | ✅ Implementado |
+| **Editor** | VS Code + extensões Python/FastAPI | ✅ Configurado |
+| **Containerização** | Docker + Docker Compose | ✅ Implementado |
+| **Autenticação** | JWT (python-jose) + bcrypt (passlib) | ✅ Implementado |
+| **Validação de dados** | Pydantic v2 | ❌ Planeado (models/) |
+| **ORM/Data Layer** | SQLAlchemy Core (opcional) + Repository pattern | ❌ Planeado (repositories/) |
+| **Deploy** | Docker + Railway/Heroku (futuro) | ❌ Planeado |
+| **Testes** | pytest + FastAPI TestClient | ❌ Planeado |
+
+**Bibliotecas principais (requirements.txt):**
 
 ---
 
