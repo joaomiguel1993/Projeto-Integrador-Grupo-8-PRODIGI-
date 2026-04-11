@@ -87,6 +87,107 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 ├── .gitignore                            ✅ ficheiros ignorados no Git
 ├── README.md                             ✅ documentação principal
 └── update_prof.sh                        ⚠️ verificar se ainda existe no repo
+
+
+SIAGUH/
+│
+├── urgencias-backend/                         ✅ API REST (Python + FastAPI)
+│   ├── routers/                               ✅ endpoints por módulo
+│   │   ├── auth.py
+│   │   ├── utentes.py
+│   │   ├── episodios.py
+│   │   ├── triagens.py
+│   │   ├── atos.py
+│   │   ├── prescricoes.py
+│   │   ├── internamentos.py
+│   │   ├── hospitais.py
+│   │   ├── profissionais.py
+│   │   └── anonimizacao.py
+│   │
+│   ├── mappers/                               ✅ acesso à BD + conversão por módulo
+│   │   ├── utente_mapper.py
+│   │   ├── episodio_mapper.py
+│   │   ├── triagem_mapper.py
+│   │   ├── ato_mapper.py
+│   │   ├── prescricao_mapper.py
+│   │   ├── internamento_mapper.py
+│   │   ├── hospital_mapper.py
+│   │   ├── profissional_mapper.py
+│   │   └── utilizador_mapper.py
+│   │
+│   ├── models/                                ✅ schemas Pydantic
+│   │   ├── utente.py
+│   │   ├── episodio.py
+│   │   ├── triagem.py
+│   │   ├── ato.py
+│   │   ├── prescricao.py
+│   │   ├── internamento.py
+│   │   ├── hospital.py
+│   │   ├── profissional.py
+│   │   └── auth.py
+│   │
+│   ├── auth/
+│   │   └── security.py                        ✅ autenticação / JWT
+│   │
+│   ├── SQL/
+│   │   ├── createTables.sql                   ✅ criação da base de dados
+│   │   └── populateDB.sql                     ✅ dados iniciais / teste
+│   │
+│   ├── main.py                                ✅ ponto de entrada FastAPI
+│   ├── database.py                            ✅ ligação à base de dados
+│   ├── requirements.txt                       ✅ dependências Python
+│   └── .gitkeep
+│
+├── urgencias-frontend/                        ✅ SPA (HTML + Handlebars)
+│   ├── index.html                             ✅ estrutura base + login + nav
+│   ├── css/
+│   │   └── style.css                          ✅
+│   ├── js/
+│   │   ├── api.js                             ✅ chamadas à API
+│   │   ├── auth.js                            ✅ login / logout / sessão
+│   │   ├── app.js                             ✅ navegação e controlo por papel
+│   │   ├── templates.js                       ✅ carregamento .hbs com cache-busting
+│   │   └── sections/                          ✅ lógica por módulo
+│   │       ├── episodios.js
+│   │       ├── utentes.js
+│   │       ├── triagens.js
+│   │       ├── internamentos.js
+│   │       ├── hospitais.js
+│   │       ├── profissionais.js
+│   │       ├── previsao.js
+│   │       ├── atos.js
+│   │       ├── prescricoes.js
+│   │       ├── painel-recepcao.js
+│   │       ├── painel-triagem.js
+│   │       └── painel-monitorizacao.js
+│   └── templates/                             ✅ templates Handlebars
+│       ├── episodios.hbs
+│       ├── utentes.hbs
+│       ├── triagens.hbs
+│       ├── internamentos.hbs
+│       ├── hospitais.hbs
+│       ├── profissionais.hbs
+│       ├── previsao.hbs
+│       ├── modais.hbs
+│       ├── atos.hbs
+│       ├── prescricoes.hbs
+│       ├── painel-recepcao.hbs
+│       ├── painel-triagem.hbs
+│       └── painel-monitorizacao.hbs
+│
+├── urgencias-ia/                              ✅ Serviço de IA (Python + Flask)
+│   ├── app.py                                 ✅ servidor Flask (porta 5000)
+│   ├── model.py                               ✅ treino do modelo RandomForest
+│   ├── gerar_dados.py                         ✅ geração de 200 episódios sintéticos
+│   ├── dados_sinteticos.sql                   ✅ dados sintéticos para a BD
+│   ├── modelo_urgencias.pkl                   ✅ modelo treinado
+│   └── requirements.txt                       ✅ dependências Python
+│
+├── Dockerfile                                 ❌ a criar
+├── docker-compose.yml                         ❌ a criar
+├── .env.example                               ❌ a criar
+├── .gitignore                                 ✅
+└── README.md                                  ✅ este ficheiro
 ```
 
 ---
