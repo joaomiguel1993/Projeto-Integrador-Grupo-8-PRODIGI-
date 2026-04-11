@@ -13,40 +13,80 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── backend/
 │   ├── SQL/
-│   │   ├── createTables.sql      ✅ já existe
-│   │   └── populateDB.sql        ✅ já existe
-│   ├── routers/                  ✅ endpoints por módulo
-│   │   ├── utentes.py            ✅
-│   │   ├── episodios.py          ✅
-│   │   ├── triagem.py            ✅
-│   │   ├── internados.py         ✅
-│   │   ├── proficionais.py       ✅
-│   │   └── auth.py               ✅
-│   ├── models/                   ❌ criar (modelos Pydantic)
+│   │   ├── createTables.sql              ✅ criação da base de dados
+│   │   └── populateDB.sql                ✅ dados iniciais / teste
+│   │
+│   ├── routers/                          ✅ endpoints por módulo
+│   │   ├── utentes.py
+│   │   ├── episodios.py
+│   │   ├── triagem.py
+│   │   ├── internados.py
+│   │   ├── proficionais.py
+│   │   └── auth.py
+│   │
 │   ├── auth/
-│   │   └── security.py           ✅
-│   ├── db.py                     ✅ já existe
-│   ├── main.py                   ✅ já existe
-│   └── requirements.txt          ✅ já existe
+│   │   └── security.py                   ✅ autenticação / JWT
+│   │
+│   ├── models/                           ❌ criar (schemas Pydantic)
+│   │   ├── utente.py
+│   │   ├── episodio.py
+│   │   ├── triagem.py
+│   │   ├── profissional.py
+│   │   └── auth.py
+│   │
+│   ├── repositories/                     ❌ criar (acesso à BD)
+│   │   ├── utentes_repository.py
+│   │   ├── episodios_repository.py
+│   │   ├── triagem_repository.py
+│   │   ├── internados_repository.py
+│   │   ├── profissionais_repository.py
+│   │   └── auth_repository.py
+│   │
+│   ├── services/                         ❌ opcional (regras de negócio)
+│   │   ├── triagem_service.py
+│   │   ├── auth_service.py
+│   │   └── episodios_service.py
+│   │
+│   ├── db.py                             ✅ ligação à base de dados
+│   ├── main.py                           ✅ ponto de entrada FastAPI
+│   ├── hash_password.py                  ✅ utilitário de hashing
+│   ├── requirements.txt                  ✅ dependências Python
+│   └── .gitkeep                          ✅ placeholder
 │
 ├── web/
-│   ├── Urgencias.html            ✅ já existe
-│   ├── login.html                ❌ criar
-│   ├── triagem.html              ❌ criar
-│   ├── dashboard.html            ❌ criar
-│   └── styles.css / scripts/     ❌ criar
+│   ├── Urgencias.html                    ✅ já existe
+│   ├── login.html                        ❌ criar
+│   ├── triagem.html                      ❌ criar
+│   ├── dashboard.html                    ❌ criar
+│   ├── styles/
+│   │   └── styles.css                    ❌ criar
+│   └── scripts/
+│       ├── login.js                      ❌ criar
+│       ├── triagem.js                    ❌ criar
+│       └── dashboard.js                  ❌ criar
 │
-├── android/                      ❌ vazio, começar
+├── android/                              ❌ iniciar app móvel
+│   ├── app/
+│   ├── src/
+│   └── README.md
 │
-├── ia/
-│   └── modelo.py                 ❌ criar
+├── ia/                                   ❌ módulo de IA
+│   ├── modelo.py
+│   ├── treino.py
+│   └── dataset/
 │
-├── docs/                         ✅ ficheiros de apoio
+├── docs/                                 ✅ documentação e apoio
+│   ├── diagramas/
+│   ├── relatorio/
+│   └── apresentacao/
 │
-├── .env (local, não subir)       ✅ configurar
-├── .gitignore                    ✅ já existe
-├── README.md                     este ficheiro
-└── update_prof.sh                ✅ já existe
+├── Dockerfile                            ✅ container do backend
+├── docker-compose.yml                    ✅ orquestração dos serviços
+├── .env.example                          ✅ template de variáveis
+├── .dockerignore                         ✅ ficheiros ignorados no build Docker
+├── .gitignore                            ✅ ficheiros ignorados no Git
+├── README.md                             ✅ documentação principal
+└── update_prof.sh                        ⚠️ verificar se ainda existe no repo
 ```
 
 ---
