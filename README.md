@@ -92,19 +92,20 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 SIAGUH/
 │
 ├── urgencias-backend/                         ✅ API REST (Python + FastAPI)
-│   ├── routers/                               ✅ endpoints por módulo
-│   │   ├── auth.py
-│   │   ├── utentes.py
-│   │   ├── episodios.py
-│   │   ├── triagens.py
-│   │   ├── atos.py
-│   │   ├── prescricoes.py
-│   │   ├── internamentos.py
-│   │   ├── hospitais.py
-│   │   ├── profissionais.py
-│   │   └── anonimizacao.py
+│   ├── db/
+│   │   └── connection.py                      ✅ ligação à base de dados
 │   │
-│   ├── mappers/                               ✅ acesso à BD + conversão por módulo
+│   ├── dao/                                   ✅ queries SQL por módulo
+│   │   ├── utente_dao.py
+│   │   ├── episodio_dao.py
+│   │   ├── triagem_dao.py
+│   │   ├── ato_dao.py
+│   │   ├── prescricao_dao.py
+│   │   ├── internamento_dao.py
+│   │   ├── hospital_dao.py
+│   │   └── profissional_dao.py
+│   │
+│   ├── mappers/                               ✅ conversão BD ↔ objectos
 │   │   ├── utente_mapper.py
 │   │   ├── episodio_mapper.py
 │   │   ├── triagem_mapper.py
@@ -112,8 +113,28 @@ SIAGUH/
 │   │   ├── prescricao_mapper.py
 │   │   ├── internamento_mapper.py
 │   │   ├── hospital_mapper.py
-│   │   ├── profissional_mapper.py
-│   │   └── utilizador_mapper.py
+│   │   └── profissional_mapper.py
+│   │
+│   ├── repositories/                          ✅ orquestração (DAO + Mapper)
+│   │   ├── utente_repository.py
+│   │   ├── episodio_repository.py
+│   │   ├── triagem_repository.py
+│   │   ├── ato_repository.py
+│   │   ├── prescricao_repository.py
+│   │   ├── internamento_repository.py
+│   │   ├── hospital_repository.py
+│   │   └── profissional_repository.py
+│   │
+│   ├── controllers/                           ✅ endpoints HTTP (FastAPI routers)
+│   │   ├── auth_controller.py
+│   │   ├── utente_controller.py
+│   │   ├── episodio_controller.py
+│   │   ├── triagem_controller.py
+│   │   ├── ato_controller.py
+│   │   ├── prescricao_controller.py
+│   │   ├── internamento_controller.py
+│   │   ├── hospital_controller.py
+│   │   └── profissional_controller.py
 │   │
 │   ├── models/                                ✅ schemas Pydantic
 │   │   ├── utente.py
@@ -134,9 +155,8 @@ SIAGUH/
 │   │   └── populateDB.sql                     ✅ dados iniciais / teste
 │   │
 │   ├── main.py                                ✅ ponto de entrada FastAPI
-│   ├── database.py                            ✅ ligação à base de dados
 │   ├── requirements.txt                       ✅ dependências Python
-│   └── .gitkeep
+│   └── update_passwords.py                    ✅ utilitário de passwords
 │
 ├── urgencias-frontend/                        ✅ SPA (HTML + Handlebars)
 │   ├── index.html                             ✅ estrutura base + login + nav
@@ -188,6 +208,7 @@ SIAGUH/
 ├── .env.example                               ❌ a criar
 ├── .gitignore                                 ✅
 └── README.md                                  ✅ este ficheiro
+
 ```
 
 ---
