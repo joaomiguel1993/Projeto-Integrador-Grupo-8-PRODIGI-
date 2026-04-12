@@ -1,310 +1,340 @@
-
 # 🏥 PRODIGI — Projeto Integrador Grupo 8
 
-Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto Integrador.
+Sistema de gestão de urgências hospitalares desenvolvido no âmbito da unidade curricular de Projeto Integrador.
+
+O projeto tem como objetivo suportar operações centrais de um serviço de urgência, incluindo gestão de utentes, episódios, triagem, internamentos, atos clínicos, prescrições, profissionais e autenticação.
 
 ---
 
 ## 📁 Estrutura do Repositório
 
+```text
+## 📁 Estrutura do Repositório
 
 ```text
-Projeto-Integrador-Grupo-8-PRODIGI/
+Projeto-Integrador-Grupo-8-PRODIGI-/
 │
-├── backend/
-│   ├── SQL/                              ✅ já tens
-│   │   ├── createTables.sql
-│   │   └── populateDB.sql
+├── backend/                                      ✅
+│   ├── __init__.py                               ✅
+│   ├── SQL/                                      ✅
+│   │   ├── createTables.sql                      ✅
+│   │   └── populateDB.sql                        ✅
 │   │
-│   ├── routers/                          ✅ MANTÉM OS TEUS (funcionais!)
-│   │   ├── utentes.py                    ✅ já tens
-│   │   ├── episodios.py                  ✅ já tens  
-│   │   ├── triagem.py                    ✅ já tens
-│   │   ├── internados.py                 ✅ já tens
-│   │   ├── profissionais.py              ✅ já tens
-│   │   ├── auth.py                       ✅ já tens
-│   │   ├── ato.py                        ➕ ADICIONAR (do SIAGUH)
-│   │   ├── prescricao.py                 ➕ ADICIONAR (do SIAGUH)
-│   │   ├── hospital.py                   ➕ ADICIONAR (do SIAGUH)
-│   │   └── internamento.py               ➕ ADICIONAR (do SIAGUH)
+│   ├── routers/                                  ✅
+│   │   ├── __init__.py                           ✅
+│   │   ├── utentes.py                            ✅
+│   │   ├── episodios.py                          ✅
+│   │   ├── triagem.py                            ✅
+│   │   ├── internados.py                         ✅
+│   │   ├── internamento.py                       ✅
+│   │   ├── proficionais.py                       ✅
+│   │   ├── ato.py                                ✅
+│   │   ├── prescricao.py                         ✅
+│   │   ├── hospital.py                           ✅
+│   │   └── auth.py                               ✅
 │   │
-│   ├── auth/                             ✅ já tens
-│   │   └── security.py
+│   ├── auth/                                     ✅
+│   │   └── security.py                           ✅
 │   │
-│   ├── models/                           ❌ CRIAR (schemas Pydantic)
-│   │   ├── utente.py
-│   │   ├── episodio.py
-│   │   ├── triagem.py
-│   │   ├── ato.py                        ➕
-│   │   ├── prescricao.py                 ➕
-│   │   ├── internamento.py               ➕
-│   │   ├── hospital.py                   ➕
-│   │   ├── profissional.py
-│   │   └── auth.py
+│   ├── models/                                   ✅
+│   │   ├── __init__.py                           ✅
+│   │   ├── utente.py                             ✅
+│   │   ├── episodio.py                           ✅
+│   │   ├── triagem.py                            ✅
+│   │   ├── internamento.py                       ✅
+│   │   ├── ato.py                                ✅
+│   │   ├── prescricao.py                         ✅
+│   │   ├── hospital.py                           ✅
+│   │   ├── profissional.py                       ✅
+│   │   └── auth.py                               ✅
 │   │
-│   ├── dao/                              ❌ CRIAR (queries SQL puras)
-│   │   ├── utente_dao.py
-│   │   ├── episodio_dao.py
-│   │   ├── triagem_dao.py
-│   │   ├── ato_dao.py                    ➕
-│   │   ├── prescricao_dao.py             ➕
-│   │   ├── internamento_dao.py           ➕
-│   │   ├── hospital_dao.py               ➕
-│   │   └── profissional_dao.py
+│   ├── dao/                                      ✅
+│   │   ├── __init__.py                           ✅
+│   │   ├── utente_dao.py                         ✅
+│   │   ├── episodio_dao.py                       ✅
+│   │   ├── triagem_dao.py                        ✅
+│   │   ├── internamento_dao.py                   ✅
+│   │   ├── ato_dao.py                            ✅
+│   │   ├── prescricao_dao.py                     ✅
+│   │   ├── hospital_dao.py                       ✅
+│   │   └── profissional_dao.py                   ✅
 │   │
-│   ├── mappers/                          ❌ CRIAR (BD ↔ objetos)
-│   │   ├── utente_mapper.py
-│   │   ├── episodio_mapper.py
-│   │   ├── triagem_mapper.py
-│   │   ├── ato_mapper.py                 ➕
-│   │   ├── prescricao_mapper.py          ➕
-│   │   ├── internamento_mapper.py        ➕
-│   │   ├── hospital_mapper.py            ➕
-│   │   └── profissional_mapper.py
+│   ├── repositories/                             ✅
+│   │   ├── __init__.py                           ✅
+│   │   ├── utentes_repository.py                 ✅
+│   │   ├── episodios_repository.py               ✅
+│   │   ├── triagens_repository.py                ✅
+│   │   ├── internamentos_repository.py           ✅
+│   │   ├── atos_repository.py                    ✅
+│   │   ├── prescricoes_repository.py             ✅
+│   │   ├── hospitais_repository.py               ✅
+│   │   └── profissionais_repository.py           ✅
 │   │
-│   ├── repositories/                     ❌ CRIAR (DAO + Mapper)
-│   │   ├── utentes_repository.py
-│   │   ├── episodios_repository.py
-│   │   ├── triagem_repository.py
-│   │   ├── ato_repository.py             ➕
-│   │   ├── prescricao_repository.py      ➕
-│   │   ├── internamento_repository.py    ➕
-│   │   ├── hospital_repository.py        ➕
-│   │   ├── profissionais_repository.py
-│   │   └── auth_repository.py
-│   │
-│   ├── services/                         ❌ CRIAR (opcional)
-│   │   ├── triagem_service.py
-│   │   ├── auth_service.py
-│   │   ├── episodios_service.py
-│   │   └── previsao_service.py           ➕
-│   │
-│   ├── db.py                             ✅ já tens
-│   ├── main.py                           ✅ já tens
-│   ├── hash_password.py                  ✅ já tens
-│   ├── requirements.txt                  ✅ já tens
-│   └── update_passwords.py               ➕ ADICIONAR (utilitário)
+│   ├── db.py                                     ✅
+│   ├── main.py                                   ✅
+│   ├── hash_password.py                          ✅
+│   ├── requirements.txt                          ✅
+│   └── update_passwords.py                       ✅
 │
-├── web/                                  ❌ COMPLETAR frontend
-│   ├── Urgencias.html                    ✅ já tens
-│   ├── login.html                        ❌ criar
-│   ├── triagem.html                      ❌ criar
-│   ├── dashboard.html                    ❌ criar
-│   ├── styles/
-│   │   └── styles.css                    ❌ criar
-│   └── scripts/
-│       ├── login.js                      ❌ criar
-│       ├── triagem.js                    ❌ criar
-│       ├── dashboard.js                  ❌ criar
-│       ├── api.js                        ➕
-│       ├── auth.js                       ➕
-│       └── app.js                        ➕
+├── web/                                          ✅
+│   ├── Urgencias.html                            ✅
+│   ├── login.html                                ❌
+│   ├── triagem.html                              ❌
+│   ├── dashboard.html                            ❌
+│   ├── styles/                                   ❌
+│   │   └── styles.css                            ❌
+│   └── scripts/                                  ❌
+│       ├── login.js                              ❌
+│       ├── triagem.js                            ❌
+│       ├── dashboard.js                          ❌
+│       ├── api.js                                ❌
+│       ├── auth.js                               ❌
+│       └── app.js                                ❌
 │
-├── android/                              ❌ iniciar
-├── ia/                                   ❌ criar
-│   ├── modelo.py
-│   ├── treino.py
-│   ├── gerar_dados.py                    ➕
-│   ├── dados_sinteticos.sql              ➕
-│   └── modelo_urgencias.pkl
+├── android/                                      ❌
 │
-├── docs/                                 ✅ já tens
-├── Dockerfile                            ✅ já tens  
-├── docker-compose.yml                    ✅ já tens
-├── .env.example                          ✅ já tens
-├── .gitignore                            ✅ já tens
-└── README.md                             ✅ já tens
+├── ia/                                           ❌
+│   ├── modelo.py                                 ❌
+│   ├── treino.py                                 ❌
+│   ├── gerar_dados.py                            ❌
+│   ├── dados_sinteticos.sql                      ❌
+│   └── modelo_urgencias.pkl                      ❌
+│
+├── docs/                                         ✅
+├── Dockerfile                                    ✅
+├── docker-compose.yml                            ✅
+├── .env.example                                  ✅
+├── .gitignore                                    ✅
+└── README.md                                     ✅
+```
 ```
 
 ---
 
+## ✅ Estado Atual
+
+### Backend
+- API em FastAPI com estrutura modular por routers.
+- Ligação à base de dados PostgreSQL com `psycopg2`.
+- Ficheiro `db.py` centralizado para execução de queries SQL.
+- Autenticação com JWT e hashing de passwords.
+- Separação progressiva por `dao/` e `repositories/`.
+
+### Base de Dados
+- Scripts SQL para criação e população da base de dados.
+- Integração com PostgreSQL e suporte a pgAdmin via Docker.
+
+### Frontend
+- Estrutura inicial criada.
+- `Urgencias.html` já existe.
+- Restantes páginas ainda em desenvolvimento.
+
+### Arquitetura
+- `routers/` para endpoints.
+- `dao/` para queries SQL.
+- `repositories/` para organização da lógica de acesso a dados.
+- `models/` para schemas Pydantic e validação.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-| Camada | Tecnologia | Status |
+| Camada | Tecnologia | Estado |
 |--------|------------|--------|
-| **Base de dados** | PostgreSQL + pgAdmin | ✅ Implementado |
-| **Backend / API** | FastAPI (Python 3.12+) | ✅ Implementado (routers ativos) |
-| **Frontend Web** | HTML5 + CSS3 + JavaScript (Vanilla) | ⚠️ Parcial (Urgencias.html) |
-| **App Móvel** | Android (Kotlin/Java) | ❌ Planeado |
-| **IA/ML** | scikit-learn + pandas + numpy | ❌ Planeado |
-| **Controlo de versões** | Git + GitHub | ✅ Implementado |
-| **Editor** | VS Code + extensões Python/FastAPI | ✅ Configurado |
-| **Containerização** | Docker + Docker Compose | ✅ Implementado |
-| **Autenticação** | JWT (python-jose) + bcrypt (passlib) | ✅ Implementado |
-| **Validação de dados** | Pydantic v2 | ❌ Planeado (models/) |
-| **ORM/Data Layer** | SQLAlchemy Core (opcional) + Repository pattern | ❌ Planeado (repositories/) |
-| **Deploy** | Docker + Railway/Heroku (futuro) | ❌ Planeado |
-| **Testes** | pytest + FastAPI TestClient | ❌ Planeado |
+| Base de dados | PostgreSQL + pgAdmin | ✅ Implementado |
+| Backend / API | FastAPI + Uvicorn | ✅ Implementado |
+| Acesso a dados | psycopg2 + SQL puro | ✅ Implementado |
+| Autenticação | JWT + passlib + bcrypt | ✅ Implementado |
+| Validação | Pydantic | 🟡 Parcial |
+| Frontend Web | HTML5 + CSS3 + JavaScript | 🟡 Parcial |
+| Containerização | Docker + Docker Compose | ✅ Implementado |
+| Controlo de versões | Git + GitHub | ✅ Implementado |
+| App Móvel | Android | ❌ Planeado |
+| IA / ML | scikit-learn + pandas + numpy | ❌ Planeado |
+| Testes | pytest + FastAPI TestClient | ❌ Planeado |
 
-**Bibliotecas principais (requirements.txt):**
+### Bibliotecas principais
+- `fastapi`
+- `uvicorn`
+- `psycopg2`
+- `pydantic`
+- `python-jose`
+- `passlib`
+- `bcrypt`
+- `python-multipart`
+- `python-dotenv`
 
 ---
 
-## 🚀 Iniciar o Projeto
+## 🚀 Como executar
 
-### 🐳 **Docker (Recomendado)**
+### Docker
 
 ```bash
-# 1. Configurar .env
 cp .env.example .env
-# Editar .env com passwords
-
-# 2. Executar
 docker compose up --build
-
-# Parar
-docker compose down
-
-# Reset volumes (apaga BD)
-docker compose down -v && docker compose up --build
 ```
 
-**URLs:**
-- **API**: http://localhost:8000
-- **Swagger**: http://localhost:8000/docs
-- **pgAdmin**: http://localhost:8080
-
-### 💻 **Manual (Dev Local)**
+Parar os serviços:
 
 ```bash
-# 1. Clonar + .env
+docker compose down
+```
+
+Recriar tudo e limpar volumes:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+### Execução local
+
+```bash
 git clone https://github.com/joaomiguel1993/Projeto-Integrador-Grupo-8-PRODIGI-.git
 cd Projeto-Integrador-Grupo-8-PRODIGI-
-cp .env.example .env  # Configurar PostgreSQL local
+cp .env.example .env
+```
 
-# 2. Backend
+Criar ambiente virtual e instalar dependências:
+
+```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload  # http://localhost:8000/docs
+source .venv/bin/activate
+```
 
-# 3. BD (pgAdmin)
-# createTables.sql → populateDB.sql
+No Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Instalar dependências:
+
+```bash
+pip install -r requirements.txt
+```
+
+Iniciar a API:
+
+```bash
+uvicorn backend.main:app --reload
 ```
 
 ---
 
-## 🔌 Endpoints Disponíveis
+## 🌐 URLs úteis
 
-| Módulo | Status | Endpoints Principais |
-|--------|--------|---------------------|
-| **Auth** | ✅ | `POST /api/auth/register`, `POST /api/auth/login` |
-| **Utentes** | ✅ | `GET/POST/PUT/DEL /api/utentes/` |
-| **Episódios** | ✅ | `GET/POST/PUT/DEL /api/episodios/` |
-| **Triagem** | ✅ | `POST /api/triagem/manchester` |
-| **Internados** | ✅ | `GET /api/internados/disponiveis` |
-| **Profissionais** | ✅ | `GET /api/proficionais/{role}` |
-
-**Roles**: `rececionista` | `enfermeiro` | `medico` | `administrador`
+- API: `http://localhost:8000`
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+- pgAdmin: `http://localhost:8080`
 
 ---
 
-## 📋 Roadmap (Pendentes ❌)
+## 🔌 Endpoints disponíveis
 
-| Componente | Responsável | Prazo | Prioridade |
-|------------|-------------|-------|------------|
-| `backend/models/` | Todos | **12/04** | 🔴 Alta |
-| `web/login.html` | Frontend | 14/04 | 🔴 Alta |
-| `web/triagem.html` | Frontend | 15/04 | 🟡 Média |
-| `web/dashboard.html` | Frontend | 16/04 | 🟡 Média |
-| `android/` | Mobile | 20/04 | 🟢 Baixa |
-| `ia/modelo.py` | IA | 22/04 | 🟢 Baixa |
+| Módulo | Estado | Exemplos |
+|--------|--------|----------|
+| Auth | ✅ | `POST /auth/login`, `POST /auth/register` |
+| Utentes | ✅ | `GET /api/utentes/` |
+| Episódios | ✅ | `GET /api/episodios/` |
+| Triagem | ✅ | `GET /api/triagem/` |
+| Internados | ✅ | `GET /api/internados/` |
+| Internamentos | ✅ | `GET /api/internamentos/` |
+| Profissionais | ✅ | `GET /api/proficionais/` |
+| Atos | ✅ | `GET /api/atos/` |
+| Prescrições | ✅ | `GET /api/prescricoes/` |
+| Hospitais | ✅ | `GET /api/hospitais/` |
+
+> Nota: alguns endpoints podem ainda estar em evolução e a nomenclatura depende dos ficheiros atualmente carregados no `main.py`.
 
 ---
 
-## 🔄 **Git - Comandos Essenciais**
+## 🔐 Autenticação
 
-### 🌟 **Fluxo Diário (5s)**
+O projeto inclui autenticação baseada em JWT e hashing seguro de passwords, prática comum em FastAPI para proteger endpoints e validar utilizadores. As passwords não devem ser guardadas em texto simples e devem ser processadas com hashing antes de serem persistidas [web:92][web:95][web:98].
+
+---
+
+## 🗄️ Base de dados
+
+Para inicializar manualmente a base de dados PostgreSQL:
+
+```bash
+psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/createTables.sql
+psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/populateDB.sql
+```
+
+Comandos úteis no `psql`:
+
+```sql
+\dt
+SELECT * FROM utentes LIMIT 5;
+SELECT * FROM internados LIMIT 5;
+```
+
+---
+
+## 🔄 Git — comandos úteis
+
+### Fluxo diário
 
 ```bash
 git add .
-git commit -m "feat: triagem UI"
-git push
+git commit -m "feat: atualização backend"
+git pull origin main
+git push origin main
 ```
 
-### ⚡ **Cheatsheet Completo**
+### Cheatsheet
 
 | Situação | Comando |
 |----------|---------|
-| **Ver status** | `git status` |
-| **Ver mudanças** | `git diff` |
-| **Pull atualizações** | `git pull` |
-| **Apagar mudanças** | `git reset --hard` |
-| **Histórico** | `git log --oneline` |
-| **Desfazer commit** | `git reset HEAD~1` |
-| **Primeiro push** | `git push -u origin main` |
-
-### 🆘 **Emergências**
-
-```bash
-# Apagar TUDO local (cuidado!)
-git fetch origin
-git reset --hard origin/main
-
-# Remover venv do git (sem apagar pasta)
-git rm -r --cached .venv/
-git commit -m "remove venv"
-```
+| Ver estado | `git status` |
+| Ver diferenças | `git diff` |
+| Buscar atualizações | `git pull origin main` |
+| Histórico simples | `git log --oneline` |
+| Primeiro push | `git push -u origin main` |
+| Repor branch local | `git fetch origin && git reset --hard origin/main` |
 
 ---
 
-## 🐍 **Python / Backend - Quick Commands**
+## 📋 Roadmap
 
-```bash
-# Dependências
-pip install -r requirements.txt
-pip freeze > requirements.txt  # Atualizar
+### Alta prioridade
+- Consolidar todos os routers no `main.py`
+- Ligar routers aos `repositories`
+- Finalizar models Pydantic
+- Completar frontend base (`login`, `triagem`, `dashboard`)
 
-# Servidor
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+### Média prioridade
+- Melhorar validação de dados
+- Criar endpoints POST/PUT/DELETE em falta
+- Normalizar nomes de ficheiros e imports
 
-# Debug
-python -c "from db import engine; print(engine)"
-```
-
-**Bibliotecas principais:**
-
-fastapi # API Framework
-uvicorn # Server
-psycopg2 # PostgreSQL
-pydantic # Models/Validação
-python-jose # JWT
-passlib # Passwords
-
+### Baixa prioridade
+- Iniciar app Android
+- Desenvolver módulo de IA
+- Adicionar testes automatizados
 
 ---
 
-## 🗄️ **PostgreSQL - Quick SQL**
+## 📅 Cronograma
 
-```bash
-# Conectar
-psql -U postgres -d Projeto_Integrador_G08
-
-# Executar ficheiros
-psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/createTables.sql
-
-# Ver tabelas
-\dt
-SELECT * FROM utentes LIMIT 5;
-```
+| Fase | Data | Peso | Estado |
+|------|------|------|--------|
+| Intermédia | 17 Abr 2026 | 10% | Em progresso |
+| Defesa | 25–26 Mai 2026 | 70% | Planeado |
+| Apresentação | 28 Mai 2026 | 5% | Planeado |
+| Relatório | 28 Mai 2026 | 15% | Planeado |
 
 ---
 
-## 📅 **Cronograma Oficial**
+## 👥 Grupo 8
 
-| **Fase** | **Data** | **Peso** | **Status** |
-|----------|----------|----------|------------|
-| Intermédia | 17 Abr 2026 | 10% | 📈 Em progresso |
-| Defesa | 25-26 Mai 2026 | 70% | ⏳ Planeado |
-| Apresentação | 28 Mai 2026 | 5% | ⏳ Planeado |
-| Relatório | 28 Mai 2026 | 15% | ⏳ Planeado |
-
----
-
-## 👥 **Grupo 8**
-**João Martins** • **João Sacramento** • **Luis Franco** • **Pedro Antunes**
-
+- João Martins
+- João Sacramento
+- Luis Franco
+- Pedro Antunes
