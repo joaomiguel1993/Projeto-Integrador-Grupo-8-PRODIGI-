@@ -8,7 +8,7 @@ O projeto tem como objetivo suportar operações centrais de um serviço de urg�
 
 ## 📌 Objetivo
 
-O PRODIGI pretende disponibilizar uma API backend para suporte a fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação está a ser desenvolvida com FastAPI, PostgreSQL e Docker, com autenticação baseada em JWT e passwords hashedas, que é uma abordagem comum e recomendada para APIs modernas em FastAPI [web:98][web:148][web:150].
+O PRODIGI pretende disponibilizar uma API backend para suporte a fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação está a ser desenvolvida com FastAPI, PostgreSQL e Docker, com autenticação baseada em JWT e passwords hashedas, que é uma abordagem comum e recomendada para APIs modernas em FastAPI.
 
 ---
 
@@ -142,7 +142,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 - `python-multipart`
 - `python-dotenv`
 
-A autenticação com bearer token, OAuth2/JWT e hashing de passwords é uma prática documentada na própria documentação do FastAPI para proteger endpoints e evitar armazenamento de passwords em texto simples [web:98][web:140][web:148].
+A autenticação com bearer token, OAuth2/JWT e hashing de passwords é uma prática documentada na própria documentação do FastAPI para proteger endpoints e evitar armazenamento de passwords em texto simples.
 
 ---
 
@@ -158,7 +158,7 @@ A autenticação com bearer token, OAuth2/JWT e hashing de passwords é uma prá
 ### Base de Dados
 - Scripts SQL disponíveis para criação e população da base de dados.
 - Integração preparada com PostgreSQL.
-- Suporte a execução com Docker Compose, um padrão comum para stacks FastAPI + PostgreSQL [web:90][web:93][web:144].
+- Suporte a execução com Docker Compose, um padrão comum para stacks FastAPI + PostgreSQL.
 
 ### Frontend
 - Ainda não implementado.
@@ -191,7 +191,7 @@ docker compose down -v
 docker compose up --build
 ```
 
-Usar Docker Compose para subir FastAPI e PostgreSQL é uma abordagem comum e prática para desenvolvimento local, especialmente quando a app depende de serviços acoplados como base de dados [web:90][web:93][web:144].
+Usar Docker Compose para subir FastAPI e PostgreSQL é uma abordagem comum e prática para desenvolvimento local, especialmente quando a app depende de serviços acoplados como base de dados.
 
 ### Opção 2 — Execução local
 
@@ -227,7 +227,7 @@ Executar a API:
 uvicorn backend.main:app --reload
 ```
 
-A organização de aplicações FastAPI maiores em múltiplos ficheiros e routers é suportada diretamente pela framework e facilita a escalabilidade da aplicação [web:98][web:141].
+A organização de aplicações FastAPI maiores em múltiplos ficheiros e routers é suportada diretamente pela framework e facilita a escalabilidade da aplicação.
 
 ---
 
@@ -238,7 +238,7 @@ A organização de aplicações FastAPI maiores em múltiplos ficheiros e router
 - ReDoc: `http://localhost:8000/redoc`
 - pgAdmin: `http://localhost:8080`
 
-A documentação automática via Swagger UI e ReDoc faz parte das funcionalidades nativas do FastAPI, o que ajuda no teste e validação rápida dos endpoints [web:98].
+A documentação automática via Swagger UI e ReDoc faz parte das funcionalidades nativas do FastAPI, o que ajuda no teste e validação rápida dos endpoints.
 
 ---
 
@@ -263,7 +263,7 @@ A documentação automática via Swagger UI e ReDoc faz parte das funcionalidade
 
 ## 🔐 Autenticação
 
-O projeto utiliza autenticação baseada em JWT com passwords hashedas antes de serem armazenadas, o que é recomendado para reduzir o risco em caso de exposição da base de dados [web:98][web:150]. O fluxo de autenticação com bearer token é uma das abordagens centrais documentadas pelo FastAPI para APIs seguras [web:98][web:148].
+O projeto utiliza autenticação baseada em JWT com passwords hashedas antes de serem armazenadas, o que é recomendado para reduzir o risco em caso de exposição da base de dados. O fluxo de autenticação com bearer token é uma das abordagens centrais documentadas pelo FastAPI para APIs seguras.
 
 ---
 
