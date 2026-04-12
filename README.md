@@ -9,9 +9,6 @@ O projeto tem como objetivo suportar operações centrais de um serviço de urg�
 ## 📁 Estrutura do Repositório
 
 ```text
-## 📁 Estrutura do Repositório
-
-```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── backend/                                      ✅
@@ -107,7 +104,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 ├── .gitignore                                    ✅
 └── README.md                                     ✅
 ```
-```
+
 
 ---
 
