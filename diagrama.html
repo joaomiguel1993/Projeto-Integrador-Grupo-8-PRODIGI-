@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama ER — PRODIGI | Grupo 08</title>
+<style>
+  body { font-family: sans-serif; padding: 2rem; background: white; }
+  h1 { font-size: 18px; font-weight: 500; margin-bottom: 1rem; color: #1a1a1a; }
+  #erd { width: 100%; }
+</style>
+</head>
+<body>
+<h1>Diagrama ER — PRODIGI | Grupo 08 | 2026</h1>
+<div id="erd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: 'sans-serif',
+  themeVariables: {
+    darkMode: false,
+    fontSize: '13px',
+    lineColor: '#73726c',
+    textColor: '#3d3d3a',
+  },
+});
+const { svg } = await mermaid.render('erd-svg', `erDiagram
+  UTENTE {
+    int NumUtent PK
+    string Sexo
+    string Localidade
+    int IdadeAtual
+  }
+  HOSPITAL {
+    string Nome PK
+    string Localizacao
+  }
+  EPURGENCIA {
+    int CodEpUrgenc PK
+    string NomeHosp FK
+    int NumUtent FK
+    datetime DataHoraEntr
+    datetime DataHoraSaida
+  }
+  FUNCIONARIO {
+    int NumFunc PK
+    string Sexo
+    string TipoFunc
+  }
+  MEDICO {
+    int NumFunc PK "FK Funcionario"
+    bool Estagiario
+  }
+  ENFERMEIRO {
+    int NumFunc PK "FK Funcionario"
+  }
+  ATO {
+    int CodEpUrgenc PK
+    string NomeHosp PK
+    datetime DataHoraInicio PK
+    datetime DataHoraFim
+    string Tipo
+    int NumFuncPresc "FK Medico"
+    datetime DataHoraPresc
+  }
+  REALIZA {
+    int CodEpUrgenc PK
+    string NomeHosp PK
+    datetime DataHoraInicio PK
+    int NumFunc PK "FK Funcionario"
+  }
+  INTERNADOS {
+    int NumUtent PK
+    string NomeHosp PK
+    datetime DataInternamento PK
+    datetime DataAlta
+  }
+  UTILIZADOR {
+    string Username PK
+    string PasswordHash
+    string Role
+    int NumFunc "FK Funcionario"
+  }
+  TRIAGEM {
+    int CodEpUrgenc PK
+    string NomeHosp PK
+    datetime DataHoraTriagem PK
+    string Prioridade
+    decimal Temperatura
+    int PressaoSistolica
+    int PressaoDiastolica
+    text Observacoes
+    int NumFuncTriagem "FK Funcionario"
+  }
+  PRESCREVE {
+    int CodPrescricao PK "SERIAL"
+    int CodEpUrgenc FK
+    string NomeHosp FK
+    int NumFuncPresc FK "Medico"
+    datetime DataHoraPresc
+    string Medicamento
+    string Dose
+    string Frequencia
+    string Duracao
+  }
+
+  UTENTE ||--o{ EPURGENCIA : "regista"
+  HOSPITAL ||--o{ EPURGENCIA : "local"
+  EPURGENCIA ||--o{ ATO : "tem"
+  EPURGENCIA ||--o| TRIAGEM : "inicia com"
+  EPURGENCIA ||--o{ PRESCREVE : "recebe"
+  UTENTE ||--o{ INTERNADOS : "é"
+  HOSPITAL ||--o{ INTERNADOS : "em"
+  FUNCIONARIO ||--o| MEDICO : "é"
+  FUNCIONARIO ||--o| ENFERMEIRO : "é"
+  FUNCIONARIO ||--o{ REALIZA : "realiza"
+  ATO ||--o{ REALIZA : "por"
+  MEDICO ||--o{ ATO : "prescreve"
+  FUNCIONARIO ||--o{ TRIAGEM : "faz"
+  FUNCIONARIO ||--o{ UTILIZADOR : "como"
+`);
+document.getElementById('erd').innerHTML = svg;
+</script>
+</body>
+</html>
