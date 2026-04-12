@@ -9,44 +9,111 @@ Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto
 
 
 ```text
-Projeto-Integrador-Grupo-8-PRODIGI-/
+Projeto-Integrador-Grupo-8-PRODIGI/
 │
 ├── backend/
-│   ├── SQL/
-│   │   ├── createTables.sql      ✅ já existe
-│   │   └── populateDB.sql        ✅ já existe
-│   ├── routers/                  ✅ endpoints por módulo
-│   │   ├── utentes.py            ✅
-│   │   ├── episodios.py          ✅
-│   │   ├── triagem.py            ✅
-│   │   ├── internados.py         ✅
-│   │   ├── proficionais.py       ✅
-│   │   └── auth.py               ✅
-│   ├── models/                   ❌ criar (modelos Pydantic)
-│   ├── auth/
-│   │   └── security.py           ✅
-│   ├── db.py                     ✅ já existe
-│   ├── main.py                   ✅ já existe
-│   └── requirements.txt          ✅ já existe
+│   ├── SQL/                              ✅ já tens
+│   │   ├── createTables.sql
+│   │   └── populateDB.sql
+│   │
+│   ├── routers/                          ✅ MANTÉM OS TEUS (funcionais!)
+│   │   ├── utentes.py                    ✅ já tens
+│   │   ├── episodios.py                  ✅ já tens  
+│   │   ├── triagem.py                    ✅ já tens
+│   │   ├── internados.py                 ✅ já tens
+│   │   ├── profissionais.py              ✅ já tens
+│   │   ├── auth.py                       ✅ já tens
+│   │   ├── ato.py                        ➕ ADICIONAR (do SIAGUH)
+│   │   ├── prescricao.py                 ➕ ADICIONAR (do SIAGUH)
+│   │   ├── hospital.py                   ➕ ADICIONAR (do SIAGUH)
+│   │   └── internamento.py               ➕ ADICIONAR (do SIAGUH)
+│   │
+│   ├── auth/                             ✅ já tens
+│   │   └── security.py
+│   │
+│   ├── models/                           ❌ CRIAR (schemas Pydantic)
+│   │   ├── utente.py
+│   │   ├── episodio.py
+│   │   ├── triagem.py
+│   │   ├── ato.py                        ➕
+│   │   ├── prescricao.py                 ➕
+│   │   ├── internamento.py               ➕
+│   │   ├── hospital.py                   ➕
+│   │   ├── profissional.py
+│   │   └── auth.py
+│   │
+│   ├── dao/                              ❌ CRIAR (queries SQL puras)
+│   │   ├── utente_dao.py
+│   │   ├── episodio_dao.py
+│   │   ├── triagem_dao.py
+│   │   ├── ato_dao.py                    ➕
+│   │   ├── prescricao_dao.py             ➕
+│   │   ├── internamento_dao.py           ➕
+│   │   ├── hospital_dao.py               ➕
+│   │   └── profissional_dao.py
+│   │
+│   ├── mappers/                          ❌ CRIAR (BD ↔ objetos)
+│   │   ├── utente_mapper.py
+│   │   ├── episodio_mapper.py
+│   │   ├── triagem_mapper.py
+│   │   ├── ato_mapper.py                 ➕
+│   │   ├── prescricao_mapper.py          ➕
+│   │   ├── internamento_mapper.py        ➕
+│   │   ├── hospital_mapper.py            ➕
+│   │   └── profissional_mapper.py
+│   │
+│   ├── repositories/                     ❌ CRIAR (DAO + Mapper)
+│   │   ├── utentes_repository.py
+│   │   ├── episodios_repository.py
+│   │   ├── triagem_repository.py
+│   │   ├── ato_repository.py             ➕
+│   │   ├── prescricao_repository.py      ➕
+│   │   ├── internamento_repository.py    ➕
+│   │   ├── hospital_repository.py        ➕
+│   │   ├── profissionais_repository.py
+│   │   └── auth_repository.py
+│   │
+│   ├── services/                         ❌ CRIAR (opcional)
+│   │   ├── triagem_service.py
+│   │   ├── auth_service.py
+│   │   ├── episodios_service.py
+│   │   └── previsao_service.py           ➕
+│   │
+│   ├── db.py                             ✅ já tens
+│   ├── main.py                           ✅ já tens
+│   ├── hash_password.py                  ✅ já tens
+│   ├── requirements.txt                  ✅ já tens
+│   └── update_passwords.py               ➕ ADICIONAR (utilitário)
 │
-├── web/
-│   ├── Urgencias.html            ✅ já existe
-│   ├── login.html                ❌ criar
-│   ├── triagem.html              ❌ criar
-│   ├── dashboard.html            ❌ criar
-│   └── styles.css / scripts/     ❌ criar
+├── web/                                  ❌ COMPLETAR frontend
+│   ├── Urgencias.html                    ✅ já tens
+│   ├── login.html                        ❌ criar
+│   ├── triagem.html                      ❌ criar
+│   ├── dashboard.html                    ❌ criar
+│   ├── styles/
+│   │   └── styles.css                    ❌ criar
+│   └── scripts/
+│       ├── login.js                      ❌ criar
+│       ├── triagem.js                    ❌ criar
+│       ├── dashboard.js                  ❌ criar
+│       ├── api.js                        ➕
+│       ├── auth.js                       ➕
+│       └── app.js                        ➕
 │
-├── android/                      ❌ vazio, começar
+├── android/                              ❌ iniciar
+├── ia/                                   ❌ criar
+│   ├── modelo.py
+│   ├── treino.py
+│   ├── gerar_dados.py                    ➕
+│   ├── dados_sinteticos.sql              ➕
+│   └── modelo_urgencias.pkl
 │
-├── ia/
-│   └── modelo.py                 ❌ criar
-│
-├── docs/                         ✅ ficheiros de apoio
-│
-├── .env (local, não subir)       ✅ configurar
-├── .gitignore                    ✅ já existe
-├── README.md                     este ficheiro
-└── update_prof.sh                ✅ já existe
+├── docs/                                 ✅ já tens
+├── Dockerfile                            ✅ já tens  
+├── docker-compose.yml                    ✅ já tens
+├── .env.example                          ✅ já tens
+├── .gitignore                            ✅ já tens
+└── README.md                             ✅ já tens
 ```
 
 ---
@@ -56,16 +123,23 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 
 ## 🛠️ Stack Tecnológico
 
-| Camada | Tecnologia |
-|--------|------------|
-| **Base de dados** | PostgreSQL + pgAdmin |
-| **Backend / API** | FastAPI (Python) |
-| **Frontend Web** | HTML + CSS + JavaScript |
-| **App Móvel** | Android (Kotlin) |
-| **IA** | scikit-learn |
-| **Controlo de versões** | Git + GitHub |
-| **Editor** | VS Code |
-| **Containerização** | Docker + Docker Compose |
+| Camada | Tecnologia | Status |
+|--------|------------|--------|
+| **Base de dados** | PostgreSQL + pgAdmin | ✅ Implementado |
+| **Backend / API** | FastAPI (Python 3.12+) | ✅ Implementado (routers ativos) |
+| **Frontend Web** | HTML5 + CSS3 + JavaScript (Vanilla) | ⚠️ Parcial (Urgencias.html) |
+| **App Móvel** | Android (Kotlin/Java) | ❌ Planeado |
+| **IA/ML** | scikit-learn + pandas + numpy | ❌ Planeado |
+| **Controlo de versões** | Git + GitHub | ✅ Implementado |
+| **Editor** | VS Code + extensões Python/FastAPI | ✅ Configurado |
+| **Containerização** | Docker + Docker Compose | ✅ Implementado |
+| **Autenticação** | JWT (python-jose) + bcrypt (passlib) | ✅ Implementado |
+| **Validação de dados** | Pydantic v2 | ❌ Planeado (models/) |
+| **ORM/Data Layer** | SQLAlchemy Core (opcional) + Repository pattern | ❌ Planeado (repositories/) |
+| **Deploy** | Docker + Railway/Heroku (futuro) | ❌ Planeado |
+| **Testes** | pytest + FastAPI TestClient | ❌ Planeado |
+
+**Bibliotecas principais (requirements.txt):**
 
 ---
 
