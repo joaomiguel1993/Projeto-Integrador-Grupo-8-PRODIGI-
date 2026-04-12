@@ -8,7 +8,7 @@ O projeto tem como objetivo suportar operações centrais de um serviço de urg�
 
 ## 📌 Objetivo
 
-O PRODIGI pretende disponibilizar uma API backend para suporte a fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação está a ser desenvolvida com FastAPI, PostgreSQL e Docker, com autenticação baseada em JWT e passwords hashedas, que é uma abordagem comum e recomendada para APIs modernas em FastAPI.
+Neste âmbito do Projeto Integrador da pós-graduação PRODIGI, o Grupo 8 está a desenvolver uma API backend para gestão de fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação utiliza FastAPI, PostgreSQL e Docker, com autenticação JWT e passwords hashedas.
 
 ---
 
