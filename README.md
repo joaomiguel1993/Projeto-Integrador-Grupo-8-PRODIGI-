@@ -1,15 +1,20 @@
 # 🏥 PRODIGI — Projeto Integrador Grupo 8
 
-Sistema de gestão de urgências hospitalares desenvolvido no âmbito da unidade curricular de Projeto Integrador.
+Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto Integrador.
 
-O projeto tem como objetivo suportar operações centrais de um serviço de urgência, incluindo gestão de utentes, episódios, triagem, internamentos, atos clínicos, prescrições, profissionais e autenticação.
+O projeto tem como objetivo suportar operações centrais de um serviço de urgência hospitalar, incluindo gestão de utentes, episódios, triagem, internamentos, atos clínicos, prescrições, profissionais e autenticação.
+
+---
+
+## 📌 Objetivo
+
+O PRODIGI pretende disponibilizar uma API backend para suporte a fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação está a ser desenvolvida com FastAPI, PostgreSQL e Docker, com autenticação baseada em JWT e passwords hashedas, que é uma abordagem comum e recomendada para APIs modernas em FastAPI [web:98][web:148][web:150].
 
 ---
 
 ## 📁 Estrutura do Repositório
 
-```text
-## 📁 Estrutura do Repositório
+**Legenda:** ✅ existente no repositório · ❌ ainda por implementar
 
 ```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
@@ -76,8 +81,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   ├── requirements.txt                          ✅
 │   └── update_passwords.py                       ✅
 │
-├── web/                                          ✅
-│   ├── Urgencias.html                            ✅
+├── web/                                          ❌
 │   ├── login.html                                ❌
 │   ├── triagem.html                              ❌
 │   ├── dashboard.html                            ❌
@@ -107,33 +111,6 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 ├── .gitignore                                    ✅
 └── README.md                                     ✅
 ```
-```
-
----
-
-## ✅ Estado Atual
-
-### Backend
-- API em FastAPI com estrutura modular por routers.
-- Ligação à base de dados PostgreSQL com `psycopg2`.
-- Ficheiro `db.py` centralizado para execução de queries SQL.
-- Autenticação com JWT e hashing de passwords.
-- Separação progressiva por `dao/` e `repositories/`.
-
-### Base de Dados
-- Scripts SQL para criação e população da base de dados.
-- Integração com PostgreSQL e suporte a pgAdmin via Docker.
-
-### Frontend
-- Estrutura inicial criada.
-- `Urgencias.html` já existe.
-- Restantes páginas ainda em desenvolvimento.
-
-### Arquitetura
-- `routers/` para endpoints.
-- `dao/` para queries SQL.
-- `repositories/` para organização da lógica de acesso a dados.
-- `models/` para schemas Pydantic e validação.
 
 ---
 
@@ -145,8 +122,9 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 | Backend / API | FastAPI + Uvicorn | ✅ Implementado |
 | Acesso a dados | psycopg2 + SQL puro | ✅ Implementado |
 | Autenticação | JWT + passlib + bcrypt | ✅ Implementado |
-| Validação | Pydantic | 🟡 Parcial |
-| Frontend Web | HTML5 + CSS3 + JavaScript | 🟡 Parcial |
+| Validação de dados | Pydantic | 🟡 Parcial |
+| Arquitetura modular | Routers + DAO + Repositories | ✅ Implementado |
+| Frontend Web | HTML5 + CSS3 + JavaScript | ❌ Não implementado |
 | Containerização | Docker + Docker Compose | ✅ Implementado |
 | Controlo de versões | Git + GitHub | ✅ Implementado |
 | App Móvel | Android | ❌ Planeado |
@@ -164,11 +142,36 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 - `python-multipart`
 - `python-dotenv`
 
+A autenticação com bearer token, OAuth2/JWT e hashing de passwords é uma prática documentada na própria documentação do FastAPI para proteger endpoints e evitar armazenamento de passwords em texto simples [web:98][web:140][web:148].
+
 ---
 
-## 🚀 Como executar
+## ✅ Estado Atual do Projeto
 
-### Docker
+### Backend
+- API funcional com FastAPI.
+- Routers separados por domínio.
+- Ficheiro `db.py` responsável pela ligação e execução de queries.
+- Estrutura modular com `dao/`, `repositories/` e `models/`.
+- Autenticação implementada.
+
+### Base de Dados
+- Scripts SQL disponíveis para criação e população da base de dados.
+- Integração preparada com PostgreSQL.
+- Suporte a execução com Docker Compose, um padrão comum para stacks FastAPI + PostgreSQL [web:90][web:93][web:144].
+
+### Frontend
+- Ainda não implementado.
+- A pasta `web/` está prevista, mas os ficheiros ainda não existem.
+
+### Mobile e IA
+- Estrutura prevista, mas ainda por iniciar.
+
+---
+
+## 🚀 Como executar o projeto
+
+### Opção 1 — Docker
 
 ```bash
 cp .env.example .env
@@ -181,14 +184,16 @@ Parar os serviços:
 docker compose down
 ```
 
-Recriar tudo e limpar volumes:
+Reiniciar tudo e apagar volumes:
 
 ```bash
 docker compose down -v
 docker compose up --build
 ```
 
-### Execução local
+Usar Docker Compose para subir FastAPI e PostgreSQL é uma abordagem comum e prática para desenvolvimento local, especialmente quando a app depende de serviços acoplados como base de dados [web:90][web:93][web:144].
+
+### Opção 2 — Execução local
 
 ```bash
 git clone https://github.com/joaomiguel1993/Projeto-Integrador-Grupo-8-PRODIGI-.git
@@ -196,7 +201,7 @@ cd Projeto-Integrador-Grupo-8-PRODIGI-
 cp .env.example .env
 ```
 
-Criar ambiente virtual e instalar dependências:
+Criar e ativar ambiente virtual:
 
 ```bash
 cd backend
@@ -216,11 +221,13 @@ Instalar dependências:
 pip install -r requirements.txt
 ```
 
-Iniciar a API:
+Executar a API:
 
 ```bash
 uvicorn backend.main:app --reload
 ```
+
+A organização de aplicações FastAPI maiores em múltiplos ficheiros e routers é suportada diretamente pela framework e facilita a escalabilidade da aplicação [web:98][web:141].
 
 ---
 
@@ -230,6 +237,8 @@ uvicorn backend.main:app --reload
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 - pgAdmin: `http://localhost:8080`
+
+A documentação automática via Swagger UI e ReDoc faz parte das funcionalidades nativas do FastAPI, o que ajuda no teste e validação rápida dos endpoints [web:98].
 
 ---
 
@@ -248,31 +257,32 @@ uvicorn backend.main:app --reload
 | Prescrições | ✅ | `GET /api/prescricoes/` |
 | Hospitais | ✅ | `GET /api/hospitais/` |
 
-> Nota: alguns endpoints podem ainda estar em evolução e a nomenclatura depende dos ficheiros atualmente carregados no `main.py`.
+> Nota: os endpoints refletem a estrutura atual do backend e podem ser expandidos com operações POST, PUT e DELETE conforme a evolução do projeto.
 
 ---
 
 ## 🔐 Autenticação
 
-O projeto inclui autenticação baseada em JWT e hashing seguro de passwords, prática comum em FastAPI para proteger endpoints e validar utilizadores. As passwords não devem ser guardadas em texto simples e devem ser processadas com hashing antes de serem persistidas [web:92][web:95][web:98].
+O projeto utiliza autenticação baseada em JWT com passwords hashedas antes de serem armazenadas, o que é recomendado para reduzir o risco em caso de exposição da base de dados [web:98][web:150]. O fluxo de autenticação com bearer token é uma das abordagens centrais documentadas pelo FastAPI para APIs seguras [web:98][web:148].
 
 ---
 
 ## 🗄️ Base de dados
 
-Para inicializar manualmente a base de dados PostgreSQL:
+Executar os scripts SQL manualmente:
 
 ```bash
 psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/createTables.sql
 psql -U postgres -d Projeto_Integrador_G08 -f backend/SQL/populateDB.sql
 ```
 
-Comandos úteis no `psql`:
+Comandos úteis em `psql`:
 
 ```sql
 \dt
 SELECT * FROM utentes LIMIT 5;
 SELECT * FROM internados LIMIT 5;
+SELECT * FROM profissionais LIMIT 5;
 ```
 
 ---
@@ -301,23 +311,33 @@ git push origin main
 
 ---
 
+## 🐍 Comandos úteis de desenvolvimento
+
+```bash
+pip install -r requirements.txt
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+python -m backend.update_passwords
+```
+
+---
+
 ## 📋 Roadmap
 
 ### Alta prioridade
-- Consolidar todos os routers no `main.py`
-- Ligar routers aos `repositories`
-- Finalizar models Pydantic
-- Completar frontend base (`login`, `triagem`, `dashboard`)
+- Consolidar ligação dos routers aos repositories.
+- Finalizar validação com Pydantic.
+- Rever nomes inconsistentes de ficheiros/imports.
+- Criar frontend base.
 
 ### Média prioridade
-- Melhorar validação de dados
-- Criar endpoints POST/PUT/DELETE em falta
-- Normalizar nomes de ficheiros e imports
+- Adicionar endpoints POST, PUT e DELETE em falta.
+- Melhorar tratamento de erros.
+- Criar testes para endpoints principais.
 
 ### Baixa prioridade
-- Iniciar app Android
-- Desenvolver módulo de IA
-- Adicionar testes automatizados
+- Iniciar módulo Android.
+- Desenvolver módulo de IA/ML.
+- Preparar deploy.
 
 ---
 
