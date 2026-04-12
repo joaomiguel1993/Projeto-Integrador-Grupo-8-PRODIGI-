@@ -9,134 +9,19 @@ Sistema de gestão de urgências hospitalares desenvolvido no âmbito do Projeto
 
 
 ```text
-Projeto-Integrador-Grupo-8-PRODIGI-/
+Projeto-Integrador-Grupo-8-PRODIGI/
 │
 ├── backend/
 │   ├── SQL/
 │   │   ├── createTables.sql              ✅ criação da base de dados
 │   │   └── populateDB.sql                ✅ dados iniciais / teste
 │   │
-│   ├── routers/                          ✅ endpoints por módulo
-│   │   ├── utentes.py
-│   │   ├── episodios.py
-│   │   ├── triagem.py
-│   │   ├── internados.py
-│   │   ├── proficionais.py
-│   │   └── auth.py
+│   ├── db.py                             ✅ ligação à base de dados
 │   │
 │   ├── auth/
 │   │   └── security.py                   ✅ autenticação / JWT
 │   │
-│   ├── models/                           ❌ criar (schemas Pydantic)
-│   │   ├── utente.py
-│   │   ├── episodio.py
-│   │   ├── triagem.py
-│   │   ├── profissional.py
-│   │   └── auth.py
-│   │
-│   ├── repositories/                     ❌ criar (acesso à BD)
-│   │   ├── utentes_repository.py
-│   │   ├── episodios_repository.py
-│   │   ├── triagem_repository.py
-│   │   ├── internados_repository.py
-│   │   ├── profissionais_repository.py
-│   │   └── auth_repository.py
-│   │
-│   ├── services/                         ❌ opcional (regras de negócio)
-│   │   ├── triagem_service.py
-│   │   ├── auth_service.py
-│   │   └── episodios_service.py
-│   │
-│   ├── db.py                             ✅ ligação à base de dados
-│   ├── main.py                           ✅ ponto de entrada FastAPI
-│   ├── hash_password.py                  ✅ utilitário de hashing
-│   ├── requirements.txt                  ✅ dependências Python
-│   └── .gitkeep                          ✅ placeholder
-│
-├── web/
-│   ├── Urgencias.html                    ✅ já existe
-│   ├── login.html                        ❌ criar
-│   ├── triagem.html                      ❌ criar
-│   ├── dashboard.html                    ❌ criar
-│   ├── styles/
-│   │   └── styles.css                    ❌ criar
-│   └── scripts/
-│       ├── login.js                      ❌ criar
-│       ├── triagem.js                    ❌ criar
-│       └── dashboard.js                  ❌ criar
-│
-├── android/                              ❌ iniciar app móvel
-│   ├── app/
-│   ├── src/
-│   └── README.md
-│
-├── ia/                                   ❌ módulo de IA
-│   ├── modelo.py
-│   ├── treino.py
-│   └── dataset/
-│
-├── docs/                                 ✅ documentação e apoio
-│   ├── diagramas/
-│   ├── relatorio/
-│   └── apresentacao/
-│
-├── Dockerfile                            ✅ container do backend
-├── docker-compose.yml                    ✅ orquestração dos serviços
-├── .env.example                          ✅ template de variáveis
-├── .dockerignore                         ✅ ficheiros ignorados no build Docker
-├── .gitignore                            ✅ ficheiros ignorados no Git
-├── README.md                             ✅ documentação principal
-└── update_prof.sh                        ⚠️ verificar se ainda existe no repo
-
-
-SIAGUH/
-│
-├── urgencias-backend/                         ✅ API REST (Python + FastAPI)
-│   ├── db/
-│   │   └── connection.py                      ✅ ligação à base de dados
-│   │
-│   ├── dao/                                   ✅ queries SQL por módulo
-│   │   ├── utente_dao.py
-│   │   ├── episodio_dao.py
-│   │   ├── triagem_dao.py
-│   │   ├── ato_dao.py
-│   │   ├── prescricao_dao.py
-│   │   ├── internamento_dao.py
-│   │   ├── hospital_dao.py
-│   │   └── profissional_dao.py
-│   │
-│   ├── mappers/                               ✅ conversão BD ↔ objectos
-│   │   ├── utente_mapper.py
-│   │   ├── episodio_mapper.py
-│   │   ├── triagem_mapper.py
-│   │   ├── ato_mapper.py
-│   │   ├── prescricao_mapper.py
-│   │   ├── internamento_mapper.py
-│   │   ├── hospital_mapper.py
-│   │   └── profissional_mapper.py
-│   │
-│   ├── repositories/                          ✅ orquestração (DAO + Mapper)
-│   │   ├── utente_repository.py
-│   │   ├── episodio_repository.py
-│   │   ├── triagem_repository.py
-│   │   ├── ato_repository.py
-│   │   ├── prescricao_repository.py
-│   │   ├── internamento_repository.py
-│   │   ├── hospital_repository.py
-│   │   └── profissional_repository.py
-│   │
-│   ├── controllers/                           ✅ endpoints HTTP (FastAPI routers)
-│   │   ├── auth_controller.py
-│   │   ├── utente_controller.py
-│   │   ├── episodio_controller.py
-│   │   ├── triagem_controller.py
-│   │   ├── ato_controller.py
-│   │   ├── prescricao_controller.py
-│   │   ├── internamento_controller.py
-│   │   ├── hospital_controller.py
-│   │   └── profissional_controller.py
-│   │
-│   ├── models/                                ✅ schemas Pydantic
+│   ├── models/                           ✅ schemas Pydantic (adicionar todos)
 │   │   ├── utente.py
 │   │   ├── episodio.py
 │   │   ├── triagem.py
@@ -147,27 +32,75 @@ SIAGUH/
 │   │   ├── profissional.py
 │   │   └── auth.py
 │   │
-│   ├── auth/
-│   │   └── security.py                        ✅ autenticação / JWT
+│   ├── dao/                              ✅ adicionar camada SQL como o SIAGUH
+│   │   ├── utente_dao.py
+│   │   ├── episodio_dao.py
+│   │   ├── triagem_dao.py
+│   │   ├── ato_dao.py
+│   │   ├── prescricao_dao.py
+│   │   ├── internamento_dao.py
+│   │   ├── hospital_dao.py
+│   │   └── profissional_dao.py
 │   │
-│   ├── SQL/
-│   │   ├── createTables.sql                   ✅ criação da base de dados
-│   │   └── populateDB.sql                     ✅ dados iniciais / teste
+│   ├── mappers/                          ✅ adicionar mapeamento BD ↔ objetos
+│   │   ├── utente_mapper.py
+│   │   ├── episodio_mapper.py
+│   │   ├── triagem_mapper.py
+│   │   ├── ato_mapper.py
+│   │   ├── prescricao_mapper.py
+│   │   ├── internamento_mapper.py
+│   │   ├── hospital_mapper.py
+│   │   └── profissional_mapper.py
 │   │
-│   ├── main.py                                ✅ ponto de entrada FastAPI
-│   ├── requirements.txt                       ✅ dependências Python
-│   └── update_passwords.py                    ✅ utilitário de passwords
+│   ├── repositories/                     ✅ acesso à BD / lógica de dados
+│   │   ├── utente_repository.py
+│   │   ├── episodio_repository.py
+│   │   ├── triagem_repository.py
+│   │   ├── ato_repository.py
+│   │   ├── prescricao_repository.py
+│   │   ├── internamento_repository.py
+│   │   ├── hospital_repository.py
+│   │   ├── profissional_repository.py
+│   │   └── auth_repository.py
+│   │
+│   ├── controllers/                      ✅ endpoints HTTP (substitui routers)
+│   │   ├── auth_controller.py
+│   │   ├── utente_controller.py
+│   │   ├── episodio_controller.py
+│   │   ├── triagem_controller.py
+│   │   ├── ato_controller.py
+│   │   ├── prescricao_controller.py
+│   │   ├── internamento_controller.py
+│   │   ├── hospital_controller.py
+│   │   └── profissional_controller.py
+│   │
+│   ├── services/                         ⚙️ regras de negócio (opcional)
+│   │   ├── triagem_service.py
+│   │   ├── auth_service.py
+│   │   ├── episodio_service.py
+│   │   └── previsao_service.py
+│   │
+│   ├── hash_password.py                  ✅ utilitário
+│   ├── main.py                           ✅ ponto de entrada FastAPI
+│   ├── requirements.txt                  ✅ dependências Python
+│   └── update_passwords.py               ⚙️ utilitário (ex-SIAGUH)
 │
-├── urgencias-frontend/                        ✅ SPA (HTML + Handlebars)
-│   ├── index.html                             ✅ estrutura base + login + nav
-│   ├── css/
-│   │   └── style.css                          ✅
-│   ├── js/
-│   │   ├── api.js                             ✅ chamadas à API
-│   │   ├── auth.js                            ✅ login / logout / sessão
-│   │   ├── app.js                             ✅ navegação e controlo por papel
-│   │   ├── templates.js                       ✅ carregamento .hbs com cache-busting
-│   │   └── sections/                          ✅ lógica por módulo
+├── web/                                  ✅ frontend web
+│   ├── index.html                        🔁 unificar com login.html
+│   ├── Urgencias.html                    ✅ existente
+│   ├── login.html                        ✅ criar / unificar com index
+│   ├── triagem.html                      ✅ criar
+│   ├── dashboard.html                    ✅ criar
+│   ├── styles/
+│   │   └── styles.css                    ✅ criar
+│   ├── scripts/
+│   │   ├── api.js                        ✅ baseado em SIAGUH
+│   │   ├── auth.js                       ✅ login / sessão
+│   │   ├── app.js                        ✅ navegação / lógica global
+│   │   ├── login.js                      ✅ criar
+│   │   ├── triagem.js                    ✅ criar
+│   │   ├── dashboard.js                  ✅ criar
+│   │   └── sections/                     ✅ modularização como SIAGUH
 │   │       ├── episodios.js
 │   │       ├── utentes.js
 │   │       ├── triagens.js
@@ -180,7 +113,7 @@ SIAGUH/
 │   │       ├── painel-recepcao.js
 │   │       ├── painel-triagem.js
 │   │       └── painel-monitorizacao.js
-│   └── templates/                             ✅ templates Handlebars
+│   └── templates/                        ✅ se usares Handlebars (opcional)
 │       ├── episodios.hbs
 │       ├── utentes.hbs
 │       ├── triagens.hbs
@@ -195,19 +128,31 @@ SIAGUH/
 │       ├── painel-triagem.hbs
 │       └── painel-monitorizacao.hbs
 │
-├── urgencias-ia/                              ✅ Serviço de IA (Python + Flask)
-│   ├── app.py                                 ✅ servidor Flask (porta 5000)
-│   ├── model.py                               ✅ treino do modelo RandomForest
-│   ├── gerar_dados.py                         ✅ geração de 200 episódios sintéticos
-│   ├── dados_sinteticos.sql                   ✅ dados sintéticos para a BD
-│   ├── modelo_urgencias.pkl                   ✅ modelo treinado
-│   └── requirements.txt                       ✅ dependências Python
+├── android/                              📱 app móvel (a iniciar)
+│   ├── app/
+│   ├── src/
+│   └── README.md
 │
-├── Dockerfile                                 ❌ a criar
-├── docker-compose.yml                         ❌ a criar
-├── .env.example                               ❌ a criar
-├── .gitignore                                 ✅
-└── README.md                                  ✅ este ficheiro
+├── ia/                                   🧠 módulo de IA
+│   ├── modelo.py
+│   ├── treino.py
+│   ├── gerar_dados.py                    ➕ do SIAGUH
+│   ├── dados_sinteticos.sql              ➕ do SIAGUH
+│   ├── modelo_urgencias.pkl              ➕ arquivo .pkl do modelo treinado
+│   └── dataset/
+│
+├── docs/                                 📘 documentação e apoio
+│   ├── diagramas/
+│   ├── relatorio/
+│   └── apresentacao/
+│
+├── Dockerfile                            ⚙️ atualizar / incluir backend + IA
+├── docker-compose.yml                    ⚙️ incluir serviços backend, frontend, IA
+├── .env.example                          ✅ variáveis exemplo
+├── .dockerignore                         ✅
+├── .gitignore                            ✅
+├── README.md                             ✅ documentação principal
+└── update_prof.sh                        ⚠️ verificar se ainda usado
 
 ```
 
