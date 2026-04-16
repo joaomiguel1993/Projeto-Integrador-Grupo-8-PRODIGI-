@@ -1,125 +1,251 @@
-BEGIN;
+-- ============================================================
+-- PRODIGI — Sistema de Gestão Hospitalar
+-- createTables.sql
+-- Grupo 8 — Projeto Integrador
+-- ============================================================
 
--- 1. UTENTE
+-- ------------------------------------------------------------
+-- LIMPEZA (ordem inversa das dependências)
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS Prescreve           CASCADE;
+DROP TABLE IF EXISTS Ato                 CASCADE;
+DROP TABLE IF EXISTS Internamento        CASCADE;
+DROP TABLE IF EXISTS Triagem             CASCADE;
+DROP TABLE IF EXISTS EpUrgencia          CASCADE;
+DROP TABLE IF EXISTS UtenteAntecedente   CASCADE;
+DROP TABLE IF EXISTS Antecedente         CASCADE;
+DROP TABLE IF EXISTS Utilizador          CASCADE;
+DROP TABLE IF EXISTS Medico              CASCADE;
+DROP TABLE IF EXISTS Enfermeiro          CASCADE;
+DROP TABLE IF EXISTS Funcionario         CASCADE;
+DROP TABLE IF EXISTS Hospital            CASCADE;
+DROP TABLE IF EXISTS Utente              CASCADE;
+
+-- ------------------------------------------------------------
+-- TIPOS CONTROLADOS
+-- ------------------------------------------------------------
+DO $$ BEGIN
+    CREATE TYPE cor_triagem_enum AS ENUM (
+        'vermelho', 'laranja', 'amarelo', 'verde', 'azul'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE tipo_func_enum AS ENUM (
+        'medico', 'enfermeiro', 'admin'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE estado_ep_enum AS ENUM (
+        'aberto', 'em_triagem', 'em_atendimento',
+        'internado', 'terminado'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE tipo_alta_enum AS ENUM (
+        'clinica', 'voluntaria', 'transferencia', 'obito'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ------------------------------------------------------------
+-- UTENTE
+-- ------------------------------------------------------------
 CREATE TABLE Utente (
-    NumUtent INT PRIMARY KEY,
-    Sexo VARCHAR(10),
-    Localidade VARCHAR(100),
-    IdadeAtual INT
+    NumUtent    SERIAL          PRIMARY KEY,
+    NIF         VARCHAR(9)      NOT NULL UNIQUE,
+    Nome        VARCHAR(100)    NOT NULL,
+    DataNasc    DATE            NOT NULL,
+    Sexo        CHAR(1)         NOT NULL CHECK (Sexo IN ('M', 'F')),
+    Localidade  VARCHAR(100),
+    Contacto    VARCHAR(20),
+    Morada      VARCHAR(200)
 );
 
--- 2. HOSPITAL
+-- ------------------------------------------------------------
+-- HOSPITAL
+-- ------------------------------------------------------------
 CREATE TABLE Hospital (
-    Nome VARCHAR(100) PRIMARY KEY,
-    Localizacao VARCHAR(100)
+    IdHosp      SERIAL          PRIMARY KEY,
+    Nome        VARCHAR(100)    NOT NULL,
+    Localizacao VARCHAR(200)    NOT NULL
 );
 
--- 3. EPURGENCIA (Episódios)
-CREATE TABLE EpUrgencia (
-    CodEpUrgenc INT NOT NULL, 
-    NomeHosp VARCHAR(100) NOT NULL,
-    NumUtent INT NOT NULL, 
-    DataHoraEntr TIMESTAMP NOT NULL, 
-    DataHoraSaida TIMESTAMP, 
-    PRIMARY KEY (CodEpUrgenc, NomeHosp),
-    FOREIGN KEY (NomeHosp) REFERENCES Hospital(Nome),
-    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
-);
-
--- 4. FUNCIONARIO
+-- ------------------------------------------------------------
+-- FUNCIONARIO
+-- ------------------------------------------------------------
 CREATE TABLE Funcionario (
-    NumFunc INT PRIMARY KEY,
-    Sexo VARCHAR(10),
-    TipoFunc VARCHAR(10) NOT NULL CHECK (TipoFunc IN ('Enf', 'Med'))
+    IdFunc      SERIAL          PRIMARY KEY,
+    NumFunc     VARCHAR(20)     NOT NULL UNIQUE,
+    Nome        VARCHAR(100)    NOT NULL,
+    TipoFunc    tipo_func_enum  NOT NULL,
+    Sexo        CHAR(1)         NOT NULL CHECK (Sexo IN ('M', 'F')),
+    Contacto    VARCHAR(20),
+    Email       VARCHAR(100)
 );
 
--- 5. MEDICO
-CREATE TABLE Medico ( 
-    NumFunc INT PRIMARY KEY,
-    Estagiario BOOLEAN NOT NULL,
-    FOREIGN KEY (NumFunc) REFERENCES Funcionario(NumFunc)
+-- ------------------------------------------------------------
+-- MEDICO (subtipo de Funcionario)
+-- ------------------------------------------------------------
+CREATE TABLE Medico (
+    IdFunc          INT             PRIMARY KEY,
+    Especialidade   VARCHAR(100)    NOT NULL,
+    Estagiario      BOOLEAN         NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_medico_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE CASCADE
 );
 
--- 6. ENFERMEIRO
-CREATE TABLE Enfermeiro ( 
-    NumFunc INT PRIMARY KEY,
-    FOREIGN KEY (NumFunc) REFERENCES Funcionario(NumFunc)
+-- ------------------------------------------------------------
+-- ENFERMEIRO (subtipo de Funcionario)
+-- ------------------------------------------------------------
+CREATE TABLE Enfermeiro (
+    IdFunc      INT             PRIMARY KEY,
+    CONSTRAINT fk_enfermeiro_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE CASCADE
 );
 
--- 7. ATO
-CREATE TABLE Ato (
-    CodEpUrgenc INT NOT NULL, 
-    NomeHosp VARCHAR(100) NOT NULL, 
-    DataHoraInicio TIMESTAMP NOT NULL, 
-    DataHoraFim TIMESTAMP, 
-    Tipo VARCHAR(10) NOT NULL CHECK (Tipo IN ('Exame', 'Triagem', 'Consulta')),
-    NumFuncPresc INT,
-    DataHoraPresc TIMESTAMP,
-    PRIMARY KEY (CodEpUrgenc, NomeHosp, DataHoraInicio),
-    FOREIGN KEY (CodEpUrgenc, NomeHosp) REFERENCES EpUrgencia(CodEpUrgenc, NomeHosp),
-    FOREIGN KEY (NumFuncPresc) REFERENCES Medico(NumFunc)
-);
-
--- 8. REALIZA
-CREATE TABLE Realiza (
-    CodEpUrgenc INT NOT NULL, 
-    NomeHosp VARCHAR(100) NOT NULL, 
-    DataHoraInicio TIMESTAMP NOT NULL,
-    NumFunc INT NOT NULL,
-    PRIMARY KEY (CodEpUrgenc, NomeHosp, DataHoraInicio, NumFunc),
-    FOREIGN KEY (CodEpUrgenc, NomeHosp, DataHoraInicio) REFERENCES Ato(CodEpUrgenc, NomeHosp, DataHoraInicio),
-    FOREIGN KEY (NumFunc) REFERENCES Funcionario(NumFunc)
-);
-
--- 9. INTERNADO
-CREATE TABLE Internados (
-    NumUtent INT NOT NULL,
-    NomeHosp VARCHAR(100) NOT NULL,
-    DataInternamento TIMESTAMP NOT NULL,
-    DataAlta TIMESTAMP,
-    PRIMARY KEY (NumUtent, DataInternamento),
-    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent),
-    FOREIGN KEY (NomeHosp) REFERENCES Hospital(Nome)
-);
-
--- 10. UTILIZADOR
+-- ------------------------------------------------------------
+-- UTILIZADOR
+-- ------------------------------------------------------------
 CREATE TABLE Utilizador (
-    Username VARCHAR(50) PRIMARY KEY,
-    PasswordHash VARCHAR(255) NOT NULL,
-    Role VARCHAR(20) NOT NULL CHECK (Role IN ('rececionista', 'enfermeiro', 'medico', 'administrador')),
-    NumFunc INT,
-    FOREIGN KEY (NumFunc) REFERENCES Funcionario(NumFunc)
+    IdUtilizador    SERIAL          PRIMARY KEY,
+    IdFunc          INT             NOT NULL UNIQUE,
+    UserName        VARCHAR(50)     NOT NULL UNIQUE,
+    Password        VARCHAR(255)    NOT NULL,
+    Funcao          tipo_func_enum  NOT NULL,
+    CONSTRAINT fk_utilizador_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE CASCADE
 );
 
--- 11. TRIAGEM
+-- ------------------------------------------------------------
+-- ANTECEDENTE
+-- ------------------------------------------------------------
+CREATE TABLE Antecedente (
+    CodAntecedente  SERIAL          PRIMARY KEY,
+    Nome            VARCHAR(100)    NOT NULL,
+    Tipo            VARCHAR(50)
+);
+
+-- ------------------------------------------------------------
+-- UTENTE_ANTECEDENTE (associativa N:N)
+-- ------------------------------------------------------------
+CREATE TABLE UtenteAntecedente (
+    NumUtent        INT             NOT NULL,
+    CodAntecedente  INT             NOT NULL,
+    DataRegisto     DATE            NOT NULL DEFAULT CURRENT_DATE,
+    Observacoes     TEXT,
+    PRIMARY KEY (NumUtent, CodAntecedente),
+    CONSTRAINT fk_ua_utente
+        FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ua_antecedente
+        FOREIGN KEY (CodAntecedente) REFERENCES Antecedente(CodAntecedente)
+        ON DELETE CASCADE
+);
+
+-- ------------------------------------------------------------
+-- EPURGENCIA
+-- ------------------------------------------------------------
+CREATE TABLE EpUrgencia (
+    CodEpUrgenc     SERIAL          PRIMARY KEY,
+    NumUtent        INT             NOT NULL,
+    IdHosp          INT             NOT NULL,
+    DataHoraEntr    TIMESTAMP       NOT NULL DEFAULT NOW(),
+    DtaHoraSaida    TIMESTAMP,
+    MotivoUrgencia  TEXT            NOT NULL,
+    Estado          estado_ep_enum  NOT NULL DEFAULT 'aberto',
+    Observacoes     TEXT,
+    CONSTRAINT fk_ep_utente
+        FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_ep_hospital
+        FOREIGN KEY (IdHosp) REFERENCES Hospital(IdHosp)
+        ON DELETE RESTRICT
+);
+
+-- ------------------------------------------------------------
+-- TRIAGEM (1:1 com EpUrgencia)
+-- ------------------------------------------------------------
 CREATE TABLE Triagem (
-    CodEpUrgenc INT NOT NULL,
-    NomeHosp VARCHAR(100) NOT NULL,
-    DataHoraTriagem TIMESTAMP NOT NULL,
-    Prioridade VARCHAR(10) NOT NULL CHECK (Prioridade IN ('Alta', 'Media', 'Baixa')),
-    Temperatura DECIMAL(4,2),
-    PressaoSistolica INT,
-    PressaoDiastolica INT,
-    Observacoes TEXT,
-    NumFuncTriagem INT,
-    PRIMARY KEY (CodEpUrgenc, NomeHosp, DataHoraTriagem),
-    FOREIGN KEY (CodEpUrgenc, NomeHosp) REFERENCES EpUrgencia(CodEpUrgenc, NomeHosp),
-    FOREIGN KEY (NumFuncTriagem) REFERENCES Funcionario(NumFunc)
+    CodEpUrgenc         INT                 PRIMARY KEY,
+    DataHoraInicio      TIMESTAMP           NOT NULL DEFAULT NOW(),
+    DataHoraFim         TIMESTAMP,
+    CorTriagem          cor_triagem_enum    NOT NULL,
+    Sintomas            TEXT                NOT NULL,
+    Temperatura         DECIMAL(4,1),
+    FreqCardiaca        INT,
+    FreqRespiratoria    INT,
+    SpO2                DECIMAL(4,1),
+    Sistolica           INT,
+    Diastolica          INT,
+    Observacoes         TEXT,
+    CONSTRAINT fk_triagem_ep
+        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
+        ON DELETE CASCADE
 );
 
--- 12. PRESCREVE
+-- ------------------------------------------------------------
+-- ATO
+-- ------------------------------------------------------------
+CREATE TABLE Ato (
+    IdAto           SERIAL          PRIMARY KEY,
+    CodEpUrgenc     INT             NOT NULL,
+    IdFunc          INT             NOT NULL,
+    Tipo            VARCHAR(100)    NOT NULL,
+    DataHoraInicio  TIMESTAMP       NOT NULL DEFAULT NOW(),
+    DataHoraFim     TIMESTAMP,
+    Descricao       TEXT,
+    CONSTRAINT fk_ato_ep
+        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ato_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE RESTRICT
+);
+
+-- ------------------------------------------------------------
+-- PRESCREVE
+-- ------------------------------------------------------------
 CREATE TABLE Prescreve (
-    CodPrescricao SERIAL PRIMARY KEY,
-    CodEpUrgenc INT NOT NULL,
-    NomeHosp VARCHAR(100) NOT NULL,
-    NumFuncPresc INT NOT NULL,
-    DataHoraPresc TIMESTAMP NOT NULL,
-    Medicamento VARCHAR(100) NOT NULL,
-    Dose VARCHAR(50),
-    Frequencia VARCHAR(50),
-    Duracao VARCHAR(20),
-    FOREIGN KEY (CodEpUrgenc, NomeHosp) REFERENCES EpUrgencia(CodEpUrgenc, NomeHosp),
-    FOREIGN KEY (NumFuncPresc) REFERENCES Medico(NumFunc)
+    IdPrescricao    SERIAL          PRIMARY KEY,
+    IdAto           INT             NOT NULL,
+    Descricao       TEXT            NOT NULL,
+    DataHoraPresc   TIMESTAMP       NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_presc_ato
+        FOREIGN KEY (IdAto) REFERENCES Ato(IdAto)
+        ON DELETE CASCADE
 );
 
-COMMIT;
+-- ------------------------------------------------------------
+-- INTERNAMENTO
+-- ------------------------------------------------------------
+CREATE TABLE Internamento (
+    CodInternamento     SERIAL          PRIMARY KEY,
+    CodEpUrgenc         INT             NOT NULL,
+    IdFunc              INT             NOT NULL,
+    DataHoraInt         TIMESTAMP       NOT NULL DEFAULT NOW(),
+    DataHoraConsulta    TIMESTAMP,
+    DataHoraAlta        TIMESTAMP,
+    MotivoInt           TEXT            NOT NULL,
+    NumeroCama          VARCHAR(10),
+    Servico             VARCHAR(100),
+    TipoAlta            tipo_alta_enum,
+    CONSTRAINT fk_int_ep
+        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_int_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE RESTRICT
+);
+
+-- ============================================================
+-- FIM
+-- ============================================================
