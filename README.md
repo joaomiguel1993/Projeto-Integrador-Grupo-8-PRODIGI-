@@ -135,18 +135,18 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 
 ### Relações
 ```text
-Utente 1:N EpUrgencia 
-Hospital 1:N EpUrgencia 
-EpUrgencia 1:1 Triagem 
-Utente N:N Antecedente (via UtenteAntecedente) 
-Funcionario 1:1 Medico (especialização disjunta) 
-Funcionario 1:1 Enfermeiro (especialização disjunta) 
-Funcionario 1:1 Utilizador 
-EpUrgencia 1:N Ato 
-Funcionario 1:N Ato 
-Ato 1:N Prescreve 
-EpUrgencia 0:N Internamento 
-Funcionario 1:N Internamento
+Utente  1:N  EpUrgencia 
+Hospital  1:N  EpUrgencia 
+EpUrgencia  1:1  Triagem 
+Utente  N:N  Antecedente (via UtenteAntecedente) 
+Funcionario  1:1  Medico (especialização disjunta) 
+Funcionario  1:1  Enfermeiro (especialização disjunta) 
+Funcionario  1:1  Utilizador 
+EpUrgencia  1:N  Ato 
+Funcionario  1:N  Ato 
+Ato  1:N  Prescreve 
+EpUrgencia  0:N  Internamento 
+Funcionario  1:N  Internamento
 ```
 ---
 
@@ -169,9 +169,7 @@ Funcionario 1:N Internamento
 ### f1 — Autenticação de Utilizador
 ```text
 Utilizador
-
 | username + password
-
 ▼
 [Validar credenciais] ←——→ [BD Utilizadores]
 | IdUtilizador, UserName, Password, Funcao
@@ -190,9 +188,7 @@ Utilizador (autenticado)
 ### f2 — Registo de Utente e Antecedentes
 ```text
 Utente
-
 | dados pessoais
-
 ▼
 [Registar utente] ——→ [BD Utentes]
 | NumUtent, Nome, NIF, DataNasc, Sexo, Localidade
@@ -207,10 +203,9 @@ Utente (com historial registado)
 ```
 
 ### f3 — Gestão de Internamento
+```text
 Utente
-
 | pedido de internamento
-
 ▼
 [Criar internamento] ——→ [BD Internamentos] ←—— Funcionário
 | CodInternamento, DataHoraInt, DataHoraConsulta, MotivoInt
@@ -222,13 +217,12 @@ Utente
 | TipoAlta, DataHoraAlta
 ▼
 Utente (com alta)
-
+```
 
 ### f4 — Episódio de Urgência e Triagem Clínica
+```text
 Utente
-
 | entrada na urgência
-
 ▼
 [Registar ep. urgência] ——→ [BD Ep. Urgência]
 | CodEpUrgenc, DataHoraEntr, DtaHoraSaida, Estado
@@ -244,13 +238,12 @@ Utente
 [Gerar internamento] - - → [BD Internamentos] (se necessário)
 ▼
 Utente (tratado)
-
+```
 
 ### f5 — Atos Médicos e Prescrições
+```text
 Médico / Enfermeiro
-
 | tipo de ato, datas
-
 ▼
 [Registar ato médico] ——→ [BD Atos]
 | Tipo, DataHoraInicio, DataHoraFim
@@ -265,13 +258,12 @@ Médico / Enfermeiro
 [Associar prescrição ao ato] ——→ [BD Atos] (relação Origina)
 ▼
 Médico / Enfermeiro (concluído)
-
+```
 
 ### f6 — Administrador do Sistema
+```text
 Administrador
-
 | credenciais admin
-
 ▼
 [Autenticar como admin] ——→ [BD Utilizadores]
 ▼
@@ -290,7 +282,7 @@ Administrador
 | └——→ [BD Ep. Urgência]
 ▼
 Administrador (gestão concluída)
-
+```
 
 ---
 
