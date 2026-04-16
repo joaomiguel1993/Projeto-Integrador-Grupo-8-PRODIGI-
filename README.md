@@ -134,7 +134,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 | **Internamento** | CodInternamento (PK), CodEpUrgenc (FK), IdFunc (FK), DataHoraInt, DataHoraConsulta, DataHoraAlta, MotivoInt, NumeroCama, Servico, TipoAlta | — |
 
 ### Relações
-
+```text
 Utente 1:N EpUrgencia 
 Hospital 1:N EpUrgencia 
 EpUrgencia 1:1 Triagem 
@@ -147,7 +147,7 @@ Funcionario 1:N Ato
 Ato 1:N Prescreve 
 EpUrgencia 0:N Internamento 
 Funcionario 1:N Internamento
-
+```
 ---
 
 ### Cores da Triagem (Protocolo Manchester — Portugal)
@@ -167,6 +167,7 @@ Funcionario 1:N Internamento
 **Foco:** o que acontece aos dados — registo, validação e transformação.
 
 ### f1 — Autenticação de Utilizador
+```text
 Utilizador
 
 | username + password
@@ -184,9 +185,10 @@ Utilizador
 [Conceder acesso ao sistema]
 ▼
 Utilizador (autenticado)
-
+```
 
 ### f2 — Registo de Utente e Antecedentes
+```text
 Utente
 
 | dados pessoais
@@ -202,7 +204,7 @@ Utente
 | DataRegisto
 ▼
 Utente (com historial registado)
-
+```
 
 ### f3 — Gestão de Internamento
 Utente
