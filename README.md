@@ -134,7 +134,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 | **Internamento** | CodInternamento (PK), CodEpUrgenc (FK), IdFunc (FK), DataHoraInt, DataHoraConsulta, DataHoraAlta, MotivoInt, NumeroCama, Servico, TipoAlta | — |
 
 ### Relações
-
+|---|
 |Utente 1:N EpUrgencia |
 |Hospital 1:N EpUrgencia |
 |EpUrgencia 1:1 Triagem |
