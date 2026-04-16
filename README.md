@@ -135,17 +135,17 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 
 ### Relações
 
-Utente 1:N EpUrgencia
-Hospital 1:N EpUrgencia
-EpUrgencia 1:1 Triagem
-Utente N:N Antecedente (via UtenteAntecedente)
-Funcionario 1:1 Medico (especialização disjunta)
-Funcionario 1:1 Enfermeiro (especialização disjunta)
-Funcionario 1:1 Utilizador
-EpUrgencia 1:N Ato
-Funcionario 1:N Ato
-Ato 1:N Prescreve
-EpUrgencia 0:N Internamento
+Utente 1:N EpUrgencia 
+Hospital 1:N EpUrgencia 
+EpUrgencia 1:1 Triagem 
+Utente N:N Antecedente (via UtenteAntecedente) 
+Funcionario 1:1 Medico (especialização disjunta) 
+Funcionario 1:1 Enfermeiro (especialização disjunta) 
+Funcionario 1:1 Utilizador 
+EpUrgencia 1:N Ato 
+Funcionario 1:N Ato 
+Ato 1:N Prescreve 
+EpUrgencia 0:N Internamento 
 Funcionario 1:N Internamento
 
 ---
