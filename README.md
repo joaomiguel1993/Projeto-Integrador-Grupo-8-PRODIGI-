@@ -1,4 +1,4 @@
-# 🏥 PRODIGI — Projeto Integrador Grupo 8
+# 🏥 SIGUI – Sistema Integrado de Gestão de Urgências e Internamentos — Projeto Integrador Grupo 8
 
 Sistema de gestão de urgências e internamentos hospitalares desenvolvido no âmbito do Projeto Integrador.
 
