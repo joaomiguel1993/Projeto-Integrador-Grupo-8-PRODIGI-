@@ -17,6 +17,7 @@ O PRODIGI pretende disponibilizar uma API backend para suporte a fluxos de urgê
 **Legenda:** ✅ existente no repositório · 🟡 precisa de atualização · ❌ ainda por implementar
 
 ```text
+SIGUI – Sistema Integrado de Gestão de Urgências e Internamentos
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── backend/                                      ✅
