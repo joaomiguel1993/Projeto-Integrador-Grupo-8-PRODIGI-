@@ -426,7 +426,7 @@ INSERT INTO Enfermeiro (IdFunc) VALUES
 INSERT INTO Utilizador (IdUtilizador, IdFunc, UserName, Password, Funcao) VALUES
 (1, 1, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TiGNbNg6mLTiPWqJmCkCQlzSsWaW', 'admin'),  
 (2, 3, 'medico', '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC5uKECQrFhPkDVhA5mu', 'medico'),  
-(3, 2, 'enfermeiro', '$2b$12$eFtEcGi.Sb.Ow6nNdIWCpuMkM1q4b6UMZjfYdMhZ3hHF4d5G5gHlC', 'enfermeiro')  
+(3, 2, 'enfermeiro', '$2b$12$eFtEcGi.Sb.Ow6nNdIWCpuMkM1q4b6UMZjfYdMhZ3hHF4d5G5gHlC', 'enfermeiro');  
 
 -- ------------------------------------------------------------
 -- HOSPITAL (10 registos)
