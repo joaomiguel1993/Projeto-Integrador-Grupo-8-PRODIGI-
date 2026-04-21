@@ -12,6 +12,7 @@ services:
     volumes:
       - prodigi_data:/var/lib/postgresql/data
       - ./backend/SQL/createTables.sql:/docker-entrypoint-initdb.d/createTables.sql
+      - ./backend/SQL/populateDB.sql:/docker-entrypoint-initdb.d/populateDB.sql
 
   pgadmin:
     image: dpage/pgadmin4
