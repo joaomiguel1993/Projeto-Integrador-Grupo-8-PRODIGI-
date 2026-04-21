@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-port_postgres = os.getenv("POSTGRES18_PORT", "5432")
+port_postgres = os.getenv("POSTGRES18_PORT")
 password_postgres = os.getenv("POSTGRES18_PASSWORD")
-host_postgres = os.getenv("POSTGRES_HOST", "db")
-db_name = os.getenv("POSTGRES_DB", "Projeto_Integrador_G08")
-db_user = os.getenv("POSTGRES_USER", "postgres")
+host_postgres = os.getenv("POSTGRES_HOST")
+db_name = os.getenv("POSTGRES_DB")
+db_user = os.getenv("POSTGRES_USER")
 
 
 def get_connection():

@@ -242,3 +242,20 @@ CREATE TABLE Internamento (
         FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
         ON DELETE RESTRICT
 );
+
+
+-- ------------------------------------------------------------
+-- REALIZA (associativa N:N entre Funcionario e Ato/Triagem)
+-- ------------------------------------------------------------
+CREATE TABLE Realiza (
+    IdFunc      INT     NOT NULL,
+    CodEpUrgenc INT     NOT NULL,  -- ou IdAto para atos específicos
+    DataHora    TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (IdFunc, CodEpUrgenc),
+    CONSTRAINT fk_realiza_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_realiza_ep
+        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
+        ON DELETE CASCADE
+);
