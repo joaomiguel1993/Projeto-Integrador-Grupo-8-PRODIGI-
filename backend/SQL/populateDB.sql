@@ -420,7 +420,7 @@ INSERT INTO Enfermeiro (IdFunc) VALUES
 --
 -- Credenciais de teste:
 --   admin      / admin123
---   medico     / medico123
+--   medico     / medico123 
 --   enfermeiro / enfermeiro123
 -- ------------------------------------------------------------
 INSERT INTO Utilizador (IdUtilizador, IdFunc, UserName, Password, Funcao) VALUES
