@@ -7,3 +7,4 @@ __pycache__/
 docs/Programas/
 update_prof.sh
 Texto.txt
+.env.example
