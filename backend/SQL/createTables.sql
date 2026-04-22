@@ -192,7 +192,7 @@ CREATE TABLE EpUrgencia (
     NumUtent        INT                 NOT NULL,
     IdHosp          INT                 NOT NULL,
     DataHoraEntr    TIMESTAMP           NOT NULL DEFAULT NOW(),
-    DtaHoraSaida    TIMESTAMP,
+    DataHoraSaida    TIMESTAMP,
     Estado          estado_ep_enum      NOT NULL DEFAULT 'aberto',
     CONSTRAINT fk_ep_utente
         FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)

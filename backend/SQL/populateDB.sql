@@ -2003,7 +2003,7 @@ INSERT INTO UtenteAntecedente (NumUtent, CodAntecedente, DataRegisto) VALUES
 -- ------------------------------------------------------------
 -- EPURGENCIA (800 registos)
 -- ------------------------------------------------------------
-INSERT INTO EpUrgencia (CodEpUrgenc, NumUtent, IdHosp, DataHoraEntr, DtaHoraSaida, Estado) VALUES
+INSERT INTO EpUrgencia (CodEpUrgenc, NumUtent, IdHosp, DataHoraEntr, DataHoraSaida, Estado) VALUES
 (1, 148, 2, '2022-06-19 21:25:11', '2022-06-20 00:25:11', 'terminado'),
 (2, 357, 3, '2024-02-11 00:28:35', '2024-02-11 03:28:35', 'terminado'),
 (3, 267, 1, '2023-04-01 10:08:56', '2023-04-01 17:08:56', 'terminado'),
