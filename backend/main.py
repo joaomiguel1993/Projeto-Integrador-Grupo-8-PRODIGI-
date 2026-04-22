@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import (
     utentes, episodios, triagem, internamento, profissionais, auth,
-    ato, prescricao, hospital
+    ato, prescricao, hospital, medicamento
 )
 
 app = FastAPI(
@@ -33,3 +33,4 @@ app.include_router(auth.router)
 app.include_router(ato.router, prefix="/api")
 app.include_router(prescricao.router, prefix="/api")
 app.include_router(hospital.router, prefix="/api")
+app.include_router(medicamento.router, prefix="/api")
