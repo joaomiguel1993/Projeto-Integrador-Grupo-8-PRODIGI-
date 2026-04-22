@@ -13,7 +13,7 @@ class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=4, max_length=255)
     role: str = Field(..., min_length=1, max_length=20)
-    numfunc: Optional[int] = None
+    idfunc: Optional[int] = None
 
 
 class LoginRequest(BaseModel):
@@ -23,7 +23,7 @@ class LoginRequest(BaseModel):
 
 @router.post("/register")
 def register(data: RegisterRequest):
-    allowed_roles = {"rececionista", "enfermeiro", "medico", "administrador"}
+    allowed_roles = {"medico", "enfermeiro", "admin"}
 
     if data.role not in allowed_roles:
         raise HTTPException(status_code=400, detail="Role inválido.")
@@ -49,10 +49,10 @@ def register(data: RegisterRequest):
 
         cur.execute(
             """
-            INSERT INTO utilizador (username, passwordhash, role, numfunc)
+            INSERT INTO utilizador (username, passwordhash, funcao, idfunc)
             VALUES (%s, %s, %s, %s);
             """,
-            (data.username, password_hash, data.role, data.numfunc)
+            (data.username, password_hash, data.role, data.idfunc)
         )
 
         conn.commit()
@@ -71,7 +71,7 @@ def register(data: RegisterRequest):
         if "violates foreign key constraint" in str(e):
             raise HTTPException(
                 status_code=400,
-                detail="Numero de funcionário inválido: esse funcionário não existe."
+                detail="Número de funcionário inválido: esse funcionário não existe."
             )
         raise HTTPException(status_code=500, detail=f"Erro no registo: {str(e)}")
     finally:
@@ -87,7 +87,7 @@ def login(data: LoginRequest):
     try:
         cur.execute(
             """
-            SELECT username, passwordhash, role
+            SELECT username, passwordhash, funcao
             FROM utilizador
             WHERE username = %s;
             """,
