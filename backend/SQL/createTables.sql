@@ -225,15 +225,15 @@ CREATE TABLE Ato (
 -- relacionamento N:N entre Funcionario e Ato
 -- ------------------------------------------------------------
 CREATE TABLE Realiza (
-    IdFunc INT NOT NULL,
     IdAto INT NOT NULL,
-    PRIMARY KEY (IdFunc, IdAto),
-    CONSTRAINT fk_ra_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE RESTRICT,
-    CONSTRAINT fk_ra_ato
+    IdFunc INT NOT NULL,
+    PRIMARY KEY (IdAto, IdFunc),
+    CONSTRAINT fk_realiza_ato
         FOREIGN KEY (IdAto) REFERENCES Ato(IdAto)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_realiza_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE RESTRICT
 );
 
 -- ------------------------------------------------------------
