@@ -1,7 +1,6 @@
 -- ============================================================
 -- PRODIGI — Sistema de Gestão Hospitalar
--- createTables.sql
--- Baseado no diagrama ER enviado
+-- createTables.sql (VERSÃO CORRIGIDA)
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -9,7 +8,7 @@
 -- ------------------------------------------------------------
 DROP TABLE IF EXISTS Alerta CASCADE;
 DROP TABLE IF EXISTS Prescreve CASCADE;
-DROP TABLE IF EXISTS RealizaAto CASCADE;
+DROP TABLE IF EXISTS Realiza CASCADE;
 DROP TABLE IF EXISTS Ato CASCADE;
 DROP TABLE IF EXISTS Triagem CASCADE;
 DROP TABLE IF EXISTS Internamento CASCADE;
@@ -88,9 +87,7 @@ CREATE TABLE Medico (
     IdFunc INT PRIMARY KEY,
     Estagiario BOOLEAN NOT NULL DEFAULT FALSE,
     Especialidade VARCHAR(100) NOT NULL,
-    CONSTRAINT fk_medico_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE CASCADE
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
@@ -98,47 +95,39 @@ CREATE TABLE Medico (
 -- ------------------------------------------------------------
 CREATE TABLE Enfermeiro (
     IdFunc INT PRIMARY KEY,
-    CONSTRAINT fk_enfermeiro_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE CASCADE
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
--- UTILIZADOR
+-- UTILIZADOR (REMOVIDA REDUNDÂNCIA)
 -- ------------------------------------------------------------
 CREATE TABLE Utilizador (
     IdUtilizador SERIAL PRIMARY KEY,
     IdFunc INT NOT NULL UNIQUE,
     UserName VARCHAR(50) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
-    Funcao tipo_func_enum NOT NULL,
-    CONSTRAINT fk_utilizador_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE CASCADE
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
 -- ANTECEDENTE
 -- ------------------------------------------------------------
 CREATE TABLE Antecedente (
-    CodAntecede SERIAL PRIMARY KEY,
-    Nome VARCHAR(100) NOT NULL
+    CodAntecedente SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Tipo VARCHAR(50)
 );
 
 -- ------------------------------------------------------------
--- UTENTEANTECED
+-- UTENTEANTECEDENTE
 -- ------------------------------------------------------------
 CREATE TABLE UtenteAntecedente (
     NumUtent INT NOT NULL,
-    CodAntecede INT NOT NULL,
+    CodAntecedente INT NOT NULL,
     DataRegisto DATE NOT NULL DEFAULT CURRENT_DATE,
-    PRIMARY KEY (NumUtent, CodAntecede),
-    CONSTRAINT fk_ua_utente
-        FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_ua_antec
-        FOREIGN KEY (CodAntecede) REFERENCES Antecedente(CodAntecede)
-        ON DELETE CASCADE
+    PRIMARY KEY (NumUtent, CodAntecedente),
+    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE CASCADE,
+    FOREIGN KEY (CodAntecedente) REFERENCES Antecedente(CodAntecedente) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
@@ -151,22 +140,18 @@ CREATE TABLE Medicamento (
 );
 
 -- ------------------------------------------------------------
--- MEDICACAOATIVA
+-- MEDICACAO ATIVA (CORRIGIDO)
 -- ------------------------------------------------------------
 CREATE TABLE MedicacaoAtiva (
-    CodMedicacaoAtiva SERIAL NOT NULL,
+    CodMedicacaoAtiva SERIAL PRIMARY KEY,
     NumUtent INT NOT NULL,
     CodMedicamento INT NOT NULL,
     DataInicio DATE NOT NULL,
     DataFim DATE,
     Dosagem VARCHAR(50),
-    PRIMARY KEY (NumUtent, CodMedicacaoAtiva),
-    CONSTRAINT fk_ma_utente
-        FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_ma_medicamento
-        FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento)
-        ON DELETE RESTRICT
+    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE CASCADE,
+    FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento) ON DELETE RESTRICT,
+    UNIQUE (NumUtent, CodMedicamento, DataInicio)
 );
 
 -- ------------------------------------------------------------
@@ -179,16 +164,12 @@ CREATE TABLE EpUrgencia (
     DataHoraEntr TIMESTAMP NOT NULL DEFAULT NOW(),
     DataHoraSaida TIMESTAMP,
     Estado estado_ep_enum NOT NULL DEFAULT 'aberto',
-    CONSTRAINT fk_ep_utente
-        FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
-        ON DELETE RESTRICT,
-    CONSTRAINT fk_ep_hosp
-        FOREIGN KEY (IdHosp) REFERENCES Hospital(IdHosp)
-        ON DELETE RESTRICT
+    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE RESTRICT,
+    FOREIGN KEY (IdHosp) REFERENCES Hospital(IdHosp) ON DELETE RESTRICT
 );
 
 -- ------------------------------------------------------------
--- TRIAGEM
+-- TRIAGEM (1:1)
 -- ------------------------------------------------------------
 CREATE TABLE Triagem (
     CodEpUrgenc INT PRIMARY KEY,
@@ -196,44 +177,37 @@ CREATE TABLE Triagem (
     DataHoraFim TIMESTAMP,
     CorTriagem cor_triagem_enum NOT NULL,
     Sintomas TEXT NOT NULL,
+    Temperatura DECIMAL(4,1),
     FreqCard INT,
+    FreqResp INT,
     SpO2 DECIMAL(4,1),
     Sistolica INT,
     Diastolica INT,
-    Temperatura DECIMAL(4,1),
-    CONSTRAINT fk_triagem_ep
-        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
-        ON DELETE CASCADE
+    FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
--- ATO
+-- ATO (JÁ COM DESCRIÇÃO)
 -- ------------------------------------------------------------
 CREATE TABLE Ato (
     IdAto SERIAL PRIMARY KEY,
     CodEpUrgenc INT NOT NULL,
     Tipo VARCHAR(100) NOT NULL,
+    Descricao TEXT,
     DataHoraInicio TIMESTAMP NOT NULL,
     DataHoraFim TIMESTAMP,
-    CONSTRAINT fk_ato_ep
-        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
-        ON DELETE CASCADE
+    FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
--- REALIZA
--- relacionamento N:N entre Funcionario e Ato
+-- REALIZA (N:N)
 -- ------------------------------------------------------------
 CREATE TABLE Realiza (
     IdAto INT NOT NULL,
     IdFunc INT NOT NULL,
     PRIMARY KEY (IdAto, IdFunc),
-    CONSTRAINT fk_realiza_ato
-        FOREIGN KEY (IdAto) REFERENCES Ato(IdAto)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_realiza_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE RESTRICT
+    FOREIGN KEY (IdAto) REFERENCES Ato(IdAto) ON DELETE CASCADE,
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE RESTRICT
 );
 
 -- ------------------------------------------------------------
@@ -244,9 +218,7 @@ CREATE TABLE Prescreve (
     IdAto INT NOT NULL,
     Descricao TEXT NOT NULL,
     DataHoraPresc TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_presc_ato
-        FOREIGN KEY (IdAto) REFERENCES Ato(IdAto)
-        ON DELETE CASCADE
+    FOREIGN KEY (IdAto) REFERENCES Ato(IdAto) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
@@ -260,16 +232,12 @@ CREATE TABLE Alerta (
     DataHorAlerta TIMESTAMP NOT NULL DEFAULT NOW(),
     Ignorado BOOLEAN NOT NULL DEFAULT FALSE,
     Justificacao TEXT,
-    CONSTRAINT fk_alerta_presc
-        FOREIGN KEY (IdPrescricao) REFERENCES Prescreve(IdPrescricao)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_alerta_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE SET NULL
+    FOREIGN KEY (IdPrescricao) REFERENCES Prescreve(IdPrescricao) ON DELETE CASCADE,
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL
 );
 
 -- ------------------------------------------------------------
--- INTERNAMENTO
+-- INTERNAMENTO (COM CONSTRAINT DE CONSISTÊNCIA)
 -- ------------------------------------------------------------
 CREATE TABLE Internamento (
     CodInternamento SERIAL PRIMARY KEY,
@@ -282,10 +250,12 @@ CREATE TABLE Internamento (
     NumeroCama VARCHAR(20),
     Servico VARCHAR(100),
     TipoAlta tipo_alta_enum,
-    CONSTRAINT fk_int_ep
-        FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_int_func
-        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
-        ON DELETE SET NULL
+    FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE,
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL,
+    CHECK (
+        (DataHoraAlta IS NULL AND TipoAlta IS NULL)
+        OR
+        (DataHoraAlta IS NOT NULL AND TipoAlta IS NOT NULL)
+    )
 );
+

@@ -2978,7 +2978,7 @@ INSERT INTO EpUrgencia (CodEpUrgenc, NumUtent, IdHosp, DataHoraEntr, DataHoraSai
 (799, 420, 2, '2024-09-07 01:16:00', '2024-09-07 03:16:00', 'terminado'),
 (800, 400, 1, '2024-11-15 11:52:00', '2024-11-15 12:52:00', 'terminado');
 
-INSERT INTO Triagem (CodEpUrgenc, DataHoraInicio, DataHoraFim, CorTriagem, Sintomas, Temperatura, FreqCardiaca, FreqRespiratoria, SpO2, Sistolica, Diastolica) VALUES
+INSERT INTO Triagem (CodEpUrgenc, DataHoraInicio, DataHoraFim, CorTriagem, Sintomas, Temperatura, FreqCard, FreqResp, SpO2, Sistolica, Diastolica) VALUES
 (1, '2023-02-21 09:33:00', '2023-02-21 09:49:00', 'amarelo', 'Dor abdominal difusa', 38.3, 108, 21, 92.7, 143, 69),
 (2, '2023-06-28 20:22:00', '2023-06-28 20:35:00', 'amarelo', 'Palpitações', 37.8, 110, 19, 93.1, 135, 82),
 (3, '2023-02-24 19:31:00', '2023-02-24 19:45:00', 'laranja', 'Reação alérgica importante', 38.2, 132, 26, 92.7, 108, 63),
