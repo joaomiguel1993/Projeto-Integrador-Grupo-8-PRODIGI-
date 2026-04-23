@@ -221,10 +221,10 @@ CREATE TABLE Ato (
 );
 
 -- ------------------------------------------------------------
--- REALIZAATO
+-- REALIZA
 -- relacionamento N:N entre Funcionario e Ato
 -- ------------------------------------------------------------
-CREATE TABLE RealizaAto (
+CREATE TABLE Realiza (
     IdFunc INT NOT NULL,
     IdAto INT NOT NULL,
     PRIMARY KEY (IdFunc, IdAto),
