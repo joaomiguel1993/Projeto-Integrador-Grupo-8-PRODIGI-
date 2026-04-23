@@ -1,36 +1,32 @@
 from fastapi import APIRouter, HTTPException
-from backend.db import run_query
+from backend.repositories.atos_repository import (
+    listar_atos,
+    obter_ato,
+    listar_funcionarios_ato,
+    listar_prescricoes_ato
+)
 
 router = APIRouter(
     prefix="/atos",
-    tags=["Atos"]
+    tags=["Atos"],
+    responses={404: {"description": "Ato não encontrado"}}
 )
 
 @router.get("/")
 def get_atos():
-    query = """
-        SELECT IdAto, CodEpUrgenc, DataHoraInicio, DataHoraFim, Tipo
-        FROM Ato ORDER BY IdAto;
-    """
-    return run_query(query)
+    return listar_atos()
 
 @router.get("/{id_ato}")
 def get_ato(id_ato: int):
-    query = """
-        SELECT IdAto, CodEpUrgenc, DataHoraInicio, DataHoraFim, Tipo
-        FROM Ato WHERE IdAto = %s;
-    """
-    resultado = run_query(query, (id_ato,))
+    resultado = obter_ato(id_ato)
     if not resultado:
         raise HTTPException(status_code=404, detail="Ato não encontrado")
     return resultado
 
 @router.get("/{id_ato}/funcionarios")
 def get_funcionarios_ato(id_ato: int):
-    query = """
-        SELECT f.IdFunc, f.Nome, f.TipoFunc
-        FROM Realiza r
-        JOIN Funcionario f ON r.IdFunc = f.IdFunc
-        WHERE r.IdAto = %s;
-    """
-    return run_query(query, (id_ato,))
+    return listar_funcionarios_ato(id_ato)
+
+@router.get("/{id_ato}/prescricoes")
+def get_prescricoes_ato(id_ato: int):
+    return listar_prescricoes_ato(id_ato)

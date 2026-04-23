@@ -1,30 +1,27 @@
 from fastapi import APIRouter, HTTPException
-from backend.db import run_query
+from backend.repositories.hospitais_repository import (
+    listar_hospitais,
+    obter_hospital,
+    listar_episodios_hospital
+)
 
 router = APIRouter(
     prefix="/hospitais",
-    tags=["Hospitais"]
+    tags=["Hospitais"],
+    responses={404: {"description": "Hospital não encontrado"}}
 )
-
 
 @router.get("/")
 def get_hospitais():
-    query = """
-        SELECT IdHosp, Nome, Localizacao
-        FROM Hospital
-        ORDER BY Nome;
-    """
-    return run_query(query)
-
+    return listar_hospitais()
 
 @router.get("/{id_hosp}")
 def get_hospital(id_hosp: int):
-    query = """
-        SELECT IdHosp, Nome, Localizacao
-        FROM Hospital
-        WHERE IdHosp = %s;
-    """
-    resultado = run_query(query, (id_hosp,))
+    resultado = obter_hospital(id_hosp)
     if not resultado:
         raise HTTPException(status_code=404, detail="Hospital não encontrado")
     return resultado
+
+@router.get("/{id_hosp}/episodios")
+def get_episodios_hospital(id_hosp: int):
+    return listar_episodios_hospital(id_hosp)

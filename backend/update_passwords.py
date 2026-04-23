@@ -1,12 +1,5 @@
-from passlib.context import CryptContext
+from backend.auth.security import hash_password
 from backend.db import get_connection
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
 
 def update_passwords():
     con = None
@@ -17,28 +10,35 @@ def update_passwords():
         cur = con.cursor()
 
         cur.execute("""
-            SELECT numfunc, password
-            FROM profissionais
-            WHERE password IS NOT NULL
+            SELECT IdUtilizador, Password
+            FROM Utilizador
+            WHERE Password IS NOT NULL
         """)
         utilizadores = cur.fetchall()
 
         total = 0
 
-        for numfunc, password_atual in utilizadores:
+        for id_utilizador, password_atual in utilizadores:
             if not password_atual:
                 continue
 
-            if str(password_atual).startswith("$2a$") or str(password_atual).startswith("$2b$") or str(password_atual).startswith("$2y$"):
+            password_str = str(password_atual)
+
+            if (
+                password_str.startswith("$bcrypt-sha256$")
+                or password_str.startswith("$2a$")
+                or password_str.startswith("$2b$")
+                or password_str.startswith("$2y$")
+            ):
                 continue
 
-            nova_password = hash_password(password_atual)
+            nova_password = hash_password(password_str)
 
             cur.execute("""
-                UPDATE profissionais
-                SET password = %s
-                WHERE numfunc = %s
-            """, (nova_password, numfunc))
+                UPDATE Utilizador
+                SET Password = %s
+                WHERE IdUtilizador = %s
+            """, (nova_password, id_utilizador))
 
             total += 1
 
@@ -55,7 +55,6 @@ def update_passwords():
             cur.close()
         if con:
             con.close()
-
 
 if __name__ == "__main__":
     update_passwords()

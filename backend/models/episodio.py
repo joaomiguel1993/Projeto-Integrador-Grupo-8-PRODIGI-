@@ -1,12 +1,17 @@
-from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel
+from backend.models.enums import EstadoEpEnum
 
-class EpisodioCreate(BaseModel):
-    cod_epurgenc: int
-    nome_hosp: str
-    num_utent: int
-    data_hora_entr: str
+class EpisodioBase(BaseModel):
+    NumUtent: int
+    IdHosp: int
+    DataHoraSaida: Optional[datetime] = None
+    Estado: EstadoEpEnum = EstadoEpEnum.aberto
 
-class EpisodioResponse(EpisodioCreate):
-    data_hora_saida: Optional[str] = None
+class EpisodioCreate(EpisodioBase):
+    pass
+
+class EpisodioResponse(EpisodioBase):
+    CodEpUrgenc: int
+    DataHoraEntr: datetime

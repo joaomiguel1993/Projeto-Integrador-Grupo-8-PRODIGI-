@@ -1,13 +1,23 @@
-from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel, Field
+
+class AtoBase(BaseModel):
+    CodEpUrgenc: int
+    Tipo: str = Field(..., min_length=1, max_length=100)
+    DataHoraFim: Optional[datetime] = None
+    Descricao: Optional[str] = None
 
 class AtoCreate(BaseModel):
-    cod_epurgenc: int
-    nome_hosp: str
-    data_hora_inicio: str
-    tipo: str
+    CodEpUrgenc: int
+    Tipo: str = Field(..., min_length=1, max_length=100)
+    DataHoraInicio: Optional[datetime] = None
+    Descricao: Optional[str] = None
 
-class AtoResponse(AtoCreate):
-    data_hora_fim: Optional[str] = None
-    num_func_presc: Optional[int] = None
-    data_hora_presc: Optional[str] = None
+class AtoResponse(AtoBase):
+    IdAto: int
+    DataHoraInicio: datetime
+
+class RealizaAtoResponse(BaseModel):
+    IdAto: int
+    IdFunc: int

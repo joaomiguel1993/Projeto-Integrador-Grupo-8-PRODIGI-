@@ -1,13 +1,44 @@
-from ..dao.internamento_dao import get_internados_todos, get_internados_hospital, get_internamento, insert_internamento
+from typing import Optional
+from backend.db import run_query
 
-def listar_internados():
-    return get_internados_todos()
 
-def listar_internados_hospital(nomehosp: str):
-    return get_internados_hospital(nomehosp)
+def listar_internamentos():
+    result = run_query("""
+        SELECT CodInternamento, CodEpUrgenc, IdFunc, DataHoraInt, DataHoraConsulta,
+               DataHoraAlta, MotivoInt, NumeroCama, Servico, TipoAlta
+        FROM Internamento
+        ORDER BY DataHoraInt DESC
+    """)
+    return result if result else []
 
-def obter_internamento(numutent: int, data_internamento: str):
-    return get_internamento(numutent, data_internamento)
 
-def criar_internamento(numutent: int, nomehosp: str, data_internamento: str):
-    return insert_internamento(numutent, nomehosp, data_internamento)
+def obter_internamento(cod_internamento: int):
+    result = run_query("""
+        SELECT CodInternamento, CodEpUrgenc, IdFunc, DataHoraInt, DataHoraConsulta,
+               DataHoraAlta, MotivoInt, NumeroCama, Servico, TipoAlta
+        FROM Internamento
+        WHERE CodInternamento = %s
+    """, (cod_internamento,))
+    return result if result else []
+
+
+def criar_internamento(
+    cod_epurgenc: int,
+    id_func: int,
+    motivo_int: str,
+    data_hora_consulta: Optional[str] = None,
+    data_hora_alta: Optional[str] = None,
+    numero_cama: Optional[str] = None,
+    servico: Optional[str] = None,
+    tipo_alta: Optional[str] = None
+):
+    return run_query("""
+        INSERT INTO Internamento (
+            CodEpUrgenc, IdFunc, MotivoInt, DataHoraConsulta,
+            DataHoraAlta, NumeroCama, Servico, TipoAlta
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    """, (
+        cod_epurgenc, id_func, motivo_int, data_hora_consulta,
+        data_hora_alta, numero_cama, servico, tipo_alta
+    ))

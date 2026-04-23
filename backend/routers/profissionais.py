@@ -1,48 +1,37 @@
 from fastapi import APIRouter, HTTPException
-from backend.db import run_query
+from backend.repositories.profissionais_repository import (
+    listar_profissionais,
+    obter_profissional,
+    listar_medicos,
+    listar_enfermeiros,
+    obter_utilizador_profissional
+)
 
 router = APIRouter(
     prefix="/profissionais",
-    tags=["Profissionais"]
+    tags=["Profissionais"],
+    responses={404: {"description": "Profissional não encontrado"}}
 )
-
 
 @router.get("/")
 def get_profissionais():
-    query = """
-        SELECT
-            f.IdFunc,
-            f.NumFunc,
-            f.Nome,
-            f.Sexo,
-            f.TipoFunc,
-            m.Estagiario,
-            m.Especialidade
-        FROM Funcionario f
-        LEFT JOIN Medico m ON f.IdFunc = m.IdFunc
-        LEFT JOIN Enfermeiro e ON f.IdFunc = e.IdFunc
-        ORDER BY f.IdFunc;
-    """
-    return run_query(query)
+    return listar_profissionais()
 
+@router.get("/medicos")
+def get_medicos():
+    return listar_medicos()
+
+@router.get("/enfermeiros")
+def get_enfermeiros():
+    return listar_enfermeiros()
 
 @router.get("/{id_func}")
 def get_profissional(id_func: int):
-    query = """
-        SELECT
-            f.IdFunc,
-            f.NumFunc,
-            f.Nome,
-            f.Sexo,
-            f.TipoFunc,
-            m.Estagiario,
-            m.Especialidade
-        FROM Funcionario f
-        LEFT JOIN Medico m ON f.IdFunc = m.IdFunc
-        LEFT JOIN Enfermeiro e ON f.IdFunc = e.IdFunc
-        WHERE f.IdFunc = %s;
-    """
-    resultado = run_query(query, (id_func,))
+    resultado = obter_profissional(id_func)
     if not resultado:
         raise HTTPException(status_code=404, detail="Profissional não encontrado")
     return resultado
+
+@router.get("/{id_func}/utilizador")
+def get_utilizador_profissional_endpoint(id_func: int):
+    return obter_utilizador_profissional(id_func)

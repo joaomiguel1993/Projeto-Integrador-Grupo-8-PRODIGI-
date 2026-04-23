@@ -1,5 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from backend.db import run_query
+from backend.repositories.utentes_repository import (
+    listar_utentes,
+    obter_utente,
+    listar_episodios_utente,
+    listar_antecedentes_utente,
+    listar_medicacao_ativa_utente
+)
 
 router = APIRouter(
     prefix="/utentes",
@@ -7,25 +13,25 @@ router = APIRouter(
     responses={404: {"description": "Utente não encontrado"}}
 )
 
-
 @router.get("/")
 def get_utentes():
-    query = """
-        SELECT NumUtent, NIF, Nome, DataNasc, Sexo, Localidade
-        FROM Utente
-        ORDER BY Nome;
-    """
-    return run_query(query)
-
+    return listar_utentes()
 
 @router.get("/{num_utent}")
 def get_utente(num_utent: int):
-    query = """
-        SELECT NumUtent, NIF, Nome, DataNasc, Sexo, Localidade
-        FROM Utente
-        WHERE NumUtent = %s;
-    """
-    resultado = run_query(query, (num_utent,))
+    resultado = obter_utente(num_utent)
     if not resultado:
         raise HTTPException(status_code=404, detail="Utente não encontrado")
     return resultado
+
+@router.get("/{num_utent}/episodios")
+def get_episodios_utente(num_utent: int):
+    return listar_episodios_utente(num_utent)
+
+@router.get("/{num_utent}/antecedentes")
+def get_antecedentes_utente(num_utent: int):
+    return listar_antecedentes_utente(num_utent)
+
+@router.get("/{num_utent}/medicacao-ativa")
+def get_medicacao_ativa_utente(num_utent: int):
+    return listar_medicacao_ativa_utente(num_utent)

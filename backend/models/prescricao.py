@@ -1,15 +1,13 @@
+from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
 
-class PrescricaoCreate(BaseModel):
-    cod_epurgenc: int
-    nome_hosp: str
-    num_func_presc: int
-    data_hora_presc: str
-    medicamento: str
-    dose: Optional[str] = None
-    frequencia: Optional[str] = None
-    duracao: Optional[str] = None
+class PrescricaoBase(BaseModel):
+    IdAto: int
+    Descricao: str
 
-class PrescricaoResponse(PrescricaoCreate):
-    cod_prescricao: int
+class PrescricaoCreate(PrescricaoBase):
+    pass
+
+class PrescricaoResponse(PrescricaoBase):
+    IdPrescricao: int
+    DataHoraPresc: datetime

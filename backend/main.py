@@ -1,4 +1,3 @@
-# backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import (
@@ -24,12 +23,12 @@ app.add_middleware(
 def home():
     return {"msg": "API a funcionar"}
 
+app.include_router(auth.router, prefix="/api")
 app.include_router(utentes.router, prefix="/api")
 app.include_router(episodios.router, prefix="/api")
 app.include_router(triagem.router, prefix="/api")
 app.include_router(internamento.router, prefix="/api")
 app.include_router(profissionais.router, prefix="/api")
-app.include_router(auth.router)
 app.include_router(ato.router, prefix="/api")
 app.include_router(prescricao.router, prefix="/api")
 app.include_router(hospital.router, prefix="/api")
