@@ -423,17 +423,10 @@ INSERT INTO Enfermeiro (IdFunc) VALUES
 --   medico     / medico123
 --   enfermeiro / enfermeiro123
 -- ------------------------------------------------------------
-<<<<<<< Updated upstream
 INSERT INTO Utilizador (IdUtilizador, IdFunc, UserName, Password, Funcao) VALUES
 (1, 1, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TiGNbNg6mLTiPWqJmCkCQlzSsWaW', 'admin'),  -- password: admin123
 (2, 3, 'medico', '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC5uKECQrFhPkDVhA5mu', 'medico'),  -- password: medico123
 (3, 2, 'enfermeiro', '$2b$12$eFtEcGi.Sb.Ow6nNdIWCpuMkM1q4b6UMZjfYdMhZ3hHF4d5G5gHlC', 'enfermeiro');  -- password: enfermeiro123
-=======
-INSERT INTO Utilizador (IdUtilizador, IdFunc, UserName, Password) VALUES
-(1, 196, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TiGNbNg6mLTiPWqJmCkCQlzSsWaW'),  -- password: admin123
-(2, 3, 'medico', '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC5uKECQrFhPkDVhA5mu'),  -- password: medico123
-(3, 2, 'enfermeiro', '$2b$12$eFtEcGi.Sb.Ow6nNdIWCpuMkM1q4b6UMZjfYdMhZ3hHF4d5G5gHlC');  -- password: enfermeiro123
->>>>>>> Stashed changes
 
 -- ------------------------------------------------------------
 -- HOSPITAL (10 registos)
@@ -450,13 +443,7 @@ INSERT INTO Hospital (IdHosp, Nome, Localizacao) VALUES
 (9, 'Hospital de Guimarães', 'Guimarães'),
 (10, 'Hospital de Faro', 'Faro');
 
-<<<<<<< Updated upstream
--- ------------------------------------------------------------
--- ANTECEDENTE (20 registos)
--- ------------------------------------------------------------
-=======
 -- ANTECEDENTE
->>>>>>> Stashed changes
 INSERT INTO Antecedente (CodAntecedente, Nome, Tipo) VALUES
 (1, 'Hipertensão', 'Medicação Crónica'),
 (2, 'Diabetes tipo 2', 'Antecedente Familiar'),
