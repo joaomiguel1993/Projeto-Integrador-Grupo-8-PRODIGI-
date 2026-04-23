@@ -7,11 +7,15 @@
 -- ------------------------------------------------------------
 -- LIMPEZA (ordem inversa das dependências)
 -- ------------------------------------------------------------
+DROP TABLE IF EXISTS Alerta CASCADE;
 DROP TABLE IF EXISTS Prescreve CASCADE;
+DROP TABLE IF EXISTS Realiza CASCADE;
 DROP TABLE IF EXISTS Ato CASCADE;
 DROP TABLE IF EXISTS Internamento CASCADE;
 DROP TABLE IF EXISTS Triagem CASCADE;
 DROP TABLE IF EXISTS EpUrgencia CASCADE;
+DROP TABLE IF EXISTS MedicacaoAtiva CASCADE;
+DROP TABLE IF EXISTS Medicamento CASCADE;
 DROP TABLE IF EXISTS UtenteAntecedente CASCADE;
 DROP TABLE IF EXISTS Antecedente CASCADE;
 DROP TABLE IF EXISTS Utilizador CASCADE;
@@ -127,7 +131,7 @@ CREATE TABLE Utilizador (
 );
 
 -- ------------------------------------------------------------
--- ANTECEDENTE
+-- ANTECEDENTE (catálogo)
 -- ------------------------------------------------------------
 CREATE TABLE Antecedente (
     CodAntecedente  SERIAL          PRIMARY KEY,
@@ -152,6 +156,35 @@ CREATE TABLE UtenteAntecedente (
 );
 
 -- ------------------------------------------------------------
+-- MEDICAMENTO (catálogo)
+-- ------------------------------------------------------------
+CREATE TABLE Medicamento (
+    CodMedicamento  SERIAL          PRIMARY KEY,
+    Nome            VARCHAR(100)    NOT NULL,
+    PrincipioAtivo  VARCHAR(100)    NOT NULL
+);
+
+-- ------------------------------------------------------------
+-- MEDICACAOATIVA (medicação em curso do utente)
+-- ------------------------------------------------------------
+CREATE TABLE MedicacaoAtiva (
+    CodMedicacaoAtiva   SERIAL      NOT NULL,
+    NumUtent            INT         NOT NULL,
+    CodMedicamento      INT         NOT NULL,
+    DataInicio          DATE        NOT NULL,
+    DataFim             DATE,
+    Dosagem             VARCHAR(50),
+    Ativo               BOOLEAN     NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (NumUtent, CodMedicacaoAtiva),
+    CONSTRAINT fk_ma_utente
+        FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ma_medicamento
+        FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento)
+        ON DELETE RESTRICT
+);
+
+-- ------------------------------------------------------------
 -- EPURGENCIA
 -- ------------------------------------------------------------
 CREATE TABLE EpUrgencia (
@@ -159,7 +192,7 @@ CREATE TABLE EpUrgencia (
     NumUtent        INT                 NOT NULL,
     IdHosp          INT                 NOT NULL,
     DataHoraEntr    TIMESTAMP           NOT NULL DEFAULT NOW(),
-    DtaHoraSaida    TIMESTAMP,
+    DataHoraSaida    TIMESTAMP,
     Estado          estado_ep_enum      NOT NULL DEFAULT 'aberto',
     CONSTRAINT fk_ep_utente
         FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent)
@@ -195,15 +228,26 @@ CREATE TABLE Triagem (
 CREATE TABLE Ato (
     IdAto           SERIAL          PRIMARY KEY,
     CodEpUrgenc     INT             NOT NULL,
-    IdFunc          INT             NOT NULL,
     Tipo            VARCHAR(100)    NOT NULL,
     DataHoraInicio  TIMESTAMP       NOT NULL DEFAULT NOW(),
     DataHoraFim     TIMESTAMP,
     Descricao       TEXT,
     CONSTRAINT fk_ato_ep
         FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
+        ON DELETE CASCADE
+);
+
+-- ------------------------------------------------------------
+-- REALIZA (N:N entre Ato e Funcionario)
+-- ------------------------------------------------------------
+CREATE TABLE Realiza (
+    IdAto       INT     NOT NULL,
+    IdFunc      INT     NOT NULL,
+    PRIMARY KEY (IdAto, IdFunc),
+    CONSTRAINT fk_realiza_ato
+        FOREIGN KEY (IdAto) REFERENCES Ato(IdAto)
         ON DELETE CASCADE,
-    CONSTRAINT fk_ato_func
+    CONSTRAINT fk_realiza_func
         FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
         ON DELETE RESTRICT
 );
@@ -219,6 +263,26 @@ CREATE TABLE Prescreve (
     CONSTRAINT fk_presc_ato
         FOREIGN KEY (IdAto) REFERENCES Ato(IdAto)
         ON DELETE CASCADE
+);
+
+-- ------------------------------------------------------------
+-- ALERTA
+-- ------------------------------------------------------------
+CREATE TABLE Alerta (
+    CodAlerta       SERIAL      NOT NULL,
+    IdPrescricao    INT         NOT NULL,
+    IdFunc          INT,
+    DataHorAlerta   TIMESTAMP   NOT NULL DEFAULT NOW(),
+    Tipo            VARCHAR(50) NOT NULL,
+    Ignorado        BOOLEAN     NOT NULL DEFAULT FALSE,
+    Justificacao    TEXT,
+    PRIMARY KEY (IdPrescricao, CodAlerta),
+    CONSTRAINT fk_alerta_presc
+        FOREIGN KEY (IdPrescricao) REFERENCES Prescreve(IdPrescricao)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_alerta_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE SET NULL
 );
 
 -- ------------------------------------------------------------

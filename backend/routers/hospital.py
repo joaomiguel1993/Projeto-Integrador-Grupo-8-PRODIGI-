@@ -6,19 +6,25 @@ router = APIRouter(
     tags=["Hospitais"]
 )
 
+
 @router.get("/")
 def get_hospitais():
     query = """
-        SELECT NomeHosp, Morada, Telefone FROM Hospitais ORDER BY NomeHosp;
+        SELECT IdHosp, Nome, Localizacao
+        FROM Hospital
+        ORDER BY Nome;
     """
     return run_query(query)
 
-@router.get("/{nome_hosp}")
-def get_hospital(nome_hosp: str):
+
+@router.get("/{id_hosp}")
+def get_hospital(id_hosp: int):
     query = """
-        SELECT NomeHosp, Morada, Telefone FROM Hospitais WHERE NomeHosp = %s;
+        SELECT IdHosp, Nome, Localizacao
+        FROM Hospital
+        WHERE IdHosp = %s;
     """
-    resultado = run_query(query, (nome_hosp,))
+    resultado = run_query(query, (id_hosp,))
     if not resultado:
         raise HTTPException(status_code=404, detail="Hospital não encontrado")
     return resultado

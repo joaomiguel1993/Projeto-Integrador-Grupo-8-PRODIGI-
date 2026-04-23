@@ -1,4 +1,9 @@
+from typing import Optional
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
 from backend.db import run_query
 
 router = APIRouter(
@@ -6,42 +11,63 @@ router = APIRouter(
     tags=["Episodios"]
 )
 
+
+class EpisodioCreate(BaseModel):
+    numutent: int
+    idhosp: int
+    datahoraentr: Optional[datetime] = None
+    estado: Optional[str] = "aberto"
+
+
 @router.get("/")
 def get_episodios():
     query = """
         SELECT
             CodEpUrgenc,
-            NomeHosp,
+            IdHosp,
             NumUtent,
-            DataHoraEntrada,
-            DataHoraSaida
-        FROM EpisodiosUrgencia
+            DataHoraEntr,
+            DataHoraSaida,
+            Estado
+        FROM EpUrgencia
         ORDER BY CodEpUrgenc;
     """
     return run_query(query)
 
-@router.get("/{cod_ep_urgenc}/{nome_hosp}")
-def get_episodio(cod_ep_urgenc: int, nome_hosp: str):
+
+@router.get("/{cod_ep_urgenc}")
+def get_episodio(cod_ep_urgenc: int):
     query = """
         SELECT
             CodEpUrgenc,
-            NomeHosp,
+            IdHosp,
             NumUtent,
-            DataHoraEntrada,
-            DataHoraSaida
-        FROM EpisodiosUrgencia
-        WHERE CodEpUrgenc = %s AND NomeHosp = %s;
+            DataHoraEntr,
+            DataHoraSaida,
+            Estado
+        FROM EpUrgencia
+        WHERE CodEpUrgenc = %s;
     """
-    resultado = run_query(query, (cod_ep_urgenc, nome_hosp))
+    resultado = run_query(query, (cod_ep_urgenc,))
     if not resultado:
         raise HTTPException(status_code=404, detail="Episódio não encontrado")
     return resultado
 
+
 @router.post("/")
-def criar_episodio(cod_ep_urgenc: int, nome_hosp: str, num_utent: int, data_hora_entrada: str):
+def criar_episodio(data: EpisodioCreate):
     query = """
-        INSERT INTO EpisodiosUrgencia (CodEpUrgenc, NomeHosp, NumUtent, DataHoraEntrada)
-        VALUES (%s, %s, %s, %s);
+        INSERT INTO EpUrgencia (NumUtent, IdHosp, DataHoraEntr, Estado)
+        VALUES (%s, %s, %s, %s)
+        RETURNING CodEpUrgenc;
     """
-    run_query(query, (cod_ep_urgenc, nome_hosp, num_utent, data_hora_entrada))
-    return {"message": "Episódio criado com sucesso"}
+    resultado = run_query(query, (
+        data.numutent,
+        data.idhosp,
+        data.datahoraentr,
+        data.estado
+    ))
+    return {
+        "message": "Episódio criado com sucesso",
+        "codepurgenc": resultado[0]["codepurgenc"]
+    }

@@ -1,8 +1,10 @@
-# backend/routers/triagem.py
+from typing import Optional
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
-from backend.db import run_query, get_connection
+from pydantic import BaseModel
 
+from backend.db import run_query, get_connection
 
 router = APIRouter(
     prefix="/triagem",
@@ -11,37 +13,60 @@ router = APIRouter(
 )
 
 
+class TriagemCreate(BaseModel):
+    codepurgenc: int
+    cortriagem: str
+    sintomas: str
+    datahorainicio: Optional[datetime] = None
+    datahorafim: Optional[datetime] = None
+    temperatura: Optional[float] = None
+    freqcardiaca: Optional[int] = None
+    freqrespiratoria: Optional[int] = None
+    spo2: Optional[float] = None
+    sistolica: Optional[int] = None
+    diastolica: Optional[int] = None
+
+
 @router.get("/")
 def get_triagens():
-    """
-    Lista todas as triagens (atos do tipo 'Triagem').
-    """
     query = """
         SELECT
-            CodEpUrgenc, NomeHosp, DataHoraInicio, DataHoraFim,
-            Tipo
-        FROM Ato
-        WHERE Tipo = 'Triagem';
+            CodEpUrgenc,
+            DataHoraInicio,
+            DataHoraFim,
+            CorTriagem,
+            Sintomas,
+            Temperatura,
+            FreqCardiaca,
+            FreqRespiratoria,
+            SpO2,
+            Sistolica,
+            Diastolica
+        FROM Triagem
+        ORDER BY DataHoraInicio DESC;
     """
-    triagens = run_query(query)
-    return triagens
+    return run_query(query)
 
 
 @router.get("/{cod_epurgenc}")
 def get_triagem(cod_epurgenc: int):
-    """
-    Lista a triagem associada a um episódio de urgência.
-    """
     query = """
         SELECT
-            CodEpUrgenc, NomeHosp, DataHoraInicio, DataHoraFim,
-            Tipo
-        FROM Ato
-        WHERE
-            Tipo = 'Triagem'
-            AND CodEpUrgenc = %s;
+            CodEpUrgenc,
+            DataHoraInicio,
+            DataHoraFim,
+            CorTriagem,
+            Sintomas,
+            Temperatura,
+            FreqCardiaca,
+            FreqRespiratoria,
+            SpO2,
+            Sistolica,
+            Diastolica
+        FROM Triagem
+        WHERE CodEpUrgenc = %s;
     """
-    triagem = run_query(query, params=(cod_epurgenc,))
+    triagem = run_query(query, (cod_epurgenc,))
     if not triagem:
         raise HTTPException(
             status_code=404,
@@ -51,48 +76,50 @@ def get_triagem(cod_epurgenc: int):
 
 
 @router.post("/")
-def create_triagem(
-    cod_epurgenc: int,
-    nome_hosp: str,
-    data_hora_inicio: str,
-    data_hora_fim: str = None,
-    prioridade: str = "Media"
-):
-    """
-    Cria um registo de triagem associado a um episódio de urgência.
+def create_triagem(data: TriagemCreate):
+    allowed_cores = {"vermelho", "laranja", "amarelo", "verde", "azul"}
+    if data.cortriagem not in allowed_cores:
+        raise HTTPException(
+            status_code=400,
+            detail=f"CorTriagem inválida. Valores aceites: {allowed_cores}"
+        )
 
-    - `cod_epurgenc`: código do episódio
-    - `nome_hosp`: nome do hospital
-    - `data_hora_inicio`: início da triagem
-    - `data_hora_fim`: fim (opcional)
-    - `prioridade`: nível de prioridade (ex: Baixa, Media, Alta)
-    """
     conn = get_connection()
     cur = conn.cursor()
     try:
-        if data_hora_fim is None:
-            data_hora_fim = "NULL"
-
-        query = f"""
-            INSERT INTO Ato (
-                CodEpUrgenc, NomeHosp, DataHoraInicio, DataHoraFim,
-                Tipo
+        cur.execute(
+            """
+            INSERT INTO Triagem (
+                CodEpUrgenc, DataHoraInicio, DataHoraFim,
+                CorTriagem, Sintomas, Temperatura,
+                FreqCardiaca, FreqRespiratoria, SpO2,
+                Sistolica, Diastolica
             )
-            VALUES (
-                {cod_epurgenc}, '{nome_hosp}', '{data_hora_inicio}',
-                {data_hora_fim}, 'Triagem'
-            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING CodEpUrgenc;
-        """
-        cur.execute(query)
+            """,
+            (
+                data.codepurgenc,
+                data.datahorainicio,
+                data.datahorafim,
+                data.cortriagem,
+                data.sintomas,
+                data.temperatura,
+                data.freqcardiaca,
+                data.freqrespiratoria,
+                data.spo2,
+                data.sistolica,
+                data.diastolica
+            )
+        )
         conn.commit()
-        return {"cod_epurgenc": cod_epurgenc}
+        return {
+            "message": "Triagem criada com sucesso",
+            "codepurgenc": data.codepurgenc
+        }
     except Exception as e:
         conn.rollback()
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=400, detail=str(e))
     finally:
         cur.close()
         conn.close()
