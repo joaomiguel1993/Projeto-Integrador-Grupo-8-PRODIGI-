@@ -17,9 +17,9 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │
 ├── backend/                              # Código principal da API
 │   ├── __init__.py
-│   ├── auth/                             # Lógica de autenticação e hashing
+│   ├── auth/                             # Segurança, hashing e autenticação
 │   │   └── security.py
-│   ├── models/                           # Schemas Pydantic e enums do domínio
+│   ├── models/                           # Schemas Pydantic e modelos de validação
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── episodio.py
@@ -29,7 +29,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── prescricao.py
 │   │   ├── profissional.py
 │   │   ├── triagem.py
-│   │   ├── utilzador.py
+│   │   ├── utilizador.py
 │   │   └── utente.py
 │   ├── repositories/                     # Acesso a dados e queries SQL
 │   │   ├── __init__.py
@@ -42,7 +42,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais_repository.py
 │   │   ├── triagens_repository.py
 │   │   └── utentes_repository.py
-│   ├── routers/                         # Endpoints da API por domínio
+│   ├── routers/                          # Endpoints da API por domínio
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── auth.py
@@ -54,17 +54,40 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais.py
 │   │   ├── triagem.py
 │   │   └── utentes.py
-│   ├── SQL/                              # Scripts SQL da base de dados
+│   ├── SQL/                              # Scripts de criação e população da BD
 │   │   ├── createTables.sql
 │   │   └── populateDB.sql
-│   ├── db.py                             # Ligação à BD e execução de queries
-│   ├── main.py                           # Ponto de entrada da API
+│   ├── db.py                             # Ligação à base de dados
+│   ├── main.py                           # Ponto de entrada da aplicação
 │   ├── requirements.txt                  # Dependências Python
-│   └── update_passwords.py               # Script para migração de passwords
+│   └── update_passwords.py               # Script de atualização de passwords
+│
+├── ia/                                   # Módulo de inteligência artificial
+│   ├── modelo.py                         # Lógica de previsão
+│   ├── treino.py                         # Treino do modelo
+│   ├── gerar_dados.py                    # Geração/preparação de dados
+│   ├── dados_sinteticos.sql              # Dados sintéticos para treino/teste
+│   └── modelo_urgencias.pkl              # Modelo treinado
+│
+├── web/                                  # Frontend web do sistema
+│   ├── login.html
+│   ├── triagem.html
+│   ├── dashboard.html
+│   ├── styles/
+│   │   └── styles.css
+│   └── scripts/
+│       ├── api.js
+│       ├── app.js
+│       ├── auth.js
+│       ├── dashboard.js
+│       ├── login.js
+│       └── triagem.js
+│
+├── android/                              # Aplicação móvel Android
 │
 ├── docs/                                 # Documentação complementar
-├── Dockerfile                            # Imagem Docker do backend
-├── docker-compose.yml                    # Orquestração de serviços
+├── Dockerfile                            # Imagem Docker da aplicação
+├── docker-compose.yml                    # Orquestração dos serviços
 ├── .env.example                          # Exemplo de variáveis de ambiente
 ├── .gitignore                            # Ficheiros ignorados pelo Git
 └── README.md                             # Documentação principal do projeto
