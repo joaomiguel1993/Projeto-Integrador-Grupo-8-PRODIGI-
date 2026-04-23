@@ -274,6 +274,7 @@ CREATE TABLE Alerta (
 CREATE TABLE Internamento (
     CodInternamento SERIAL PRIMARY KEY,
     CodEpUrgenc INT NOT NULL UNIQUE,
+    IdFunc INT,
     DataHoraInt TIMESTAMP NOT NULL,
     DataHoraConsulta TIMESTAMP,
     DataHoraAlta TIMESTAMP,
@@ -283,5 +284,8 @@ CREATE TABLE Internamento (
     TipoAlta tipo_alta_enum,
     CONSTRAINT fk_int_ep
         FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_int_func
+        FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc)
+        ON DELETE SET NULL
 );
