@@ -1,8 +1,5 @@
 BEGIN;
 
-<<<<<<< Updated upstream
--- HOSPITAL
-=======
 -- ------------------------------------------------------------
 -- FUNCIONARIO (200 registos)
 -- ------------------------------------------------------------
@@ -429,7 +426,7 @@ INSERT INTO Utilizador (IdUtilizador, IdFunc, UserName, Password, Funcao) VALUES
 -- ------------------------------------------------------------
 -- HOSPITAL (10 registos)
 -- ------------------------------------------------------------
->>>>>>> Stashed changes
+
 INSERT INTO Hospital (IdHosp, Nome, Localizacao) VALUES
 (1, 'Hospital de Santa Maria', 'Lisboa'),
 (2, 'Hospital de Sao Jose', 'Lisboa'),
