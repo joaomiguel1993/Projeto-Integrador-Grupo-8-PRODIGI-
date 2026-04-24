@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from typing import Any, Optional
+
 import psycopg2
 from dotenv import load_dotenv
 
@@ -12,6 +14,7 @@ host_postgres = os.getenv("POSTGRES_HOST")
 db_name = os.getenv("POSTGRES_DB")
 db_user = os.getenv("POSTGRES_USER")
 
+
 def get_connection():
     return psycopg2.connect(
         dbname=db_name,
@@ -21,7 +24,8 @@ def get_connection():
         port=port_postgres
     )
 
-def run_query(query, params=None):
+
+def run_query(query: str, params: Optional[tuple[Any, ...]] = None):
     con = None
     cur = None
     try:

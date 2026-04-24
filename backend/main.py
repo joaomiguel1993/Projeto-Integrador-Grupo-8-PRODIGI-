@@ -1,14 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from backend.routers import (
-    utentes, episodios, triagem, internamento, profissionais, auth,
-    ato, prescricao, hospital, medicamento
+    utentes,
+    episodios,
+    triagem,
+    internamento,
+    profissionais,
+    auth,
+    ato,
+    prescricao,
+    hospital,
+    medicamento
 )
 
 app = FastAPI(
-    title="PRODIGI G08 – Gestão de Urgências Hospitalares",
-    description="API para gestão de utentes, episódios e triagem.",
-    version="0.1.0"
+    title="SIGUI – Sistema Integrado de Gestão de Urgências e Internamentos",
+    description="API desenvolvida pelo G08 para gestão de utentes, episódios e triagem.",
+    version="0.25.0"
 )
 
 app.add_middleware(
@@ -19,9 +28,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def home():
-    return {"msg": "API a funcionar"}
+    return {"msg": "API a funcionar seus sapos!"}
+
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(utentes.router, prefix="/api")
