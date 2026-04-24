@@ -1,11 +1,12 @@
 -- ============================================================
 -- PRODIGI — Sistema de Gestão Hospitalar
--- createTables.sql (VERSÃO CORRIGIDA)
+-- createTables.sql (VERSÃO FINAL CORRIGIDA)
 -- ============================================================
 
 -- ------------------------------------------------------------
 -- LIMPEZA
 -- ------------------------------------------------------------
+DROP TABLE IF EXISTS Trabalha CASCADE;
 DROP TABLE IF EXISTS Alerta CASCADE;
 DROP TABLE IF EXISTS Prescreve CASCADE;
 DROP TABLE IF EXISTS Realiza CASCADE;
@@ -56,7 +57,7 @@ CREATE TABLE Utente (
     Nome VARCHAR(100) NOT NULL,
     NIF VARCHAR(9) NOT NULL UNIQUE,
     DataNasc DATE NOT NULL,
-    Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M','F')),
+    Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M', 'F')),
     Localidade VARCHAR(100)
 );
 
@@ -74,10 +75,21 @@ CREATE TABLE Hospital (
 -- ------------------------------------------------------------
 CREATE TABLE Funcionario (
     IdFunc SERIAL PRIMARY KEY,
-    NumFunc VARCHAR(20) NOT NULL UNIQUE,
     Nome VARCHAR(100) NOT NULL,
     TipoFunc tipo_func_enum NOT NULL,
-    Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M','F'))
+    Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M', 'F'))
+);
+
+-- ------------------------------------------------------------
+-- TRABALHA (FUNCIONÁRIO <-> HOSPITAL)
+-- ------------------------------------------------------------
+CREATE TABLE Trabalha (
+    IdFunc INT NOT NULL,
+    IdHosp INT NOT NULL,
+    Ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (IdFunc, IdHosp),
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE,
+    FOREIGN KEY (IdHosp) REFERENCES Hospital(IdHosp) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
@@ -99,11 +111,12 @@ CREATE TABLE Enfermeiro (
 );
 
 -- ------------------------------------------------------------
--- UTILIZADOR (REMOVIDA REDUNDÂNCIA)
+-- UTILIZADOR
+-- UserName pode ser gerado automaticamente a partir do IdFunc,
+-- por exemplo: adm1, rec2, enf3, med4
 -- ------------------------------------------------------------
 CREATE TABLE Utilizador (
-    IdUtilizador SERIAL PRIMARY KEY,
-    IdFunc INT NOT NULL UNIQUE,
+    IdFunc INT PRIMARY KEY,
     UserName VARCHAR(50) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
     FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE
@@ -140,7 +153,7 @@ CREATE TABLE Medicamento (
 );
 
 -- ------------------------------------------------------------
--- MEDICACAO ATIVA (CORRIGIDO)
+-- MEDICACAO ATIVA
 -- ------------------------------------------------------------
 CREATE TABLE MedicacaoAtiva (
     CodMedicacaoAtiva SERIAL PRIMARY KEY,
@@ -187,7 +200,7 @@ CREATE TABLE Triagem (
 );
 
 -- ------------------------------------------------------------
--- ATO (JÁ COM DESCRIÇÃO)
+-- ATO
 -- ------------------------------------------------------------
 CREATE TABLE Ato (
     IdAto SERIAL PRIMARY KEY,
@@ -237,7 +250,7 @@ CREATE TABLE Alerta (
 );
 
 -- ------------------------------------------------------------
--- INTERNAMENTO (COM CONSTRAINT DE CONSISTÊNCIA)
+-- INTERNAMENTO
 -- ------------------------------------------------------------
 CREATE TABLE Internamento (
     CodInternamento SERIAL PRIMARY KEY,
@@ -258,4 +271,3 @@ CREATE TABLE Internamento (
         (DataHoraAlta IS NOT NULL AND TipoAlta IS NOT NULL)
     )
 );
-
