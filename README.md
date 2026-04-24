@@ -15,11 +15,11 @@ No âmbito do Projeto Integrador da pós-graduação PRODIGI, o Grupo 8 está a 
 ```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
-├── backend/                              # Código principal da API
+├── backend/                              # Código principal da API (✅ JÁ FUNCIONAL)
 │   ├── __init__.py
-│   ├── auth/                             # Segurança, hashing e autenticação
+│   ├── auth/
 │   │   └── security.py
-│   ├── models/                           # Schemas Pydantic e modelos de validação
+│   ├── models/                           # ✅ Completo
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── episodio.py
@@ -31,7 +31,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── triagem.py
 │   │   ├── utilizador.py
 │   │   └── utente.py
-│   ├── repositories/                     # Acesso a dados e queries SQL
+│   ├── repositories/                     # ✅ Completo
 │   │   ├── __init__.py
 │   │   ├── atos_repository.py
 │   │   ├── episodios_repository.py
@@ -42,7 +42,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais_repository.py
 │   │   ├── triagens_repository.py
 │   │   └── utentes_repository.py
-│   ├── routers/                          # Endpoints da API por domínio
+│   ├── routers/                          # ✅ Completo
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── auth.py
@@ -54,43 +54,92 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais.py
 │   │   ├── triagem.py
 │   │   └── utentes.py
-│   ├── SQL/                              # Scripts de criação e população da BD
-│   │   ├── createTables.sql
-│   │   └── populateDB.sql
-│   ├── db.py                             # Ligação à base de dados
-│   ├── main.py                           # Ponto de entrada da aplicação
-│   ├── requirements.txt                  # Dependências Python
-│   └── update_passwords.py               # Script de atualização de passwords
+│   ├── SQL/
+│   │   ├── createTables.sql             # ✅ Correto
+│   │   └── populateDB.sql                # ✅ A ajustar
+│   ├── db.py
+│   ├── main.py
+│   ├── requirements.txt
+│   └── update_passwords.py
 │
-├── ia/                                   # Módulo de inteligência artificial
-│   ├── modelo.py                         # Lógica de previsão
-│   ├── treino.py                         # Treino do modelo
-│   ├── gerar_dados.py                    # Geração/preparação de dados
-│   ├── dados_sinteticos.sql              # Dados sintéticos para treino/teste
-│   └── modelo_urgencias.pkl              # Modelo treinado
+├── ia/                                   # 🚧 A FAZER
+│   ├── modelo.py
+│   ├── treino.py
+│   ├── gerar_dados.py
+│   ├── dados_sinteticos.sql
+│   └── modelo_urgencias.pkl
 │
-├── web/                                  # Frontend web do sistema
-│   ├── login.html
-│   ├── triagem.html
-│   ├── dashboard.html
-│   ├── styles/
-│   │   └── styles.css
-│   └── scripts/
-│       ├── api.js
-│       ├── app.js
-│       ├── auth.js
-│       ├── dashboard.js
-│       ├── login.js
-│       └── triagem.js
+├── web/                                  # 🆕 FRONTEND COMPLETO 
+│   ├── src/
+│   │   ├── components/                   # Componentes reutilizáveis
+│   │   │   ├── layout/
+│   │   │   │   ├── HeaderPublic.jsx
+│   │   │   │   ├── HeaderAuth.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   ├── Topbar.jsx
+│   │   │   │   └── HospitalContextBanner.jsx
+│   │   │   ├── ui/
+│   │   │   │   ├── Button.jsx
+│   │   │   │   ├── Card.jsx
+│   │   │   │   ├── Table.jsx
+│   │   │   │   ├── Modal.jsx
+│   │   │   │   ├── Badge.jsx
+│   │   │   │   ├── FormInput.jsx
+│   │   │   │   └── LoadingSpinner.jsx
+│   │   │   └── shared/
+│   │   │       ├── KPICard.jsx
+│   │   │       ├── PriorityBadge.jsx
+│   │   │       ├── EmptyState.jsx
+│   │   │       └── ConfirmDialog.jsx
+│   │   ├── pages/
+│   │   │   ├── Home.jsx                  # Homepage pública
+│   │   │   ├── Login.jsx                 # Login + popup hospital
+│   │   │   ├── DashboardEnfermeiro.jsx   # Dashboard enfermeiro
+│   │   │   ├── DashboardMedico.jsx       # Dashboard médico
+│   │   │   ├── DashboardAdmin.jsx        # Dashboard admin
+│   │   │   ├── Utente.jsx               # /utente/:id
+│   │   │   ├── Episodio.jsx             # /episodio/:id
+│   │   │   └── AdminUtilizadores.jsx    # /admin/utilizadores
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── HospitalContext.jsx
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   ├── hospital.js
+│   │   │   ├── utente.js
+│   │   │   ├── episodio.js
+│   │   │   ├── triagem.js
+│   │   │   ├── prescricao.js
+│   │   │   └── ia.js
+│   │   ├── hooks/
+│   │   │   ├── useAuth.js
+│   │   │   └── useHospital.js
+│   │   ├── utils/
+│   │   │   ├── formatters.js
+│   │   │   └── constants.js
+│   │   └── App.jsx
+│   │   └── main.jsx
+│   ├── public/
+│   │   └── index.html
+│   ├── index.html                        # Entrada da app
+│   ├── package.json                      # Dependências React
+│   ├── vite.config.js                    # Config Vite
+│   ├── tailwind.config.js                # Config Tailwind
+│   └── README.md                         # Como correr o frontend
 │
-├── android/                              # Aplicação móvel Android
+├── android/                              # 🚧 A FAZER
 │
-├── docs/                                 # Documentação complementar
-├── Dockerfile                            # Imagem Docker da aplicação
-├── docker-compose.yml                    # Orquestração dos serviços
-├── .env.example                          # Exemplo de variáveis de ambiente
-├── .gitignore                            # Ficheiros ignorados pelo Git
-└── README.md                             # Documentação principal do projeto
+├── docs/                                 # Documentação
+│   ├── arquitetura.md                    # Diagrama de arquitetura
+│   ├── api.md                           # Documentação endpoints
+│   └── requisitos.md                    # Requisitos funcionais
+│
+├── Dockerfile                            # ✅ Backend
+├── docker-compose.yml                    # ✅ Backend + DB + pgAdmin
+├── .env.example                          # ✅ Configuração
+├── .gitignore                            # ✅ Git
+└── README.md                             # 🆕 Documentação completa
 ```
 
 A organização atual do backend está centrada em `routers`, `repositories`, `models`, `auth` e `db.py`, refletindo uma estrutura modular orientada à separação entre endpoints, acesso a dados, validação e segurança. 
