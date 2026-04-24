@@ -37,7 +37,7 @@ CREATE TYPE cor_triagem_enum AS ENUM (
 );
 
 CREATE TYPE tipo_func_enum AS ENUM (
-    'medico', 'enfermeiro', 'admin'
+    'medico', 'enfermeiro', 'admin', 'rececionista'
 );
 
 CREATE TYPE estado_ep_enum AS ENUM (
