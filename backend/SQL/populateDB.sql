@@ -218,7 +218,34 @@ INSERT INTO Funcionario (IdFunc, NumFunc, Nome, TipoFunc, Sexo) VALUES
 (197, 'F0197', 'Andre Oliveira', 'admin', 'M'),
 (198, 'F0198', 'Vera Sousa', 'admin', 'F'),
 (199, 'F0199', 'Ricardo Ferreira', 'admin', 'M'),
-(200, 'F0200', 'Leonor Sousa', 'admin', 'F');
+(200, 'F0200', 'Leonor Sousa', 'admin', 'F'),
+(201, 'F0201', 'Mariana Costa', 'rececionista', 'F'),
+(202, 'F0202', 'Joao Reis', 'rececionista', 'M'),
+(203, 'F0203', 'Beatriz Lopes', 'rececionista', 'F'),
+(204, 'F0204', 'Tiago Martins', 'rececionista', 'M'),
+(205, 'F0205', 'Carla Ferreira', 'rececionista', 'F'),
+(206, 'F0206', 'Rui Almeida', 'rececionista', 'M'),
+(207, 'F0207', 'Sofia Pinto', 'rececionista', 'F'),
+(208, 'F0208', 'Pedro Correia', 'rececionista', 'M'),
+(209, 'F0209', 'Ines Gomes', 'rececionista', 'F'),
+(210, 'F0210', 'Daniel Sousa', 'rececionista', 'M');
+
+-- ------------------------------------------------------------
+-- RELACAO TRABALHA
+-- ------------------------------------------------------------
+INSERT INTO Trabalha (IdFunc, IdHosp) VALUES
+(201, 1),
+(202, 1),
+(203, 2),
+(204, 2),
+(205, 3),
+(206, 3),
+(207, 4),
+(208, 4),
+(209, 5),
+(210, 5),
+(91, 1),
+(1, 1);
 
 -- ------------------------------------------------------------
 -- MEDICO
@@ -410,15 +437,21 @@ INSERT INTO Enfermeiro (IdFunc) VALUES
 (179),
 (180);
 
+
 -- ------------------------------------------------------------
--- UTILIZADOR (5 utilizadores de teste)
+-- UTILIZADOR (4 utilizadores de teste)
+-- Credenciais de teste:
+-- admin.teste      -> Admin123!
+-- rececao.teste    -> Rececao123!
+-- enfermeiro.teste -> Enf123!
+-- medico.teste     -> Med123!
 -- ------------------------------------------------------------
-INSERT INTO Utilizador (IdUtilizador, IdFunc, UserName, Password) VALUES
-(1, 181, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TiGNbNg6mLTiPWqJmCkCQlzSsWaW'),
-(2, 1, 'medico', '$2b$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC5uKECQrFhPkDVhA5mu'),
-(3, 91, 'enfermeiro', '$2b$12$eFtEcGi.Sb.Ow6nNdIWCpuMkM1q4b6UMZjfYdMhZ3hHF4d5G5gHlC'),
-(4, 182, 'gestor', '$2b$12$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV12'),
-(5, 2, 'medico2', '$2b$12$mnopqrstuvwxyzABCDEFGHIJKLMNopqrstuvwxyz1234');
+INSERT INTO Utilizador (IdFunc, UserName, Password) VALUES
+(181, 'admin.teste', '$2b$12$.AIIka6BDsXS3zty4u1yA.pQNAsTbsmc2ksl8uqvuSyklFR9Y8ZJO'),
+(182, 'rececao.teste', '$2b$12$5QLQnVTqinhjpp4bFZ3FD.VOsuq2SdJTz1Op2QN2d6lSlILUxec/m'),
+(91, 'enfermeiro.teste', '$2b$12$FIaY5oXghS6uVtD3hRitAO36aSHUbxM/.WPTOgHaO4Um3retjIARa'),
+(1, 'medico.teste', '$2b$12$48rz5OON15UKV/uApK3RNOXD9.1mbCEZobxK7oyzzfWI21yb404cG');
+
 
 -- ------------------------------------------------------------
 -- ANTECEDENTE (100 registos)
