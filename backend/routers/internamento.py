@@ -1,19 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from backend.repositories.internamentos_repository import listar_internamentos, obter_internamento
+from backend.schemas.internamento import InternamentoResponse
+from backend.services.internamentos_service import get_internamentos_service, get_internamento_service
 
-router = APIRouter(
-    prefix="/internamentos",
-    tags=["Internamentos"],
-    responses={404: {"description": "Internamento não encontrado"}}
-)
+router = APIRouter(prefix="/internamentos", tags=["Internamentos"])
 
-@router.get("/")
+@router.get("/", response_model=list[InternamentoResponse])
 def get_internamentos():
-    return listar_internamentos()
+    return get_internamentos_service()
 
-@router.get("/{cod_internamento}")
+@router.get("/{cod_internamento}", response_model=InternamentoResponse)
 def get_internamento(cod_internamento: int):
-    resultado = obter_internamento(cod_internamento)
+    resultado = get_internamento_service(cod_internamento)
     if not resultado:
         raise HTTPException(status_code=404, detail="Internamento não encontrado")
     return resultado

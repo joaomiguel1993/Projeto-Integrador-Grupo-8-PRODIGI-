@@ -1,27 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from backend.repositories.medicamentos_repository import (
-    listar_medicamentos,
-    obter_medicamento,
-    listar_utentes_com_medicamento
-)
+from backend.schemas.medicamento import MedicamentoResponse
+from backend.services.medicamentos_service import get_medicamentos_service, get_medicamento_service
 
-router = APIRouter(
-    prefix="/medicamentos",
-    tags=["Medicamentos"],
-    responses={404: {"description": "Medicamento não encontrado"}}
-)
+router = APIRouter(prefix="/medicamentos", tags=["Medicamentos"])
 
-@router.get("/")
+@router.get("/", response_model=list[MedicamentoResponse])
 def get_medicamentos():
-    return listar_medicamentos()
+    return get_medicamentos_service()
 
-@router.get("/{cod_medicamento}")
+@router.get("/{cod_medicamento}", response_model=MedicamentoResponse)
 def get_medicamento(cod_medicamento: int):
-    resultado = obter_medicamento(cod_medicamento)
+    resultado = get_medicamento_service(cod_medicamento)
     if not resultado:
         raise HTTPException(status_code=404, detail="Medicamento não encontrado")
     return resultado
-
-@router.get("/{cod_medicamento}/utentes")
-def get_utentes_com_medicamento(cod_medicamento: int):
-    return listar_utentes_com_medicamento(cod_medicamento)

@@ -1,37 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from backend.repositories.profissionais_repository import (
-    listar_profissionais,
-    obter_profissional,
-    listar_medicos,
-    listar_enfermeiros,
-    obter_utilizador_profissional
-)
+from backend.schemas.profissional import ProfissionalResponse
+from backend.services.profissionais_service import get_profissionais_service, get_profissional_service
 
-router = APIRouter(
-    prefix="/profissionais",
-    tags=["Profissionais"],
-    responses={404: {"description": "Profissional não encontrado"}}
-)
+router = APIRouter(prefix="/profissionais", tags=["Profissionais"])
 
-@router.get("/")
+@router.get("/", response_model=list[ProfissionalResponse])
 def get_profissionais():
-    return listar_profissionais()
+    return get_profissionais_service()
 
-@router.get("/medicos")
-def get_medicos():
-    return listar_medicos()
-
-@router.get("/enfermeiros")
-def get_enfermeiros():
-    return listar_enfermeiros()
-
-@router.get("/{id_func}")
+@router.get("/{id_func}", response_model=ProfissionalResponse)
 def get_profissional(id_func: int):
-    resultado = obter_profissional(id_func)
+    resultado = get_profissional_service(id_func)
     if not resultado:
         raise HTTPException(status_code=404, detail="Profissional não encontrado")
     return resultado
-
-@router.get("/{id_func}/utilizador")
-def get_utilizador_profissional_endpoint(id_func: int):
-    return obter_utilizador_profissional(id_func)

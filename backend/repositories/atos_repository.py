@@ -1,58 +1,56 @@
-from typing import Optional
-from backend.db import run_query
+from typing import Any, cast
+
+from backend.dao.atos_dao import (
+    select_all_atos,
+    select_ato_by_id,
+    select_atos_by_ep_urgencia,
+    insert_ato,
+    select_funcionarios_by_ato,
+    select_prescricoes_by_ato
+)
 
 
 def listar_atos():
-    result = run_query("""
-        SELECT IdAto, CodEpUrgenc, Tipo, DataHoraInicio, DataHoraFim, Descricao
-        FROM Ato
-        ORDER BY DataHoraInicio DESC
-    """)
-    return result if result else []
+    result = select_all_atos()
+    if not result:
+        return []
+    return result
 
 
 def obter_ato(id_ato: int):
-    result = run_query("""
-        SELECT IdAto, CodEpUrgenc, Tipo, DataHoraInicio, DataHoraFim, Descricao
-        FROM Ato
-        WHERE IdAto = %s
-    """, (id_ato,))
-    return result if result else []
+    result = select_ato_by_id(id_ato)
+    if not result:
+        return None
+
+    result_list = cast(list[dict[str, Any]], result)
+    return result_list[0]
 
 
-def listar_atos_episodio(cod_epurgenc: int):
-    result = run_query("""
-        SELECT IdAto, CodEpUrgenc, Tipo, DataHoraInicio, DataHoraFim, Descricao
-        FROM Ato
-        WHERE CodEpUrgenc = %s
-        ORDER BY DataHoraInicio DESC
-    """, (cod_epurgenc,))
-    return result if result else []
+def listar_atos_por_episodio(cod_ep_urgenc: int):
+    result = select_atos_by_ep_urgencia(cod_ep_urgenc)
+    if not result:
+        return []
+    return result
 
 
-def criar_ato(cod_epurgenc: int, tipo: str, data_hora_inicio: str, descricao: Optional[str] = None):
-    return run_query("""
-        INSERT INTO Ato (CodEpUrgenc, Tipo, DataHoraInicio, Descricao)
-        VALUES (%s, %s, %s, %s)
-    """, (cod_epurgenc, tipo, data_hora_inicio, descricao))
+def criar_ato(cod_ep_urgenc: int, tipo: str, descricao: str | None, data_hora_inicio):
+    result = insert_ato(cod_ep_urgenc, tipo, descricao, data_hora_inicio)
+    if not result:
+        return None
+
+    result_list = cast(list[dict[str, Any]], result)
+    return result_list[0]
 
 
-def listar_funcionarios_ato(id_ato: int):
-    result = run_query("""
-        SELECT f.IdFunc, f.Nome, f.TipoFunc
-        FROM RealizaAto ra
-        JOIN Funcionario f ON ra.IdFunc = f.IdFunc
-        WHERE ra.IdAto = %s
-        ORDER BY f.Nome
-    """, (id_ato,))
-    return result if result else []
+def listar_funcionarios_do_ato(id_ato: int):
+    result = select_funcionarios_by_ato(id_ato)
+    if not result:
+        return []
+    return result
 
 
-def listar_prescricoes_ato(id_ato: int):
-    result = run_query("""
-        SELECT IdPrescricao, IdAto, Descricao, DataHoraPresc
-        FROM Prescreve
-        WHERE IdAto = %s
-        ORDER BY DataHoraPresc DESC
-    """, (id_ato,))
-    return result if result else []
+def listar_prescricoes_do_ato(id_ato: int):
+    result = select_prescricoes_by_ato(id_ato)
+    if not result:
+        return []
+    return result

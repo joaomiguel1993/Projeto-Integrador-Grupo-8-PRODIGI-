@@ -1,42 +1,24 @@
-from fastapi import APIRouter, HTTPException
-from backend.repositories.episodios_repository import (
-    listar_episodios,
-    obter_episodio,
-    obter_triagem_episodio,
-    obter_internamento_episodio,
-    listar_profissionais_episodio
-)
-from backend.repositories.atos_repository import listar_atos_episodio
-
-router = APIRouter(
-    prefix="/episodios",
-    tags=["Episódios"],
-    responses={404: {"description": "Episódio não encontrado"}}
+from fastapi import APIRouter, HTTPException, status
+from backend.schemas.episodio import EpisodioCreate, EpisodioResponse
+from backend.services.episodios_service import (
+    get_episodios_service,
+    get_episodio_service,
+    criar_episodio_service
 )
 
-@router.get("/")
+router = APIRouter(prefix="/episodios", tags=["Episódios"])
+
+@router.get("/", response_model=list[EpisodioResponse])
 def get_episodios():
-    return listar_episodios()
+    return get_episodios_service()
 
-@router.get("/{cod_ep}")
-def get_episodio(cod_ep: int):
-    resultado = obter_episodio(cod_ep)
+@router.get("/{cod_ep_urgenc}", response_model=EpisodioResponse)
+def get_episodio(cod_ep_urgenc: int):
+    resultado = get_episodio_service(cod_ep_urgenc)
     if not resultado:
         raise HTTPException(status_code=404, detail="Episódio não encontrado")
     return resultado
 
-@router.get("/{cod_ep}/triagem")
-def get_triagem_episodio(cod_ep: int):
-    return obter_triagem_episodio(cod_ep)
-
-@router.get("/{cod_ep}/atos")
-def get_atos_episodio(cod_ep: int):
-    return listar_atos_episodio(cod_ep)
-
-@router.get("/{cod_ep}/internamento")
-def get_internamento_episodio(cod_ep: int):
-    return obter_internamento_episodio(cod_ep)
-
-@router.get("/{cod_ep}/profissionais")
-def get_profissionais_episodio(cod_ep: int):
-    return listar_profissionais_episodio(cod_ep)
+@router.post("/", response_model=EpisodioResponse, status_code=status.HTTP_201_CREATED)
+def post_episodio(data: EpisodioCreate):
+    return criar_episodio_service(data)

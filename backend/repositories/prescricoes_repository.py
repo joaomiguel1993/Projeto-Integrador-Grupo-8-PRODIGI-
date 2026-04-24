@@ -1,46 +1,20 @@
-from backend.db import run_query
+from typing import Any, cast
 
+from backend.dao.prescricoes_dao import (
+    select_all_prescricoes,
+    select_prescricao_by_id
+)
 
 def listar_prescricoes():
-    result = run_query("""
-        SELECT IdPrescricao, IdAto, Descricao, DataHoraPresc
-        FROM Prescreve
-        ORDER BY DataHoraPresc DESC
-    """)
-    return result if result else []
-
+    result = select_all_prescricoes()
+    if not result:
+        return []
+    return result
 
 def obter_prescricao(id_prescricao: int):
-    result = run_query("""
-        SELECT IdPrescricao, IdAto, Descricao, DataHoraPresc
-        FROM Prescreve
-        WHERE IdPrescricao = %s
-    """, (id_prescricao,))
-    return result if result else []
+    result = select_prescricao_by_id(id_prescricao)
+    if not result:
+        return None
 
-
-def listar_prescricoes_ato(id_ato: int):
-    result = run_query("""
-        SELECT IdPrescricao, IdAto, Descricao, DataHoraPresc
-        FROM Prescreve
-        WHERE IdAto = %s
-        ORDER BY DataHoraPresc DESC
-    """, (id_ato,))
-    return result if result else []
-
-
-def criar_prescricao(id_ato: int, descricao: str):
-    return run_query("""
-        INSERT INTO Prescreve (IdAto, Descricao)
-        VALUES (%s, %s)
-    """, (id_ato, descricao))
-
-
-def listar_alertas_prescricao(id_prescricao: int):
-    result = run_query("""
-        SELECT IdPrescricao, CodAlerta, IdFunc, DataHorAlerta, Tipo, Ignorado, Justificacao
-        FROM Alerta
-        WHERE IdPrescricao = %s
-        ORDER BY CodAlerta
-    """, (id_prescricao,))
-    return result if result else []
+    result_list = cast(list[dict[str, Any]], result)
+    return result_list[0]

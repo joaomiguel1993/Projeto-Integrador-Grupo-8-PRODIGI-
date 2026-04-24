@@ -1,37 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from backend.repositories.utentes_repository import (
-    listar_utentes,
-    obter_utente,
-    listar_episodios_utente,
-    listar_antecedentes_utente,
-    listar_medicacao_ativa_utente
-)
+from backend.schemas.utente import UtenteResponse
+from backend.services.utentes_service import get_utentes_service, get_utente_service
 
-router = APIRouter(
-    prefix="/utentes",
-    tags=["Utentes"],
-    responses={404: {"description": "Utente não encontrado"}}
-)
+router = APIRouter(prefix="/utentes", tags=["Utentes"])
 
-@router.get("/")
+@router.get("/", response_model=list[UtenteResponse])
 def get_utentes():
-    return listar_utentes()
+    return get_utentes_service()
 
-@router.get("/{num_utent}")
-def get_utente(num_utent: int):
-    resultado = obter_utente(num_utent)
+@router.get("/{num_utente}", response_model=UtenteResponse)
+def get_utente(num_utente: int):
+    resultado = get_utente_service(num_utente)
     if not resultado:
         raise HTTPException(status_code=404, detail="Utente não encontrado")
     return resultado
-
-@router.get("/{num_utent}/episodios")
-def get_episodios_utente(num_utent: int):
-    return listar_episodios_utente(num_utent)
-
-@router.get("/{num_utent}/antecedentes")
-def get_antecedentes_utente(num_utent: int):
-    return listar_antecedentes_utente(num_utent)
-
-@router.get("/{num_utent}/medicacao-ativa")
-def get_medicacao_ativa_utente(num_utent: int):
-    return listar_medicacao_ativa_utente(num_utent)

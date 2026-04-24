@@ -1,49 +1,20 @@
-from backend.db import run_query
+from typing import Any, cast
 
+from backend.dao.profissionais_dao import (
+    select_all_profissionais,
+    select_profissional_by_id
+)
 
 def listar_profissionais():
-    result = run_query("""
-        SELECT IdFunc, NumFunc, Nome, TipoFunc, Sexo
-        FROM Funcionario
-        ORDER BY Nome
-    """)
-    return result if result else []
-
+    result = select_all_profissionais()
+    if not result:
+        return []
+    return result
 
 def obter_profissional(id_func: int):
-    result = run_query("""
-        SELECT IdFunc, NumFunc, Nome, TipoFunc, Sexo
-        FROM Funcionario
-        WHERE IdFunc = %s
-    """, (id_func,))
-    return result if result else []
+    result = select_profissional_by_id(id_func)
+    if not result:
+        return None
 
-
-def listar_medicos():
-    result = run_query("""
-        SELECT m.IdFunc, f.NumFunc, f.Nome, f.TipoFunc, f.Sexo,
-               m.Especialidade, m.Estagiario
-        FROM Medico m
-        JOIN Funcionario f ON m.IdFunc = f.IdFunc
-        ORDER BY f.Nome
-    """)
-    return result if result else []
-
-
-def listar_enfermeiros():
-    result = run_query("""
-        SELECT e.IdFunc, f.NumFunc, f.Nome, f.TipoFunc, f.Sexo
-        FROM Enfermeiro e
-        JOIN Funcionario f ON e.IdFunc = f.IdFunc
-        ORDER BY f.Nome
-    """)
-    return result if result else []
-
-
-def obter_utilizador_profissional(id_func: int):
-    result = run_query("""
-        SELECT IdUtilizador, IdFunc, UserName, Funcao
-        FROM Utilizador
-        WHERE IdFunc = %s
-    """, (id_func,))
-    return result if result else []
+    result_list = cast(list[dict[str, Any]], result)
+    return result_list[0]

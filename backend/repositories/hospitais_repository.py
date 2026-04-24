@@ -1,29 +1,20 @@
-from backend.db import run_query
+from typing import Any, cast
 
+from backend.dao.hospitais_dao import (
+    select_all_hospitais,
+    select_hospital_by_id
+)
 
 def listar_hospitais():
-    result = run_query("""
-        SELECT IdHosp, Nome, Localizacao
-        FROM Hospital
-        ORDER BY Nome
-    """)
-    return result if result else []
-
+    result = select_all_hospitais()
+    if not result:
+        return []
+    return result
 
 def obter_hospital(id_hosp: int):
-    result = run_query("""
-        SELECT IdHosp, Nome, Localizacao
-        FROM Hospital
-        WHERE IdHosp = %s
-    """, (id_hosp,))
-    return result if result else []
+    result = select_hospital_by_id(id_hosp)
+    if not result:
+        return None
 
-
-def listar_episodios_hospital(id_hosp: int):
-    result = run_query("""
-        SELECT CodEpUrgenc, NumUtent, DataHoraEntr, DataHoraSaida, Estado
-        FROM EpUrgencia
-        WHERE IdHosp = %s
-        ORDER BY DataHoraEntr DESC
-    """, (id_hosp,))
-    return result if result else []
+    result_list = cast(list[dict[str, Any]], result)
+    return result_list[0]

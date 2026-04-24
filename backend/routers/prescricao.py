@@ -1,27 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from backend.repositories.prescricoes_repository import (
-    listar_prescricoes,
-    obter_prescricao,
-    listar_alertas_prescricao
-)
+from backend.schemas.prescricao import PrescricaoResponse
+from backend.services.prescricoes_service import get_prescricoes_service, get_prescricao_service
 
-router = APIRouter(
-    prefix="/prescricoes",
-    tags=["Prescrições"],
-    responses={404: {"description": "Prescrição não encontrada"}}
-)
+router = APIRouter(prefix="/prescricoes", tags=["Prescrições"])
 
-@router.get("/")
+@router.get("/", response_model=list[PrescricaoResponse])
 def get_prescricoes():
-    return listar_prescricoes()
+    return get_prescricoes_service()
 
-@router.get("/{id_prescricao}")
+@router.get("/{id_prescricao}", response_model=PrescricaoResponse)
 def get_prescricao(id_prescricao: int):
-    resultado = obter_prescricao(id_prescricao)
+    resultado = get_prescricao_service(id_prescricao)
     if not resultado:
         raise HTTPException(status_code=404, detail="Prescrição não encontrada")
     return resultado
-
-@router.get("/{id_prescricao}/alertas")
-def get_alertas_prescricao(id_prescricao: int):
-    return listar_alertas_prescricao(id_prescricao)
