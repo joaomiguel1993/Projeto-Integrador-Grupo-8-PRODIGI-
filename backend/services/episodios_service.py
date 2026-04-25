@@ -7,4 +7,4 @@ def get_episodio_service(cod_ep_urgenc: int):
     return obter_episodio(cod_ep_urgenc)
 
 def criar_episodio_service(data):
-    return criar_episodio(data.NumUtent, data.IdHosp)
+    return criar_episodio(data.numutent, data.idhosp)

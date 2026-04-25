@@ -18,11 +18,11 @@ def get_atos_por_episodio_service(cod_ep_urgenc: int):
     return listar_atos_por_episodio(cod_ep_urgenc)
 
 def criar_ato_service(data):
-    data_hora_inicio = data.DataHoraInicio or datetime.now()
+    data_hora_inicio = data.datahorainicio or datetime.now()
     return criar_ato(
-        cod_ep_urgenc=data.CodEpUrgenc,
-        tipo=data.Tipo,
-        descricao=data.Descricao,
+        cod_ep_urgenc=data.codepurgenc,
+        tipo=data.tipo,
+        descricao=data.descricao,
         data_hora_inicio=data_hora_inicio
     )
 
