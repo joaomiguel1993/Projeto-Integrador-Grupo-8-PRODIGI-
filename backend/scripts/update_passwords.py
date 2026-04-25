@@ -10,8 +10,8 @@ def update_passwords():
         cur = con.cursor()
 
         cur.execute("""
-            SELECT IdUtilizador, Password
-            FROM Utilizador
+            SELECT idutilizador, Password
+            FROM utilizador
             WHERE Password IS NOT NULL
         """)
         utilizadores = cur.fetchall()
@@ -35,9 +35,9 @@ def update_passwords():
             nova_password = hash_password(password_str)
 
             cur.execute("""
-                UPDATE Utilizador
+                UPDATE utilizador
                 SET Password = %s
-                WHERE IdUtilizador = %s
+                WHERE idutilizador = %s
             """, (nova_password, id_utilizador))
 
             total += 1
