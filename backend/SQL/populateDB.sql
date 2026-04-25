@@ -7613,4 +7613,17 @@ INSERT INTO Internamento (CodInternamento, CodEpUrgenc, IdFunc, DataHoraInt, Dat
 (99, 99, 10, '2025-01-26 06:00:00', '2025-01-26 18:00:00', NULL, 'Motivo de internamento 99', 'C099', 'Cardiologia', NULL),
 (100, 100, 11, '2025-01-26 12:00:00', '2025-01-27 00:00:00', '2025-01-30 12:00:00', 'Motivo de internamento 100', 'C100', 'Medicina', 'clinica');
 
+
+SELECT setval('hospital_idhosp_seq', MAX(idhosp)) FROM hospital;
+SELECT setval('funcionario_idfunc_seq', MAX(idfunc)) FROM funcionario;
+SELECT setval('antecedente_codantecedente_seq', MAX(codantecedente)) FROM antecedente;
+SELECT setval('medicamento_codmedicamento_seq', MAX(codmedicamento)) FROM medicamento;
+SELECT setval('utente_numutent_seq', MAX(numutent)) FROM utente;
+SELECT setval('medicacaoativa_codmedicacaoativa_seq', MAX(codmedicacaoativa)) FROM medicacaoativa;
+SELECT setval('epurgencia_codepurgenc_seq', MAX(codepurgenc)) FROM epurgencia;
+SELECT setval('ato_idato_seq', MAX(idato)) FROM ato;
+SELECT setval('prescreve_idprescricao_seq', MAX(idprescricao)) FROM prescreve;
+SELECT setval('alerta_codalerta_seq', MAX(codalerta)) FROM alerta;
+SELECT setval('internamento_codinternamento_seq', MAX(codinternamento)) FROM internamento;
+
 COMMIT;
