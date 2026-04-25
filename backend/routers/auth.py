@@ -30,9 +30,9 @@ def register(data: RegisterRequest):
 
     try:
         cur.execute("""
-            SELECT UserName
-            FROM Utilizador
-            WHERE UserName = %s;
+            SELECT username
+            FROM utilizador
+            WHERE username = %s;
         """, (data.username,))
         existing_user = cur.fetchone()
 
@@ -40,9 +40,9 @@ def register(data: RegisterRequest):
             raise HTTPException(status_code=409, detail="Username já existe.")
 
         cur.execute("""
-            SELECT IdFunc, TipoFunc
-            FROM Funcionario
-            WHERE IdFunc = %s;
+            SELECT idfunc, tipofunc
+            FROM funcionario
+            WHERE idfunc = %s;
         """, (data.idfunc,))
         funcionario = cur.fetchone()
 
@@ -60,7 +60,7 @@ def register(data: RegisterRequest):
         password_hash = hash_password(data.password)
 
         cur.execute("""
-            INSERT INTO Utilizador (IdFunc, UserName, Password)
+            INSERT INTO utilizador (idfunc, username, password)
             VALUES (%s, %s, %s);
         """, (data.idfunc, data.username, password_hash))
 
@@ -90,9 +90,9 @@ def login(data: LoginRequest):
 
     try:
         cur.execute("""
-            SELECT UserName, Password, IdFunc
-            FROM Utilizador
-            WHERE UserName = %s;
+            SELECT username, password, idfunc
+            FROM utilizador
+            WHERE username = %s;
         """, (data.username,))
         user = cur.fetchone()
 
@@ -105,9 +105,9 @@ def login(data: LoginRequest):
             raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
         cur.execute("""
-            SELECT TipoFunc
-            FROM Funcionario
-            WHERE IdFunc = %s;
+            SELECT tipofunc
+            FROM funcionario
+            WHERE idfunc = %s;
         """, (idfunc,))
         funcionario = cur.fetchone()
 

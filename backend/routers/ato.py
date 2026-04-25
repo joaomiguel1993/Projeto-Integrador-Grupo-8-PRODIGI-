@@ -23,16 +23,16 @@ router = APIRouter(
 def get_atos():
     return get_atos_service()
 
+@router.get("/episodio/{cod_ep_urgenc}", response_model=list[AtoResponse])
+def get_atos_por_episodio(cod_ep_urgenc: int):
+    return get_atos_por_episodio_service(cod_ep_urgenc)
+
 @router.get("/{id_ato}", response_model=AtoResponse)
 def get_ato(id_ato: int):
     resultado = get_ato_service(id_ato)
     if not resultado:
         raise HTTPException(status_code=404, detail="Ato não encontrado")
     return resultado
-
-@router.get("/episodio/{cod_ep_urgenc}", response_model=list[AtoResponse])
-def get_atos_por_episodio(cod_ep_urgenc: int):
-    return get_atos_por_episodio_service(cod_ep_urgenc)
 
 @router.post("/", response_model=AtoResponse, status_code=status.HTTP_201_CREATED)
 def post_ato(data: AtoCreate):
