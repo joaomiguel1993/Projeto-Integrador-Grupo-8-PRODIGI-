@@ -1,13 +1,18 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class PrescricaoBase(BaseModel):
-    IdAto: int
-    Descricao: str
+    model_config = ConfigDict(from_attributes=True)
+
+    idato: int
+    descricao: str
+
 
 class PrescricaoCreate(PrescricaoBase):
     pass
 
+
 class PrescricaoResponse(PrescricaoBase):
-    IdPrescricao: int
-    DataHoraPresc: datetime
+    idprescricao: int
+    datahorapresc: datetime

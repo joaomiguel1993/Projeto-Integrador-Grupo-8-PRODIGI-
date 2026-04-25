@@ -1,7 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class ProfissionalResponse(BaseModel):
-    IdFunc: int
-    Nome: str
-    TipoFunc: str
-    Sexo: str
+    model_config = ConfigDict(from_attributes=True)
+
+    idfunc: int
+    nome: str
+    tipofunc: str
+    sexo: str

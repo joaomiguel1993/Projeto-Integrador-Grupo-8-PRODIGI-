@@ -1,11 +1,16 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+
 
 class UtilizadorBase(BaseModel):
-    UserName: str = Field(..., min_length=1, max_length=50)
+    model_config = ConfigDict(from_attributes=True)
+
+    username: str = Field(..., min_length=1, max_length=50)
+
 
 class UtilizadorCreate(UtilizadorBase):
-    IdFunc: int
-    Password: str = Field(..., min_length=1, max_length=255)
+    idfunc: int
+    password: str = Field(..., min_length=1, max_length=255)
+
 
 class UtilizadorResponse(UtilizadorBase):
-    IdFunc: int
+    idfunc: int

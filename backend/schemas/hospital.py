@@ -1,11 +1,16 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+
 
 class HospitalBase(BaseModel):
-    Nome: str = Field(..., min_length=1, max_length=100)
-    Localizacao: str = Field(..., min_length=1, max_length=200)
+    model_config = ConfigDict(from_attributes=True)
+
+    nome: str = Field(..., min_length=1, max_length=100)
+    localizacao: str = Field(..., min_length=1, max_length=200)
+
 
 class HospitalCreate(HospitalBase):
     pass
 
+
 class HospitalResponse(HospitalBase):
-    IdHosp: int
+    idhosp: int

@@ -1,25 +1,32 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class InternamentoBase(BaseModel):
-    CodEpUrgenc: int
-    IdFunc: Optional[int] = None
-    DataHoraConsulta: Optional[datetime] = None
-    DataHoraAlta: Optional[datetime] = None
-    MotivoInt: str
-    NumeroCama: Optional[str] = None
-    Servico: Optional[str] = None
-    TipoAlta: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+    codepurgenc: int
+    idfunc: Optional[int] = None
+    datahoraconsulta: Optional[datetime] = None
+    datahoraalta: Optional[datetime] = None
+    motivoint: str
+    numerocama: Optional[str] = None
+    servico: Optional[str] = None
+    tipoalta: Optional[str] = None
+
 
 class InternamentoCreate(BaseModel):
-    CodEpUrgenc: int
-    IdFunc: Optional[int] = None
-    DataHoraInt: datetime
-    MotivoInt: str
-    NumeroCama: Optional[str] = None
-    Servico: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+    codepurgenc: int
+    idfunc: Optional[int] = None
+    datahoraint: datetime
+    motivoint: str
+    numerocama: Optional[str] = None
+    servico: Optional[str] = None
+
 
 class InternamentoResponse(InternamentoBase):
-    CodInternamento: int
-    DataHoraInt: datetime
+    codinternamento: int
+    datahoraint: datetime

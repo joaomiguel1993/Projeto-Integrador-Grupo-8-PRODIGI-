@@ -1,30 +1,43 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+
 
 class AtoBase(BaseModel):
-    CodEpUrgenc: int
-    Tipo: str = Field(..., min_length=1, max_length=100)
-    Descricao: Optional[str] = None
-    DataHoraFim: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
+
+    codepurgenc: int
+    tipo: str = Field(..., min_length=1, max_length=100)
+    descricao: Optional[str] = None
+    datahorafim: Optional[datetime] = None
+
 
 class AtoCreate(BaseModel):
-    CodEpUrgenc: int
-    Tipo: str = Field(..., min_length=1, max_length=100)
-    Descricao: Optional[str] = None
-    DataHoraInicio: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
+
+    codepurgenc: int
+    tipo: str = Field(..., min_length=1, max_length=100)
+    descricao: Optional[str] = None
+    datahorainicio: Optional[datetime] = None
+
 
 class AtoResponse(AtoBase):
-    IdAto: int
-    DataHoraInicio: datetime
+    idato: int
+    datahorainicio: datetime
+
 
 class FuncionarioAtoResponse(BaseModel):
-    IdFunc: int
-    Nome: str
-    TipoFunc: str
+    model_config = ConfigDict(from_attributes=True)
+
+    idfunc: int
+    nome: str
+    tipofunc: str
+
 
 class PrescricaoAtoResponse(BaseModel):
-    IdPrescricao: int
-    IdAto: int
-    Descricao: str
-    DataHoraPresc: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+    idprescricao: int
+    idato: int
+    descricao: str
+    datahorapresc: datetime

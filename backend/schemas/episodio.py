@@ -1,17 +1,24 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class EpisodioBase(BaseModel):
-    NumUtent: int
-    IdHosp: int
-    DataHoraSaida: Optional[datetime] = None
-    Estado: str = "aberto"
+    model_config = ConfigDict(from_attributes=True)
+
+    numutent: int
+    idhosp: int
+    datahorasaida: Optional[datetime] = None
+    estado: str = "aberto"
+
 
 class EpisodioCreate(BaseModel):
-    NumUtent: int
-    IdHosp: int
+    model_config = ConfigDict(from_attributes=True)
+
+    numutent: int
+    idhosp: int
+
 
 class EpisodioResponse(EpisodioBase):
-    CodEpUrgenc: int
-    DataHoraEntr: datetime
+    codepurgenc: int
+    datahoraentr: datetime
