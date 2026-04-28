@@ -15,93 +15,126 @@ No âmbito do Projeto Integrador da pós-graduação PRODIGI, o Grupo 8 está a 
 ```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
-├── backend/                                   # API FastAPI
+├── backend/                                          # API FastAPI
 │   ├── __init__.py
 │   ├── auth/
 │   │   ├── __init__.py
-│   │   └── security.py
+│   │   ├── security.py
+│   │   ├── dependencies.py
+│   │   └── permissions.py
+│   │
 │   ├── dao/
 │   │   ├── __init__.py
 │   │   ├── atos_dao.py
+│   │   ├── auditoria_dao.py
 │   │   ├── episodios_dao.py
 │   │   ├── hospitais_dao.py
 │   │   ├── internamentos_dao.py
 │   │   ├── medicamentos_dao.py
+│   │   ├── medicacao_ativa_dao.py
 │   │   ├── prescricoes_dao.py
 │   │   ├── profissionais_dao.py
+│   │   ├── relatorios_dao.py
 │   │   ├── triagens_dao.py
+│   │   ├── utilizadores_dao.py
 │   │   └── utentes_dao.py
+│   │
 │   ├── repositories/
 │   │   ├── __init__.py
 │   │   ├── atos_repository.py
+│   │   ├── auditoria_repository.py
 │   │   ├── episodios_repository.py
 │   │   ├── hospitais_repository.py
 │   │   ├── internamentos_repository.py
 │   │   ├── medicamentos_repository.py
+│   │   ├── medicacao_ativa_repository.py
 │   │   ├── prescricoes_repository.py
 │   │   ├── profissionais_repository.py
+│   │   ├── relatorios_repository.py
 │   │   ├── triagens_repository.py
+│   │   ├── utilizadores_repository.py
 │   │   └── utentes_repository.py
+│   │
 │   ├── routers/
 │   │   ├── __init__.py
 │   │   ├── ato.py
+│   │   ├── auditoria.py
 │   │   ├── auth.py
 │   │   ├── episodios.py
 │   │   ├── hospital.py
 │   │   ├── internamento.py
 │   │   ├── medicamento.py
+│   │   ├── medicacao_ativa.py
 │   │   ├── prescricao.py
 │   │   ├── profissionais.py
+│   │   ├── relatorios.py
 │   │   ├── triagem.py
+│   │   ├── utilizadores.py
 │   │   └── utentes.py
+│   │
 │   ├── schemas/
 │   │   ├── __init__.py
 │   │   ├── ato.py
+│   │   ├── auditoria.py
+│   │   ├── auth.py
 │   │   ├── episodio.py
 │   │   ├── hospital.py
 │   │   ├── internamento.py
 │   │   ├── medicamento.py
+│   │   ├── medicacao_ativa.py
 │   │   ├── prescricao.py
 │   │   ├── profissional.py
+│   │   ├── relatorio.py
 │   │   ├── triagem.py
 │   │   ├── utilizador.py
 │   │   └── utente.py
+│   │
 │   ├── services/
 │   │   ├── __init__.py
 │   │   ├── atos_service.py
+│   │   ├── auditoria_service.py
 │   │   ├── episodios_service.py
 │   │   ├── hospitais_service.py
 │   │   ├── internamentos_service.py
 │   │   ├── medicamentos_service.py
+│   │   ├── medicacao_ativa_service.py
 │   │   ├── prescricoes_service.py
 │   │   ├── profissionais_service.py
+│   │   ├── relatorios_service.py
 │   │   ├── triagens_service.py
+│   │   ├── utilizadores_service.py
 │   │   └── utentes_service.py
+│   │
 │   ├── SQL/
 │   │   ├── createTables.sql
 │   │   └── populateDB.sql
+│   │
 │   ├── db.py
+│   ├── config.py
 │   ├── main.py
 │   ├── requirements.txt
 │   └── update_passwords.py
 │
-├──── ia/
-│   ├── triagem_modelo.py                       # Cor + tempo de espera
-│   ├── alergias_modelo.py                      # Alertas medicamentosos
+├── ia/
+│   ├── triagem_modelo.py                           # Sugere cor + tempo de espera
+│   ├── alergias_modelo.py                          # Alertas alergias/interações
 │   ├── treino_triagem.py
 │   ├── treino_alergias.py
 │   └── modelos/
 │       ├── modelo_triagem.pkl
 │       └── modelo_alergias.pkl
-├── web/                                       # Frontend React + Vite
+│
+├── web/                                            # Frontend React + Vite
 │   ├── public/
 │   │   ├── favicon.svg
 │   │   └── logo.svg
+│   │
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── App.jsx
 │   │   │   ├── router.jsx
 │   │   │   └── providers.jsx
+│   │   │
 │   │   ├── components/
 │   │   │   ├── ui/
 │   │   │   │   ├── Button.jsx
@@ -110,73 +143,153 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   │   │   ├── Modal.jsx
 │   │   │   │   ├── Badge.jsx
 │   │   │   │   ├── FormInput.jsx
-│   │   │   │   └── LoadingSpinner.jsx
+│   │   │   │   ├── Select.jsx
+│   │   │   │   ├── TextArea.jsx
+│   │   │   │   ├── DateInput.jsx
+│   │   │   │   ├── SearchInput.jsx
+│   │   │   │   ├── Tabs.jsx
+│   │   │   │   ├── LoadingSpinner.jsx
+│   │   │   │   ├── StatusBadge.jsx
+│   │   │   │   ├── KPICard.jsx
+│   │   │   │   ├── EmptyState.jsx
+│   │   │   │   └── ConfirmDialog.jsx
+│   │   │   │
 │   │   │   ├── layout/
 │   │   │   │   ├── PublicLayout.jsx
 │   │   │   │   ├── AuthLayout.jsx
 │   │   │   │   ├── HeaderPublic.jsx
 │   │   │   │   ├── HeaderAuth.jsx
-│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   ├── SidebarAdmin.jsx
+│   │   │   │   ├── SidebarRececionista.jsx
+│   │   │   │   ├── SidebarEnfermeiro.jsx
+│   │   │   │   ├── SidebarMedico.jsx
 │   │   │   │   ├── Topbar.jsx
 │   │   │   │   └── HospitalContextBanner.jsx
+│   │   │   │
 │   │   │   ├── guards/
 │   │   │   │   ├── ProtectedRoute.jsx
-│   │   │   │   └── RoleRoute.jsx
+│   │   │   │   ├── RoleRoute.jsx
+│   │   │   │   └── PermissionGate.jsx
+│   │   │   │
 │   │   │   └── shared/
-│   │   │       ├── KPICard.jsx
 │   │   │       ├── PriorityBadge.jsx
-│   │   │       ├── EmptyState.jsx
-│   │   │       └── ConfirmDialog.jsx
+│   │   │       ├── EpisodeStatusBadge.jsx
+│   │   │       ├── MedicationList.jsx
+│   │   │       ├── AllergyAlert.jsx
+│   │   │       ├── AuditTimeline.jsx
+│   │   │       ├── EpisodeQueueCard.jsx
+│   │   │       └── HospitalKPIs.jsx
+│   │   │
 │   │   ├── pages/
 │   │   │   ├── public/
 │   │   │   │   ├── Home.jsx
 │   │   │   │   ├── HospitalDetalhe.jsx
 │   │   │   │   └── Login.jsx
+│   │   │   │
 │   │   │   ├── auth/
 │   │   │   │   ├── SelecionarHospital.jsx
-│   │   │   │   ├── Utente.jsx
-│   │   │   │   └── Episodio.jsx
+│   │   │   │   ├── Perfil.jsx
+│   │   │   │   └── SemPermissao.jsx
+│   │   │   │
 │   │   │   ├── dashboards/
+│   │   │   │   ├── DashboardAdmin.jsx
 │   │   │   │   ├── DashboardRececionista.jsx
 │   │   │   │   ├── DashboardEnfermeiro.jsx
-│   │   │   │   ├── DashboardMedico.jsx
-│   │   │   │   └── DashboardAdmin.jsx
-│   │   │   └── admin/
-│   │   │       ├── AdminUtilizadores.jsx
-│   │   │       ├── AdminRelatorios.jsx
-│   │   │       └── AdminAuditoria.jsx
+│   │   │   │   └── DashboardMedico.jsx
+│   │   │   │
+│   │   │   ├── admin/
+│   │   │   │   ├── AdminUtilizadores.jsx
+│   │   │   │   ├── AdminUtilizadorNovo.jsx
+│   │   │   │   ├── AdminUtilizadorDetalhe.jsx
+│   │   │   │   ├── AdminHospitais.jsx
+│   │   │   │   ├── AdminFuncionarios.jsx
+│   │   │   │   ├── AdminAssociacoesHospitais.jsx
+│   │   │   │   ├── AdminRelatorios.jsx
+│   │   │   │   ├── AdminRelatorioDetalhe.jsx
+│   │   │   │   ├── AdminAuditoria.jsx
+│   │   │   │   └── AdminEpisodiosClinicos.jsx
+│   │   │   │
+│   │   │   ├── rececao/
+│   │   │   │   ├── RececaoUtentes.jsx
+│   │   │   │   ├── RececaoUtenteNovo.jsx
+│   │   │   │   ├── RececaoUtenteDetalhe.jsx
+│   │   │   │   ├── RececaoEntradas.jsx
+│   │   │   │   └── RececaoNovaEntrada.jsx
+│   │   │   │
+│   │   │   ├── enfermagem/
+│   │   │   │   ├── TriagemFila.jsx
+│   │   │   │   ├── TriagemNova.jsx
+│   │   │   │   ├── TriagemDetalhe.jsx
+│   │   │   │   └── FichaUtenteConsulta.jsx
+│   │   │   │
+│   │   │   ├── medico/
+│   │   │   │   ├── MedicoFilaTriados.jsx
+│   │   │   │   ├── MedicoEpisodioDetalhe.jsx
+│   │   │   │   ├── MedicoHistoricoUtente.jsx
+│   │   │   │   ├── MedicoMedicacaoAtiva.jsx
+│   │   │   │   ├── MedicoNovaMedicacao.jsx
+│   │   │   │   ├── MedicoPrescricaoNova.jsx
+│   │   │   │   ├── MedicoAltaInternamento.jsx
+│   │   │   │   └── MedicoAlergiasInteracoes.jsx
+│   │   │   │
+│   │   │   └── common/
+│   │   │       ├── UtenteFichaCompleta.jsx
+│   │   │       ├── EpisodioResumo.jsx
+│   │   │       ├── EpisodioAtos.jsx
+│   │   │       ├── EpisodioPrescricoes.jsx
+│   │   │       ├── EpisodioAlertas.jsx
+│   │   │       └── InternamentoDetalhe.jsx
+│   │   │
 │   │   ├── contexts/
 │   │   │   ├── AuthContext.jsx
-│   │   │   └── HospitalContext.jsx
+│   │   │   ├── HospitalContext.jsx
+│   │   │   └── PermissionContext.jsx
+│   │   │
 │   │   ├── services/
 │   │   │   ├── api.js
 │   │   │   ├── auth.js
-│   │   │   ├── hospital.js
-│   │   │   ├── utente.js
-│   │   │   ├── episodio.js
-│   │   │   ├── triagem.js
-│   │   │   ├── prescricao.js
+│   │   │   ├── utilizadores.js
+│   │   │   ├── hospitais.js
 │   │   │   ├── profissionais.js
+│   │   │   ├── associacoesHospitais.js
+│   │   │   ├── utentes.js
+│   │   │   ├── episodios.js
+│   │   │   ├── triagem.js
+│   │   │   ├── medicamentos.js
+│   │   │   ├── medicacaoAtiva.js
+│   │   │   ├── prescricoes.js
+│   │   │   ├── alertas.js
+│   │   │   ├── internamentos.js
 │   │   │   ├── relatorios.js
+│   │   │   ├── auditoria.js
 │   │   │   └── ia.js
+│   │   │
 │   │   ├── hooks/
 │   │   │   ├── useAuth.js
-│   │   │   └── useHospital.js
+│   │   │   ├── useHospital.js
+│   │   │   ├── usePermissions.js
+│   │   │   └── usePagination.js
+│   │   │
 │   │   ├── utils/
 │   │   │   ├── constants.js
 │   │   │   ├── permissions.js
 │   │   │   ├── roleHome.js
-│   │   │   └── formatters.js
+│   │   │   ├── formatters.js
+│   │   │   ├── episodeStatus.js
+│   │   │   └── triagePriority.js
+│   │   │
 │   │   ├── styles/
 │   │   │   └── index.css
+│   │   │
 │   │   └── main.jsx
-│   ├── index.html                           # Entrada Vite
+│   │
+│   ├── index.html
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── tailwind.config.js
 │   └── README.md
 │
-├── android/                                 # Futuro cliente mobile
+├── android/                                       # Futuro cliente mobile
 │
 ├── docs/
 │   ├── arquitetura.md
@@ -289,6 +402,13 @@ cp .env.example .env
 pip install -r backend/requirements.txt
 uvicorn backend.main:app --reload
 ```
+### WEB
+
+```bash
+npm install
+npm run dev
+```
+http://localhost:4173/
 
 O repositório principal do projeto está no GitHub e corresponde ao trabalho desenvolvido pelo Grupo 8 .
 

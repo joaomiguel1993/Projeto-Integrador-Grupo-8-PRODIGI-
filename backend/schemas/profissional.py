@@ -1,4 +1,10 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class ProfissionalCreate(BaseModel):
+    nome: str = Field(..., min_length=1, max_length=100)
+    tipofunc: str = Field(..., min_length=1, max_length=20)
+    sexo: str = Field(..., min_length=1, max_length=20)
 
 
 class ProfissionalResponse(BaseModel):

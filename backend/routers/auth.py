@@ -3,10 +3,12 @@ from pydantic import BaseModel, Field
 from backend.auth.security import hash_password, verify_password
 from backend.db import get_connection
 
+
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"]
 )
+
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
@@ -14,9 +16,11 @@ class RegisterRequest(BaseModel):
     role: str = Field(..., min_length=1, max_length=20)
     idfunc: int
 
+
 class LoginRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=1, max_length=255)
+
 
 @router.post("/register")
 def register(data: RegisterRequest):
@@ -83,6 +87,7 @@ def register(data: RegisterRequest):
         cur.close()
         conn.close()
 
+
 @router.post("/login")
 def login(data: LoginRequest):
     conn = get_connection()
@@ -105,19 +110,44 @@ def login(data: LoginRequest):
             raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
         cur.execute("""
-            SELECT tipofunc
-            FROM funcionario
-            WHERE idfunc = %s;
+            SELECT f.nome, f.tipofunc
+            FROM funcionario f
+            WHERE f.idfunc = %s;
         """, (idfunc,))
         funcionario = cur.fetchone()
 
-        role = funcionario[0] if funcionario else None
+        if not funcionario:
+            raise HTTPException(status_code=404, detail="Funcionário não encontrado.")
+
+        nome, role = funcionario
+        nome = nome.strip() if nome else "Sem nome"
+
+        hospitais = []
+
+        if role in {"medico", "enfermeiro", "rececionista"}:
+            cur.execute("""
+                SELECT h.idhosp, h.nome, h.localizacao
+                FROM trabalha t
+                JOIN hospital h ON h.idhosp = t.idhosp
+                WHERE t.idfunc = %s
+                ORDER BY h.nome;
+            """, (idfunc,))
+            rows = cur.fetchall()
+
+            for row in rows:
+                hospitais.append({
+                    "idhosp": row[0],
+                    "nome": row[1],
+                    "localizacao": row[2]
+                })
 
         return {
             "message": "Login efetuado com sucesso.",
             "username": username,
+            "nome": nome,
             "role": role,
-            "idfunc": idfunc
+            "idfunc": idfunc,
+            "hospitais": hospitais
         }
 
     except HTTPException:
