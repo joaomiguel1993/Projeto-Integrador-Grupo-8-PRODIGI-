@@ -15,11 +15,12 @@ No âmbito do Projeto Integrador da pós-graduação PRODIGI, o Grupo 8 está a 
 ```text
 Projeto-Integrador-Grupo-8-PRODIGI-/
 │
-├── backend/                              # Código principal da API (✅ JÁ FUNCIONAL)
+├── backend/                                   # API FastAPI
 │   ├── __init__.py
 │   ├── auth/
+│   │   ├── __init__.py
 │   │   └── security.py
-│   ├── dao/                              # ✅ Estrutura definida
+│   ├── dao/
 │   │   ├── __init__.py
 │   │   ├── atos_dao.py
 │   │   ├── episodios_dao.py
@@ -30,7 +31,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais_dao.py
 │   │   ├── triagens_dao.py
 │   │   └── utentes_dao.py
-│   ├── repositories/                     # ✅ Completo
+│   ├── repositories/
 │   │   ├── __init__.py
 │   │   ├── atos_repository.py
 │   │   ├── episodios_repository.py
@@ -41,7 +42,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais_repository.py
 │   │   ├── triagens_repository.py
 │   │   └── utentes_repository.py
-│   ├── routers/                          # ✅ Completo
+│   ├── routers/
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── auth.py
@@ -53,7 +54,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── profissionais.py
 │   │   ├── triagem.py
 │   │   └── utentes.py
-│   ├── schemas/                          # ✅ Estrutura definida
+│   ├── schemas/
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── episodio.py
@@ -65,7 +66,7 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── triagem.py
 │   │   ├── utilizador.py
 │   │   └── utente.py
-│   ├── services/                         # ✅ Estrutura definida
+│   ├── services/
 │   │   ├── __init__.py
 │   │   ├── atos_service.py
 │   │   ├── episodios_service.py
@@ -77,29 +78,31 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   ├── triagens_service.py
 │   │   └── utentes_service.py
 │   ├── SQL/
-│   │   ├── createTables.sql              # ✅ Correto
-│   │   └── populateDB.sql                # ✅ A ajustar
+│   │   ├── createTables.sql
+│   │   └── populateDB.sql
 │   ├── db.py
 │   ├── main.py
 │   ├── requirements.txt
 │   └── update_passwords.py
 │
-├── ia/                                   # 🚧 A FAZER
-│   ├── modelo.py
-│   ├── treino.py
-│   ├── gerar_dados.py
-│   ├── dados_sinteticos.sql
-│   └── modelo_urgencias.pkl
-│
-├── web/                                  # 🆕 FRONTEND COMPLETO (🚧 A FAZER)
+├──── ia/
+│   ├── triagem_modelo.py                       # Cor + tempo de espera
+│   ├── alergias_modelo.py                      # Alertas medicamentosos
+│   ├── treino_triagem.py
+│   ├── treino_alergias.py
+│   └── modelos/
+│       ├── modelo_triagem.pkl
+│       └── modelo_alergias.pkl
+├── web/                                       # Frontend React + Vite
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   └── logo.svg
 │   ├── src/
-│   │   ├── components/                   # Componentes reutilizáveis
-│   │   │   ├── layout/
-│   │   │   │   ├── HeaderPublic.jsx
-│   │   │   │   ├── HeaderAuth.jsx
-│   │   │   │   ├── Sidebar.jsx
-│   │   │   │   ├── Topbar.jsx
-│   │   │   │   └── HospitalContextBanner.jsx
+│   │   ├── app/
+│   │   │   ├── App.jsx
+│   │   │   ├── router.jsx
+│   │   │   └── providers.jsx
+│   │   ├── components/
 │   │   │   ├── ui/
 │   │   │   │   ├── Button.jsx
 │   │   │   │   ├── Card.jsx
@@ -108,20 +111,40 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   │   │   ├── Badge.jsx
 │   │   │   │   ├── FormInput.jsx
 │   │   │   │   └── LoadingSpinner.jsx
+│   │   │   ├── layout/
+│   │   │   │   ├── PublicLayout.jsx
+│   │   │   │   ├── AuthLayout.jsx
+│   │   │   │   ├── HeaderPublic.jsx
+│   │   │   │   ├── HeaderAuth.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   ├── Topbar.jsx
+│   │   │   │   └── HospitalContextBanner.jsx
+│   │   │   ├── guards/
+│   │   │   │   ├── ProtectedRoute.jsx
+│   │   │   │   └── RoleRoute.jsx
 │   │   │   └── shared/
 │   │   │       ├── KPICard.jsx
 │   │   │       ├── PriorityBadge.jsx
 │   │   │       ├── EmptyState.jsx
 │   │   │       └── ConfirmDialog.jsx
 │   │   ├── pages/
-│   │   │   ├── Home.jsx                  # Homepage pública
-│   │   │   ├── Login.jsx                 # Login + popup hospital
-│   │   │   ├── DashboardEnfermeiro.jsx   # Dashboard enfermeiro
-│   │   │   ├── DashboardMedico.jsx       # Dashboard médico
-│   │   │   ├── DashboardAdmin.jsx        # Dashboard admin
-│   │   │   ├── Utente.jsx                # /utente/:id
-│   │   │   ├── Episodio.jsx              # /episodio/:id
-│   │   │   └── AdminUtilizadores.jsx     # /admin/utilizadores
+│   │   │   ├── public/
+│   │   │   │   ├── Home.jsx
+│   │   │   │   ├── HospitalDetalhe.jsx
+│   │   │   │   └── Login.jsx
+│   │   │   ├── auth/
+│   │   │   │   ├── SelecionarHospital.jsx
+│   │   │   │   ├── Utente.jsx
+│   │   │   │   └── Episodio.jsx
+│   │   │   ├── dashboards/
+│   │   │   │   ├── DashboardRececionista.jsx
+│   │   │   │   ├── DashboardEnfermeiro.jsx
+│   │   │   │   ├── DashboardMedico.jsx
+│   │   │   │   └── DashboardAdmin.jsx
+│   │   │   └── admin/
+│   │   │       ├── AdminUtilizadores.jsx
+│   │   │       ├── AdminRelatorios.jsx
+│   │   │       └── AdminAuditoria.jsx
 │   │   ├── contexts/
 │   │   │   ├── AuthContext.jsx
 │   │   │   └── HospitalContext.jsx
@@ -133,35 +156,40 @@ Projeto-Integrador-Grupo-8-PRODIGI-/
 │   │   │   ├── episodio.js
 │   │   │   ├── triagem.js
 │   │   │   ├── prescricao.js
+│   │   │   ├── profissionais.js
+│   │   │   ├── relatorios.js
 │   │   │   └── ia.js
 │   │   ├── hooks/
 │   │   │   ├── useAuth.js
 │   │   │   └── useHospital.js
 │   │   ├── utils/
-│   │   │   ├── formatters.js
-│   │   │   └── constants.js
-│   │   ├── App.jsx
+│   │   │   ├── constants.js
+│   │   │   ├── permissions.js
+│   │   │   ├── roleHome.js
+│   │   │   └── formatters.js
+│   │   ├── styles/
+│   │   │   └── index.css
 │   │   └── main.jsx
-│   ├── public/
-│   │   └── index.html
-│   ├── index.html                        # Entrada da app
-│   ├── package.json                      # Dependências React
-│   ├── vite.config.js                    # Config Vite
-│   ├── tailwind.config.js                # Config Tailwind
-│   └── README.md                         # Como correr o frontend
+│   ├── index.html                           # Entrada Vite
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   └── README.md
 │
-├── android/                              # 🚧 A FAZER
+├── android/                                 # Futuro cliente mobile
 │
-├── docs/                                 # Documentação
-│   ├── arquitetura.md                    # Diagrama de arquitetura
-│   ├── api.md                            # Documentação endpoints
-│   └── requisitos.md                     # Requisitos funcionais
+├── docs/
+│   ├── arquitetura.md
+│   ├── api.md
+│   ├── requisitos.md
+│   └── fluxos.md
 │
-├── Dockerfile                            # ✅ Backend
-├── docker-compose.yml                    # ✅ Backend + DB + pgAdmin
-├── .env.example                          # ✅ Configuração
-├── .gitignore                            # ✅ Git
-└── README.md                             # 🆕 Documentação completa
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+└── README.md
+
 ```
 
 A organização atual do backend está centrada em `routers`, `repositories`, `schemas`, `services`, `dao`, `auth` e `db.py`, refletindo uma estrutura modular orientada à separação entre endpoints, lógica de negócio, acesso a dados, validação e segurança .
