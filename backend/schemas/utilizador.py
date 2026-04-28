@@ -14,3 +14,8 @@ class UtilizadorCreate(UtilizadorBase):
 
 class UtilizadorResponse(UtilizadorBase):
     idfunc: int
+
+class UtilizadorDetalheResponse(UtilizadorBase):
+    idfunc: int
+    nome: str
+    tipofunc: str
