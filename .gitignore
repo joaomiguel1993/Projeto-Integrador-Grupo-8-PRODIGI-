@@ -8,3 +8,4 @@ docs/Programas/
 update_prof.sh
 Texto.txt
 .env.example
+node_modules/
