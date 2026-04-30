@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const normalizarRole = (role) =>
+  String(role || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
@@ -29,27 +36,26 @@ export default function LoginPage() {
         throw new Error(data.detail || 'Erro no login.');
       }
 
+      console.log('LOGIN RESPONSE:', data);
+
       setResultado(data);
 
-      if (data.role === 'admin') {
-        navigate('/admin');
-        return;
+      const role = normalizarRole(data.role);
+
+      const roleRoutes = {
+        admin: '/admin',
+        medico: '/medico',
+        enfermeiro: '/enfermeiro',
+        rececionista: '/rececionista',
+      };
+
+      const destino = roleRoutes[role];
+
+      if (!destino) {
+        throw new Error(`Função sem rota definida: ${data.role}`);
       }
 
-      if (data.role === 'medico') {
-        navigate('/medico');
-        return;
-      }
-
-      if (data.role === 'enfermeiro') {
-        navigate('/enfermeiro');
-        return;
-      }
-
-      if (data.role === 'rececionista') {
-        navigate('/rececionista');
-        return;
-      }
+      navigate(destino, { replace: true });
     } catch (err) {
       setErro(err.message || 'Erro ao tentar fazer login.');
     } finally {
@@ -60,7 +66,11 @@ export default function LoginPage() {
   return (
     <main className="login-page">
       <section className="login-page__card">
-        <button type="button" className="login-page__back" onClick={() => navigate('/')}>
+        <button
+          type="button"
+          className="login-page__back"
+          onClick={() => navigate('/')}
+        >
           ← Voltar
         </button>
 
@@ -96,7 +106,11 @@ export default function LoginPage() {
 
             {erro && <p className="login-form__error">{erro}</p>}
 
-            <button type="submit" className="login-form__submit" disabled={loading}>
+            <button
+              type="submit"
+              className="login-form__submit"
+              disabled={loading}
+            >
               {loading ? 'A entrar...' : 'Entrar'}
             </button>
           </form>
