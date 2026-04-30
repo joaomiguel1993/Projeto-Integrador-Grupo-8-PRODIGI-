@@ -14,3 +14,8 @@ class HospitalCreate(HospitalBase):
 
 class HospitalResponse(HospitalBase):
     idhosp: int
+
+
+class HospitalDeleteResponse(BaseModel):
+    message: str
+    idhosp: int
