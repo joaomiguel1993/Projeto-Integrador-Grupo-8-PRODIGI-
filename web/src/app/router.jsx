@@ -1,15 +1,14 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import PublicLayout from '../components/layout/PublicLayout';
-import AuthLayout from '../components/layout/AuthLayout';
 import ProtectedRoute from '../components/guards/ProtectedRoute';
 import RoleRoute from '../components/guards/RoleRoute';
 
 import Home from '../pages/public/Home';
 import Login from '../pages/public/Login';
-import DashboardAdmin from '../pages/dashboards/DashboardAdmin';
-import DashboardRececionista from '../pages/dashboards/DashboardRececionista';
-import DashboardEnfermeiro from '../pages/dashboards/DashboardEnfermeiro';
-import DashboardMedico from '../pages/dashboards/DashboardMedico';
+import DashboardAdmin from '../pages/private/AdminDashboard';
+import DashboardRececionista from '../pages/private/ReceptionistDashboard';
+import DashboardEnfermeiro from '../pages/private/NurseDashboard';
+import DashboardMedico from '../pages/private/DoctorDashboard';
 import SemPermissao from '../pages/auth/SemPermissao';
 
 const router = createBrowserRouter([
@@ -23,17 +22,12 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
-      {
-        element: <AuthLayout />,
-        children: [
-          { path: '/admin', element: <RoleRoute allowedRoles={['admin']}><DashboardAdmin /></RoleRoute> },
-          { path: '/rececionista', element: <RoleRoute allowedRoles={['rececionista']}><DashboardRececionista /></RoleRoute> },
-          { path: '/enfermeiro', element: <RoleRoute allowedRoles={['enfermeiro']}><DashboardEnfermeiro /></RoleRoute> },
-          { path: '/medico', element: <RoleRoute allowedRoles={['medico']}><DashboardMedico /></RoleRoute> },
-          { path: '/sem-permissao', element: <SemPermissao /> },
-          { path: '*', element: <Navigate to="/" replace /> },
-        ],
-      },
+      { path: '/admin', element: <RoleRoute allowedRoles={['admin']}><DashboardAdmin /></RoleRoute> },
+      { path: '/rececionista', element: <RoleRoute allowedRoles={['rececionista']}><DashboardRececionista /></RoleRoute> },
+      { path: '/enfermeiro', element: <RoleRoute allowedRoles={['enfermeiro']}><DashboardEnfermeiro /></RoleRoute> },
+      { path: '/medico', element: <RoleRoute allowedRoles={['medico']}><DashboardMedico /></RoleRoute> },
+      { path: '/sem-permissao', element: <SemPermissao /> },
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ]);

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../imagens/logo.png';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -55,34 +54,13 @@ export default function Home() {
 
   return (
     <>
-      <header className="header-public">
-        <div className="container header-public__inner">
-          <div className="brand-mark">
-            <img src={logo} alt="Logótipo SIGUI" className="brand-mark__logo" />
-
-            <div className="brand-mark__text">
-              <div className="brand-mark__title">SIGUI</div>
-              <div className="brand-mark__subtitle">
-                Sistema Integrado de Gestão de Urgências e Internamentos
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="header-login"
-            onClick={() => navigate('/login')}
-          >
-            Login
-          </button>
-        </div>
-      </header>
-
       <section className="intro-section">
         <div className="container">
           <div className="intro-box">
             <p className="section-label">Introdução</p>
-            <h1 className="intro-title">SIGUI — Sistema Integrado de Gestão de Urgências e Internamentos</h1>
+            <h1 className="intro-title">
+              SIGUI — Sistema Integrado de Gestão de Urgências e Internamentos
+            </h1>
             <p className="intro-text">
               Plataforma de apoio à gestão hospitalar, urgências, internamentos e organização dos profissionais de saúde.
             </p>
