@@ -2,7 +2,8 @@ from fastapi import HTTPException
 from backend.repositories.profissionais_repository import (
     listar_profissionais,
     obter_profissional,
-    criar_profissional
+    criar_profissional,
+    atualizar_profissional
 )
 
 
@@ -25,3 +26,20 @@ def create_profissional_service(nome: str, tipofunc: str, sexo: str):
         raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
 
     return criar_profissional(nome, tipofunc, sexo)
+
+
+def update_profissional_service(id_func: int, nome: str, tipofunc: str, sexo: str):
+    allowed_types = {"medico", "enfermeiro", "admin", "rececionista"}
+    allowed_sexos = {"M", "F"}
+
+    if tipofunc not in allowed_types:
+        raise HTTPException(status_code=400, detail="Tipo de profissional inválido.")
+
+    if sexo not in allowed_sexos:
+        raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
+
+    profissional_existente = obter_profissional(id_func)
+    if not profissional_existente:
+        raise HTTPException(status_code=404, detail="Profissional não encontrado.")
+
+    return atualizar_profissional(id_func, nome, tipofunc, sexo)

@@ -48,3 +48,40 @@ def insert_profissional(nome: str, tipofunc: str, sexo: str):
     finally:
         cur.close()
         conn.close()
+
+
+def update_profissional_by_id(id_func: int, nome: str, tipofunc: str, sexo: str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            UPDATE funcionario
+            SET nome = %s,
+                tipofunc = %s,
+                sexo = %s
+            WHERE idfunc = %s
+            RETURNING idfunc, nome, tipofunc, sexo
+        """, (nome, tipofunc, sexo, id_func))
+
+        updated_profissional = cur.fetchone()
+
+        if not updated_profissional:
+            conn.rollback()
+            return None
+
+        conn.commit()
+
+        return {
+            "idfunc": updated_profissional[0],
+            "nome": updated_profissional[1],
+            "tipofunc": updated_profissional[2],
+            "sexo": updated_profissional[3]
+        }
+
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()

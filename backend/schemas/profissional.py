@@ -1,15 +1,16 @@
-from pydantic import BaseModel, ConfigDict, Field
-
+from pydantic import BaseModel
 
 class ProfissionalCreate(BaseModel):
-    nome: str = Field(..., min_length=1, max_length=100)
-    tipofunc: str = Field(..., min_length=1, max_length=20)
-    sexo: str = Field(..., min_length=1, max_length=20)
+    nome: str
+    tipofunc: str
+    sexo: str
 
+class ProfissionalUpdate(BaseModel):
+    nome: str
+    tipofunc: str
+    sexo: str
 
 class ProfissionalResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     idfunc: int
     nome: str
     tipofunc: str

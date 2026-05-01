@@ -1,5 +1,4 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 
 const normalizarRole = (role) =>
   String(role || '')
@@ -8,16 +7,22 @@ const normalizarRole = (role) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
+const mapearRole = (rawRole) => {
+  const role = normalizarRole(rawRole);
+
+  if (['admin', 'administrador'].includes(role)) return 'admin';
+  if (['rececionista', 'recepcionista', 'rececao', 'receção'].includes(role)) return 'rececionista';
+  if (['enfermeiro', 'enfermagem'].includes(role)) return 'enfermeiro';
+  if (['medico', 'médico'].includes(role)) return 'medico';
+
+  return role;
+};
+
 export default function RoleRoute({ allowedRoles = [], children }) {
-  const { user } = useAuth();
+  const role = mapearRole(sessionStorage.getItem('user_role'));
+  const allowed = allowedRoles.map(mapearRole);
 
-  const role = normalizarRole(user?.role);
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!allowedRoles.map(normalizarRole).includes(role)) {
+  if (!allowed.includes(role)) {
     return <Navigate to="/sem-permissao" replace />;
   }
 

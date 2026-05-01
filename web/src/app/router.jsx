@@ -22,14 +22,42 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
-      { path: '/admin', element: <RoleRoute allowedRoles={['admin']}><DashboardAdmin /></RoleRoute> },
-      { path: '/rececionista', element: <RoleRoute allowedRoles={['rececionista']}><DashboardRececionista /></RoleRoute> },
-      { path: '/enfermeiro', element: <RoleRoute allowedRoles={['enfermeiro']}><DashboardEnfermeiro /></RoleRoute> },
-      { path: '/medico', element: <RoleRoute allowedRoles={['medico']}><DashboardMedico /></RoleRoute> },
+      {
+        path: '/admin',
+        element: (
+          <RoleRoute allowedRoles={['admin']}>
+            <DashboardAdmin />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: '/rececionista',
+        element: (
+          <RoleRoute allowedRoles={['rececionista', 'rececao', 'receção', 'recepcionista']}>
+            <DashboardRececionista />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: '/enfermeiro',
+        element: (
+          <RoleRoute allowedRoles={['enfermeiro', 'enfermagem']}>
+            <DashboardEnfermeiro />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: '/medico',
+        element: (
+          <RoleRoute allowedRoles={['medico', 'médico']}>
+            <DashboardMedico />
+          </RoleRoute>
+        ),
+      },
       { path: '/sem-permissao', element: <SemPermissao /> },
-      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
+  { path: '*', element: <Navigate to="/" replace /> },
 ]);
 
 export default router;

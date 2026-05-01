@@ -586,3 +586,36 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+.hospital-select-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.hospital-select-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #d7d7d7;
+  border-radius: 12px;
+  padding: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hospital-select-card:hover {
+  border-color: #3EB489;
+  transform: translateY(-1px);
+}
+
+.hospital-select-card strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.hospital-select-card span {
+  color: #666;
+  font-size: 14px;
+}

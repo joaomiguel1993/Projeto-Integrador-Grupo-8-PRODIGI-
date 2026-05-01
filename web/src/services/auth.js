@@ -28,23 +28,19 @@ export async function login(credentials) {
 }
 
 export async function me() {
-  const token = sessionStorage.getItem('token');
+  const user = sessionStorage.getItem('user');
 
-  const response = await fetch(`${API_URL}/api/auth/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(getErrorMessage(data, 'Sessão inválida'));
+  if (!user) {
+    throw new Error('Sessão inválida');
   }
 
-  return data;
+  return JSON.parse(user);
 }
 
 export async function logout() {
+  sessionStorage.removeItem('is_authenticated');
+  sessionStorage.removeItem('user_role');
+  sessionStorage.removeItem('user');
+  sessionStorage.removeItem('hospital_ativo');
   return Promise.resolve();
 }
