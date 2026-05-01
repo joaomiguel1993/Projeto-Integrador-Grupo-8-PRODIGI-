@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [utilizadores, setUtilizadores] = useState([]);
   const [hospitais, setHospitais] = useState([]);
   const [historico, setHistorico] = useState([]);
+  const [logs, setLogs] = useState([]);
 
   const [loadingProfissionais, setLoadingProfissionais] = useState(false);
   const [loadingUtilizadores, setLoadingUtilizadores] = useState(false);
@@ -143,6 +144,7 @@ export default function AdminDashboard() {
       carregarProfissionais(),
       carregarUtilizadores(),
       carregarHospitais(),
+      carregarLogs(),
     ]);
   };
 
@@ -185,6 +187,15 @@ export default function AdminDashboard() {
       setHospitais([]);
     } finally {
       setLoadingHospitais(false);
+    }
+  };
+
+  const carregarLogs = async () => {
+    try {
+      const data = await apiFetch('/api/logs/');
+      setLogs(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Erro ao carregar logs:', err);
     }
   };
 
@@ -1435,7 +1446,7 @@ export default function AdminDashboard() {
         <div className="admin-table-card admin-table-card--bottom" style={{ marginTop: '1.25rem' }}>
           <div className="admin-table-card__header">
             <h3>Histórico</h3>
-            <span>{historico.length}</span>
+            <span>{logs.length}</span>
           </div>
 
           <div className="admin-table-scroll admin-table-scroll--wide">
@@ -1443,19 +1454,21 @@ export default function AdminDashboard() {
               <thead>
                 <tr>
                   <th>Data</th>
+                  <th>Utilizador</th>
                   <th>Ação</th>
                   <th>Detalhe</th>
                 </tr>
               </thead>
               <tbody>
-                {historico.length === 0 ? (
+                {logs.length === 0 ? (
                   <tr>
-                    <td colSpan="3">Sem histórico.</td>
+                    <td colSpan="4">Sem histórico.</td>
                   </tr>
                 ) : (
-                  historico.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.data}</td>
+                  logs.map((item) => (
+                    <tr key={item.idlog}>
+                      <td>{new Date(item.criado_em).toLocaleString('pt-PT')}</td>
+                      <td>{item.username || '—'}</td>
                       <td>{item.acao}</td>
                       <td>{item.detalhe}</td>
                     </tr>
