@@ -59,7 +59,7 @@ export default function Home() {
           <div className="intro-box">
             <p className="section-label">Introdução</p>
             <h1 className="intro-title">
-              SIGUI — Sistema Integrado de Gestão de Urgências e Internamentos
+              SIAGUH — Sistema Integrado de Apoio à Gestão de Urgências Hospitalares
             </h1>
             <p className="intro-text">
               Plataforma de apoio à gestão hospitalar, urgências, internamentos e organização dos profissionais de saúde.
