@@ -107,6 +107,11 @@ export default function AdminDashboard() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
+  useEffect(() => {
+  if (mainMenu === 'relatorios') {
+    carregarLogs();
+  }
+  }, [mainMenu]);
 
   const iniciarHistoricoBase = () => {
     setHistorico([
