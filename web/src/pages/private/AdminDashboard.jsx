@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/logo.png';
 import '../../styles/admin.css';
+import { apiFetch } from '../../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -149,9 +150,7 @@ export default function AdminDashboard() {
     try {
       setLoadingProfissionais(true);
       setErroProfissionais('');
-      const res = await fetch(`${API_URL}/api/profissionais/`);
-      if (!res.ok) throw new Error('Erro ao carregar funcionários.');
-      const data = await res.json();
+      const data = await apiFetch('/api/profissionais/');
       setProfissionais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroProfissionais(err.message);
@@ -165,9 +164,7 @@ export default function AdminDashboard() {
     try {
       setLoadingUtilizadores(true);
       setErroUtilizadores('');
-      const res = await fetch(`${API_URL}/api/utilizadores/`);
-      if (!res.ok) throw new Error('Erro ao carregar utilizadores.');
-      const data = await res.json();
+      const data = await apiFetch('/api/utilizadores/');
       setUtilizadores(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroUtilizadores(err.message);
@@ -181,9 +178,7 @@ export default function AdminDashboard() {
     try {
       setLoadingHospitais(true);
       setErroHospitais('');
-      const res = await fetch(`${API_URL}/api/hospitais/`);
-      if (!res.ok) throw new Error('Erro ao carregar hospitais.');
-      const data = await res.json();
+      const data = await apiFetch('/api/hospitais/');
       setHospitais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroHospitais(err.message);
@@ -386,28 +381,15 @@ export default function AdminDashboard() {
         idfunc: Number(novoUtilizador.idfunc),
       };
 
-      const res = await fetch(`${API_URL}/api/auth/register`, {
+      const data = await apiFetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao criar utilizador.');
-
       setMensagemUser(`Utilizador ${data.username || novoUtilizador.username} criado com sucesso.`);
-      adicionarHistorico(
-        'Criar utilizador',
-        `Foi criado o utilizador ${data.username || novoUtilizador.username}.`
-      );
+      adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username || novoUtilizador.username}.`);
 
-      setNovoUtilizador({
-        idfunc: '',
-        username: '',
-        password: '',
-        role: 'admin',
-      });
-
+      setNovoUtilizador({ idfunc: '', username: '', password: '', role: 'admin' });
       setPesquisaFuncionarioNovoUser('');
       await carregarUtilizadores();
       setUserView('lista');
@@ -426,27 +408,15 @@ export default function AdminDashboard() {
     try {
       setSubmittingFunc(true);
 
-      const res = await fetch(`${API_URL}/api/profissionais/`, {
+      const data = await apiFetch('/api/profissionais/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(novoProfissional),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao criar funcionário.');
-
       setMensagemFunc('Funcionário criado com sucesso.');
-      adicionarHistorico(
-        'Criar funcionário',
-        `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`
-      );
+      adicionarHistorico('Criar funcionário', `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`);
 
-      setNovoProfissional({
-        nome: '',
-        tipofunc: 'admin',
-        sexo: 'M',
-      });
-
+      setNovoProfissional({ nome: '', tipofunc: 'admin', sexo: 'M' });
       await carregarProfissionais();
       setEmployeeView('lista');
     } catch (err) {
@@ -461,22 +431,27 @@ export default function AdminDashboard() {
     setMensagemHospital('');
     setErroHospital('');
 
+    if (!novoHospital.nome.trim()) {
+      setErroHospital('O nome do hospital é obrigatório.');
+      return;
+    }
+    if (!novoHospital.localidade.trim()) {
+      setErroHospital('A localização do hospital é obrigatória.');
+      return;
+    }
+
     try {
       setSubmittingHospital(true);
 
       const payload = {
         nome: novoHospital.nome,
-        localizacao: novoHospital.localidade,  // renomear aqui
+        localizacao: novoHospital.localidade,
       };
 
-      const res = await fetch(`${API_URL}/api/hospitais/`, {
+      await apiFetch('/api/hospitais/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao criar hospital.');
 
       setMensagemHospital(`Hospital ${novoHospital.nome} criado com sucesso.`);
       adicionarHistorico('Criar hospital', `Foi criado o hospital ${novoHospital.nome}.`);
@@ -515,25 +490,16 @@ export default function AdminDashboard() {
 
       const payload = {
         nome: hospitalEditando.nome,
-        email: hospitalEditando.email,
-        localidade: hospitalEditando.localidade,
-        contacto: hospitalEditando.contacto,
+        localizacao: hospitalEditando.localidade,
       };
 
-      const res = await fetch(`${API_URL}/api/hospitais/${idHospital}`, {
+      await apiFetch(`/api/hospitais/${idHospital}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao editar hospital.');
-
       setMensagemHospital('Hospital atualizado com sucesso.');
-      adicionarHistorico(
-        'Editar hospital',
-        `Foram atualizados os dados do hospital ${data.nome || hospitalEditando.nome}.`
-      );
+      adicionarHistorico('Editar hospital', `Foram atualizados os dados do hospital ${hospitalEditando.nome}.`);
 
       await carregarHospitais();
       setHospitalEditando(null);
