@@ -7,9 +7,9 @@ export default function HeaderPublic() {
         <div className="brand-mark">
           <img src={logo} alt="Logótipo SIGUI" className="brand-mark__logo" />
           <div className="brand-mark__text">
-            <strong className="brand-mark__title">SIGUI</strong>
+            <strong className="brand-mark__title">SIAGUH</strong>
             <span className="brand-mark__subtitle">
-              Sistema Integrado de Gestão de Urgências e Internamentos
+              Sistema Integrado de Apoio à Gestão de Urgências Hospitalares
             </span>
           </div>
         </div>
