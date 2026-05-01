@@ -464,28 +464,24 @@ export default function AdminDashboard() {
     try {
       setSubmittingHospital(true);
 
+      const payload = {
+        nome: novoHospital.nome,
+        localizacao: novoHospital.localidade,  // renomear aqui
+      };
+
       const res = await fetch(`${API_URL}/api/hospitais/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(novoHospital),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Erro ao criar hospital.');
 
-      setMensagemHospital(`Hospital ${data.nome || novoHospital.nome} criado com sucesso.`);
-      adicionarHistorico(
-        'Criar hospital',
-        `Foi criado o hospital ${data.nome || novoHospital.nome}.`
-      );
+      setMensagemHospital(`Hospital ${novoHospital.nome} criado com sucesso.`);
+      adicionarHistorico('Criar hospital', `Foi criado o hospital ${novoHospital.nome}.`);
 
-      setNovoHospital({
-        nome: '',
-        email: '',
-        localidade: '',
-        contacto: '',
-      });
-
+      setNovoHospital({ nome: '', email: '', localidade: '', contacto: '' });
       await carregarHospitais();
       setHospitalView('lista');
     } catch (err) {

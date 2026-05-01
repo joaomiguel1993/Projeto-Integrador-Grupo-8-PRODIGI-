@@ -1,4 +1,9 @@
-from backend.repositories.hospitais_repository import listar_hospitais, obter_hospital
+from backend.repositories.hospitais_repository import (
+    listar_hospitais,
+    obter_hospital,
+    criar_hospital,
+    remover_hospital
+)
 
 def get_hospitais_service():
     return listar_hospitais()

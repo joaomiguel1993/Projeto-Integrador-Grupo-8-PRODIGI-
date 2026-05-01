@@ -1,6 +1,6 @@
-# 🏥 SIGUI – Sistema Integrado de Gestão de Urgências e Internamentos
+# 🏥 SIAGUH – Sistema Integrado de Apoio à Gestão de Urgências Hospitalares
 
-Sistema de gestão de urgências e internamentos hospitalares desenvolvido pelo Grupo 8 no âmbito do Projeto Integrador da pós-graduação PRODIGI. O projeto tem como objetivo suportar operações centrais de um serviço de urgência hospitalar, incluindo gestão de utentes, episódios, triagem clínica, internamentos, atos médicos, prescrições, profissionais e autenticação. 
+Sistema Integrado de Apoio à Gestão de Urgências Hospitalares desenvolvido pelo Grupo 8 no âmbito do Projeto Integrador da pós-graduação PRODIGI. O projeto tem como objetivo suportar operações centrais de um serviço de urgência hospitalar, incluindo gestão de utentes, episódios, triagem clínica, internamentos, atos médicos, prescrições, profissionais e autenticação. 
 
 ---
 
