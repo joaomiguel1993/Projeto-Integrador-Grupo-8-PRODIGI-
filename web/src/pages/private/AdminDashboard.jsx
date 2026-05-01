@@ -106,6 +106,7 @@ export default function AdminDashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
 
   const iniciarHistoricoBase = () => {
     setHistorico([
@@ -1447,6 +1448,7 @@ export default function AdminDashboard() {
           <div className="admin-table-card__header">
             <h3>Histórico</h3>
             <span>{logs.length}</span>
+            <button type="button" onClick={carregarLogs}>↻ Atualizar</button>
           </div>
 
           <div className="admin-table-scroll admin-table-scroll--wide">
@@ -1494,9 +1496,9 @@ export default function AdminDashboard() {
     <main className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar__brand">
-          <img src={logo} alt="Logótipo SIGUI" className="admin-sidebar__logo" />
+          <img src={logo} alt="Logótipo SIAGUH" className="admin-sidebar__logo" />
           <div>
-            <strong>SIGUI</strong>
+            <strong>SIAGUH</strong>
             <span>Painel de Administração</span>
           </div>
         </div>
