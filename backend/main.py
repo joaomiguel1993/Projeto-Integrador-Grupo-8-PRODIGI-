@@ -21,7 +21,7 @@ from backend.routers import (
 )
 
 app = FastAPI(
-    title="SIGUI – Sistema Integrado de Gestão de Urgências e Internamentos",
+    title="SIAGUH – Sistema Integrado de Apoio à Gestão de Urgências Hospitalares",
     description="API desenvolvida pelo G08 para gestão de utentes, episódios e triagem.",
     version="0.25.0"
 )
