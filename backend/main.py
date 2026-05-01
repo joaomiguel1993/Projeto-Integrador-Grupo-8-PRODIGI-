@@ -16,7 +16,8 @@ from backend.routers import (
     trabalha,
     alerta,
     medicacaoativa,
-    utenteantecedente
+    utenteantecedente,
+    logs
 )
 
 app = FastAPI(
@@ -54,3 +55,4 @@ app.include_router(trabalha.router, prefix="/api")
 app.include_router(alerta.router, prefix="/api")
 app.include_router(medicacaoativa.router, prefix="/api")
 app.include_router(utenteantecedente.router, prefix="/api")
+app.include_router(logs.router, prefix="/api")
