@@ -1228,6 +1228,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={novoHospital.localidade}
                   onChange={handleNovoHospitalChange}
+                  required
                 />
               </div>
 
