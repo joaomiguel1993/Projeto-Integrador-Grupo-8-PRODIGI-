@@ -200,7 +200,7 @@ INSERT INTO Funcionario (IdFunc, Nome, TipoFunc, Sexo) VALUES
 (179, 'Alexandre Rodrigues', 'enfermeiro', 'M'),
 (180, 'Eva Almeida', 'enfermeiro', 'F'),
 (181, 'Andre Rodrigues', 'admin', 'M'),
-(182, 'Claudia Sousa', 'admin', 'F'),
+(182, 'Claudia Sousa', 'rececionista', 'F'),
 (183, 'Filipe Pinto', 'admin', 'M'),
 (184, 'Teresa Lopes', 'admin', 'F'),
 (185, 'Claudio Moreira', 'admin', 'M'),
