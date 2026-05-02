@@ -25,10 +25,8 @@ def obter_profissional(id_func: int):
 
 
 def criar_profissional(nome: str, tipofunc: str, sexo: str):
-    result = insert_profissional(nome, tipofunc, sexo)
-    return result
+    return insert_profissional(nome, tipofunc, sexo)
 
 
 def atualizar_profissional(id_func: int, nome: str, tipofunc: str, sexo: str):
-    result = update_profissional_by_id(id_func, nome, tipofunc, sexo)
-    return result
+    return update_profissional_by_id(id_func, nome, tipofunc, sexo)

@@ -5,6 +5,7 @@ from backend.repositories.profissionais_repository import (
     criar_profissional,
     atualizar_profissional
 )
+from backend.dao.logs_dao import insert_log
 
 
 def get_profissionais_service():
@@ -25,7 +26,19 @@ def create_profissional_service(nome: str, tipofunc: str, sexo: str):
     if sexo not in allowed_sexos:
         raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
 
-    return criar_profissional(nome, tipofunc, sexo)
+    novo = criar_profissional(nome, tipofunc, sexo)
+
+    if not novo:
+        raise HTTPException(status_code=500, detail="Erro ao criar profissional.")
+
+    insert_log(
+        "sistema",
+        "CRIAR_PROFISSIONAL",
+        f"id={novo['idfunc']}, nome={novo['nome']}, tipofunc={novo['tipofunc']}, sexo={novo['sexo']}",
+        None
+    )
+
+    return novo
 
 
 def update_profissional_service(id_func: int, nome: str, tipofunc: str, sexo: str):
@@ -42,4 +55,15 @@ def update_profissional_service(id_func: int, nome: str, tipofunc: str, sexo: st
     if not profissional_existente:
         raise HTTPException(status_code=404, detail="Profissional não encontrado.")
 
-    return atualizar_profissional(id_func, nome, tipofunc, sexo)
+    atualizado = atualizar_profissional(id_func, nome, tipofunc, sexo)
+    if not atualizado:
+        raise HTTPException(status_code=500, detail="Erro ao atualizar profissional.")
+
+    insert_log(
+        "sistema",
+        "ATUALIZAR_PROFISSIONAL",
+        f"id={id_func}, nome={nome}, tipofunc={tipofunc}, sexo={sexo}",
+        None
+    )
+
+    return atualizado
