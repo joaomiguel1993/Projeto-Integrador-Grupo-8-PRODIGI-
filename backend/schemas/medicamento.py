@@ -12,5 +12,9 @@ class MedicamentoCreate(MedicamentoBase):
     pass
 
 
+class MedicamentoUpdate(MedicamentoBase):
+    pass
+
+
 class MedicamentoResponse(MedicamentoBase):
     codmedicamento: int

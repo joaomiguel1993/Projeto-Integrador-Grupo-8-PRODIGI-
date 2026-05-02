@@ -68,7 +68,9 @@ CREATE TABLE Utente (
 CREATE TABLE Hospital (
     IdHosp SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
-    Localizacao VARCHAR(200) NOT NULL
+    Localizacao VARCHAR(200) NOT NULL,
+    Email VARCHAR(150),
+    Telefone VARCHAR(30)
 );
 
 -- ------------------------------------------------------------

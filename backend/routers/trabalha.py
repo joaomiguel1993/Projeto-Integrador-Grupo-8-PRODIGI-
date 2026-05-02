@@ -15,7 +15,12 @@ from backend.services.trabalha_service import (
 )
 from backend.dao.logs_dao import insert_log
 
+
 router = APIRouter(prefix="/trabalha", tags=["Trabalha"])
+
+
+def get_client_ip(request: Request):
+    return request.client.host if request.client else None
 
 
 @router.get("/hospital/{idhosp}", response_model=list[FuncionarioHospitalResponse])
@@ -26,7 +31,7 @@ def get_funcionarios_hospital(idhosp: int, request: Request):
         username=username,
         acao="LISTAR_FUNCIONARIOS_HOSPITAL",
         detalhe=f"Funcionários do hospital {idhosp} consultados.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -39,7 +44,7 @@ def get_hospitais_funcionario(idfunc: int, request: Request):
         username=username,
         acao="LISTAR_HOSPITAIS_FUNCIONARIO",
         detalhe=f"Hospitais do funcionário {idfunc} consultados.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -54,7 +59,7 @@ def post_trabalha(data: TrabalhaCreate, request: Request):
         username=username,
         acao="CRIAR_TRABALHA",
         detalhe=f"Funcionário {data.idfunc} associado ao hospital {data.idhosp}.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -69,7 +74,7 @@ def put_trabalha(idfunc: int, idhosp: int, data: TrabalhaUpdate, request: Reques
         username=username,
         acao="ATUALIZAR_TRABALHA",
         detalhe=f"Associação funcionário {idfunc} / hospital {idhosp} atualizada.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -84,5 +89,5 @@ def delete_trabalha(idfunc: int, idhosp: int, request: Request):
         username=username,
         acao="APAGAR_TRABALHA",
         detalhe=f"Associação funcionário {idfunc} / hospital {idhosp} removida.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )

@@ -1,6 +1,13 @@
 from pydantic import BaseModel, Field, ConfigDict
 
 
+class HospitalMiniResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    idhosp: int
+    nome: str
+
+
 class UtilizadorBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -15,7 +22,9 @@ class UtilizadorCreate(UtilizadorBase):
 class UtilizadorResponse(UtilizadorBase):
     idfunc: int
 
+
 class UtilizadorDetalheResponse(UtilizadorBase):
     idfunc: int
     nome: str
     tipofunc: str
+    hospitais: list[HospitalMiniResponse] = []

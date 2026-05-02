@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
@@ -12,7 +12,7 @@ class UtenteAntecedenteResponse(BaseModel):
 
     numutent: int
     codantecedente: int
-    dataregisto: date
+    dataregisto: datetime
 
 
 class UtenteAntecedenteDetalheResponse(UtenteAntecedenteResponse):

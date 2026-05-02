@@ -27,6 +27,10 @@ class InternamentoCreate(BaseModel):
     servico: Optional[str] = None
 
 
+class InternamentoUpdate(InternamentoBase):
+    pass
+
+
 class InternamentoResponse(InternamentoBase):
     codinternamento: int
     datahoraint: datetime

@@ -9,7 +9,12 @@ from backend.services.alerta_service import (
 )
 from backend.dao.logs_dao import insert_log
 
+
 router = APIRouter(prefix="/alertas", tags=["Alertas"])
+
+
+def get_client_ip(request: Request):
+    return request.client.host if request.client else None
 
 
 @router.get("/", response_model=list[AlertaResponse])
@@ -20,7 +25,7 @@ def get_alertas(request: Request):
         username=username,
         acao="LISTAR_ALERTAS",
         detalhe="Listagem de alertas consultada.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -33,7 +38,7 @@ def get_alertas_por_prescricao(idprescricao: int, request: Request):
         username=username,
         acao="LISTAR_ALERTAS_PRESCRICAO",
         detalhe=f"Alertas da prescrição {idprescricao} consultados.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -48,7 +53,7 @@ def get_alerta(codalerta: int, request: Request):
         username=username,
         acao="CONSULTAR_ALERTA",
         detalhe=f"Alerta {codalerta} consultado.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -63,7 +68,7 @@ def post_alerta(data: AlertaCreate, request: Request):
         username=username,
         acao="CRIAR_ALERTA",
         detalhe=f"Alerta do tipo {data.tipo} criado para prescrição {data.idprescricao}.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -78,6 +83,6 @@ def put_alerta(codalerta: int, data: AlertaUpdate, request: Request):
         username=username,
         acao="ATUALIZAR_ALERTA",
         detalhe=f"Alerta {codalerta} atualizado.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado

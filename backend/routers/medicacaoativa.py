@@ -14,7 +14,12 @@ from backend.services.medicacaoativa_service import (
 )
 from backend.dao.logs_dao import insert_log
 
+
 router = APIRouter(prefix="/medicacaoativa", tags=["Medicação Ativa"])
+
+
+def get_client_ip(request: Request):
+    return request.client.host if request.client else None
 
 
 @router.get("/", response_model=list[MedicacaoAtivaResponse])
@@ -25,7 +30,7 @@ def get_medicacaoativa(request: Request):
         username=username,
         acao="LISTAR_MEDICACAO_ATIVA",
         detalhe="Listagem de medicação ativa consultada.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -38,7 +43,7 @@ def get_medicacaoativa_por_utente(numutent: int, request: Request):
         username=username,
         acao="LISTAR_MEDICACAO_ATIVA_UTENTE",
         detalhe=f"Medicação ativa do utente {numutent} consultada.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -53,7 +58,7 @@ def post_medicacaoativa(data: MedicacaoAtivaCreate, request: Request):
         username=username,
         acao="CRIAR_MEDICACAO_ATIVA",
         detalhe=f"Medicação ativa registada para utente {data.numutent}.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -68,7 +73,7 @@ def put_medicacaoativa(codmedicacaoativa: int, data: MedicacaoAtivaUpdate, reque
         username=username,
         acao="ATUALIZAR_MEDICACAO_ATIVA",
         detalhe=f"Medicação ativa {codmedicacaoativa} atualizada.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )
     return resultado
 
@@ -83,5 +88,5 @@ def delete_medicacaoativa(codmedicacaoativa: int, request: Request):
         username=username,
         acao="APAGAR_MEDICACAO_ATIVA",
         detalhe=f"Medicação ativa {codmedicacaoativa} removida.",
-        ip=request.client.host
+        ip=get_client_ip(request)
     )

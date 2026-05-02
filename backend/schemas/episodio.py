@@ -19,6 +19,10 @@ class EpisodioCreate(BaseModel):
     idhosp: int
 
 
+class EpisodioUpdate(EpisodioBase):
+    pass
+
+
 class EpisodioResponse(EpisodioBase):
     codepurgenc: int
     datahoraentr: datetime

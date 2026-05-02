@@ -13,6 +13,10 @@ class PrescricaoCreate(PrescricaoBase):
     pass
 
 
+class PrescricaoUpdate(PrescricaoBase):
+    pass
+
+
 class PrescricaoResponse(PrescricaoBase):
     idprescricao: int
     datahorapresc: datetime

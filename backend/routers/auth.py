@@ -11,6 +11,10 @@ router = APIRouter(
 )
 
 
+def get_client_ip(request: Request):
+    return request.client.host if request.client else None
+
+
 class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     password: str = Field(..., min_length=4, max_length=255)
@@ -75,7 +79,7 @@ def register(data: RegisterRequest, request: Request):
             username=data.username,
             acao="REGISTER",
             detalhe=f"Utilizador {data.username} registado com role {data.role}.",
-            ip=request.client.host
+            ip=get_client_ip(request)
         )
 
         return {
@@ -152,8 +156,8 @@ def login(data: LoginRequest, request: Request):
         insert_log(
             username=username,
             acao="LOGIN",
-            detalhe=f"Login efetuado com sucesso.",
-            ip=request.client.host
+            detalhe="Login efetuado com sucesso.",
+            ip=get_client_ip(request)
         )
 
         return {
@@ -168,4 +172,7 @@ def login(data: LoginRequest, request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPExce
+        raise HTTPException(status_code=500, detail=f"Erro no login: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
