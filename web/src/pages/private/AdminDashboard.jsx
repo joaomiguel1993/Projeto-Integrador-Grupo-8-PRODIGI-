@@ -4,6 +4,8 @@ import logo from '../../imagens/logo.png';
 import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
 
+
+
 const normalizar = (texto) =>
   String(texto || '')
     .toLowerCase()
@@ -179,25 +181,25 @@ export default function AdminDashboard() {
   };
 
   const resolverUtilizadorAutenticado = () => {
-  try {
-    const rawUser = sessionStorage.getItem('user');
-    const userObj = rawUser ? JSON.parse(rawUser) : null;
+    try {
+      const rawUser = sessionStorage.getItem('user');
+      const userObj = rawUser ? JSON.parse(rawUser) : null;
 
-    if (userObj?.nome) {
-      setFuncionarioAutenticadoNome(userObj.nome);
-      return;
+      if (userObj?.nome) {
+        setFuncionarioAutenticadoNome(userObj.nome);
+        return;
+      }
+
+      if (userObj?.username) {
+        setFuncionarioAutenticadoNome(userObj.username);
+        return;
+      }
+
+      setFuncionarioAutenticadoNome('Utilizador autenticado');
+    } catch {
+      setFuncionarioAutenticadoNome('Utilizador autenticado');
     }
-
-    if (userObj?.username) {
-      setFuncionarioAutenticadoNome(userObj.username);
-      return;
-    }
-
-    setFuncionarioAutenticadoNome('Utilizador autenticado');
-  } catch {
-    setFuncionarioAutenticadoNome('Utilizador autenticado');
-  }
-};
+  };
 
   const carregarTudo = async () => {
     await Promise.all([
@@ -241,10 +243,9 @@ export default function AdminDashboard() {
       setLoadingHospitais(true);
       setErroHospitais('');
       const data = await apiFetch('/api/hospitais/');
-      const hospitaisAdaptados = Array.isArray(data) ? data.map(mapHospitalFromApi) : [];
-      setHospitais(hospitaisAdaptados);
+      setHospitais(Array.isArray(data) ? data.map(mapHospitalFromApi) : []);
     } catch (err) {
-      setErroHospitais(err.message || 'Erro ao carregar hospitais.');
+      setErroHospitais(err.message);
       setHospitais([]);
     } finally {
       setLoadingHospitais(false);
@@ -418,13 +419,7 @@ export default function AdminDashboard() {
 
   const abrirEditarHospital = (hospital) => {
     resetMensagens();
-    setHospitalEditando({
-      idhosp: hospital.idhosp || hospital.id_hosp || '',
-      nome: hospital.nome || '',
-      localidade: hospital.localidade || hospital.localizacao || '',
-      email: hospital.email || '',
-      contacto: hospital.contacto || hospital.telefone || '',
-    });
+    setHospitalEditando(mapHospitalFromApi(hospital));
     setHospitalView('editar');
   };
 
@@ -1629,6 +1624,38 @@ export default function AdminDashboard() {
     );
   };
 
+  const exportarRelatorioExcel = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/logs/export/excel', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const textoErro = await response.text();
+        throw new Error(textoErro || `Erro HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get('Content-Disposition');
+      let filename = 'relatorio_logs.xlsx';
+
+      if (disposition && disposition.includes('filename=')) {
+        filename = disposition.split('filename=')[1].replace(/"/g, '').trim();
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setErroLogs(err.message || 'Erro ao exportar relatório Excel.');
+    }
+  };
+
   const renderReportsCenter = () => {
     return (
       <section className="admin-panel-section">
@@ -1669,13 +1696,24 @@ export default function AdminDashboard() {
           <div className="admin-table-card__header">
             <h3>Histórico</h3>
             <span>{logs.length}</span>
-            <button
-              type="button"
-              className="admin-secondary-button"
-              onClick={carregarLogs}
-            >
-              {loadingLogs ? 'A atualizar...' : 'Atualizar'}
-            </button>
+
+            <div className="admin-header-actions">
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={carregarLogs}
+              >
+                ↻ Atualizar
+              </button>
+
+              <button
+                type="button"
+                className="admin-primary-big-button"
+                onClick={exportarRelatorioExcel}
+              >
+                Exportar Excel
+              </button>
+            </div>
           </div>
 
           <div className="admin-table-scroll admin-table-scroll--wide">

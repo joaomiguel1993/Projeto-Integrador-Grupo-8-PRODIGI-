@@ -1,25 +1,11 @@
-from backend.db import run_query, get_connection
+from backend.db import run_query
 
 
 def insert_log(username, acao, detalhe=None, ip=None):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute("""
-            INSERT INTO log_atividade (username, acao, detalhe, ip)
-            VALUES (%s, %s, %s, %s)
-        """, (username, acao, detalhe, ip))
-
-        conn.commit()
-        return True
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close()
-        conn.close()
+    return run_query("""
+        INSERT INTO log_atividade (username, acao, detalhe, ip)
+        VALUES (%s, %s, %s, %s)
+    """, (username, acao, detalhe, ip))
 
 
 def select_all_logs():
