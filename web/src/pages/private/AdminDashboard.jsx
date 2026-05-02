@@ -17,29 +17,30 @@ const gerarUsername = (nome) => {
   return `${partes[0]}.${partes[partes.length - 1]}`;
 };
 
-const obterIdsHospitais = (origem) => {
-  if (!origem) return [];
-
-  if (Array.isArray(origem)) {
-    return origem
-      .map((item) => {
-        if (typeof item === 'number' || typeof item === 'string') return Number(item);
-        return Number(item?.id_hosp ?? item?.idhosp ?? item?.id ?? item?.hospital_id);
-      })
-      .filter((id) => !Number.isNaN(id));
+const lerStorageSeguro = (chave) => {
+  try {
+    return localStorage.getItem(chave) || sessionStorage.getItem(chave) || '';
+  } catch {
+    return '';
   }
-
-  if (Array.isArray(origem.hospitais)) return obterIdsHospitais(origem.hospitais);
-  if (Array.isArray(origem.hospitais_ids)) return obterIdsHospitais(origem.hospitais_ids);
-  if (Array.isArray(origem.hospital_ids)) return obterIdsHospitais(origem.hospital_ids);
-
-  return [];
 };
 
-const obterIdHospital = (hospital) =>
-  Number(hospital?.id_hosp ?? hospital?.idhosp ?? hospital?.id);
+const parseJsonSeguro = (valor) => {
+  try {
+    return valor ? JSON.parse(valor) : null;
+  } catch {
+    return null;
+  }
+};
 
-const obterNomeHospital = (hospital) => hospital?.nome || hospital?.hospital || 'Hospital';
+const mapHospitalFromApi = (hospital) => ({
+  ...hospital,
+  idhosp: hospital?.idhosp ?? hospital?.id_hosp ?? hospital?.id ?? '',
+  nome: hospital?.nome ?? '',
+  email: hospital?.email ?? '',
+  localidade: hospital?.localizacao ?? hospital?.localidade ?? '',
+  contacto: hospital?.telefone ?? hospital?.contacto ?? '',
+});
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -59,10 +60,12 @@ export default function AdminDashboard() {
   const [loadingProfissionais, setLoadingProfissionais] = useState(false);
   const [loadingUtilizadores, setLoadingUtilizadores] = useState(false);
   const [loadingHospitais, setLoadingHospitais] = useState(false);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   const [erroProfissionais, setErroProfissionais] = useState('');
   const [erroUtilizadores, setErroUtilizadores] = useState('');
   const [erroHospitais, setErroHospitais] = useState('');
+  const [erroLogs, setErroLogs] = useState('');
 
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const [pesquisaFuncionarioNovoUser, setPesquisaFuncionarioNovoUser] = useState('');
@@ -74,30 +77,23 @@ export default function AdminDashboard() {
   const [filtroFuncNome, setFiltroFuncNome] = useState('');
   const [filtroFuncNumero, setFiltroFuncNumero] = useState('');
   const [filtroFuncTipo, setFiltroFuncTipo] = useState('');
+  const [filtroFuncHospital, setFiltroFuncHospital] = useState('');
 
   const [filtroHospitalNome, setFiltroHospitalNome] = useState('');
   const [filtroHospitalLocalidade, setFiltroHospitalLocalidade] = useState('');
-
-  const [filtroLogFuncionario, setFiltroLogFuncionario] = useState('');
-  const [filtroLogData, setFiltroLogData] = useState('');
-  const [filtroLogHora, setFiltroLogHora] = useState('');
-  const [filtroLogHospital, setFiltroLogHospital] = useState('');
-
-  const [nomeFuncionarioLogado, setNomeFuncionarioLogado] = useState('');
 
   const [novoUtilizador, setNovoUtilizador] = useState({
     idfunc: '',
     username: '',
     password: '',
     role: 'admin',
-    hospitais: [],
   });
 
   const [novoProfissional, setNovoProfissional] = useState({
     nome: '',
     tipofunc: 'admin',
     sexo: 'M',
-    hospitais: [],
+    id_hosp: '',
   });
 
   const [novoHospital, setNovoHospital] = useState({
@@ -123,47 +119,17 @@ export default function AdminDashboard() {
   const [erroHospital, setErroHospital] = useState('');
   const [submittingHospital, setSubmittingHospital] = useState(false);
 
+  const [funcionarioAutenticadoNome, setFuncionarioAutenticadoNome] = useState('Painel de Administração');
+
   useEffect(() => {
     carregarTudo();
     iniciarHistoricoBase();
-
-    let nomeSeguro = 'Utilizador autenticado';
-
-    try {
-      const nomeDireto =
-        localStorage.getItem('nomeFuncionario') ||
-        localStorage.getItem('nome');
-
-      const usernameDireto = localStorage.getItem('username');
-
-      if (nomeDireto && nomeDireto !== 'undefined' && nomeDireto !== 'null') {
-        nomeSeguro = nomeDireto;
-      } else {
-        const userRaw = localStorage.getItem('user');
-
-        if (userRaw && userRaw !== 'undefined' && userRaw !== 'null') {
-          try {
-            const userObj = JSON.parse(userRaw);
-            nomeSeguro =
-              userObj?.nome ||
-              userObj?.nomeFuncionario ||
-              userObj?.funcionario?.nome ||
-              userObj?.username ||
-              usernameDireto ||
-              'Utilizador autenticado';
-          } catch {
-            nomeSeguro = usernameDireto || 'Utilizador autenticado';
-          }
-        } else {
-          nomeSeguro = usernameDireto || 'Utilizador autenticado';
-        }
-      }
-    } catch {
-      nomeSeguro = 'Utilizador autenticado';
-    }
-
-    setNomeFuncionarioLogado(nomeSeguro);
   }, []);
+
+  useEffect(() => {
+    resolverUtilizadorAutenticado();
+  }, [profissionais, utilizadores]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -212,6 +178,27 @@ export default function AdminDashboard() {
     setErroHospital('');
   };
 
+  const resolverUtilizadorAutenticado = () => {
+  try {
+    const rawUser = sessionStorage.getItem('user');
+    const userObj = rawUser ? JSON.parse(rawUser) : null;
+
+    if (userObj?.nome) {
+      setFuncionarioAutenticadoNome(userObj.nome);
+      return;
+    }
+
+    if (userObj?.username) {
+      setFuncionarioAutenticadoNome(userObj.username);
+      return;
+    }
+
+    setFuncionarioAutenticadoNome('Utilizador autenticado');
+  } catch {
+    setFuncionarioAutenticadoNome('Utilizador autenticado');
+  }
+};
+
   const carregarTudo = async () => {
     await Promise.all([
       carregarProfissionais(),
@@ -228,7 +215,7 @@ export default function AdminDashboard() {
       const data = await apiFetch('/api/profissionais/');
       setProfissionais(Array.isArray(data) ? data : []);
     } catch (err) {
-      setErroProfissionais(err.message);
+      setErroProfissionais(err.message || 'Erro ao carregar profissionais.');
       setProfissionais([]);
     } finally {
       setLoadingProfissionais(false);
@@ -242,7 +229,7 @@ export default function AdminDashboard() {
       const data = await apiFetch('/api/utilizadores/');
       setUtilizadores(Array.isArray(data) ? data : []);
     } catch (err) {
-      setErroUtilizadores(err.message);
+      setErroUtilizadores(err.message || 'Erro ao carregar utilizadores.');
       setUtilizadores([]);
     } finally {
       setLoadingUtilizadores(false);
@@ -254,9 +241,10 @@ export default function AdminDashboard() {
       setLoadingHospitais(true);
       setErroHospitais('');
       const data = await apiFetch('/api/hospitais/');
-      setHospitais(Array.isArray(data) ? data : []);
+      const hospitaisAdaptados = Array.isArray(data) ? data.map(mapHospitalFromApi) : [];
+      setHospitais(hospitaisAdaptados);
     } catch (err) {
-      setErroHospitais(err.message);
+      setErroHospitais(err.message || 'Erro ao carregar hospitais.');
       setHospitais([]);
     } finally {
       setLoadingHospitais(false);
@@ -265,30 +253,26 @@ export default function AdminDashboard() {
 
   const carregarLogs = async () => {
     try {
+      setLoadingLogs(true);
+      setErroLogs('');
       const data = await apiFetch('/api/logs/');
       setLogs(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Erro ao carregar logs:', err);
+      setErroLogs(err.message || 'Erro ao carregar logs.');
+      setLogs([]);
+    } finally {
+      setLoadingLogs(false);
     }
   };
 
-  const toggleHospitaisSelecionados = (setter, idHospital) => {
-    setter((prev) => {
-      const atuais = prev?.hospitais || [];
-      const existe = atuais.includes(idHospital);
-      return {
-        ...prev,
-        hospitais: existe
-          ? atuais.filter((id) => id !== idHospital)
-          : [...atuais, idHospital],
-      };
-    });
-  };
-
-  const idsComConta = new Set(
-    utilizadores
-      .map((u) => u.idfunc)
-      .filter((id) => id !== null && id !== undefined)
+  const idsComConta = useMemo(
+    () =>
+      new Set(
+        utilizadores
+          .map((u) => u.idfunc)
+          .filter((id) => id !== null && id !== undefined)
+      ),
+    [utilizadores]
   );
 
   const utilizadoresComConta = utilizadores.filter((u) => u.bloqueado !== true);
@@ -321,10 +305,21 @@ export default function AdminDashboard() {
   });
 
   const funcionariosFiltrados = profissionais.filter((p) => {
+    const hospitalFuncionario =
+      hospitais.find(
+        (h) =>
+          Number(h.idhosp) === Number(p.id_hosp) ||
+          Number(h.idhosp) === Number(p.idhosp) ||
+          Number(h.idhosp) === Number(p.hospital_id)
+      ) || null;
+
+    const nomeHospital = hospitalFuncionario?.nome || '';
+
     return (
       normalizar(p.nome).includes(normalizar(filtroFuncNome)) &&
       String(p.idfunc || '').includes(filtroFuncNumero) &&
-      (filtroFuncTipo === '' || normalizar(p.tipofunc) === normalizar(filtroFuncTipo))
+      (filtroFuncTipo === '' || normalizar(p.tipofunc) === normalizar(filtroFuncTipo)) &&
+      normalizar(nomeHospital).includes(normalizar(filtroFuncHospital))
     );
   });
 
@@ -338,66 +333,9 @@ export default function AdminDashboard() {
   const hospitaisFiltrados = hospitais.filter((h) => {
     return (
       normalizar(h.nome).includes(normalizar(filtroHospitalNome)) &&
-      normalizar(h.localidade || h.localizacao || '').includes(normalizar(filtroHospitalLocalidade))
+      normalizar(h.localidade || '').includes(normalizar(filtroHospitalLocalidade))
     );
   });
-
-  const logsFiltrados = useMemo(() => {
-    return logs.filter((item) => {
-      const rawDate = item.criado_em || item.criadoem || item.data;
-      const dataLog = rawDate ? new Date(rawDate) : null;
-
-      const dataIso =
-        dataLog && !Number.isNaN(dataLog.getTime())
-          ? `${dataLog.getFullYear()}-${String(dataLog.getMonth() + 1).padStart(2, '0')}-${String(
-            dataLog.getDate()
-          ).padStart(2, '0')}`
-          : '';
-
-      const horaLog =
-        dataLog && !Number.isNaN(dataLog.getTime())
-          ? `${String(dataLog.getHours()).padStart(2, '0')}:${String(dataLog.getMinutes()).padStart(
-            2,
-            '0'
-          )}`
-          : '';
-
-      return (
-        normalizar(item.username || '').includes(normalizar(filtroLogFuncionario)) &&
-        (!filtroLogData || dataIso === filtroLogData) &&
-        (!filtroLogHora || horaLog.startsWith(filtroLogHora)) &&
-        normalizar(item.detalhe || '').includes(normalizar(filtroLogHospital))
-      );
-    });
-  }, [logs, filtroLogFuncionario, filtroLogData, filtroLogHora, filtroLogHospital]);
-
-  const exportarLogsExcel = () => {
-    const linhas = [
-      ['Data', 'Utilizador', 'Ação', 'Detalhe'],
-      ...logsFiltrados.map((item) => [
-        item.criado_em || item.criadoem || item.data
-          ? new Date(item.criado_em || item.criadoem || item.data).toLocaleString('pt-PT')
-          : '',
-        item.username || '',
-        item.acao || '',
-        item.detalhe || '',
-      ]),
-    ];
-
-    const csv = linhas
-      .map((linha) =>
-        linha.map((valor) => `"${String(valor ?? '').replace(/"/g, '""')}"`).join(';')
-      )
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'historico_logs.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   const abrirNovoUtilizador = () => {
     resetMensagens();
@@ -406,7 +344,6 @@ export default function AdminDashboard() {
       username: '',
       password: '',
       role: 'admin',
-      hospitais: [],
     });
     setPesquisaFuncionarioNovoUser('');
     setDropdownAberto(false);
@@ -423,7 +360,6 @@ export default function AdminDashboard() {
       tipofunc: prof?.tipofunc || '',
       sexo: prof?.sexo || '',
       password: '',
-      hospitais: obterIdsHospitais(utilizador),
     });
     setUserView('editar');
   };
@@ -438,7 +374,6 @@ export default function AdminDashboard() {
       username: gerarUsername(funcionario.nome),
       password: '',
       role: funcionario.tipofunc || 'admin',
-      hospitais: obterIdsHospitais(funcionario),
       isNovo: true,
     });
     setUserView('editar');
@@ -450,7 +385,7 @@ export default function AdminDashboard() {
       nome: '',
       tipofunc: 'admin',
       sexo: 'M',
-      hospitais: [],
+      id_hosp: '',
     });
     setFuncionarioEditando(null);
     setEmployeeView('novo');
@@ -460,7 +395,11 @@ export default function AdminDashboard() {
     resetMensagens();
     setFuncionarioEditando({
       ...funcionario,
-      hospitais: obterIdsHospitais(funcionario),
+      id_hosp:
+        funcionario.id_hosp ??
+        funcionario.idhosp ??
+        funcionario.hospital_id ??
+        '',
     });
     setEmployeeView('editar');
   };
@@ -480,9 +419,10 @@ export default function AdminDashboard() {
   const abrirEditarHospital = (hospital) => {
     resetMensagens();
     setHospitalEditando({
-      ...hospital,
-      email: hospital.email || '',
+      idhosp: hospital.idhosp || hospital.id_hosp || '',
+      nome: hospital.nome || '',
       localidade: hospital.localidade || hospital.localizacao || '',
+      email: hospital.email || '',
       contacto: hospital.contacto || hospital.telefone || '',
     });
     setHospitalView('editar');
@@ -540,7 +480,6 @@ export default function AdminDashboard() {
       const payload = {
         ...novoUtilizador,
         idfunc: Number(novoUtilizador.idfunc),
-        hospitais: (novoUtilizador.hospitais || []).map(Number),
       };
 
       const data = await apiFetch('/api/auth/register', {
@@ -549,14 +488,17 @@ export default function AdminDashboard() {
       });
 
       setMensagemUser(`Utilizador ${data.username || novoUtilizador.username} criado com sucesso.`);
-      adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username || novoUtilizador.username}.`);
+      adicionarHistorico(
+        'Criar utilizador',
+        `Foi criado o utilizador ${data.username || novoUtilizador.username}.`
+      );
 
-      setNovoUtilizador({ idfunc: '', username: '', password: '', role: 'admin', hospitais: [] });
+      setNovoUtilizador({ idfunc: '', username: '', password: '', role: 'admin' });
       setPesquisaFuncionarioNovoUser('');
       await carregarUtilizadores();
       setUserView('lista');
     } catch (err) {
-      setErroUser(err.message);
+      setErroUser(err.message || 'Erro ao criar utilizador.');
     } finally {
       setSubmittingUser(false);
     }
@@ -570,22 +512,28 @@ export default function AdminDashboard() {
     try {
       setSubmittingFunc(true);
 
+      const payload = {
+        ...novoProfissional,
+        id_hosp: novoProfissional.id_hosp ? Number(novoProfissional.id_hosp) : null,
+        idhosp: novoProfissional.id_hosp ? Number(novoProfissional.id_hosp) : null,
+      };
+
       const data = await apiFetch('/api/profissionais/', {
         method: 'POST',
-        body: JSON.stringify({
-          ...novoProfissional,
-          hospitais: (novoProfissional.hospitais || []).map(Number),
-        }),
+        body: JSON.stringify(payload),
       });
 
       setMensagemFunc('Funcionário criado com sucesso.');
-      adicionarHistorico('Criar funcionário', `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`);
+      adicionarHistorico(
+        'Criar funcionário',
+        `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`
+      );
 
-      setNovoProfissional({ nome: '', tipofunc: 'admin', sexo: 'M', hospitais: [] });
+      setNovoProfissional({ nome: '', tipofunc: 'admin', sexo: 'M', id_hosp: '' });
       await carregarProfissionais();
       setEmployeeView('lista');
     } catch (err) {
-      setErroFunc(err.message);
+      setErroFunc(err.message || 'Erro ao criar funcionário.');
     } finally {
       setSubmittingFunc(false);
     }
@@ -600,6 +548,7 @@ export default function AdminDashboard() {
       setErroHospital('O nome do hospital é obrigatório.');
       return;
     }
+
     if (!novoHospital.localidade.trim()) {
       setErroHospital('A localização do hospital é obrigatória.');
       return;
@@ -609,8 +558,10 @@ export default function AdminDashboard() {
       setSubmittingHospital(true);
 
       const payload = {
-        nome: novoHospital.nome,
-        localizacao: novoHospital.localidade,
+        nome: novoHospital.nome.trim(),
+        localizacao: novoHospital.localidade.trim(),
+        email: novoHospital.email.trim() || null,
+        telefone: novoHospital.contacto.trim() || null,
       };
 
       await apiFetch('/api/hospitais/', {
@@ -625,7 +576,7 @@ export default function AdminDashboard() {
       await carregarHospitais();
       setHospitalView('lista');
     } catch (err) {
-      setErroHospital(err.message);
+      setErroHospital(err.message || 'Erro ao criar hospital.');
     } finally {
       setSubmittingHospital(false);
     }
@@ -634,45 +585,7 @@ export default function AdminDashboard() {
   const guardarUtilizadorEditado = async (e) => {
     e.preventDefault();
     setMensagemUser('');
-    setErroUser('');
-
-    try {
-      setSubmittingUser(true);
-
-      const payloadEditar = {
-        username: utilizadorEditando?.username || '',
-        role: utilizadorEditando?.role || 'admin',
-        hospitais: (utilizadorEditando?.hospitais || []).map(Number),
-        ...(utilizadorEditando?.password ? { password: utilizadorEditando.password } : {}),
-      };
-
-      const endpoint = `/api/utilizadores/${utilizadorEditando?.idfunc}`;
-
-      await apiFetch(endpoint, {
-        method: 'PUT',
-        body: JSON.stringify(payloadEditar),
-      });
-
-      setMensagemUser('Utilizador atualizado com sucesso.');
-      adicionarHistorico(
-        'Editar utilizador',
-        `Foi atualizado o utilizador ${utilizadorEditando?.username || ''}.`
-      );
-
-      await carregarUtilizadores();
-      setUtilizadorEditando(null);
-      setUserView('lista');
-    } catch (err) {
-      const msg = String(err?.message || '');
-
-      if (msg.includes('Method Not Allowed') || msg.includes('405')) {
-        setErroUser('O backend ainda não permite editar utilizadores neste endpoint.');
-      } else {
-        setErroUser(msg || 'Erro ao guardar utilizador.');
-      }
-    } finally {
-      setSubmittingUser(false);
-    }
+    setErroUser('Edição de utilizador preparada, mas depende do endpoint PUT/PATCH no backend.');
   };
 
   const guardarFuncionarioEditado = async (e) => {
@@ -683,14 +596,15 @@ export default function AdminDashboard() {
     try {
       setSubmittingFunc(true);
 
+      const idFuncionario = funcionarioEditando.idfunc;
+
       const payload = {
-        nome: funcionarioEditando?.nome || '',
-        tipofunc: funcionarioEditando?.tipofunc || 'admin',
-        sexo: funcionarioEditando?.sexo || 'M',
-        hospitais: (funcionarioEditando?.hospitais || []).map(Number),
+        ...funcionarioEditando,
+        id_hosp: funcionarioEditando.id_hosp ? Number(funcionarioEditando.id_hosp) : null,
+        idhosp: funcionarioEditando.id_hosp ? Number(funcionarioEditando.id_hosp) : null,
       };
 
-      await apiFetch(`/api/profissionais/${funcionarioEditando?.idfunc}`, {
+      await apiFetch(`/api/profissionais/${idFuncionario}`, {
         method: 'PUT',
         body: JSON.stringify(payload),
       });
@@ -698,20 +612,14 @@ export default function AdminDashboard() {
       setMensagemFunc('Funcionário atualizado com sucesso.');
       adicionarHistorico(
         'Editar funcionário',
-        `Foram atualizados os dados do funcionário ${funcionarioEditando?.nome || ''}.`
+        `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`
       );
 
       await carregarProfissionais();
       setFuncionarioEditando(null);
       setEmployeeView('lista');
     } catch (err) {
-      const msg = String(err?.message || '');
-
-      if (msg.includes('Method Not Allowed') || msg.includes('405')) {
-        setErroFunc('O backend ainda não permite editar funcionários neste endpoint.');
-      } else {
-        setErroFunc(msg || 'Erro ao guardar funcionário.');
-      }
+      setErroFunc(err.message || 'Erro ao editar funcionário.');
     } finally {
       setSubmittingFunc(false);
     }
@@ -725,11 +633,13 @@ export default function AdminDashboard() {
     try {
       setSubmittingHospital(true);
 
-      const idHospital = hospitalEditando.id_hosp || hospitalEditando.idhosp;
+      const idHospital = hospitalEditando.idhosp || hospitalEditando.id_hosp;
 
       const payload = {
         nome: hospitalEditando.nome,
         localizacao: hospitalEditando.localidade,
+        email: hospitalEditando.email || null,
+        telefone: hospitalEditando.contacto || null,
       };
 
       await apiFetch(`/api/hospitais/${idHospital}`, {
@@ -738,41 +648,34 @@ export default function AdminDashboard() {
       });
 
       setMensagemHospital('Hospital atualizado com sucesso.');
-      adicionarHistorico('Editar hospital', `Foram atualizados os dados do hospital ${hospitalEditando.nome}.`);
+      adicionarHistorico(
+        'Editar hospital',
+        `Foram atualizados os dados do hospital ${hospitalEditando.nome}.`
+      );
 
       await carregarHospitais();
       setHospitalEditando(null);
       setHospitalView('lista');
     } catch (err) {
-      setErroHospital(err.message);
+      setErroHospital(err.message || 'Erro ao atualizar hospital.');
     } finally {
       setSubmittingHospital(false);
     }
   };
 
-  const renderHospitaisSelector = (selecionados, onToggle) => (
-    <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-      <label>Hospitais</label>
-      <div className="admin-hospitais-grid">
-        {hospitais.map((hospital) => {
-          const idHospital = obterIdHospital(hospital);
-          const selecionado = (selecionados || []).includes(idHospital);
+  const getHospitalNomeFuncionario = (funcionario) => {
+    const idHosp =
+      funcionario?.id_hosp ??
+      funcionario?.idhosp ??
+      funcionario?.hospital_id ??
+      funcionario?.idHospital ??
+      null;
 
-          return (
-            <button
-              key={idHospital}
-              type="button"
-              className={`admin-hospital-check ${selecionado ? 'is-selected' : ''}`}
-              onClick={() => onToggle(idHospital)}
-            >
-              <span className="admin-hospital-check__mark">{selecionado ? '✓' : ''}</span>
-              <span className="admin-hospital-check__label">{obterNomeHospital(hospital)}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
+    if (!idHosp) return '—';
+
+    const hospital = hospitais.find((h) => Number(h.idhosp) === Number(idHosp));
+    return hospital?.nome || '—';
+  };
 
   const renderUserCenter = () => {
     if (userView === 'novo') {
@@ -877,10 +780,6 @@ export default function AdminDashboard() {
                   <option value="rececionista">Rececionista</option>
                 </select>
               </div>
-
-              {renderHospitaisSelector(novoUtilizador.hospitais, (idHospital) =>
-                toggleHospitaisSelecionados(setNovoUtilizador, idHospital)
-              )}
             </div>
 
             {mensagemUser && <p className="admin-form__success">{mensagemUser}</p>}
@@ -987,18 +886,14 @@ export default function AdminDashboard() {
                   <option value="rececionista">Rececionista</option>
                 </select>
               </div>
-
-              {renderHospitaisSelector(utilizadorEditando.hospitais, (idHospital) =>
-                toggleHospitaisSelecionados(setUtilizadorEditando, idHospital)
-              )}
             </div>
 
             {mensagemUser && <p className="admin-form__success">{mensagemUser}</p>}
             {erroUser && <p className="admin-form__error">{erroUser}</p>}
 
             <div className="admin-actions-row">
-              <button type="submit" className="admin-form__submit" disabled={submittingUser}>
-                {submittingUser ? 'A guardar...' : 'Guardar alterações'}
+              <button type="submit" className="admin-form__submit">
+                Guardar alterações
               </button>
               <button
                 type="button"
@@ -1022,6 +917,9 @@ export default function AdminDashboard() {
           <h2>Utilizadores</h2>
           <p>Gerir contas de acesso, contas por criar e utilizadores bloqueados.</p>
         </div>
+
+        {erroUtilizadores && <p className="admin-form__error">{erroUtilizadores}</p>}
+        {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
 
         <div className="admin-toolbar admin-toolbar--left">
           <button type="button" className="admin-primary-big-button" onClick={abrirNovoUtilizador}>
@@ -1077,7 +975,11 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {utilizadoresComContaFiltrados.length === 0 ? (
+                  {loadingUtilizadores || loadingProfissionais ? (
+                    <tr>
+                      <td colSpan="5">A carregar...</td>
+                    </tr>
+                  ) : utilizadoresComContaFiltrados.length === 0 ? (
                     <tr>
                       <td colSpan="5">Sem resultados.</td>
                     </tr>
@@ -1125,7 +1027,11 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {funcionariosSemContaFiltrados.length === 0 ? (
+                  {loadingProfissionais ? (
+                    <tr>
+                      <td colSpan="4">A carregar...</td>
+                    </tr>
+                  ) : funcionariosSemContaFiltrados.length === 0 ? (
                     <tr>
                       <td colSpan="4">Sem resultados.</td>
                     </tr>
@@ -1170,7 +1076,11 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {utilizadoresBloqueadosFiltrados.length === 0 ? (
+                {loadingUtilizadores ? (
+                  <tr>
+                    <td colSpan="4">A carregar...</td>
+                  </tr>
+                ) : utilizadoresBloqueadosFiltrados.length === 0 ? (
                   <tr>
                     <td colSpan="4">Sem utilizadores bloqueados.</td>
                   </tr>
@@ -1201,7 +1111,7 @@ export default function AdminDashboard() {
         <section className="admin-panel-section">
           <div className="admin-panel-section__header">
             <h2>Novo funcionário</h2>
-            <p>Adicionar um novo profissional ao sistema.</p>
+            <p>Adicionar um novo profissional ao sistema e associá-lo a um hospital.</p>
           </div>
 
           <form className="admin-form" onSubmit={criarFuncionario}>
@@ -1243,9 +1153,21 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
-              {renderHospitaisSelector(novoProfissional.hospitais, (idHospital) =>
-                toggleHospitaisSelecionados(setNovoProfissional, idHospital)
-              )}
+              <div className="admin-form__group">
+                <label>Hospital</label>
+                <select
+                  name="id_hosp"
+                  value={novoProfissional.id_hosp}
+                  onChange={handleNovoProfChange}
+                >
+                  <option value="">Sem hospital</option>
+                  {hospitais.map((hospital) => (
+                    <option key={hospital.idhosp} value={hospital.idhosp}>
+                      {hospital.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
@@ -1273,7 +1195,7 @@ export default function AdminDashboard() {
         <section className="admin-panel-section">
           <div className="admin-panel-section__header">
             <h2>Editar funcionário</h2>
-            <p>Editar informação do funcionário no painel central.</p>
+            <p>Editar dados do funcionário e o hospital associado.</p>
           </div>
 
           <form className="admin-form" onSubmit={guardarFuncionarioEditado}>
@@ -1295,33 +1217,39 @@ export default function AdminDashboard() {
 
               <div className="admin-form__group">
                 <label>Função</label>
-                <select
+                <input
                   name="tipofunc"
-                  value={funcionarioEditando.tipofunc || 'admin'}
+                  type="text"
+                  value={funcionarioEditando.tipofunc || ''}
                   onChange={handleEditarFuncChange}
-                >
-                  <option value="admin">Admin</option>
-                  <option value="medico">Médico</option>
-                  <option value="enfermeiro">Enfermeiro</option>
-                  <option value="rececionista">Rececionista</option>
-                </select>
+                />
               </div>
 
               <div className="admin-form__group">
                 <label>Sexo</label>
-                <select
+                <input
                   name="sexo"
-                  value={funcionarioEditando.sexo || 'M'}
+                  type="text"
+                  value={funcionarioEditando.sexo || ''}
                   onChange={handleEditarFuncChange}
-                >
-                  <option value="M">Masculino</option>
-                  <option value="F">Feminino</option>
-                </select>
+                />
               </div>
 
-              {renderHospitaisSelector(funcionarioEditando.hospitais, (idHospital) =>
-                toggleHospitaisSelecionados(setFuncionarioEditando, idHospital)
-              )}
+              <div className="admin-form__group">
+                <label>Hospital</label>
+                <select
+                  name="id_hosp"
+                  value={funcionarioEditando.id_hosp || ''}
+                  onChange={handleEditarFuncChange}
+                >
+                  <option value="">Sem hospital</option>
+                  {hospitais.map((hospital) => (
+                    <option key={hospital.idhosp} value={hospital.idhosp}>
+                      {hospital.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
@@ -1351,8 +1279,11 @@ export default function AdminDashboard() {
       <section className="admin-panel-section">
         <div className="admin-panel-section__header">
           <h2>Funcionários</h2>
-          <p>Gerir funcionários existentes e criar novos registos.</p>
+          <p>Gerir funcionários existentes, criar novos registos e associar hospitais.</p>
         </div>
+
+        {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
+        {erroHospitais && <p className="admin-form__error">{erroHospitais}</p>}
 
         <div className="admin-toolbar admin-toolbar--left">
           <button type="button" className="admin-primary-big-button" onClick={abrirNovoFuncionario}>
@@ -1389,10 +1320,16 @@ export default function AdminDashboard() {
               <option value="rececionista">Rececionista</option>
             </select>
           </div>
-        </div>
 
-        {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
-        {loadingProfissionais && <p className="admin-muted-text">A carregar funcionários...</p>}
+          <div className="admin-form__group">
+            <label>Filtrar por hospital</label>
+            <input
+              type="text"
+              value={filtroFuncHospital}
+              onChange={(e) => setFiltroFuncHospital(e.target.value)}
+            />
+          </div>
+        </div>
 
         <div className="admin-table-card admin-table-card--full">
           <div className="admin-table-card__header">
@@ -1408,13 +1345,18 @@ export default function AdminDashboard() {
                   <th>Nome</th>
                   <th>Função</th>
                   <th>Sexo</th>
+                  <th>Hospital</th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {funcionariosFiltrados.length === 0 ? (
+                {loadingProfissionais ? (
                   <tr>
-                    <td colSpan="5">Sem resultados.</td>
+                    <td colSpan="6">A carregar...</td>
+                  </tr>
+                ) : funcionariosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="6">Sem resultados.</td>
                   </tr>
                 ) : (
                   funcionariosFiltrados.map((f) => (
@@ -1423,6 +1365,7 @@ export default function AdminDashboard() {
                       <td>{f.nome}</td>
                       <td>{f.tipofunc}</td>
                       <td>{f.sexo}</td>
+                      <td>{getHospitalNomeFuncionario(f)}</td>
                       <td>
                         <button
                           type="button"
@@ -1529,11 +1472,7 @@ export default function AdminDashboard() {
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label>ID hospital</label>
-                <input
-                  type="text"
-                  value={hospitalEditando.id_hosp || hospitalEditando.idhosp || ''}
-                  readOnly
-                />
+                <input type="text" value={hospitalEditando.idhosp || ''} readOnly />
               </div>
 
               <div className="admin-form__group">
@@ -1634,7 +1573,6 @@ export default function AdminDashboard() {
         </div>
 
         {erroHospitais && <p className="admin-form__error">{erroHospitais}</p>}
-        {loadingHospitais && <p className="admin-muted-text">A carregar hospitais...</p>}
 
         <div className="admin-table-card admin-table-card--full">
           <div className="admin-table-card__header">
@@ -1655,18 +1593,22 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {hospitaisFiltrados.length === 0 ? (
+                {loadingHospitais ? (
+                  <tr>
+                    <td colSpan="6">A carregar...</td>
+                  </tr>
+                ) : hospitaisFiltrados.length === 0 ? (
                   <tr>
                     <td colSpan="6">Sem resultados.</td>
                   </tr>
                 ) : (
                   hospitaisFiltrados.map((h) => (
-                    <tr key={h.id_hosp || h.idhosp || h.nome}>
-                      <td>{h.id_hosp || h.idhosp || '—'}</td>
+                    <tr key={h.idhosp || h.nome}>
+                      <td>{h.idhosp || '—'}</td>
                       <td>{h.nome || '—'}</td>
                       <td>{h.email || '—'}</td>
-                      <td>{h.localidade || h.localizacao || '—'}</td>
-                      <td>{h.contacto || h.telefone || '—'}</td>
+                      <td>{h.localidade || '—'}</td>
+                      <td>{h.contacto || '—'}</td>
                       <td>
                         <button
                           type="button"
@@ -1694,6 +1636,8 @@ export default function AdminDashboard() {
           <h2>Relatórios</h2>
           <p>Resumo geral e histórico do que foi feito no painel.</p>
         </div>
+
+        {erroLogs && <p className="admin-form__error">{erroLogs}</p>}
 
         <div className="admin-report-grid">
           <div className="admin-report-card">
@@ -1723,57 +1667,15 @@ export default function AdminDashboard() {
 
         <div className="admin-table-card admin-table-card--bottom" style={{ marginTop: '1.25rem' }}>
           <div className="admin-table-card__header">
-            <div className="admin-table-card__titlewrap">
-              <h3>Histórico</h3>
-              <span>{logsFiltrados.length}</span>
-            </div>
-
-            <div className="admin-table-card__actions">
-              <button type="button" className="admin-secondary-button" onClick={carregarLogs}>
-                Atualizar
-              </button>
-              <button type="button" className="admin-primary-big-button" onClick={exportarLogsExcel}>
-                Exportar Excel
-              </button>
-            </div>
-          </div>
-
-          <div className="admin-filters admin-filters--reports">
-            <div className="admin-form__group">
-              <label>Funcionário</label>
-              <input
-                type="text"
-                value={filtroLogFuncionario}
-                onChange={(e) => setFiltroLogFuncionario(e.target.value)}
-              />
-            </div>
-
-            <div className="admin-form__group">
-              <label>Data</label>
-              <input
-                type="date"
-                value={filtroLogData}
-                onChange={(e) => setFiltroLogData(e.target.value)}
-              />
-            </div>
-
-            <div className="admin-form__group">
-              <label>Hora</label>
-              <input
-                type="time"
-                value={filtroLogHora}
-                onChange={(e) => setFiltroLogHora(e.target.value)}
-              />
-            </div>
-
-            <div className="admin-form__group">
-              <label>Hospital</label>
-              <input
-                type="text"
-                value={filtroLogHospital}
-                onChange={(e) => setFiltroLogHospital(e.target.value)}
-              />
-            </div>
+            <h3>Histórico</h3>
+            <span>{logs.length}</span>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={carregarLogs}
+            >
+              {loadingLogs ? 'A atualizar...' : 'Atualizar'}
+            </button>
           </div>
 
           <div className="admin-table-scroll admin-table-scroll--wide">
@@ -1787,21 +1689,21 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {logsFiltrados.length === 0 ? (
+                {loadingLogs ? (
+                  <tr>
+                    <td colSpan="4">A carregar...</td>
+                  </tr>
+                ) : logs.length === 0 ? (
                   <tr>
                     <td colSpan="4">Sem histórico.</td>
                   </tr>
                 ) : (
-                  logsFiltrados.map((item) => (
+                  logs.map((item) => (
                     <tr key={item.idlog}>
-                      <td>
-                        {item.criado_em || item.criadoem || item.data
-                          ? new Date(item.criado_em || item.criadoem || item.data).toLocaleString('pt-PT')
-                          : '—'}
-                      </td>
+                      <td>{item.criado_em ? new Date(item.criado_em).toLocaleString('pt-PT') : '—'}</td>
                       <td>{item.username || '—'}</td>
-                      <td>{item.acao}</td>
-                      <td>{item.detalhe}</td>
+                      <td>{item.acao || '—'}</td>
+                      <td>{item.detalhe || '—'}</td>
                     </tr>
                   ))
                 )}
@@ -1828,8 +1730,7 @@ export default function AdminDashboard() {
           <img src={logo} alt="Logótipo SIAGUH" className="admin-sidebar__logo" />
           <div>
             <strong>SIAGUH</strong>
-            <span>Painel de Administração</span>
-            <small className="admin-sidebar__user">{nomeFuncionarioLogado}</small>
+            <span>{funcionarioAutenticadoNome}</span>
           </div>
         </div>
 
@@ -1838,6 +1739,7 @@ export default function AdminDashboard() {
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'utilizadores' ? 'is-active' : ''}`}
             onClick={() => {
+              resetMensagens();
               setMainMenu('utilizadores');
               setUserView('lista');
             }}
@@ -1849,6 +1751,7 @@ export default function AdminDashboard() {
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'funcionarios' ? 'is-active' : ''}`}
             onClick={() => {
+              resetMensagens();
               setMainMenu('funcionarios');
               setEmployeeView('lista');
             }}
@@ -1860,6 +1763,7 @@ export default function AdminDashboard() {
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'hospitais' ? 'is-active' : ''}`}
             onClick={() => {
+              resetMensagens();
               setMainMenu('hospitais');
               setHospitalView('lista');
             }}
@@ -1870,7 +1774,10 @@ export default function AdminDashboard() {
           <button
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'relatorios' ? 'is-active' : ''}`}
-            onClick={() => setMainMenu('relatorios')}
+            onClick={() => {
+              resetMensagens();
+              setMainMenu('relatorios');
+            }}
           >
             Relatórios
           </button>

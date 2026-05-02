@@ -640,3 +640,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-sidebar__brand div span {
+  display: block;
+  margin-top: 15px;
+  font-weight: 999;
+}
