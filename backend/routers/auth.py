@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 from backend.auth.security import hash_password, verify_password
 from backend.db import get_connection
+from backend.dao.logs_dao import insert_log
 
 
 router = APIRouter(
@@ -23,7 +24,7 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/register")
-def register(data: RegisterRequest):
+def register(data: RegisterRequest, request: Request):
     allowed_roles = {"medico", "enfermeiro", "admin", "rececionista"}
 
     if data.role not in allowed_roles:
@@ -70,6 +71,13 @@ def register(data: RegisterRequest):
 
         conn.commit()
 
+        insert_log(
+            username=data.username,
+            acao="REGISTER",
+            detalhe=f"Utilizador {data.username} registado com role {data.role}.",
+            ip=request.client.host
+        )
+
         return {
             "message": "Utilizador registado com sucesso.",
             "username": data.username,
@@ -89,7 +97,7 @@ def register(data: RegisterRequest):
 
 
 @router.post("/login")
-def login(data: LoginRequest):
+def login(data: LoginRequest, request: Request):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -141,6 +149,13 @@ def login(data: LoginRequest):
                     "localizacao": row[2]
                 })
 
+        insert_log(
+            username=username,
+            acao="LOGIN",
+            detalhe=f"Login efetuado com sucesso.",
+            ip=request.client.host
+        )
+
         return {
             "message": "Login efetuado com sucesso.",
             "username": username,
@@ -153,7 +168,4 @@ def login(data: LoginRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro no login: {str(e)}")
-    finally:
-        cur.close()
-        conn.close()
+        raise HTTPExce

@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS Enfermeiro CASCADE;
 DROP TABLE IF EXISTS Funcionario CASCADE;
 DROP TABLE IF EXISTS Hospital CASCADE;
 DROP TABLE IF EXISTS Utente CASCADE;
+DROP TABLE IF EXISTS log_atividade CASCADE;
 
 DROP TYPE IF EXISTS cor_triagem_enum CASCADE;
 DROP TYPE IF EXISTS tipo_func_enum CASCADE;
@@ -271,3 +272,18 @@ CREATE TABLE Internamento (
         (DataHoraAlta IS NOT NULL AND TipoAlta IS NOT NULL)
     )
 );
+
+-- ------------------------------------------------------------
+-- LOG DE ATIVIDADE
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS log_atividade (
+    idlog       BIGSERIAL PRIMARY KEY,
+    username    VARCHAR(50),
+    acao        VARCHAR(100),
+    detalhe     TEXT,
+    ip          VARCHAR(45),
+    criado_em   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_log_username ON log_atividade(username);
+CREATE INDEX IF NOT EXISTS idx_log_criado_em ON log_atividade(criado_em);

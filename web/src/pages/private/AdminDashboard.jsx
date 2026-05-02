@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/logo.png';
 import '../../styles/admin.css';
+import { apiFetch } from '../../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -31,6 +32,7 @@ export default function AdminDashboard() {
   const [utilizadores, setUtilizadores] = useState([]);
   const [hospitais, setHospitais] = useState([]);
   const [historico, setHistorico] = useState([]);
+  const [logs, setLogs] = useState([]);
 
   const [loadingProfissionais, setLoadingProfissionais] = useState(false);
   const [loadingUtilizadores, setLoadingUtilizadores] = useState(false);
@@ -104,6 +106,12 @@ export default function AdminDashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  useEffect(() => {
+  if (mainMenu === 'relatorios') {
+    carregarLogs();
+  }
+  }, [mainMenu]);
 
   const iniciarHistoricoBase = () => {
     setHistorico([
@@ -142,6 +150,7 @@ export default function AdminDashboard() {
       carregarProfissionais(),
       carregarUtilizadores(),
       carregarHospitais(),
+      carregarLogs(),
     ]);
   };
 
@@ -149,9 +158,7 @@ export default function AdminDashboard() {
     try {
       setLoadingProfissionais(true);
       setErroProfissionais('');
-      const res = await fetch(`${API_URL}/api/profissionais/`);
-      if (!res.ok) throw new Error('Erro ao carregar funcionários.');
-      const data = await res.json();
+      const data = await apiFetch('/api/profissionais/');
       setProfissionais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroProfissionais(err.message);
@@ -165,9 +172,7 @@ export default function AdminDashboard() {
     try {
       setLoadingUtilizadores(true);
       setErroUtilizadores('');
-      const res = await fetch(`${API_URL}/api/utilizadores/`);
-      if (!res.ok) throw new Error('Erro ao carregar utilizadores.');
-      const data = await res.json();
+      const data = await apiFetch('/api/utilizadores/');
       setUtilizadores(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroUtilizadores(err.message);
@@ -181,15 +186,22 @@ export default function AdminDashboard() {
     try {
       setLoadingHospitais(true);
       setErroHospitais('');
-      const res = await fetch(`${API_URL}/api/hospitais/`);
-      if (!res.ok) throw new Error('Erro ao carregar hospitais.');
-      const data = await res.json();
+      const data = await apiFetch('/api/hospitais/');
       setHospitais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroHospitais(err.message);
       setHospitais([]);
     } finally {
       setLoadingHospitais(false);
+    }
+  };
+
+  const carregarLogs = async () => {
+    try {
+      const data = await apiFetch('/api/logs/');
+      setLogs(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Erro ao carregar logs:', err);
     }
   };
 
@@ -386,28 +398,15 @@ export default function AdminDashboard() {
         idfunc: Number(novoUtilizador.idfunc),
       };
 
-      const res = await fetch(`${API_URL}/api/auth/register`, {
+      const data = await apiFetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao criar utilizador.');
-
       setMensagemUser(`Utilizador ${data.username || novoUtilizador.username} criado com sucesso.`);
-      adicionarHistorico(
-        'Criar utilizador',
-        `Foi criado o utilizador ${data.username || novoUtilizador.username}.`
-      );
+      adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username || novoUtilizador.username}.`);
 
-      setNovoUtilizador({
-        idfunc: '',
-        username: '',
-        password: '',
-        role: 'admin',
-      });
-
+      setNovoUtilizador({ idfunc: '', username: '', password: '', role: 'admin' });
       setPesquisaFuncionarioNovoUser('');
       await carregarUtilizadores();
       setUserView('lista');
@@ -426,27 +425,15 @@ export default function AdminDashboard() {
     try {
       setSubmittingFunc(true);
 
-      const res = await fetch(`${API_URL}/api/profissionais/`, {
+      const data = await apiFetch('/api/profissionais/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(novoProfissional),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao criar funcionário.');
-
       setMensagemFunc('Funcionário criado com sucesso.');
-      adicionarHistorico(
-        'Criar funcionário',
-        `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`
-      );
+      adicionarHistorico('Criar funcionário', `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`);
 
-      setNovoProfissional({
-        nome: '',
-        tipofunc: 'admin',
-        sexo: 'M',
-      });
-
+      setNovoProfissional({ nome: '', tipofunc: 'admin', sexo: 'M' });
       await carregarProfissionais();
       setEmployeeView('lista');
     } catch (err) {
@@ -461,22 +448,27 @@ export default function AdminDashboard() {
     setMensagemHospital('');
     setErroHospital('');
 
+    if (!novoHospital.nome.trim()) {
+      setErroHospital('O nome do hospital é obrigatório.');
+      return;
+    }
+    if (!novoHospital.localidade.trim()) {
+      setErroHospital('A localização do hospital é obrigatória.');
+      return;
+    }
+
     try {
       setSubmittingHospital(true);
 
       const payload = {
         nome: novoHospital.nome,
-        localizacao: novoHospital.localidade,  // renomear aqui
+        localizacao: novoHospital.localidade,
       };
 
-      const res = await fetch(`${API_URL}/api/hospitais/`, {
+      await apiFetch('/api/hospitais/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao criar hospital.');
 
       setMensagemHospital(`Hospital ${novoHospital.nome} criado com sucesso.`);
       adicionarHistorico('Criar hospital', `Foi criado o hospital ${novoHospital.nome}.`);
@@ -515,25 +507,16 @@ export default function AdminDashboard() {
 
       const payload = {
         nome: hospitalEditando.nome,
-        email: hospitalEditando.email,
-        localidade: hospitalEditando.localidade,
-        contacto: hospitalEditando.contacto,
+        localizacao: hospitalEditando.localidade,
       };
 
-      const res = await fetch(`${API_URL}/api/hospitais/${idHospital}`, {
+      await apiFetch(`/api/hospitais/${idHospital}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Erro ao editar hospital.');
-
       setMensagemHospital('Hospital atualizado com sucesso.');
-      adicionarHistorico(
-        'Editar hospital',
-        `Foram atualizados os dados do hospital ${data.nome || hospitalEditando.nome}.`
-      );
+      adicionarHistorico('Editar hospital', `Foram atualizados os dados do hospital ${hospitalEditando.nome}.`);
 
       await carregarHospitais();
       setHospitalEditando(null);
@@ -1228,6 +1211,7 @@ export default function AdminDashboard() {
                   type="text"
                   value={novoHospital.localidade}
                   onChange={handleNovoHospitalChange}
+                  required
                 />
               </div>
 
@@ -1468,7 +1452,8 @@ export default function AdminDashboard() {
         <div className="admin-table-card admin-table-card--bottom" style={{ marginTop: '1.25rem' }}>
           <div className="admin-table-card__header">
             <h3>Histórico</h3>
-            <span>{historico.length}</span>
+            <span>{logs.length}</span>
+            <button type="button" onClick={carregarLogs}>↻ Atualizar</button>
           </div>
 
           <div className="admin-table-scroll admin-table-scroll--wide">
@@ -1476,19 +1461,21 @@ export default function AdminDashboard() {
               <thead>
                 <tr>
                   <th>Data</th>
+                  <th>Utilizador</th>
                   <th>Ação</th>
                   <th>Detalhe</th>
                 </tr>
               </thead>
               <tbody>
-                {historico.length === 0 ? (
+                {logs.length === 0 ? (
                   <tr>
-                    <td colSpan="3">Sem histórico.</td>
+                    <td colSpan="4">Sem histórico.</td>
                   </tr>
                 ) : (
-                  historico.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.data}</td>
+                  logs.map((item) => (
+                    <tr key={item.idlog}>
+                      <td>{new Date(item.criado_em).toLocaleString('pt-PT')}</td>
+                      <td>{item.username || '—'}</td>
                       <td>{item.acao}</td>
                       <td>{item.detalhe}</td>
                     </tr>
@@ -1514,9 +1501,9 @@ export default function AdminDashboard() {
     <main className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar__brand">
-          <img src={logo} alt="Logótipo SIGUI" className="admin-sidebar__logo" />
+          <img src={logo} alt="Logótipo SIAGUH" className="admin-sidebar__logo" />
           <div>
-            <strong>SIGUI</strong>
+            <strong>SIAGUH</strong>
             <span>Painel de Administração</span>
           </div>
         </div>
