@@ -57,8 +57,8 @@ export default function FooterLayout() {
           
           {/* Texto à esquerda em duas linhas (como no anexo) */}
           <div className="siaguh-footer-text">
-            <p>&copy; {new Date().getFullYear()} <strong>SIAGUH</strong> - Sistema Integrado de Apoio</p>
-            <p>à Gestão de Urgências Hospitalares. Todos os direitos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} <strong>PRODIGI</strong> - Projeto Integrador</p>
+            <p>Grupo 8. Todos os direitos reservados.</p>
           </div>
 
           {/* Renderização das imagens em linha na ordem solicitada */}

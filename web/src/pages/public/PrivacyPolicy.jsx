@@ -1,3 +1,6 @@
+import { Outlet } from 'react-router-dom';
+import HeaderPublic from '../../components/layout/HeaderPublic';
+import FooterLayout from '../../components/layout/FooterLayout';
 import React from 'react';
 import '../../styles/PrivacyPolicy.css';
 
@@ -11,7 +14,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2>1. Enquadramento Geral</h2>
             <p>
-              Esta Política de Privacidade aplica-se ao <strong>SIAGUH</strong>, incluindo o portal web, aplicação móvel Android e sistemas de triagem, desenvolvidos pelo Grupo 8 ("Sapos") no âmbito do Projeto Integrador de 2026. O sistema é concebido para a gestão eficiente de urgências e internamentos, garantindo a proteção de dados sensíveis através de medidas técnicas e organizativas adequadas ao risco clínico.
+              Esta Política de Privacidade aplica-se ao <strong>SIAGUH</strong>, incluindo o portal web, aplicação móvel Android e sistemas de triagem, desenvolvidos pelo Grupo 8, no âmbito do Projeto Integrador de 2026. O sistema é concebido para a gestão eficiente de urgências e internamentos, garantindo a proteção de dados sensíveis através de medidas técnicas e organizativas adequadas ao risco clínico.
             </p>
           </section>
 
