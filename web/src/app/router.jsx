@@ -6,6 +6,8 @@ import RoleRoute from '../components/guards/RoleRoute';
 import Home from '../pages/public/Home';
 import Login from '../pages/public/Login';
 import About from '../pages/public/About';
+import Accessibility from '../pages/public/Accessibility';
+import PrivacyPolicy from '../pages/public/PrivacyPolicy';
 import DashboardAdmin from '../pages/private/AdminDashboard';
 import DashboardRececionista from '../pages/private/ReceptionistDashboard';
 import DashboardEnfermeiro from '../pages/private/NurseDashboard';
@@ -19,6 +21,8 @@ const router = createBrowserRouter([
       { path: '/', element: <Home /> },
       { path: '/login', element: <Login /> },
       { path: '/sobre-nos', element: <About /> },
+      { path: '/politica de privacidade', element: <PrivacyPolicy /> },
+      { path: '/acessibilidade', element: <Accessibility /> }
     ],
   },
   {

@@ -13,7 +13,7 @@ const SobreNos = () => {
       
       {/* Secção de Cabeçalho / Título */}
       <section className="sobre-nos-hero">
-        <h1>Sobre o Projeto <span>PRODIGI</span></h1>
+        <h1>Sobre o Projeto <span>Integrador</span></h1>
         <p className="hero-subtitle">Grupo 8: Inovação, Companheirismo e Excelência Técnica.</p>
       </section>
 
@@ -34,7 +34,7 @@ const SobreNos = () => {
 
       {/* Secção da Fotografia de Grupo */}
       <section className="equipa-section">
-        <h2>A Equipa por trás do PRODIGI</h2>
+        <h2>A Equipa por trás do Projeto SIAGUH</h2>
         
         <div className="grupo-imagem-container">
           {/* Se a imagem falhar, verifica o nome e a extensão do ficheiro no import */}

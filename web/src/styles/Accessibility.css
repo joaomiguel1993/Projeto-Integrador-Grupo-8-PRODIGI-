@@ -1,0 +1,141 @@
+/* =========================================
+   PÁGINA DE ACESSIBILIDADE - ESTILOS
+   ========================================= */
+
+/* O wrapper principal usa flexbox para empurrar o footer para o fundo do ecrã */
+.accessibility-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f7f6; /* Fundo cinza clarinho para destacar o documento branco */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.accessibility-main-content {
+  flex: 1; /* Preenche o espaço disponível entre o header e o footer */
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* O "Documento" branco ao centro */
+.accessibility-document {
+  background-color: #ffffff;
+  max-width: 850px;
+  width: 100%;
+  padding: 3rem 4rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  color: #2d3748;
+  line-height: 1.7;
+}
+
+.accessibility-document h1 {
+  color: #007456;
+  font-size: 2.2rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+
+.intro-text {
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+}
+
+.accessibility-document section {
+  margin-bottom: 2.5rem;
+}
+
+.accessibility-document h2 {
+  color: #007456;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sub-section {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: #f8fcfb; /* Um verde/cinza muito subtil */
+  padding: 1.5rem;
+  border-left: 4px solid #007456;
+  border-radius: 0 8px 8px 0;
+}
+
+.accessibility-document h3 {
+  color: #2b6cb0; /* Azul escuro para contraste e hierarquia */
+  font-size: 1.15rem;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.date-report {
+  font-style: italic;
+  color: #718096;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.accessibility-document ul {
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.accessibility-document li {
+  margin-bottom: 0.5rem;
+}
+
+.accessibility-document li:last-child {
+  margin-bottom: 0;
+}
+
+.accessibility-document a {
+  color: #007456;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.accessibility-document a:hover {
+  color: #005a43;
+}
+
+/* Divisória final */
+.accessibility-divider {
+  border: 0;
+  height: 1px;
+  background-color: #e2e8f0;
+  margin: 3rem 0 1.5rem 0;
+}
+
+.accessibility-footer-note {
+  font-size: 0.85rem;
+  color: #718096;
+  text-align: center;
+  font-style: italic;
+  margin: 0;
+}
+
+/* --------------------------------- */
+/* RESPONSIVIDADE                    */
+/* --------------------------------- */
+@media (max-width: 768px) {
+  .accessibility-document {
+    padding: 2rem 1.5rem;
+  }
+  
+  .accessibility-document h1 {
+    font-size: 1.75rem;
+  }
+  
+  .accessibility-document h2 {
+    font-size: 1.25rem;
+  }
+  
+  .sub-section {
+    padding: 1rem;
+  }
+}
