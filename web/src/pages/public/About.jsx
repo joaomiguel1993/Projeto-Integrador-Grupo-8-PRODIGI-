@@ -1,11 +1,11 @@
 import { Outlet } from 'react-router-dom';
-import HeaderPublic from './HeaderPublic';
-import FooterLayout from './FooterLayout';
+import HeaderPublic from '../../components/layout/HeaderPublic';
+import FooterLayout from '../../components/layout/FooterLayout';
 import React from 'react';
 import '../../styles/About.css'; 
 
 // Importa a imagem do grupo (ajusta a extensão para .jpg se for o caso)
-//import grupo8Img from '../../imagens/Grupo8.png';
+import logo from '../../imagens/logo.png';
 
 const SobreNos = () => {
   return (
@@ -38,7 +38,7 @@ const SobreNos = () => {
         
         <div className="grupo-imagem-container">
           {/* Se a imagem falhar, verifica o nome e a extensão do ficheiro no import */}
-          <img src={grupo8Img} alt="Fotografia do Grupo 8 - Os Sapos" className="imagem-grupo" />
+          <img src={logo} alt="Fotografia do Grupo 8 - Os Sapos" className="imagem-grupo" />
         </div>
 
         <div className="membros-lista">

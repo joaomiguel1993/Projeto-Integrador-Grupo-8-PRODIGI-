@@ -5,6 +5,7 @@ import RoleRoute from '../components/guards/RoleRoute';
 
 import Home from '../pages/public/Home';
 import Login from '../pages/public/Login';
+import About from '../pages/public/About';
 import DashboardAdmin from '../pages/private/AdminDashboard';
 import DashboardRececionista from '../pages/private/ReceptionistDashboard';
 import DashboardEnfermeiro from '../pages/private/NurseDashboard';
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <Home /> },
       { path: '/login', element: <Login /> },
+      { path: '/sobre-nos', element: <About /> },
     ],
   },
   {

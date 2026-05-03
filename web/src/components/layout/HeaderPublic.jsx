@@ -5,7 +5,10 @@ export default function HeaderPublic() {
     <header className="header-public">
       <div className="container header-public__inner">
         <div className="brand-mark">
+          <a href="/">
           <img src={logo} alt="Logótipo SIGUI" className="brand-mark__logo" />
+          </a>
+
           <div className="brand-mark__text">
             <strong className="brand-mark__title">SIAGUH</strong>
             <span className="brand-mark__subtitle">

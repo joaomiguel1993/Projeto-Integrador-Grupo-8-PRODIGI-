@@ -18,7 +18,7 @@ export default function FooterLayout() {
     <footer className="siaguh-footer">
       {/* --- SUBFOOTER: Links e Contactos --- */}
       <div className="siaguh-subfooter">
-        
+                
         <div className="siaguh-subfooter-links">
           <a href="/sobre-nos">Sobre nós</a>
           <a href="/mapa-site">Mapa do Site</a>
