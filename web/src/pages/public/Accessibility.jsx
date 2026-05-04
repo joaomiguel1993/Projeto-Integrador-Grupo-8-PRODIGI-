@@ -1,13 +1,22 @@
-import { Outlet } from 'react-router-dom';
-import HeaderPublic from '../../components/layout/HeaderPublic';
-import FooterLayout from '../../components/layout/FooterLayout';
 import React from 'react';
+import { Outlet } from 'react-router-dom';
+import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import '../../styles/Accessibility.css';
 
 export default function Accessibility() {
+  
+  // 1. Define o caminho das migalhas de pão para esta página
+  const breadcrumbsLinks = [
+    { name: 'Início', path: '/' },
+    { name: 'Acessibilidade', path: '/acessibilidade' }
+  ];
+
   return (
     <div className="accessibility-page-wrapper">
-    
+      
+      {/* 2. Coloca o componente Breadcrumbs logo no topo da página */}
+      <Breadcrumbs items={breadcrumbsLinks} />
+
       {/* Conteúdo Principal */}
       <main className="accessibility-main-content">
         <div className="accessibility-document">
@@ -95,7 +104,6 @@ export default function Accessibility() {
         <Outlet />
       </main>
 
-      
     </div>
   );
 }

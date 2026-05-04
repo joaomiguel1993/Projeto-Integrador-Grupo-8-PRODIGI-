@@ -1,7 +1,5 @@
-import { Outlet } from 'react-router-dom';
-import HeaderPublic from '../../components/layout/HeaderPublic';
-import FooterLayout from '../../components/layout/FooterLayout';
 import React, { useState } from 'react';
+import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import '../../styles/FAQ.css'; 
 
 // Array com as perguntas e respostas (dados que forneceste)
@@ -44,6 +42,12 @@ export default function Faqs() {
   // Estado que guarda um array com os índices das perguntas que estão abertas
   const [openIndices, setOpenIndices] = useState([]);
 
+  // 1. Define o caminho das migalhas de pão para esta página
+  const breadcrumbsLinks = [
+    { name: 'Início', path: '/' },
+    { name: 'Perguntas Frequentes', path: '/faqs' }
+  ];
+
   // Verifica se todas estão abertas
   const isAllOpen = openIndices.length === faqsData.length;
 
@@ -73,6 +77,10 @@ export default function Faqs() {
 
   return (
     <div className="faqs-page-wrapper">
+      
+      {/* 2. Coloca o componente Breadcrumbs aqui, fora do main para ficar alinhado pelo topo */}
+      <Breadcrumbs items={breadcrumbsLinks} />
+
       <main className="faqs-main-content">
         <div className="faqs-container">
           

@@ -1,12 +1,21 @@
-import { Outlet } from 'react-router-dom';
-import HeaderPublic from '../../components/layout/HeaderPublic';
-import FooterLayout from '../../components/layout/FooterLayout';
 import React from 'react';
+import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import '../../styles/PrivacyPolicy.css';
 
 export default function PrivacyPolicy() {
+
+  // 1. Define o caminho das migalhas de pão para esta página
+  const breadcrumbsLinks = [
+    { name: 'Início', path: '/' },
+    { name: 'Política de Privacidade', path: '/politica-privacidade' }
+  ];
+
   return (
     <div className="privacy-page-wrapper">
+      
+      {/* 2. Coloca o componente Breadcrumbs no topo, fora do container branco do documento */}
+      <Breadcrumbs items={breadcrumbsLinks} />
+
       <main className="privacy-main-content">
         <div className="privacy-document">
           <h1>Política de Privacidade — SIAGUH</h1>

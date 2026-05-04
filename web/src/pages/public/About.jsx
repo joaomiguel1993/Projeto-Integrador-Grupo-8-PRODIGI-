@@ -3,14 +3,19 @@ import HeaderPublic from '../../components/layout/HeaderPublic';
 import FooterLayout from '../../components/layout/FooterLayout';
 import React from 'react';
 import '../../styles/About.css'; 
-
-// Importa a imagem do grupo (ajusta a extensão para .jpg se for o caso)
+import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import logo from '../../imagens/logo.png';
 
 const SobreNos = () => {
+  const breadcrumbsItems = [
+    { name: 'Início', path: '/' },
+    { name: 'Sobre Nós', path: '/sobre-nos' }
+  ];
+
   return (
     <div className="sobre-nos-container">
-      
+      <Breadcrumbs items={breadcrumbsItems} />
+
       {/* Secção de Cabeçalho / Título */}
       <section className="sobre-nos-hero">
         <h1>Sobre o Projeto <span>Integrador</span></h1>
