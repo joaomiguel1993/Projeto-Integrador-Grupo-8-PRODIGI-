@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../imagens/logo.png';
+import logo from '../../imagens/logo100fundo.png';
 import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
-
-
+import Breadcrumbs from '../../components/layout/Breadcrumbs';
+import FooterLayout from '../../components/layout/FooterLayout';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -47,6 +47,9 @@ const mapHospitalFromApi = (hospital) => ({
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+
+  // NOVO: Estado para colapsar o menu
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [mainMenu, setMainMenu] = useState('utilizadores');
   const [userView, setUserView] = useState('lista');
@@ -122,6 +125,11 @@ export default function AdminDashboard() {
   const [submittingHospital, setSubmittingHospital] = useState(false);
 
   const [funcionarioAutenticadoNome, setFuncionarioAutenticadoNome] = useState('Painel de Administração');
+
+  const breadcrumbsLinks = [
+    { name: 'Início', path: '/' },
+    { name: 'Painel de Administração', path: '/admin' }
+  ];
 
   useEffect(() => {
     carregarTudo();
@@ -777,8 +785,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {mensagemUser && <p className="admin-form__success">{mensagemUser}</p>}
-            {erroUser && <p className="admin-form__error">{erroUser}</p>}
+            <div aria-live="polite">
+              {mensagemUser && <p className="admin-form__success">{mensagemUser}</p>}
+              {erroUser && <p className="admin-form__error">{erroUser}</p>}
+            </div>
 
             <div className="admin-actions-row">
               <button
@@ -883,8 +893,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {mensagemUser && <p className="admin-form__success">{mensagemUser}</p>}
-            {erroUser && <p className="admin-form__error">{erroUser}</p>}
+            <div aria-live="polite">
+              {mensagemUser && <p className="admin-form__success">{mensagemUser}</p>}
+              {erroUser && <p className="admin-form__error">{erroUser}</p>}
+            </div>
 
             <div className="admin-actions-row">
               <button type="submit" className="admin-form__submit">
@@ -913,8 +925,10 @@ export default function AdminDashboard() {
           <p>Gerir contas de acesso, contas por criar e utilizadores bloqueados.</p>
         </div>
 
-        {erroUtilizadores && <p className="admin-form__error">{erroUtilizadores}</p>}
-        {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
+        <div aria-live="polite">
+          {erroUtilizadores && <p className="admin-form__error">{erroUtilizadores}</p>}
+          {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
+        </div>
 
         <div className="admin-toolbar admin-toolbar--left">
           <button type="button" className="admin-primary-big-button" onClick={abrirNovoUtilizador}>
@@ -1165,8 +1179,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
-            {erroFunc && <p className="admin-form__error">{erroFunc}</p>}
+            <div aria-live="polite">
+              {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
+              {erroFunc && <p className="admin-form__error">{erroFunc}</p>}
+            </div>
 
             <div className="admin-actions-row">
               <button type="submit" className="admin-form__submit" disabled={submittingFunc}>
@@ -1247,8 +1263,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
-            {erroFunc && <p className="admin-form__error">{erroFunc}</p>}
+            <div aria-live="polite">
+              {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
+              {erroFunc && <p className="admin-form__error">{erroFunc}</p>}
+            </div>
 
             <div className="admin-actions-row">
               <button type="submit" className="admin-form__submit" disabled={submittingFunc}>
@@ -1277,8 +1295,10 @@ export default function AdminDashboard() {
           <p>Gerir funcionários existentes, criar novos registos e associar hospitais.</p>
         </div>
 
-        {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
-        {erroHospitais && <p className="admin-form__error">{erroHospitais}</p>}
+        <div aria-live="polite">
+          {erroProfissionais && <p className="admin-form__error">{erroProfissionais}</p>}
+          {erroHospitais && <p className="admin-form__error">{erroHospitais}</p>}
+        </div>
 
         <div className="admin-toolbar admin-toolbar--left">
           <button type="button" className="admin-primary-big-button" onClick={abrirNovoFuncionario}>
@@ -1435,8 +1455,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}
-            {erroHospital && <p className="admin-form__error">{erroHospital}</p>}
+            <div aria-live="polite">
+              {mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}
+              {erroHospital && <p className="admin-form__error">{erroHospital}</p>}
+            </div>
 
             <div className="admin-actions-row">
               <button type="submit" className="admin-form__submit" disabled={submittingHospital}>
@@ -1511,8 +1533,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}
-            {erroHospital && <p className="admin-form__error">{erroHospital}</p>}
+            <div aria-live="polite">
+              {mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}
+              {erroHospital && <p className="admin-form__error">{erroHospital}</p>}
+            </div>
 
             <div className="admin-actions-row">
               <button type="submit" className="admin-form__submit" disabled={submittingHospital}>
@@ -1567,7 +1591,9 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {erroHospitais && <p className="admin-form__error">{erroHospitais}</p>}
+        <div aria-live="polite">
+          {erroHospitais && <p className="admin-form__error">{erroHospitais}</p>}
+        </div>
 
         <div className="admin-table-card admin-table-card--full">
           <div className="admin-table-card__header">
@@ -1664,7 +1690,9 @@ export default function AdminDashboard() {
           <p>Resumo geral e histórico do que foi feito no painel.</p>
         </div>
 
-        {erroLogs && <p className="admin-form__error">{erroLogs}</p>}
+        <div aria-live="polite">
+          {erroLogs && <p className="admin-form__error">{erroLogs}</p>}
+        </div>
 
         <div className="admin-report-grid">
           <div className="admin-report-card">
@@ -1762,85 +1790,124 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar__brand">
-          <img src={logo} alt="Logótipo SIAGUH" className="admin-sidebar__logo" />
-          <div>
-            <strong>SIAGUH</strong>
-            <span>{funcionarioAutenticadoNome}</span>
+    <div className="admin-page-wrapper">
+      <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+        
+        <aside className="admin-sidebar" aria-label="Navegação Lateral do Administrador">
+          
+          {/* Botão para Colapsar/Expandir a Sidebar */}
+          <button 
+            className="admin-sidebar__toggle" 
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            aria-label={isSidebarCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+            aria-expanded={!isSidebarCollapsed}
+          >
+            <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+
+          <div className="admin-sidebar__brand">
+            <img src={logo} alt="Logótipo SIAGUH" className="admin-sidebar__logo" />
+            <div className="admin-sidebar__brand-text">
+              <strong>SIAGUH</strong>
+              <span>{funcionarioAutenticadoNome}</span>
+            </div>
           </div>
-        </div>
 
-        <nav className="admin-sidebar__nav">
-          <button
-            type="button"
-            className={`admin-sidebar__link ${mainMenu === 'utilizadores' ? 'is-active' : ''}`}
-            onClick={() => {
-              resetMensagens();
-              setMainMenu('utilizadores');
-              setUserView('lista');
-            }}
-          >
-            Utilizadores
-          </button>
+          <nav className="admin-sidebar__nav" role="navigation">
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'utilizadores' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('utilizadores');
+                setUserView('lista');
+              }}
+              aria-current={mainMenu === 'utilizadores' ? 'page' : undefined}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              <span className="link-text">Utilizadores</span>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-sidebar__link ${mainMenu === 'funcionarios' ? 'is-active' : ''}`}
-            onClick={() => {
-              resetMensagens();
-              setMainMenu('funcionarios');
-              setEmployeeView('lista');
-            }}
-          >
-            Funcionários
-          </button>
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'funcionarios' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('funcionarios');
+                setEmployeeView('lista');
+              }}
+              aria-current={mainMenu === 'funcionarios' ? 'page' : undefined}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+              <span className="link-text">Funcionários</span>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-sidebar__link ${mainMenu === 'hospitais' ? 'is-active' : ''}`}
-            onClick={() => {
-              resetMensagens();
-              setMainMenu('hospitais');
-              setHospitalView('lista');
-            }}
-          >
-            Hospitais
-          </button>
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'hospitais' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('hospitais');
+                setHospitalView('lista');
+              }}
+              aria-current={mainMenu === 'hospitais' ? 'page' : undefined}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+              <span className="link-text">Hospitais</span>
+            </button>
 
-          <button
-            type="button"
-            className={`admin-sidebar__link ${mainMenu === 'relatorios' ? 'is-active' : ''}`}
-            onClick={() => {
-              resetMensagens();
-              setMainMenu('relatorios');
-            }}
-          >
-            Relatórios
-          </button>
-        </nav>
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'relatorios' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('relatorios');
+              }}
+              aria-current={mainMenu === 'relatorios' ? 'page' : undefined}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span className="link-text">Relatórios</span>
+            </button>
+          </nav>
 
-        <div className="admin-sidebar__footer">
-          <button type="button" className="admin-logout-button" onClick={() => navigate('/')}>
-            Sair
-          </button>
-        </div>
-      </aside>
+          <div className="admin-sidebar__footer">
+            <button type="button" className="admin-logout-button" onClick={() => navigate('/')} aria-label="Sair da Sessão">
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+              <span className="link-text">Sair</span>
+            </button>
+          </div>
+        </aside>
 
-      <section className="admin-content">
-        <div className="admin-content__top">
-          <h1>Painel do Administrador</h1>
-          <p>
-            {mainMenu === 'utilizadores' && 'Gestão de contas de acesso.'}
-            {mainMenu === 'funcionarios' && 'Gestão de funcionários.'}
-            {mainMenu === 'hospitais' && 'Gestão dos hospitais existentes.'}
-            {mainMenu === 'relatorios' && 'Resumo e histórico de atividade.'}
-          </p>
-        </div>
+       <section className="admin-content-wrapper">
+          <div className="admin-content-inner">
+            
+            <div className="admin-breadcrumbs-container">
+              <Breadcrumbs items={breadcrumbsLinks} />
+            </div>
 
-        <div className="admin-content__body">{renderCenter()}</div>
-      </section>
-    </main>
+            <div className="admin-content__top">
+              <h1>Painel do Administrador</h1>
+              <p>
+                {mainMenu === 'utilizadores' && 'Gestão de contas de acesso.'}
+                {mainMenu === 'funcionarios' && 'Gestão de funcionários.'}
+                {mainMenu === 'hospitais' && 'Gestão dos hospitais existentes.'}
+                {mainMenu === 'relatorios' && 'Resumo e histórico de atividade.'}
+              </p>
+            </div>
+
+            <div className="admin-content__body">
+              {renderCenter()}
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      {/* FOOTER MOVIDO PARA AQUI: FORA DO <main> PARA OCUPAR 100% DA LARGURA */}
+      <FooterLayout />
+      
+    </div>
   );
 }
