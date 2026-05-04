@@ -1,183 +1,287 @@
 /* =========================================
-   PÁGINA SOBRE NÓS - ESTILOS
+   PÁGINA SOBRE NÓS - LAYOUT BASE
    ========================================= */
 
 .sobre-nos-container {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #333;
-  line-height: 1.6;
-  background-color: #f8f9fa; /* Fundo claro e neutro */
+  background-color: #f4f7f6; /* Fundo cinza claro de toda a página */
   min-height: 100vh;
+  padding-bottom: 5rem;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* --------------------------------- */
-/* HERO SECTION (Cabeçalho)          */
-/* --------------------------------- */
+/* =========================================
+   CABEÇALHO VERDE (HERO) & BREADCRUMBS
+   ========================================= */
+
+.hero-background {
+  background-color: #007456; /* Verde SIAGUH principal */
+  padding-top: 1.5rem;
+  padding-bottom: 8rem; /* Espaço extra para o cartão branco subir por cima */
+}
+
+/* FIX: Transforma as Migalhas de Pão na versão "Dark Mode" (fundo transparente, texto branco) */
+.hero-breadcrumbs .breadcrumbs-nav {
+  background-color: transparent !important; 
+  padding: 0 !important;
+  margin-bottom: 1.5rem;
+}
+
+.hero-breadcrumbs .breadcrumbs-link, 
+.hero-breadcrumbs .breadcrumbs-separator,
+.hero-breadcrumbs .breadcrumbs-current {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.hero-breadcrumbs .breadcrumbs-link:hover {
+  color: #ffffff !important;
+  text-decoration: underline;
+}
+
+/* Títulos do Cabeçalho */
 .sobre-nos-hero {
-  background-color: #007456; /* Verde do projeto */
-  color: white;
   text-align: center;
-  padding: 4rem 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  margin-top: 1rem;
 }
 
 .sobre-nos-hero h1 {
   font-size: 2.5rem;
-  margin: 0 0 1rem 0;
   font-weight: 700;
+  margin: 0 0 0.5rem 0;
 }
 
-.sobre-nos-hero h1 span {
-  color: #a0ecd5; /* Verde claro para destacar a palavra PRODIGI */
+.sobre-nos-hero .highlight-title {
+  color: #a3e6cd; /* Verde clarinho para realçar "Integrador" */
+  font-weight: 400;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 300;
   opacity: 0.9;
-  margin: 0;
 }
 
-/* --------------------------------- */
-/* CONTEÚDO PRINCIPAL (Texto)        */
-/* --------------------------------- */
+/* =========================================
+   CARTÃO BRANCO (CONTEÚDO PRINCIPAL)
+   ========================================= */
+
 .sobre-nos-content {
-  max-width: 800px; /* Limita a largura para a leitura ser agradável */
-  margin: -3rem auto 3rem auto; /* Sobe um bocadinho o conteúdo sobrepondo a hero */
-  padding: 0 2rem;
+  margin-top: -5.5rem; /* Puxa o cartão para cima do fundo verde */
   position: relative;
   z-index: 10;
 }
 
 .text-box {
-  background-color: white;
-  padding: 3rem;
+  background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 3.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra elegante */
 }
 
-.text-box p {
-  margin-bottom: 1.5rem;
-  font-size: 1.1rem;
+/* Textos base */
+.text-box p.normal-text {
   color: #4a5568;
-  text-align: justify; 
+  line-height: 1.8;
+  font-size: 1.05rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem; /* Padding subtil para quando o fundo ficar verde durante a leitura */
+  border-radius: 6px;
+  transition: background-color 0.4s ease;
 }
 
-.text-box p:last-child {
-  margin-bottom: 0;
-}
-
-.text-box strong {
-  color: #007456;
-}
-
-/* Destaque especial para a zona dos "Sapos" */
-.highlight-text {
-  background-color: #f0fdf4; /* Verde muito clarinho */
+/* O Famoso 3º Parágrafo (Caixa verde com barra lateral) */
+.text-box p.highlight-text {
+  background-color: #f2fbf7; /* Verde clarinho de fundo */
+  border-left: 4px solid #007456; /* Barra lateral verde escuro */
   padding: 1.5rem;
-  border-left: 4px solid #007456;
-  border-radius: 4px;
+  margin-top: 2rem;
+  margin-bottom: 0;
   font-style: italic;
+  color: #3b5e51;
+  font-size: 1rem;
+  line-height: 1.7;
+  border-radius: 0 8px 8px 0;
+  transition: background-color 0.4s ease;
 }
 
 .sapo-emoji {
-  font-style: normal;
-  display: inline-block;
-  animation: bounce 2s infinite ease-in-out;
+  font-style: normal; /* Para o emoji não ficar itálico */
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
+/* =========================================
+   SECÇÃO DA EQUIPA (IMAGEM E NOMES)
+   ========================================= */
 
-/* --------------------------------- */
-/* SECÇÃO DA EQUIPA (Imagem de Grupo)*/
-/* --------------------------------- */
 .equipa-section {
-  max-width: 900px;
-  margin: 0 auto 5rem auto;
-  padding: 0 2rem;
   text-align: center;
+  margin-top: 4.5rem;
 }
 
 .equipa-section h2 {
   color: #007456;
-  font-size: 2rem;
+  font-size: 1.8rem;
   margin-bottom: 2rem;
 }
 
+/* Container redondo da imagem */
 .grupo-imagem-container {
-  width: 100%;
-  margin-bottom: 2rem;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 20px; /* Bordas bem arredondadas como na imagem */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .imagem-grupo {
   width: 100%;
-  max-width: 600px; /* Define um limite máximo de largura muito mais pequeno (podes ajustar este valor) */
-  height: auto; /* Mantém as proporções corretas do desenho */
-  display: block;
-  margin: 0 auto; /* Centra a imagem no meio do ecrã */
+  height: auto;
   border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 4px solid white;
+  display: block;
+}
+
+/* Pílula com os Nomes */
+.membros-lista-container {
+  display: flex;
+  justify-content: center;
+  margin-top: -1.5rem; /* Sobe um pouco para se aproximar da imagem */
+  position: relative;
+  z-index: 5;
 }
 
 .membros-lista {
-  display: flex;
-  justify-content: center;
+  background-color: #ffffff;
+  display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
-  background-color: white;
-  padding: 1.5rem 2rem;
-  border-radius: 50px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  display: inline-flex;
+  gap: 1.5rem;
+  padding: 1rem 2.5rem;
+  border-radius: 50px; /* Formato de pílula redonda */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .membro-nome {
-  font-size: 1.1rem;
+  color: #2d3748;
   font-weight: 600;
-  color: #1a202c;
+  font-size: 0.95rem;
 }
 
 .separador {
   color: #007456;
-  font-weight: bold;
+  font-size: 1.2rem;
 }
 
-/* --------------------------------- */
-/* RESPONSIVIDADE                    */
-/* --------------------------------- */
+/* =========================================
+   LEITOR DE VOZ & ACESSIBILIDADE
+   ========================================= */
+
+/* Classe invisível para leitores de ecrã nativos */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+}
+
+/* Controlos do topo direito do texto */
+.read-aloud-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center; /* Alinha o texto do tempo na mesma linha do botão */
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tempo de Leitura */
+.reading-time {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.reading-time svg {
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+/* Botão Ouvir Texto */
+.btn-read-aloud {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #007456;
+  border: 1px solid #007456;
+  border-radius: 50px;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-read-aloud svg { width: 18px; height: 18px; }
+
+.btn-read-aloud:hover {
+  background-color: #f2fbf7;
+}
+
+.btn-read-aloud.is-reading {
+  background-color: #007456;
+  color: #ffffff;
+}
+
+/* =========================================
+   EFEITOS VISUAIS DURANTE A LEITURA
+   ========================================= */
+
+/* O Fundo verde suave do parágrafo inteiro */
+.text-box p.reading-highlight {
+  background-color: rgba(0, 116, 86, 0.03); 
+}
+
+/* O Fundo do 3º parágrafo (fica um bocadinho mais escuro) */
+.text-box p.reading-highlight-special {
+  background-color: #d7efe5; 
+}
+
+/* A MÁGICA: O Cursor / Destaque Palavra a Palavra */
+.word-highlight {
+  background-color: #a3e6cd; /* Verde vibrante mas legível */
+  color: #004d39; /* Escurecemos o texto para garantir bom contraste/leitura */
+  border-radius: 3px;
+  padding: 0 2px;
+  margin: 0 1px;
+  font-weight: 600; /* Dá um leve negrito à palavra a ser lida */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: background-color 0.1s ease; /* Transição super rápida entre palavras */
+}
+
+/* =========================================
+   RESPONSIVIDADE (MOBILE E TABLETS)
+   ========================================= */
+
 @media (max-width: 768px) {
-  .sobre-nos-hero h1 {
-    font-size: 2rem;
-  }
+  .text-box { padding: 1.5rem; }
   
-  .sobre-nos-content {
-    margin-top: -2rem;
-    padding: 0 1rem;
-  }
+  .sobre-nos-content { margin-top: -3rem; }
   
-  .text-box {
-    padding: 1.5rem;
-  }
+  .sobre-nos-hero h1 { font-size: 2rem; }
   
-  .text-box p {
-    text-align: left; 
-    font-size: 1rem;
-  }
-
-  .membros-lista {
-    border-radius: 12px;
+  .read-aloud-header {
     flex-direction: column;
+    align-items: flex-end;
     gap: 0.5rem;
-    padding: 1.5rem;
-    width: 100%;
   }
-
-  .separador {
-    display: none; /* Esconde os pontos separadores no telemóvel */
+  
+  .membros-lista {
+    padding: 1rem;
+    border-radius: 12px;
+    gap: 0.8rem;
+    justify-content: center;
   }
 }

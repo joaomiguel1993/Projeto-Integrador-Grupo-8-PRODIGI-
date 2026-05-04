@@ -10,9 +10,17 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
 .faqs-main-content {
   flex: 1;
-  padding: 4rem 1.5rem;
+  padding: 3rem 1.5rem 5rem 1.5rem;
   display: flex;
   justify-content: center;
 }
@@ -29,7 +37,7 @@
 }
 
 .faqs-header h1 {
-  color: #007456; /* Verde SIAGUH */
+  color: #007456; 
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
@@ -39,11 +47,61 @@
   font-size: 1.1rem;
 }
 
-/* Controlos (Botão Expandir/Colapsar) */
+/* =========================================
+   CONTROLOS DE LEITURA E ACORDEÃO
+   ========================================= */
+
+.faqs-controls-wrapper {
+  display: flex;
+  justify-content: space-between; /* Coloca o leitor à esquerda e o Expandir à direita */
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Controlos do Leitor */
+.read-aloud-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reading-time {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.reading-time svg { width: 16px; height: 16px; color: #94a3b8; }
+
+.btn-read-aloud {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #007456;
+  border: 1px solid #007456;
+  border-radius: 50px;
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-read-aloud svg { width: 18px; height: 18px; }
+.btn-read-aloud:hover { background-color: #f2fbf7; }
+.btn-read-aloud.is-reading { background-color: #007456; color: #ffffff; }
+
+/* Controlos Expandir/Colapsar */
 .faqs-controls {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 1rem;
 }
 
 .btn-toggle-all {
@@ -62,7 +120,10 @@
   color: #004d39;
 }
 
-/* Estrutura do Acordeão */
+/* =========================================
+   ESTRUTURA DO ACORDEÃO & TELEPONTO
+   ========================================= */
+
 .accordion-list {
   display: flex;
   flex-direction: column;
@@ -75,7 +136,7 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .accordion-item:hover {
@@ -85,6 +146,31 @@
 
 .accordion-item.open {
   border-color: #007456;
+}
+
+/* Destaque para a FAQ que está a ser lida agora */
+.accordion-item.is-reading-active {
+  border-color: #007456;
+  background-color: #f8fcfb; /* Um verde muito subtil no fundo todo */
+  box-shadow: 0 4px 12px rgba(0, 116, 86, 0.1); /* Brilho verde na sombra */
+}
+
+/* A palavra que está a ser falada no momento */
+.word-highlight {
+  background-color: #a3e6cd; 
+  color: #004d39; 
+  border-radius: 3px;
+  padding: 0 2px;
+  margin: 0 1px;
+  font-weight: 600; 
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: background-color 0.1s ease;
+}
+
+/* Esconder dos utilizadores normais, ler nos Screen Readers */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
 }
 
 /* Botão da Pergunta */
@@ -106,6 +192,7 @@
   font-size: 1.1rem;
   font-weight: 600;
   padding-right: 1.5rem;
+  line-height: 1.5;
 }
 
 /* Ícone da Seta */
@@ -121,7 +208,7 @@
   transform: rotate(180deg);
 }
 
-/* Animação do Corpo (Resposta) usando CSS Grid */
+/* Animação do Corpo (Resposta) */
 .accordion-collapse {
   display: grid;
   grid-template-rows: 0fr;
@@ -145,15 +232,12 @@
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .faqs-header h1 {
-    font-size: 2rem;
-  }
+  .faqs-header h1 { font-size: 2rem; }
+  .accordion-header h3 { font-size: 1rem; }
+  .faqs-main-content { padding: 2rem 1rem; }
   
-  .accordion-header h3 {
-    font-size: 1rem;
-  }
-  
-  .faqs-main-content {
-    padding: 2rem 1rem;
+  .faqs-controls-wrapper {
+    flex-direction: column;
+    align-items: flex-end;
   }
 }
