@@ -8,6 +8,7 @@ import Login from '../pages/public/Login';
 import About from '../pages/public/About';
 import Accessibility from '../pages/public/Accessibility';
 import PrivacyPolicy from '../pages/public/PrivacyPolicy';
+import Faqs from '../pages/public/FAQ';
 import DashboardAdmin from '../pages/private/AdminDashboard';
 import DashboardRececionista from '../pages/private/ReceptionistDashboard';
 import DashboardEnfermeiro from '../pages/private/NurseDashboard';
@@ -22,7 +23,8 @@ const router = createBrowserRouter([
       { path: '/login', element: <Login /> },
       { path: '/sobre-nos', element: <About /> },
       { path: '/politica-privacidade', element: <PrivacyPolicy /> },
-      { path: '/acessibilidade', element: <Accessibility /> }
+      { path: '/acessibilidade', element: <Accessibility /> },
+      { path: '/faqs', element: <Faqs /> }
     ],
   },
   {

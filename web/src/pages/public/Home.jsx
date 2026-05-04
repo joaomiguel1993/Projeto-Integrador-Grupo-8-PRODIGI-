@@ -1,7 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// 1. Importação direta das imagens (recuando 2 pastas: pages e public)
+import info1 from '../../imagens/Info1.png';
+import info2 from '../../imagens/Info2.png';
+import info3 from '../../imagens/Info3.png';
+import info4 from '../../imagens/Info4.png';
+import info5 from '../../imagens/Info5.png';
+
 const ITEMS_PER_PAGE = 6;
+
+// 2. Colocamos as variáveis importadas diretamente no array (sem aspas)
+const carouselImages = [
+  info1,
+  info2,
+  info3,
+  info4,
+  info5
+];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -9,13 +25,16 @@ export default function Home() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Estado para controlar o slide atual do carrossel
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Efeito para carregar os hospitais
   useEffect(() => {
     async function loadHospitais() {
       try {
         setLoading(true);
-
         const response = await fetch('http://localhost:8000/api/hospitais/');
-
+        
         if (!response.ok) {
           throw new Error('Erro ao obter hospitais');
         }
@@ -31,6 +50,18 @@ export default function Home() {
     }
 
     loadHospitais();
+  }, []);
+
+  // Efeito para o temporizador do Carrossel (6 em 6 segundos)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prevSlide) => 
+        prevSlide === carouselImages.length - 1 ? 0 : prevSlide + 1
+      );
+    }, 6000);
+
+    // Limpa o temporizador se o componente for desmontado para evitar memory leaks
+    return () => clearInterval(timer);
   }, []);
 
   const grupos = useMemo(() => {
@@ -156,14 +187,38 @@ export default function Home() {
         </div>
       </section>
 
+      {/* --- NOVA INFO SECTION COM CARROSSEL --- */}
       <section className="info-section">
         <div className="container">
-          <div className="info-box">
+          <div className="info-box-carousel">
             <p className="section-label">Mais informações</p>
-            <h2 className="info-title">Espaço reservado para informação complementar</h2>
-            <p className="info-text">
-              Área disponível para avisos, destaques, indicadores ou outro conteúdo institucional.
-            </p>
+            <h2 className="info-title">Destaques e Informações</h2>
+            
+            <div className="carousel-wrapper">
+              {/* Imagens do Carrossel */}
+              {carouselImages.map((img, index) => (
+                <img
+                  key={index}
+                  src={img}
+                  alt={`Slide ${index + 1}`}
+                  className={`carousel-image ${index === currentSlide ? 'active' : ''}`}
+                />
+              ))}
+
+              {/* Pontos de Navegação do Carrossel (Indicadores) */}
+              <div className="carousel-indicators">
+                {carouselImages.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
+                    onClick={() => setCurrentSlide(index)}
+                    aria-label={`Ir para o slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
