@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TEXTOS_PT } from '../../locals/pt';
+import { useLanguage } from '../../contexts/LanguageContext'; // Importação do Contexto
 
 // Importação das imagens
 import info1 from '../../imagens/Info1.png';
@@ -13,26 +13,20 @@ const ITEMS_PER_PAGE = 6;
 
 /**
  * @file Home.jsx
- * @description Página inicial pública do sistema SIAGUH. 
- * Apresenta a introdução ao projeto, listagem paginada de hospitais com tempos de espera 
- * e um carrossel informativo de destaques.
+ * @description Landing page pública do SIAGUH com suporte multi-idioma (PT/EN).
  * 
  * @component
- * @returns {JSX.Element} A landing page do sistema.
  */
 export default function Home() {
   const navigate = useNavigate();
+  const { textos } = useLanguage(); // Aceder aos textos dinâmicos
   const [hospitais, setHospitais] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Array de imagens para o carrossel
   const carouselImages = [info1, info2, info3, info4, info5];
 
-  /**
-   * Carrega a lista de hospitais a partir da API.
-   */
   useEffect(() => {
     async function loadHospitais() {
       try {
@@ -50,9 +44,6 @@ export default function Home() {
     loadHospitais();
   }, []);
 
-  /**
-   * Temporizador para transição automática do carrossel.
-   */
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev === carouselImages.length - 1 ? 0 : prev + 1));
@@ -60,7 +51,6 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [carouselImages.length]);
 
-  // Lógica de Paginação dos Hospitais
   const grupos = useMemo(() => {
     const result = [];
     for (let i = 0; i < hospitais.length; i += ITEMS_PER_PAGE) {
@@ -81,22 +71,22 @@ export default function Home() {
       <section className="intro-section" aria-labelledby="intro-title">
         <div className="container">
           <div className="intro-box">
-            <p className="section-label" aria-hidden="true">{TEXTOS_PT.home.labelIntro}</p>
-            <h1 id="intro-title" className="intro-title">{TEXTOS_PT.home.tituloPrincipal}</h1>
-            <p className="intro-text">{TEXTOS_PT.home.subtituloPrincipal}</p>
+            <p className="section-label" aria-hidden="true">{textos.home.labelIntro}</p>
+            <h1 id="intro-title" className="intro-title">{textos.home.tituloPrincipal}</h1>
+            <p className="intro-text">{textos.home.subtituloPrincipal}</p>
 
             <div className="intro-highlights">
               <div className="intro-highlight">
-                <span>{TEXTOS_PT.home.labelProjeto}</span>
-                <strong>{TEXTOS_PT.home.valorProjeto}</strong>
+                <span>{textos.home.labelProjeto}</span>
+                <strong>{textos.home.valorProjeto}</strong>
               </div>
               <div className="intro-highlight">
-                <span>{TEXTOS_PT.home.labelArea}</span>
-                <strong>{TEXTOS_PT.home.valorArea}</strong>
+                <span>{textos.home.labelArea}</span>
+                <strong>{textos.home.valorArea}</strong>
               </div>
               <div className="intro-highlight">
-                <span>{TEXTOS_PT.home.labelTech}</span>
-                <strong>{TEXTOS_PT.home.valorTech}</strong>
+                <span>{textos.home.labelTech}</span>
+                <strong>{textos.home.valorTech}</strong>
               </div>
             </div>
           </div>
@@ -108,18 +98,18 @@ export default function Home() {
         <div className="container">
           <div className="hospital-section__header">
             <div>
-              <p className="section-label" aria-hidden="true">{TEXTOS_PT.home.labelHospitais}</p>
-              <h2 id="hospitais-title" className="hospital-section__title">{TEXTOS_PT.home.tituloHospitais}</h2>
-              <p className="hospital-section__subtitle">{TEXTOS_PT.home.subtituloHospitais}</p>
+              <p className="section-label" aria-hidden="true">{textos.home.labelHospitais}</p>
+              <h2 id="hospitais-title" className="hospital-section__title">{textos.home.tituloHospitais}</h2>
+              <p className="hospital-section__subtitle">{textos.home.subtituloHospitais}</p>
             </div>
 
-            <div className="hospital-arrows" role="group" aria-label={TEXTOS_PT.home.ariaPaginacao}>
+            <div className="hospital-arrows" role="group" aria-label={textos.home.ariaPaginacao}>
               <button
                 type="button"
                 className="hospital-arrow"
                 onClick={previousPage}
                 disabled={page === 0 || loading}
-                aria-label={TEXTOS_PT.home.btnAnterior}
+                aria-label={textos.home.btnAnterior}
               >
                 ←
               </button>
@@ -128,7 +118,7 @@ export default function Home() {
                 className="hospital-arrow"
                 onClick={nextPage}
                 disabled={page >= totalPages - 1 || loading || totalPages === 0}
-                aria-label={TEXTOS_PT.home.btnSeguinte}
+                aria-label={textos.home.btnSeguinte}
               >
                 →
               </button>
@@ -136,9 +126,9 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="hospital-loading" aria-busy="true">{TEXTOS_PT.geral.aCarregar}</div>
+            <div className="hospital-loading" aria-busy="true">{textos.geral.aCarregar}</div>
           ) : hospitais.length === 0 ? (
-            <div className="hospital-loading">{TEXTOS_PT.geral.semResultados}</div>
+            <div className="hospital-loading">{textos.geral.semResultados}</div>
           ) : (
             <>
               <div className="hospital-grid--paged">
@@ -149,18 +139,18 @@ export default function Home() {
                         <h3>{hospital.nome}</h3>
                         <p>{hospital.localizacao}</p>
                       </div>
-                      <span className="hospital-card__status">{TEXTOS_PT.home.statusDisponivel}</span>
+                      <span className="hospital-card__status">{textos.home.statusDisponivel}</span>
                     </div>
                     <div className="hospital-card__wait">
-                      <span className="hospital-card__label">{TEXTOS_PT.home.labelEspera}</span>
-                      <strong>{TEXTOS_PT.home.valorEsperaIndisponivel}</strong>
+                      <span className="hospital-card__label">{textos.home.labelEspera}</span>
+                      <strong>{textos.home.valorEsperaIndisponivel}</strong>
                     </div>
                   </article>
                 ))}
               </div>
 
               {totalPages > 1 && (
-                <div className="hospital-pagination" role="tablist" aria-label={TEXTOS_PT.home.ariaDots}>
+                <div className="hospital-pagination" role="tablist" aria-label={textos.home.ariaDots}>
                   {grupos.map((_, index) => (
                     <span
                       key={index}
@@ -179,24 +169,22 @@ export default function Home() {
       <section className="info-section" aria-labelledby="info-title">
         <div className="container">
           <div className="info-box-carousel">
-            <p className="section-label" aria-hidden="true">{TEXTOS_PT.home.labelInfo}</p>
-            <h2 id="info-title" className="info-title">{TEXTOS_PT.home.tituloInfo}</h2>
+            <p className="section-label" aria-hidden="true">{textos.home.labelInfo}</p>
+            <h2 id="info-title" className="info-title">{textos.home.tituloInfo}</h2>
             
-            <div className="carousel-wrapper" role="region" aria-roledescription="carousel" aria-label={TEXTOS_PT.home.ariaCarrossel}>
-              {/* Imagens do Carrossel */}
+            <div className="carousel-wrapper" role="region" aria-roledescription="carousel" aria-label={textos.home.ariaCarrossel}>
               <div aria-live="polite">
                 {carouselImages.map((img, index) => (
                   <img
                     key={index}
                     src={img}
-                    alt={`${TEXTOS_PT.home.altSlide} ${index + 1}`}
+                    alt={`${textos.home.altSlide} ${index + 1}`}
                     className={`carousel-image ${index === currentSlide ? 'active' : ''}`}
                     aria-hidden={index !== currentSlide}
                   />
                 ))}
               </div>
 
-              {/* Indicadores */}
               <div className="carousel-indicators" role="tablist">
                 {carouselImages.map((_, index) => (
                   <button
@@ -204,7 +192,7 @@ export default function Home() {
                     type="button"
                     className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
                     onClick={() => setCurrentSlide(index)}
-                    aria-label={`${TEXTOS_PT.home.ariaIrParaSlide} ${index + 1}`}
+                    aria-label={`${textos.home.ariaIrParaSlide} ${index + 1}`}
                     aria-selected={index === currentSlide}
                     role="tab"
                   />

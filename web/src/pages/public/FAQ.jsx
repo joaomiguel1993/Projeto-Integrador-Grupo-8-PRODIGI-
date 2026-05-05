@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
-import { TEXTOS_PT } from '../../locals/pt';
+import { useLanguage } from '../../contexts/LanguageContext'; // Importação do Contexto
 import '../../styles/FAQ.css'; 
 
 /**
  * @file Faqs.jsx
- * @description Página de Perguntas Frequentes (FAQ) do sistema SIAGUH.
- * Implementa um padrão de acordeão acessível e um leitor de voz dinâmico 
- * que expande as secções automaticamente durante a leitura.
- * 
- * @component
- * @returns {JSX.Element} A interface de suporte ao utilizador.
+ * @description Página de Perguntas Frequentes (FAQ) do sistema SIAGUH com suporte multi-idioma.
  */
 export default function Faqs() {
+  const { textos, idioma } = useLanguage(); // Aceder ao idioma e textos dinâmicos
   const [openIndices, setOpenIndices] = useState([]);
   
   // Estados para o Leitor de Voz
@@ -21,16 +17,16 @@ export default function Faqs() {
   const [charIndex, setCharIndex] = useState(0);
   const [charLength, setCharLength] = useState(0);
 
-  // Mapeamento dos dados vindo do dicionário central
+  // Mapeamento dinâmico dos dados vindo do dicionário de idiomas ativo
   const faqsData = [
-    { question: TEXTOS_PT.faqs.q1, answer: TEXTOS_PT.faqs.a1 },
-    { question: TEXTOS_PT.faqs.q2, answer: TEXTOS_PT.faqs.a2 },
-    { question: TEXTOS_PT.faqs.q3, answer: TEXTOS_PT.faqs.a3 },
-    { question: TEXTOS_PT.faqs.q4, answer: TEXTOS_PT.faqs.a4 },
-    { question: TEXTOS_PT.faqs.q5, answer: TEXTOS_PT.faqs.a5 },
-    { question: TEXTOS_PT.faqs.q6, answer: TEXTOS_PT.faqs.a6 },
-    { question: TEXTOS_PT.faqs.q7, answer: TEXTOS_PT.faqs.a7 },
-    { question: TEXTOS_PT.faqs.q8, answer: TEXTOS_PT.faqs.a8 }
+    { question: textos.faqs.q1, answer: textos.faqs.a1 },
+    { question: textos.faqs.q2, answer: textos.faqs.a2 },
+    { question: textos.faqs.q3, answer: textos.faqs.a3 },
+    { question: textos.faqs.q4, answer: textos.faqs.a4 },
+    { question: textos.faqs.q5, answer: textos.faqs.a5 },
+    { question: textos.faqs.q6, answer: textos.faqs.a6 },
+    { question: textos.faqs.q7, answer: textos.faqs.a7 },
+    { question: textos.faqs.q8, answer: textos.faqs.a8 }
   ].map(faq => ({
     ...faq,
     plainText: `${faq.question} ${faq.answer}` 
@@ -40,8 +36,8 @@ export default function Faqs() {
   const readingTime = Math.ceil(totalWords / 200);
 
   const breadcrumbsLinks = [
-    { name: TEXTOS_PT.geral.inicio, path: '/' },
-    { name: TEXTOS_PT.faqs.titulo, path: '/faqs' }
+    { name: textos.geral.inicio, path: '/' },
+    { name: textos.faqs.titulo, path: '/faqs' }
   ];
 
   const isAllOpen = openIndices.length === faqsData.length;
@@ -64,7 +60,7 @@ export default function Faqs() {
 
   const toggleReading = () => {
     if (!('speechSynthesis' in window)) {
-      alert(TEXTOS_PT.sobreNos.alertaSemSuporte);
+      alert(textos.sobreNos.alertaSemSuporte);
       return;
     }
     const synth = window.speechSynthesis;
@@ -94,11 +90,12 @@ export default function Faqs() {
     setCharIndex(0);
     setCharLength(0);
 
-    // Abre automaticamente a FAQ que vai ser lida para visibilidade total
     setOpenIndices((prev) => prev.includes(index) ? prev : [...prev, index]);
 
     const utterance = new SpeechSynthesisUtterance(faqsData[index].plainText);
-    utterance.lang = 'pt-PT';
+    
+    // Configura o idioma da voz com base no idioma selecionado no portal
+    utterance.lang = idioma === 'pt' ? 'pt-PT' : 'en-US';
     utterance.rate = 0.95;
 
     utterance.onboundary = (event) => {
@@ -146,28 +143,29 @@ export default function Faqs() {
       </div>
 
       <div aria-live="polite" className="sr-only">
-        {isReading ? TEXTOS_PT.acessibilidade.leituraIniciadaPerguntas : TEXTOS_PT.acessibilidade.pararLeitura}
+        {isReading ? textos.acessibilidade.leituraIniciadaPerguntas : textos.acessibilidade.pararLeitura}
       </div>
 
       <main className="faqs-main-content container" id="conteudo-principal">
         <div className="faqs-container">
           
           <div className="faqs-header">
-            <h1>{TEXTOS_PT.faqs.titulo}</h1>
-            <p>{TEXTOS_PT.faqs.subtitulo}</p>
+            <h1>{textos.faqs.titulo}</h1>
+            <p>{textos.faqs.subtitulo}</p>
           </div>
 
           <div className="faqs-controls-wrapper">
             <div className="read-aloud-header">
-              <span className="reading-time" aria-label={`Tempo de leitura: ${readingTime} minutos`}>
+              <span className="reading-time" aria-label={`${textos.acessibilidade.tempoLeitura}: ${readingTime}`}>
                 <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                ~{readingTime} {TEXTOS_PT.acessibilidade.tempoLeitura}
+                ~{readingTime} {textos.acessibilidade.tempoLeitura}
               </span>
               <button 
                 type="button"
                 className={`btn-read-aloud ${isReading ? 'is-reading' : ''}`}
                 onClick={toggleReading}
                 aria-pressed={isReading}
+                aria-label={isReading ? textos.acessibilidade.botaoParar : textos.acessibilidade.botaoOuvir}
               >
                 <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   {isReading ? (
@@ -176,13 +174,13 @@ export default function Faqs() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                   )}
                 </svg>
-                {isReading ? TEXTOS_PT.acessibilidade.botaoParar : TEXTOS_PT.acessibilidade.botaoOuvir}
+                {isReading ? textos.acessibilidade.botaoParar : textos.acessibilidade.botaoOuvir}
               </button>
             </div>
 
             <div className="faqs-controls">
               <button className="btn-toggle-all" onClick={toggleAll}>
-                {isAllOpen ? TEXTOS_PT.faqs.colapsarTudo : TEXTOS_PT.faqs.expandirTudo}
+                {isAllOpen ? textos.faqs.colapsarTudo : textos.faqs.expandirTudo}
               </button>
             </div>
           </div>

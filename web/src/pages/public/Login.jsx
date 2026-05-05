@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as loginRequest } from '../../services/auth';
-import { TEXTOS_PT } from '../../locals/pt';
+import { useLanguage } from '../../contexts/LanguageContext'; // Integração do Contexto
 import { ROLES, STORAGE_KEYS } from '../../constants/roles';
 
 /**
  * @file Login.jsx
- * @description Página de autenticação do sistema SIAGUH.
- * Gere o fluxo de login em dois passos: 
- * 1. Introdução de credenciais.
- * 2. Seleção de hospital (para perfis não-admin).
+ * @description Página de autenticação do sistema SIAGUH com suporte multi-idioma.
+ * Gere o fluxo de login e a seleção de unidade hospitalar ativa.
  * 
  * @component
- * @returns {JSX.Element} O formulário de login e seleção de unidade hospitalar.
  */
 
 const normalizarRole = (role) =>
@@ -33,6 +30,7 @@ const mapearRole = (rawRole) => {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { textos } = useLanguage(); // Acesso aos textos dinâmicos (PT/EN)
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -45,7 +43,6 @@ export default function Login() {
 
   /**
    * Submissão do formulário de login
-   * @param {Event} e Evento de submissão
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,7 +57,7 @@ export default function Login() {
       );
 
       if (!role) {
-        throw new Error(TEXTOS_PT.login.erroRole);
+        throw new Error(textos.login.erroRole);
       }
 
       sessionStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'true');
@@ -75,15 +72,16 @@ export default function Login() {
       const hospitaisAutorizados = data?.user?.hospitais || data?.hospitais || data?.hospitais_autorizados || [];
 
       if (!Array.isArray(hospitaisAutorizados) || hospitaisAutorizados.length === 0) {
-        throw new Error(TEXTOS_PT.login.erroHospitais);
+        throw new Error(textos.login.erroHospitais);
       }
 
       setRoleSelecionada(role);
       setHospitais(hospitaisAutorizados);
       setShowHospitalStep(true);
     } catch (err) {
+      // Limpa dados de sessão exceto a preferência de idioma
       Object.values(STORAGE_KEYS).forEach(key => sessionStorage.removeItem(key));
-      setErro(err.message || TEXTOS_PT.login.erroLogin);
+      setErro(err.message || textos.login.erroLogin);
     } finally {
       setLoading(false);
     }
@@ -91,7 +89,6 @@ export default function Login() {
 
   /**
    * Finaliza o login guardando o hospital ativo
-   * @param {Object} hospital Objeto do hospital selecionado
    */
   const handleEscolherHospital = (hospital) => {
     sessionStorage.setItem(STORAGE_KEYS.ACTIVE_HOSPITAL, JSON.stringify(hospital));
@@ -104,7 +101,7 @@ export default function Login() {
 
     const destino = destinos[roleSelecionada];
     if (!destino) {
-      setErro(TEXTOS_PT.login.erroDestino);
+      setErro(textos.login.erroDestino);
       return;
     }
 
@@ -113,10 +110,10 @@ export default function Login() {
 
   return (
     <main className="login-page" role="main">
-      {/* Região para anúncios de mudanças de estado (ex: erro ou mudança de passo) */}
+      {/* Feedback para leitores de ecrã sobre erros ou mudança de passo */}
       <div aria-live="assertive" className="sr-only">
         {erro}
-        {showHospitalStep && TEXTOS_PT.login.ariaPassoHospital}
+        {showHospitalStep && textos.login.ariaPassoHospital}
       </div>
 
       <section className="login-page__card" aria-labelledby="login-title">
@@ -124,20 +121,20 @@ export default function Login() {
           type="button"
           className="login-page__back"
           onClick={() => navigate('/')}
-          aria-label={TEXTOS_PT.login.ariaVoltar}
+          aria-label={textos.login.ariaVoltar}
         >
-          {TEXTOS_PT.geral.voltar}
+          {textos.geral.voltar}
         </button>
 
         {!showHospitalStep ? (
           <>
-            <p className="section-label" aria-hidden="true">{TEXTOS_PT.login.labelPasso1}</p>
-            <h1 id="login-title" className="login-page__title">{TEXTOS_PT.login.tituloLogin}</h1>
-            <p className="login-page__subtitle">{TEXTOS_PT.login.subtituloLogin}</p>
+            <p className="section-label" aria-hidden="true">{textos.login.labelPasso1}</p>
+            <h1 id="login-title" className="login-page__title">{textos.login.tituloLogin}</h1>
+            <p className="login-page__subtitle">{textos.login.subtituloLogin}</p>
 
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="login-form__group">
-                <label htmlFor="username">{TEXTOS_PT.admin.lblUsername}</label>
+                <label htmlFor="username">{textos.admin.lblUsername}</label>
                 <input
                   id="username"
                   type="text"
@@ -149,7 +146,7 @@ export default function Login() {
               </div>
 
               <div className="login-form__group">
-                <label htmlFor="password">{TEXTOS_PT.admin.lblPassword}</label>
+                <label htmlFor="password">{textos.admin.lblPassword}</label>
                 <input
                   id="password"
                   type="password"
@@ -167,19 +164,19 @@ export default function Login() {
                 className="login-form__submit"
                 disabled={loading}
               >
-                {loading ? TEXTOS_PT.geral.aCarregar : TEXTOS_PT.login.btnEntrar}
+                {loading ? textos.geral.aCarregar : textos.login.btnEntrar}
               </button>
             </form>
           </>
         ) : (
           <>
-            <p className="section-label" aria-hidden="true">{TEXTOS_PT.login.labelPasso2}</p>
-            <h1 id="login-title" className="login-page__title">{TEXTOS_PT.login.tituloHospital}</h1>
-            <p className="login-page__subtitle">{TEXTOS_PT.login.subtituloHospital}</p>
+            <p className="section-label" aria-hidden="true">{textos.login.labelPasso2}</p>
+            <h1 id="login-title" className="login-page__title">{textos.login.tituloHospital}</h1>
+            <p className="login-page__subtitle">{textos.login.subtituloHospital}</p>
 
             {erro && <p className="login-form__error" role="alert">{erro}</p>}
 
-            <div className="hospital-select-list" role="list" aria-label={TEXTOS_PT.login.tituloHospital}>
+            <div className="hospital-select-list" role="list" aria-label={textos.login.tituloHospital}>
               {hospitais.map((hospital, index) => (
                 <button
                   key={hospital.idhosp || index}
