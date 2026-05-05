@@ -1,29 +1,30 @@
 # 🏥 SIAGUH – Sistema Integrado de Apoio à Gestão de Urgências Hospitalares
 
-Sistema Integrado de Apoio à Gestão de Urgências Hospitalares desenvolvido pelo Grupo 8 no âmbito do Projeto Integrador da pós-graduação PRODIGI. O projeto tem como objetivo suportar operações centrais de um serviço de urgência hospitalar, incluindo gestão de utentes, episódios, triagem clínica, internamentos, atos médicos, prescrições, profissionais e autenticação. 
+Sistema Integrado de Apoio à Gestão de Urgências Hospitalares desenvolvido pelo **Grupo 8** no âmbito do Projeto Integrador da pós-graduação PRODIGI. O projeto tem como objetivo suportar operações centrais de um serviço de urgência hospitalar, incluindo gestão de utentes, episódios, triagem clínica, internamentos, atos médicos, prescrições, profissionais e autenticação.
 
 ---
 
 ## 📌 Objetivo
 
-No âmbito do Projeto Integrador da pós-graduação PRODIGI, o Grupo 8 está a desenvolver uma API backend para suporte a fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação utiliza FastAPI, PostgreSQL e Docker, com autenticação e passwords hashedas. 
+No âmbito do Projeto Integrador da pós-graduação PRODIGI, o Grupo 8 está a desenvolver um sistema completo para suporte a fluxos de urgência hospitalar, permitindo consultar e gerir informação clínica e administrativa relevante. A aplicação utiliza **React + Vite** no frontend web e **FastAPI + PostgreSQL + Docker** no backend, com autenticação e passwords cifradas (*hashed*). Estão também previstos módulos de IA e uma aplicação móvel Android.
 
 ---
 
 ## 📁 Estrutura do Repositório
 
+Esta é a árvore completa do projeto, contemplando os ficheiros já desenvolvidos e as expansões futuras do sistema (como Android e ficheiros de tradução locais).
+
 ```text
 Projeto-Integrador-Grupo-8-PRODIGI/
 │
-├── backend/                                   # API FastAPI
-│   ├── __init__.py
-│   ├── auth/
+├── backend/                                   # API FastAPI (Desenvolvimento Backend)
+│   ├── auth/                                  # Lógica de Autenticação e Segurança
 │   │   ├── __init__.py
-│   │   ├── security.py
-│   │   ├── dependencies.py
-│   │   └── permissions.py
+│   │   ├── security.py                        # Hashing e verificação de JWT
+│   │   ├── dependencies.py                    # Injeção de dependências do FastAPI
+│   │   └── permissions.py                     # Validação de Role-Based Access Control (RBAC)
 │   │
-│   ├── dao/
+│   ├── dao/                                   # Data Access Objects (Queries SQL cruas)
 │   │   ├── __init__.py
 │   │   ├── atos_dao.py
 │   │   ├── auditoria_dao.py
@@ -39,7 +40,7 @@ Projeto-Integrador-Grupo-8-PRODIGI/
 │   │   ├── utilizadores_dao.py
 │   │   └── utentes_dao.py
 │   │
-│   ├── repositories/
+│   ├── repositories/                          # Camada de abstração e regras de dados
 │   │   ├── __init__.py
 │   │   ├── atos_repository.py
 │   │   ├── auditoria_repository.py
@@ -55,7 +56,7 @@ Projeto-Integrador-Grupo-8-PRODIGI/
 │   │   ├── utilizadores_repository.py
 │   │   └── utentes_repository.py
 │   │
-│   ├── routers/
+│   ├── routers/                               # Controladores/Endpoints da API
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── auditoria.py
@@ -72,7 +73,7 @@ Projeto-Integrador-Grupo-8-PRODIGI/
 │   │   ├── utilizadores.py
 │   │   └── utentes.py
 │   │
-│   ├── schemas/
+│   ├── schemas/                               # Modelos Pydantic (Validação de Dados)
 │   │   ├── __init__.py
 │   │   ├── ato.py
 │   │   ├── auditoria.py
@@ -89,7 +90,10 @@ Projeto-Integrador-Grupo-8-PRODIGI/
 │   │   ├── utilizador.py
 │   │   └── utente.py
 │   │
-│   ├── services/
+│   ├── scripts/                               # Scripts auxiliares e de manutenção
+│   │   └── (Ficheiros futuros de manutenção)
+│   │
+│   ├── services/                              # Lógica de Negócio (Business Logic)
 │   │   ├── __init__.py
 │   │   ├── atos_service.py
 │   │   ├── auditoria_service.py
@@ -105,214 +109,153 @@ Projeto-Integrador-Grupo-8-PRODIGI/
 │   │   ├── utilizadores_service.py
 │   │   └── utentes_service.py
 │   │
-│   ├── SQL/
+│   ├── SQL/                                   # Scripts da Base de Dados PostgreSQL
 │   │   ├── createTables.sql
 │   │   └── populateDB.sql
 │   │
-│   ├── config.py
-│   ├── db.py
-│   ├── main.py
-│   ├── requirements.txt
-│   └── update_passwords.py
+│   ├── config.py                              # Carregamento de variáveis de ambiente
+│   ├── db.py                                  # Conexão à base de dados PostgreSQL
+│   ├── main.py                                # Ficheiro raiz da aplicação FastAPI
+│   ├── requirements.txt                       # Dependências Python
+│   └── update_passwords.py                    # Utilitário para bcrypt de passwords
 │
-├── ia/                                         # Modelos de apoio clínico
-│   ├── triagem_modelo.py
-│   ├── alergias_modelo.py
-│   ├── treino_triagem.py
-│   ├── treino_alergias.py
-│   └── modelos/
-│       ├── modelo_triagem.pkl
-│       └── modelo_alergias.pkl
-│
-├── web/                                        # Frontend React + Vite
+├── web/                                       # Frontend Web (React + Vite)
 │   ├── public/
 │   │   ├── favicon.svg
 │   │   └── logo.svg
 │   │
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── App.jsx
-│   │   │   ├── router.jsx
-│   │   │   └── providers.jsx
+│   │   │   ├── App.jsx                        # Componente principal do React
+│   │   │   ├── router.jsx                     # Definição das rotas da aplicação
+│   │   │   └── providers.jsx                  # Embrulho dos React Contexts
 │   │   │
-│   │   ├── components/
-│   │   │   ├── ui/
-│   │   │   │   ├── Badge.jsx
-│   │   │   │   ├── Button.jsx
-│   │   │   │   ├── Card.jsx
-│   │   │   │   ├── ConfirmDialog.jsx
-│   │   │   │   ├── DateInput.jsx
-│   │   │   │   ├── EmptyState.jsx
-│   │   │   │   ├── FormInput.jsx
-│   │   │   │   ├── KPICard.jsx
-│   │   │   │   ├── LoadingSpinner.jsx
-│   │   │   │   ├── Modal.jsx
-│   │   │   │   ├── SearchInput.jsx
-│   │   │   │   ├── Select.jsx
-│   │   │   │   ├── StatusBadge.jsx
-│   │   │   │   ├── Table.jsx
-│   │   │   │   ├── Tabs.jsx
-│   │   │   │   └── TextArea.jsx
+│   │   ├── components/                        # Componentes UI reutilizáveis
+│   │   │   ├── ui/                            # Botões, Tabelas, Inputs, Modais
+│   │   │   │   ├── Badge.jsx, Button.jsx, Card.jsx, ConfirmDialog.jsx
+│   │   │   │   ├── DateInput.jsx, EmptyState.jsx, FormInput.jsx, KPICard.jsx
+│   │   │   │   ├── LoadingSpinner.jsx, Modal.jsx, SearchInput.jsx, Select.jsx
+│   │   │   │   └── StatusBadge.jsx, Table.jsx, Tabs.jsx, TextArea.jsx
 │   │   │   │
-│   │   │   ├── layout/
-│   │   │   │   ├── AuthLayout.jsx
-│   │   │   │   ├── HeaderAuth.jsx
-│   │   │   │   ├── HeaderPublic.jsx
-│   │   │   │   ├── HospitalContextBanner.jsx
-│   │   │   │   ├── PublicLayout.jsx
-│   │   │   │   ├── SidebarAdmin.jsx
-│   │   │   │   ├── SidebarEnfermeiro.jsx
-│   │   │   │   ├── SidebarMedico.jsx
-│   │   │   │   ├── SidebarRececionista.jsx
-│   │   │   │   └── Topbar.jsx
+│   │   │   ├── layout/                        # Estruturas de Ecrã (Sidebars, Headers)
+│   │   │   │   ├── AuthLayout.jsx, PublicLayout.jsx, Topbar.jsx
+│   │   │   │   ├── HeaderAuth.jsx, HeaderPublic.jsx, HospitalContextBanner.jsx
+│   │   │   │   └── SidebarAdmin.jsx, SidebarEnfermeiro.jsx, SidebarMedico.jsx, SidebarRececionista.jsx
 │   │   │   │
-│   │   │   ├── guards/
+│   │   │   ├── guards/                        # Controlos de acesso às rotas
 │   │   │   │   ├── PermissionGate.jsx
 │   │   │   │   ├── ProtectedRoute.jsx
 │   │   │   │   └── RoleRoute.jsx
 │   │   │   │
-│   │   │   └── shared/
-│   │   │       ├── AllergyAlert.jsx
-│   │   │       ├── AuditTimeline.jsx
-│   │   │       ├── EpisodeQueueCard.jsx
-│   │   │       ├── EpisodeStatusBadge.jsx
-│   │   │       ├── HospitalKPIs.jsx
-│   │   │       ├── MedicationList.jsx
-│   │   │       └── PriorityBadge.jsx
+│   │   │   └── shared/                        # Componentes comuns entre perfis
+│   │   │       ├── AllergyAlert.jsx, AuditTimeline.jsx, EpisodeQueueCard.jsx
+│   │   │       └── EpisodeStatusBadge.jsx, HospitalKPIs.jsx, MedicationList.jsx, PriorityBadge.jsx
 │   │   │
-│   │   ├── contexts/
+│   │   ├── contexts/                          # Estados globais (Context API)
 │   │   │   ├── AuthContext.jsx
 │   │   │   ├── HospitalContext.jsx
 │   │   │   └── PermissionContext.jsx
 │   │   │
-│   │   ├── hooks/
+│   │   ├── hooks/                             # Custom React Hooks
 │   │   │   ├── useAuth.js
 │   │   │   ├── useHospital.js
 │   │   │   ├── usePagination.js
 │   │   │   └── usePermissions.js
 │   │   │
-│   │   ├── pages/
-│   │   │   ├── public/
-│   │   │   │   ├── Home.jsx
-│   │   │   │   ├── HospitalDetalhe.jsx
-│   │   │   │   └── Login.jsx
-│   │   │   │
-│   │   │   ├── auth/
-│   │   │   │   ├── Perfil.jsx
-│   │   │   │   ├── SelecionarHospital.jsx
-│   │   │   │   └── SemPermissao.jsx
-│   │   │   │
-│   │   │   ├── dashboards/
-│   │   │   │   ├── DashboardAdmin.jsx
-│   │   │   │   ├── DashboardEnfermeiro.jsx
-│   │   │   │   ├── DashboardMedico.jsx
-│   │   │   │   └── DashboardRececionista.jsx
-│   │   │   │
-│   │   │   ├── admin/
-│   │   │   │   ├── AdminAssociacoesHospitais.jsx
-│   │   │   │   ├── AdminAuditoria.jsx
-│   │   │   │   ├── AdminEpisodiosClinicos.jsx
-│   │   │   │   ├── AdminFuncionarios.jsx
-│   │   │   │   ├── AdminHospitais.jsx
-│   │   │   │   ├── AdminRelatorioDetalhe.jsx
-│   │   │   │   ├── AdminRelatorios.jsx
-│   │   │   │   ├── AdminUtilizadorDetalhe.jsx
-│   │   │   │   ├── AdminUtilizadorNovo.jsx
-│   │   │   │   └── AdminUtilizadores.jsx
-│   │   │   │
-│   │   │   ├── rececao/
-│   │   │   │   ├── RececaoEntradas.jsx
-│   │   │   │   ├── RececaoNovaEntrada.jsx
-│   │   │   │   ├── RececaoUtenteDetalhe.jsx
-│   │   │   │   ├── RececaoUtenteNovo.jsx
-│   │   │   │   └── RececaoUtentes.jsx
-│   │   │   │
-│   │   │   ├── enfermagem/
-│   │   │   │   ├── FichaUtenteConsulta.jsx
-│   │   │   │   ├── TriagemDetalhe.jsx
-│   │   │   │   ├── TriagemFila.jsx
-│   │   │   │   └── TriagemNova.jsx
-│   │   │   │
-│   │   │   ├── medico/
-│   │   │   │   ├── MedicoAlergiasInteracoes.jsx
-│   │   │   │   ├── MedicoAltaInternamento.jsx
-│   │   │   │   ├── MedicoEpisodioDetalhe.jsx
-│   │   │   │   ├── MedicoFilaTriados.jsx
-│   │   │   │   ├── MedicoHistoricoUtente.jsx
-│   │   │   │   ├── MedicoMedicacaoAtiva.jsx
-│   │   │   │   ├── MedicoNovaMedicacao.jsx
-│   │   │   │   └── MedicoPrescricaoNova.jsx
-│   │   │   │
-│   │   │   └── common/
-│   │   │       ├── EpisodioAlertas.jsx
-│   │   │       ├── EpisodioAtos.jsx
-│   │   │       ├── EpisodioPrescricoes.jsx
-│   │   │       ├── EpisodioResumo.jsx
-│   │   │       ├── InternamentoDetalhe.jsx
-│   │   │       └── UtenteFichaCompleta.jsx
+│   │   ├── imagens/                           # Logótipos e assets gráficos
 │   │   │
-│   │   ├── services/
-│   │   │   ├── alertas.js
-│   │   │   ├── api.js
-│   │   │   ├── associacoesHospitais.js
-│   │   │   ├── auditoria.js
-│   │   │   ├── auth.js
-│   │   │   ├── episodios.js
-│   │   │   ├── hospitais.js
-│   │   │   ├── ia.js
-│   │   │   ├── internamentos.js
-│   │   │   ├── medicacaoAtiva.js
-│   │   │   ├── medicamentos.js
-│   │   │   ├── prescricoes.js
-│   │   │   ├── profissionais.js
-│   │   │   ├── relatorios.js
-│   │   │   ├── triagem.js
-│   │   │   ├── utilizadores.js
-│   │   │   └── utentes.js
+│   │   ├── locals/                            # Internacionalização (Traduções)
+│   │   │   ├── pt.json                        # (Ficheiro futuro de suporte a Português)
+│   │   │   └── en.json                        # (Ficheiro futuro de suporte a Inglês)
 │   │   │
-│   │   ├── utils/
-│   │   │   ├── constants.js
-│   │   │   ├── episodeStatus.js
-│   │   │   ├── formatters.js
-│   │   │   ├── permissions.js
-│   │   │   ├── roleHome.js
-│   │   │   └── triagePriority.js
+│   │   ├── pages/                             # Ecrãs do sistema
+│   │   │   ├── public/                        # Páginas não autenticadas
+│   │   │   │   ├── Home.jsx, HospitalDetalhe.jsx, Login.jsx
+│   │   │   │
+│   │   │   ├── auth/                          # Configurações do utilizador logado
+│   │   │   │   ├── Perfil.jsx, SelecionarHospital.jsx, SemPermissao.jsx
+│   │   │   │
+│   │   │   ├── dashboards/                    # Painéis iniciais por perfil
+│   │   │   │   ├── DashboardAdmin.jsx, DashboardEnfermeiro.jsx
+│   │   │   │   └── DashboardMedico.jsx, DashboardRececionista.jsx
+│   │   │   │
+│   │   │   ├── admin/                         # Área de Administração
+│   │   │   │   ├── AdminAssociacoesHospitais.jsx, AdminAuditoria.jsx, AdminEpisodiosClinicos.jsx
+│   │   │   │   ├── AdminFuncionarios.jsx, AdminHospitais.jsx, AdminRelatorioDetalhe.jsx
+│   │   │   │   └── AdminRelatorios.jsx, AdminUtilizadorDetalhe.jsx, AdminUtilizadorNovo.jsx, AdminUtilizadores.jsx
+│   │   │   │
+│   │   │   ├── rececao/                       # Área de Rececionista
+│   │   │   │   ├── RececaoEntradas.jsx, RececaoNovaEntrada.jsx, RececaoUtenteDetalhe.jsx
+│   │   │   │   └── RececaoUtenteNovo.jsx, RececaoUtentes.jsx
+│   │   │   │
+│   │   │   ├── enfermagem/                    # Área de Enfermagem (Triagem)
+│   │   │   │   ├── FichaUtenteConsulta.jsx, TriagemDetalhe.jsx, TriagemFila.jsx, TriagemNova.jsx
+│   │   │   │
+│   │   │   ├── medico/                        # Área de Medicina (Gabinete)
+│   │   │   │   ├── MedicoAlergiasInteracoes.jsx, MedicoAltaInternamento.jsx, MedicoEpisodioDetalhe.jsx
+│   │   │   │   ├── MedicoFilaTriados.jsx, MedicoHistoricoUtente.jsx, MedicoMedicacaoAtiva.jsx
+│   │   │   │   └── MedicoNovaMedicacao.jsx, MedicoPrescricaoNova.jsx
+│   │   │   │
+│   │   │   └── common/                        # Páginas/Views usadas por vários perfis
+│   │   │       ├── EpisodioAlertas.jsx, EpisodioAtos.jsx, EpisodioPrescricoes.jsx
+│   │   │       └── EpisodioResumo.jsx, InternamentoDetalhe.jsx, UtenteFichaCompleta.jsx
+│   │   │
+│   │   ├── services/                          # Ligação à API (Ficheiros Fetch/Axios)
+│   │   │   ├── alertas.js, api.js, associacoesHospitais.js, auditoria.js, auth.js
+│   │   │   ├── episodios.js, hospitais.js, ia.js, internamentos.js, medicacaoAtiva.js
+│   │   │   └── medicamentos.js, prescricoes.js, profissionais.js, relatorios.js
+│   │   │   └── triagem.js, utilizadores.js, utentes.js
+│   │   │
+│   │   ├── utils/                             # Utilitários e formatadores Web
+│   │   │   ├── constants.js, episodeStatus.js, formatters.js, permissions.js
+│   │   │   └── roleHome.js, triagePriority.js
 │   │   │
 │   │   ├── styles/
-│   │   │   └── index.css
+│   │   │   └── index.css                      # CSS Global e injeções do Tailwind
 │   │   │
-│   │   └── main.jsx
+│   │   └── main.jsx                           # Ponto de entrada do React
 │   │
 │   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── README.md
+│   ├── package.json                           # Dependências NPM do Frontend
+│   ├── vite.config.js                         # Configuração do empacotador Vite
+│   └── tailwind.config.js                     # Configuração de temas do Tailwind CSS
 │
-├── android/                                    # Futuro cliente mobile
+├── ia/                                        # Modelos de Inteligência Artificial
+│   ├── modelos/
+│   │   ├── modelo_triagem.pkl                 # Modelo treinado para previsão de prioridade
+│   │   └── modelo_alergias.pkl                # Modelo treinado para interações de medicação
+│   ├── triagem_modelo.py
+│   ├── alergias_modelo.py
+│   ├── treino_triagem.py
+│   └── treino_alergias.py
 │
-├── docs/
+├── android/                                   # Futuro Cliente Mobile (App SIAGUH)
+│   └── (Estrutura a definir - React Native/Kotlin)
+│
+├── docs/                                      # Manuais e Documentação de Software
 │   ├── api.md
 │   ├── arquitetura.md
 │   ├── fluxos.md
-│   └── requisitos.md
+│   ├── requisitos.md
+│   ├── Programas/
+│   └── teste_wine/
 │
-├── .env.example
+├── .env.example                               # Modelo base de credenciais
 ├── .gitignore
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
-
+├── docker-compose.yml                         # Ficheiro de orquestração Docker
+├── Dockerfile                                 # Build do projeto Backend
+└── README.md                                  # Informação geral do Repositório
 ```
 
-A organização atual do backend está centrada em `routers`, `repositories`, `schemas`, `services`, `dao`, `auth` e `db.py`, refletindo uma estrutura modular orientada à separação entre endpoints, lógica de negócio, acesso a dados, validação e segurança .
+A organização do backend está centrada no padrão de arquitetura em camadas (`routers` -> `services` -> `repositories` -> `dao`), garantindo a separação entre endpoints, lógica de negócio e acesso a dados. O frontend está modularizado com React Contexts, Hooks customizados e Route Guards.
 
 ---
 
 ## 🗄️ Modelo de Dados
 
-O sistema inclui entidades principais como `Utente`, `Hospital`, `Funcionario`, `Utilizador`, `EpUrgencia`, `Triagem`, `Ato`, `Prescreve`, `Internamento`, `Antecedente`, `Medicamento`, `MedicacaoAtiva`, `Alerta` e respetivas tabelas de associação, como `Trabalha`, `Realiza` e `UtenteAntecedente` .  
-O modelo foi desenhado para suportar o registo e acompanhamento de episódios de urgência, triagem, internamentos, prescrições, autenticação de profissionais e gestão de medicação .
+O sistema inclui entidades principais como `Utente`, `Hospital`, `Funcionario`, `Utilizador`, `EpUrgencia`, `Triagem`, `Ato`, `Prescreve`, `Internamento`, `Antecedente`, `Medicamento`, `MedicacaoAtiva`, `Alerta` e respetivas tabelas de associação, como `Trabalha`, `Realiza` e `UtenteAntecedente`.
+
+O ficheiro `createTables.sql` define as tabelas principais e os tipos enumerados (*enums*) usados no sistema, como `cor_triagem_enum`, `tipo_func_enum`, `estado_ep_enum` e `tipo_alta_enum`.
 
 ---
 
@@ -320,147 +263,147 @@ O modelo foi desenhado para suportar o registo e acompanhamento de episódios de
 
 | Camada | Tecnologia |
 |--------|------------|
-| Base de dados | PostgreSQL + pgAdmin |
-| Backend / API | FastAPI + Uvicorn  |
-| Acesso a dados | psycopg2 + SQL puro  |
-| Validação de dados | Pydantic  |
-| Autenticação | Hash de passwords  |
-| Containerização | Docker + Docker Compose |
-| Controlo de versões | Git + GitHub |
-| Frontend Web | React + Vite + Tailwind  |
-
-Estas tecnologias correspondem à base atual do projeto e à forma como o sistema foi organizado entre backend, base de dados e frontend web .
+| **Base de dados** | PostgreSQL + pgAdmin |
+| **Backend / API** | FastAPI + Uvicorn |
+| **Acesso a dados** | psycopg2 + SQL puro |
+| **Validação de dados** | Pydantic |
+| **Autenticação** | JWT Tokens + Hash de passwords |
+| **Containerização** | Docker + Docker Compose |
+| **Frontend Web** | React + Vite + Tailwind CSS |
+| **Inteligência Artificial** | Scikit-learn (Python) |
+| **Controlo de versões** | Git + GitHub |
 
 ---
 
 ## ✅ Estado Atual do Projeto
 
 ### Backend
-- API funcional com FastAPI.
-- Routers separados por domínio clínico e administrativo .
-- Repositories responsáveis pelo acesso a dados.
-- Estrutura de `dao`, `schemas` e `services` definida e alinhada com a organização atual do backend .
-- Ficheiro `db.py` responsável pela ligação à base de dados e execução de queries .
-- Autenticação implementada com hashing de passwords .
-- `main.py` centraliza os routers principais da API, incluindo `auth`, `utentes`, `episodios`, `triagem`, `internamento`, `profissionais`, `ato`, `prescricao`, `hospital` e `medicamento` .
+- API funcional com FastAPI (`main.py` central).
+- Endpoints separados por domínio (Auth, Utentes, Episódios, Triagem, Internamento, Profissionais, Atos, Prescrições, Hospitais, Medicamentos).
+- Arquitetura implementada com Repositories e DAO.
+- Autenticação funcional com hashing de passwords.
 
 ### Base de Dados
-- Scripts SQL disponíveis para criação e população da base de dados .
-- O ficheiro `createTables.sql` define as tabelas principais e os tipos enumerados usados no sistema, como `cor_triagem_enum`, `tipo_func_enum`, `estado_ep_enum` e `tipo_alta_enum` .
-- O modelo de dados está estruturado para urgência hospitalar, internamento, medicação, prescrição e autenticação .
+- Modelo estruturado para suportar fluxos complexos hospitalares.
+- Scripts de criação de tabelas e população inicial concluídos.
 
 ### Frontend Web
-- Estrutura de frontend organizada em `components`, `pages`, `contexts`, `services`, `hooks` e `utils`, com recurso a React, Vite e Tailwind .
-- O frontend inclui páginas para homepage pública, login, dashboards por perfil, utente, episódio e administração de utilizadores .
+- Estrutura consolidada em React, Vite e Tailwind.
+- Autenticação e gestão de permissões (*Role-Based Access Control*).
+- Dashboards diferenciados por perfil (Admin, Médico, Enfermeiro, Rececionista).
+- Módulos de gestão de utentes, filas de espera de triagem e atos médicos desenvolvidos.
 
-### IA
-- Estrutura prevista para o módulo de IA, incluindo geração de dados, treino e modelo de apoio .
+### Inteligência Artificial
+- Modelos preditivos de apoio à Triagem e Alergias desenvolvidos.
+- Scripts de treino disponíveis.
 
 ### Android
-- Pasta reservada para futura extensão da aplicação a ambiente móvel Android .
+- Estrutura base reservada para desenvolvimento da aplicação móvel.
 
 ---
 
-## 🔌 Endpoints disponíveis
+## 🔌 Endpoints Disponíveis
+
+Alguns dos principais *routers* integrados na API:
 
 | Módulo | Exemplos |
 |--------|----------|
-| Auth | `POST /api/auth/login`, `POST /api/auth/register`  |
-| Utentes | `GET /api/utentes/`  |
-| Episódios | `GET /api/episodios/`  |
-| Triagem | `GET /api/triagens/`  |
-| Internamentos | `GET /api/internamentos/`  |
-| Profissionais | `GET /api/profissionais/`  |
-| Atos | `GET /api/atos/`  |
-| Prescrições | `GET /api/prescricoes/`  |
-| Hospitais | `GET /api/hospitais/`  |
-| Medicamentos | `GET /api/medicamentos/`  |
+| **Auth** | `POST /api/auth/login`, `POST /api/auth/register` |
+| **Utentes** | `GET /api/utentes/` |
+| **Episódios** | `GET /api/episodios/` |
+| **Triagem** | `GET /api/triagens/` |
+| **Internamentos** | `GET /api/internamentos/` |
+| **Profissionais** | `GET /api/profissionais/` |
+| **Atos** | `GET /api/atos/` |
+| **Prescrições** | `GET /api/prescricoes/` |
+| **Hospitais** | `GET /api/hospitais/` |
+| **Medicamentos** | `GET /api/medicamentos/` |
 
-Os routers atualmente existentes no projeto incluem `ato.py`, `auth.py`, `episodios.py`, `hospital.py`, `internamento.py`, `medicamento.py`, `prescricao.py`, `profissionais.py`, `triagem.py` e `utentes.py`.
 ---
 
 ## 🚀 Como executar o projeto
 
-### Docker
+### Opção 1: Usando Docker (Recomendado)
 
 ```bash
+# Iniciar a aplicação
 docker compose up --build
-```
 
-Para parar os serviços:
-
-```bash
+# Para parar os serviços
 docker compose down
 ```
 
-### Execução local
+### Opção 2: Execução Local (Modo Desenvolvimento)
 
+**1. Clonar o repositório:**
 ```bash
 git clone https://github.com/joaomiguel1993/Projeto-Integrador-Grupo-8-PRODIGI-.git
 cd Projeto-Integrador-Grupo-8-PRODIGI-
-cp .env.example .env
-pip install -r backend/requirements.txt
-uvicorn backend.main:app --reload
 ```
-### WEB
 
+**2. Configurar variáveis de ambiente:**
 ```bash
+cp .env.example .env
+```
+
+**3. Iniciar o Backend (FastAPI):**
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**4. Iniciar o Frontend Web (React):**
+Num novo terminal:
+```bash
+cd web
 npm install
 npm run dev
 ```
-http://localhost:4173/
-
-O repositório principal do projeto está no GitHub e corresponde ao trabalho desenvolvido pelo Grupo 8 .
 
 ---
 
-## 🌐 URLs úteis
+## 🌐 URLs Úteis
+
+Após iniciar os serviços localmente, podes aceder aos seguintes endereços:
 
 | Serviço | URL |
 |---------|-----|
-| API | `http://localhost:8000`  |
-| Swagger UI | `http://localhost:8000/docs`  |
-| ReDoc | `http://localhost:8000/redoc`  |
-| pgAdmin | `http://localhost:8080`  |
+| **Frontend Web** | [http://localhost:4173](http://localhost:4173) *(ou a porta indicada pelo Vite)* |
+| **API Backend** | [http://localhost:8000](http://localhost:8000) |
+| **Documentação (Swagger UI)** | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| **Documentação (ReDoc)** | [http://localhost:8000/redoc](http://localhost:8000/redoc) |
+| **Interface de BD (pgAdmin)** | [http://localhost:8080](http://localhost:8080) |
 
 ---
 
-## 🐍 Comandos úteis
+## 📋 Roadmap e Próximos Passos
 
-```bash
-uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
-python -m backend.update_passwords
-```
-
----
-
-## 📋 Roadmap
-
-### Próximos passos
-- Consolidar todos os endpoints CRUD principais .
-- Finalizar validação de dados com Pydantic.
-- Melhorar tratamento de erros .
-- Integrar e consolidar o frontend web com a API .
-- Adicionar testes aos endpoints principais .
-- Desenvolver o módulo de IA .
-- Evoluir a extensão Android prevista na estrutura do projeto .
+- [x] Arquitetura de base (Frontend e Backend).
+- [x] Sistema de Autenticação e Autorização.
+- [x] Layouts e componentes partilhados.
+- [x] Módulo de IA inicial.
+- [ ] Consolidar integração entre frontend web e a API.
+- [ ] Adicionar tratamento avançado de erros na UI.
+- [ ] Implementar testes unitários e de integração (Jest/Pytest).
+- [ ] Desenvolver extensão Android.
 
 ---
 
 ## 📅 Cronograma
 
-| Fase | Data | Estado |
+| Fase | Data Prevista | Estado |
 |------|------|--------|
-| Intermédia | 17 Abr 2026 | Em progresso  |
-| Defesa | 25–26 Mai 2026 | Planeado  |
-| Apresentação | 28 Mai 2026 | Planeado  |
-| Relatório | 28 Mai 2026 | Planeado  |
+| **Intermédia** | 17 Abr 2026 | ✅ Concluído |
+| **Defesa** | 25–26 Mai 2026 | ⏳ Planeado |
+| **Apresentação** | 28 Mai 2026 | ⏳ Planeado |
+| **Entrega Relatório** | 28 Mai 2026 | ⏳ Planeado |
 
 ---
 
 ## 👥 Grupo 8
 
-- João Martins 
-- João Sacramento 
-- Luis Franco 
-- Pedro Antunes 
+* **João Martins**
+* **João Sacramento**
+* **Luis Franco**
+* **Pedro Antunes**
