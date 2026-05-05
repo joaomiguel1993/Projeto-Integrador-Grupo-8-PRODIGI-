@@ -4,23 +4,19 @@
 
 .admin-page-wrapper {
   min-height: 100vh;
-  display: flex; /* Transforma a página numa coluna flexível */
+  display: flex;
   flex-direction: column;
   background: #f4f7f4;
 }
 
 .admin-layout {
-  flex: 1; /* Preenche todo o espaço vertical disponível, empurrando o Footer para baixo */
+  flex: 1;
   display: grid;
-  /* Transição suave do menu */
   grid-template-columns: 240px 1fr;
   transition: grid-template-columns 0.3s ease;
   background: #f4f7f4;
 }
 
-/* O resto do teu CSS mantém-se igualzinho a partir daqui! */
-
-/* Estado Colapsado do Layout */
 .admin-layout.is-collapsed {
   grid-template-columns: 80px 1fr;
 }
@@ -32,7 +28,7 @@
 }
 
 .admin-content-inner {
-  flex: 1; /* Preenche a área para empurrar o Footer para baixo */
+  flex: 1;
   padding: 2rem 2.5rem;
 }
 
@@ -55,7 +51,6 @@
   transition: all 0.3s ease;
 }
 
-/* Botão Toggle */
 .admin-sidebar__toggle {
   background: transparent;
   border: none;
@@ -81,7 +76,6 @@
   align-self: center;
 }
 
-/* Marca / Logótipo */
 .admin-sidebar__brand {
   display: flex;
   flex-direction: column;
@@ -115,7 +109,6 @@
   font-weight: 900;
 }
 
-/* O que esconder quando está colapsado */
 .admin-layout.is-collapsed .admin-sidebar__brand-text,
 .admin-layout.is-collapsed .link-text {
   display: none;
@@ -126,7 +119,6 @@
   height: 50px;
 }
 
-/* Navegação da Sidebar */
 .admin-sidebar__nav {
   display: flex;
   flex-direction: column;
@@ -171,10 +163,64 @@
   color: #2d7f64;
 }
 
-/* Rodapé (Botão Sair) */
+/* RODAPÉ DA SIDEBAR (NOVO SELETOR + BOTÃO SAIR) */
 .admin-sidebar__footer {
   margin-top: auto;
   padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-sidebar__lang-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.admin-lang-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.admin-lang-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-lang-btn.is-active {
+  opacity: 1;
+  background: #ffffff;
+  color: #3eb489;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-sidebar__lang-switcher span {
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 300;
+}
+
+.admin-layout.is-collapsed .admin-sidebar__lang-switcher {
+  flex-direction: column;
+  background: transparent;
+  padding: 0;
+}
+
+.admin-layout.is-collapsed .admin-sidebar__lang-switcher span {
+  display: none;
 }
 
 .admin-logout-button {
@@ -203,9 +249,8 @@
   padding: 0.9rem 0;
 }
 
-
 /* =========================================
-   CONTEÚDO E COMPONENTES (O TEU CÓDIGO ORIGINAL INTATO)
+   CONTEÚDO E COMPONENTES
    ========================================= */
 
 .admin-content__top {
@@ -329,24 +374,6 @@
   font-weight: 600;
 }
 
-.admin-form__hint {
-  font-size: 0.78rem;
-  font-weight: 400;
-  color: #64748b;
-}
-
-.admin-muted-text {
-  color: #667085;
-}
-
-.admin-placeholder-card {
-  padding: 1.2rem;
-  border: 1px dashed #b7ddcd;
-  border-radius: 16px;
-  background: #f3fbf7;
-  color: #4b6358;
-}
-
 .admin-filters {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -375,10 +402,6 @@
   justify-content: flex-start;
 }
 
-.admin-toolbar--center {
-  justify-content: center;
-}
-
 .admin-primary-big-button {
   min-height: 48px;
   padding: 0.9rem 1.4rem;
@@ -393,10 +416,6 @@
 
 .admin-primary-big-button:hover {
   background: #2d9f77;
-}
-
-.admin-table-wrap {
-  overflow-x: auto;
 }
 
 .admin-table {
@@ -436,10 +455,6 @@
   flex-direction: column;
 }
 
-.admin-table-card--bottom {
-  min-height: 420px;
-}
-
 .admin-table-card--full {
   min-height: 540px;
 }
@@ -450,13 +465,6 @@
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.85rem;
-  flex-wrap: wrap;
-}
-
-.admin-table-card__titlewrap {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -480,13 +488,6 @@
   font-weight: 700;
 }
 
-.admin-table-card__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
 .admin-table-scroll {
   flex: 1;
   overflow: auto;
@@ -495,10 +496,6 @@
 
 .admin-table-scroll--wide {
   max-height: 420px;
-}
-
-.admin-table-scroll--employees {
-  max-height: 460px;
 }
 
 .admin-report-grid {
@@ -531,85 +528,8 @@
   color: #18794e;
 }
 
-.admin-hospitais-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.admin-hospital-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid #cfe8dd;
-  border-radius: 12px;
-  background: #ffffff;
-  cursor: pointer;
-  transition: 0.15s ease;
-  user-select: none;
-  text-align: left;
-}
-
-.admin-hospital-check:hover {
-  background: #edf8f3;
-  border-color: #3eb489;
-}
-
-.admin-hospital-check.is-selected {
-  background: #edf8f3;
-  border-color: #3eb489;
-}
-
-.admin-hospital-check__mark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #cfe8dd;
-  border-radius: 6px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #246b52;
-  flex-shrink: 0;
-  transition: 0.15s ease;
-}
-
-.admin-hospital-check.is-selected .admin-hospital-check__mark {
-  background: #3eb489;
-  border-color: #3eb489;
-  color: #ffffff;
-}
-
-.admin-hospital-check__label {
-  color: #1f2937;
-  font-size: 0.92rem;
-  font-weight: 600;
-}
-
 .admin-dropdown {
   position: relative;
-}
-
-.admin-dropdown__input {
-  width: 100%;
-  height: 48px;
-  border: 1px solid #cfe8dd;
-  border-radius: 14px;
-  padding: 0 0.95rem;
-  font-size: 0.95rem;
-  background: #ffffff;
-  outline: none;
-}
-
-.admin-dropdown__selected {
-  margin-top: 0.4rem;
-  font-size: 0.85rem;
-  color: #18794e;
-  font-weight: 600;
 }
 
 .admin-dropdown__list {
@@ -635,67 +555,10 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  text-align: left;
-  transition: background 0.15s ease;
 }
 
 .admin-dropdown__item:hover {
   background: #eaf7f1;
-}
-
-.admin-dropdown__item-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.admin-dropdown__item-meta {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-.admin-dropdown__empty {
-  padding: 0.85rem 1rem;
-  font-size: 0.9rem;
-  color: #64748b;
-}
-
-.admin-dual-tables {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.admin-dual-tables__col {
-  background: #ffffff;
-  border: 1px solid #e2efe9;
-  border-radius: 16px;
-  padding: 1.25rem;
-}
-
-.admin-dual-tables__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.admin-dual-tables__count {
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: #e8f5ee;
-  color: #18794e;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-}
-
-.admin-dual-tables__count--warn {
-  background: #fef3c7;
-  color: #92400e;
 }
 
 .admin-header-actions {
@@ -704,31 +567,27 @@
   align-items: center;
 }
 
+/* =========================================
+   MEDIA QUERIES
+   ========================================= */
+
 @media (max-width: 1100px) {
-  .admin-users-grid-top { grid-template-columns: 1fr; }
+  .admin-users-grid-top,
   .admin-report-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 980px) {
-  .admin-layout { grid-template-columns: 1fr; } /* Colapsa para topo no mobile */
+  .admin-layout { grid-template-columns: 1fr; }
   .admin-sidebar { padding: 1rem; }
-  .admin-sidebar__toggle { display: none; } /* Esconde botão colapsar no mobile */
-  
+  .admin-sidebar__toggle { display: none; }
   .admin-sidebar__logo { width: 88px; height: 88px; }
   .admin-layout.is-collapsed .admin-sidebar__logo { width: 88px; height: 88px; }
-  
   .admin-layout.is-collapsed .admin-sidebar__brand-text,
   .admin-layout.is-collapsed .link-text { display: block; }
-  
   .admin-sidebar__nav { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  
   .admin-content-inner { padding: 1rem; }
-  
   .admin-form__grid,
   .admin-filters,
   .admin-filters--reports { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 900px) {
-  .admin-dual-tables { grid-template-columns: 1fr; }
-}

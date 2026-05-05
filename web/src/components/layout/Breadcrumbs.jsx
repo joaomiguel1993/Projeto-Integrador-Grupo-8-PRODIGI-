@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TEXTOS_PT } from '../../locals/pt';
+import { useLanguage } from '../../contexts/LanguageContext';
 import '../../styles/Breadcrumbs.css';
 
 /**
  * @file Breadcrumbs.jsx
- * @description Componente de navegação estrutural (Migalhas de Pão) que indica a 
- * localização atual do utilizador dentro da hierarquia do sistema SIAGUH.
- * Implementa boas práticas de acessibilidade (ARIA) para leitores de ecrã.
+ * @description Componente de navegação estrutural (Migalhas de Pão) integrado 
+ * com o sistema multi-idioma (PT/EN). Indica a localização do utilizador 
+ * na hierarquia do SIAGUH com suporte de acessibilidade.
  * 
  * @component
  * @param {Object} props - Propriedades do componente.
@@ -15,9 +15,14 @@ import '../../styles/Breadcrumbs.css';
  * @returns {JSX.Element} Navegação horizontal em formato breadcrumb.
  */
 export default function Breadcrumbs({ items }) {
+  // Aceder ao contexto de idioma para obter as etiquetas de acessibilidade dinâmicas
+  const { textos } = useLanguage();
+
   return (
-    <nav className="breadcrumbs-nav" aria-label={TEXTOS_PT.acessibilidade.navegacaoBreadcrumb}>
-      
+    <nav 
+      className="breadcrumbs-nav" 
+      aria-label={textos.acessibilidade.navegacaoBreadcrumb}
+    >
       <div className="container">
         <ul className="breadcrumbs-list">
           {items.map((item, index) => {
@@ -26,7 +31,7 @@ export default function Breadcrumbs({ items }) {
             return (
               <li key={index} className="breadcrumbs-item">
                 {isLast ? (
-                  // O aria-current="page" avisa o leitor de ecrã que este elemento representa a página onde estamos agora
+                  // O aria-current="page" avisa o leitor de ecrã que este elemento representa a página atual
                   <span 
                     className="breadcrumbs-current" 
                     aria-current="page"
@@ -39,7 +44,7 @@ export default function Breadcrumbs({ items }) {
                       {item.name}
                     </Link>
                     
-                    {/* aria-hidden="true" faz com que os leitores de ecrã ignorem o símbolo ">" */}
+                    {/* aria-hidden="true" faz com que os leitores de ecrã ignorem o símbolo separador visual */}
                     <span 
                       className="breadcrumbs-separator" 
                       aria-hidden="true"
@@ -53,7 +58,6 @@ export default function Breadcrumbs({ items }) {
           })}
         </ul>
       </div>
-
     </nav>
   );
 }

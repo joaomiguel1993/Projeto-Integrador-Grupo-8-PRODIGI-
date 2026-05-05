@@ -1,129 +1,128 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
-import { TEXTOS_PT } from '../../locals/pt';
+import { useLanguage } from '../../contexts/LanguageContext'; // Importação do Contexto
 import '../../styles/PrivacyPolicy.css';
 
 /**
  * @file PrivacyPolicy.jsx
- * @description Página de Política de Privacidade do sistema SIAGUH.
- * Detalha o tratamento de dados pessoais, uso de IA e direitos dos titulares (RGPD).
- * Inclui funcionalidade de síntese de voz com realce visual da leitura.
+ * @description Página de Política de Privacidade do sistema SIAGUH com suporte multi-idioma.
+ * Detalha o tratamento de dados pessoais e direitos RGPD em PT/EN.
  * 
  * @component
  * @returns {JSX.Element} A interface da Política de Privacidade.
  */
 export default function PrivacyPolicy() {
+  const { textos, idioma } = useLanguage(); // Aceder ao idioma e textos dinâmicos
   const [isReading, setIsReading] = useState(false);
   const [activeParagraph, setActiveParagraph] = useState(-1);
   const [charIndex, setCharIndex] = useState(0);
   const [charLength, setCharLength] = useState(0);
 
   /**
-   * Estrutura de dados que separa o texto para o motor de voz (plainText) 
-   * da estrutura visual rica (normalJsx).
+   * Estrutura de dados dinâmica baseada no idioma selecionado.
    */
   const documentData = [
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v1,
+      plainText: textos.politicaPrivacidade.v1,
       normalJsx: (
         <>
-          <h1>{TEXTOS_PT.politicaPrivacidade.tituloPrincipal}</h1>
+          <h1>{textos.politicaPrivacidade.tituloPrincipal}</h1>
           <section aria-labelledby="section-1">
-            <h2 id="section-1">{TEXTOS_PT.politicaPrivacidade.s1Titulo}</h2>
+            <h2 id="section-1">{textos.politicaPrivacidade.s1Titulo}</h2>
             <p>
-              {TEXTOS_PT.politicaPrivacidade.s1Texto1} <strong>SIAGUH</strong>, {TEXTOS_PT.politicaPrivacidade.s1Texto2}
+              {textos.politicaPrivacidade.s1Texto1} <strong>SIAGUH</strong>, {textos.politicaPrivacidade.s1Texto2}
             </p>
           </section>
         </>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v2,
+      plainText: textos.politicaPrivacidade.v2,
       normalJsx: (
         <section aria-labelledby="section-2">
-          <h2 id="section-2">{TEXTOS_PT.politicaPrivacidade.s2Titulo}</h2>
+          <h2 id="section-2">{textos.politicaPrivacidade.s2Titulo}</h2>
           <p>
-            {TEXTOS_PT.politicaPrivacidade.s2Texto} <a href="mailto:dpo_grupo8@exemplo.pt">dpo_grupo8@exemplo.pt</a>.
+            {textos.politicaPrivacidade.s2Texto} <a href="mailto:dpo_grupo8@exemplo.pt">dpo_grupo8@exemplo.pt</a>.
           </p>
         </section>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v3,
+      plainText: textos.politicaPrivacidade.v3,
       normalJsx: (
         <section aria-labelledby="section-3">
-          <h2 id="section-3">{TEXTOS_PT.politicaPrivacidade.s3Titulo}</h2>
-          <p>{TEXTOS_PT.politicaPrivacidade.s3Intro}</p>
+          <h2 id="section-3">{textos.politicaPrivacidade.s3Titulo}</h2>
+          <p>{textos.politicaPrivacidade.s3Intro}</p>
           <ul>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblDemog}</strong> {TEXTOS_PT.politicaPrivacidade.txtDemog}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblSaude}</strong> {TEXTOS_PT.politicaPrivacidade.txtSaude}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblIA}</strong> {TEXTOS_PT.politicaPrivacidade.txtIA}</li>
+            <li><strong>{textos.politicaPrivacidade.lblDemog}</strong> {textos.politicaPrivacidade.txtDemog}</li>
+            <li><strong>{textos.politicaPrivacidade.lblSaude}</strong> {textos.politicaPrivacidade.txtSaude}</li>
+            <li><strong>{textos.politicaPrivacidade.lblIA}</strong> {textos.politicaPrivacidade.txtIA}</li>
           </ul>
         </section>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v4,
+      plainText: textos.politicaPrivacidade.v4,
       normalJsx: (
         <section aria-labelledby="section-4">
-          <h2 id="section-4">{TEXTOS_PT.politicaPrivacidade.s4Titulo}</h2>
-          <p>{TEXTOS_PT.politicaPrivacidade.s4Intro}</p>
+          <h2 id="section-4">{textos.politicaPrivacidade.s4Titulo}</h2>
+          <p>{textos.politicaPrivacidade.s4Intro}</p>
           <ul>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblTriagem}</strong> {TEXTOS_PT.politicaPrivacidade.txtTriagem}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblDecisao}</strong> {TEXTOS_PT.politicaPrivacidade.txtDecisao}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblSeguranca}</strong> {TEXTOS_PT.politicaPrivacidade.txtSeguranca}</li>
+            <li><strong>{textos.politicaPrivacidade.lblTriagem}</strong> {textos.politicaPrivacidade.txtTriagem}</li>
+            <li><strong>{textos.politicaPrivacidade.lblDecisao}</strong> {textos.politicaPrivacidade.txtDecisao}</li>
+            <li><strong>{textos.politicaPrivacidade.lblSeguranca}</strong> {textos.politicaPrivacidade.txtSeguranca}</li>
           </ul>
         </section>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v5,
+      plainText: textos.politicaPrivacidade.v5,
       normalJsx: (
         <section aria-labelledby="section-5">
-          <h2 id="section-5">{TEXTOS_PT.politicaPrivacidade.s5Titulo}</h2>
-          <p>{TEXTOS_PT.politicaPrivacidade.s5Intro}</p>
+          <h2 id="section-5">{textos.politicaPrivacidade.s5Titulo}</h2>
+          <p>{textos.politicaPrivacidade.s5Intro}</p>
           <div className="highlight-box">
             <ul>
-              <li>{TEXTOS_PT.politicaPrivacidade.s5Item1}</li>
-              <li>{TEXTOS_PT.politicaPrivacidade.s5Item2}</li>
-              <li>{TEXTOS_PT.politicaPrivacidade.s5Item3}</li>
+              <li>{textos.politicaPrivacidade.s5Item1}</li>
+              <li>{textos.politicaPrivacidade.s5Item2}</li>
+              <li>{textos.politicaPrivacidade.s5Item3}</li>
             </ul>
           </div>
         </section>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v6,
+      plainText: textos.politicaPrivacidade.v6,
       normalJsx: (
         <section aria-labelledby="section-6">
-          <h2 id="section-6">{TEXTOS_PT.politicaPrivacidade.s6Titulo}</h2>
+          <h2 id="section-6">{textos.politicaPrivacidade.s6Titulo}</h2>
           <ul>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblConserva}</strong> {TEXTOS_PT.politicaPrivacidade.txtConserva}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblComunica}</strong> {TEXTOS_PT.politicaPrivacidade.txtComunica}</li>
+            <li><strong>{textos.politicaPrivacidade.lblConserva}</strong> {textos.politicaPrivacidade.txtConserva}</li>
+            <li><strong>{textos.politicaPrivacidade.lblComunica}</strong> {textos.politicaPrivacidade.txtComunica}</li>
           </ul>
         </section>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v7,
+      plainText: textos.politicaPrivacidade.v7,
       normalJsx: (
         <section aria-labelledby="section-7">
-          <h2 id="section-7">{TEXTOS_PT.politicaPrivacidade.s7Titulo}</h2>
-          <p>{TEXTOS_PT.politicaPrivacidade.s7Intro}</p>
+          <h2 id="section-7">{textos.politicaPrivacidade.s7Titulo}</h2>
+          <p>{textos.politicaPrivacidade.s7Intro}</p>
           <ul>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblDireito1}</strong> {TEXTOS_PT.politicaPrivacidade.txtDireito1}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblDireito2}</strong> {TEXTOS_PT.politicaPrivacidade.txtDireito2}</li>
-            <li><strong>{TEXTOS_PT.politicaPrivacidade.lblDireito3}</strong> {TEXTOS_PT.politicaPrivacidade.txtDireito3}</li>
+            <li><strong>{textos.politicaPrivacidade.lblDireito1}</strong> {textos.politicaPrivacidade.txtDireito1}</li>
+            <li><strong>{textos.politicaPrivacidade.lblDireito2}</strong> {textos.politicaPrivacidade.txtDireito2}</li>
+            <li><strong>{textos.politicaPrivacidade.lblDireito3}</strong> {textos.politicaPrivacidade.txtDireito3}</li>
           </ul>
         </section>
       )
     },
     {
-      plainText: TEXTOS_PT.politicaPrivacidade.v8,
+      plainText: textos.politicaPrivacidade.v8,
       normalJsx: (
         <section aria-labelledby="section-8">
-          <h2 id="section-8">{TEXTOS_PT.politicaPrivacidade.s8Titulo}</h2>
-          <p>{TEXTOS_PT.politicaPrivacidade.s8Texto}</p>
+          <h2 id="section-8">{textos.politicaPrivacidade.s8Titulo}</h2>
+          <p>{textos.politicaPrivacidade.s8Texto}</p>
         </section>
       )
     }
@@ -140,7 +139,7 @@ export default function PrivacyPolicy() {
 
   const toggleReading = () => {
     if (!('speechSynthesis' in window)) {
-      alert(TEXTOS_PT.sobreNos.alertaSemSuporte);
+      alert(textos.sobreNos.alertaSemSuporte);
       return;
     }
     const synth = window.speechSynthesis;
@@ -170,7 +169,9 @@ export default function PrivacyPolicy() {
     setCharLength(0);
 
     const utterance = new SpeechSynthesisUtterance(documentData[index].plainText);
-    utterance.lang = 'pt-PT';
+    
+    // Configura sotaque dinâmico PT ou EN
+    utterance.lang = idioma === 'pt' ? 'pt-PT' : 'en-US';
     utterance.rate = 0.95;
 
     utterance.onboundary = (event) => {
@@ -204,8 +205,8 @@ export default function PrivacyPolicy() {
   };
 
   const breadcrumbsLinks = [
-    { name: TEXTOS_PT.geral.inicio, path: '/' },
-    { name: TEXTOS_PT.politicaPrivacidade.breadcrumb, path: '/politica-privacidade' }
+    { name: textos.geral.inicio, path: '/' },
+    { name: textos.politicaPrivacidade.breadcrumb, path: '/politica-privacidade' }
   ];
 
   return (
@@ -215,15 +216,15 @@ export default function PrivacyPolicy() {
       </div>
 
       <div aria-live="polite" className="sr-only">
-        {isReading ? TEXTOS_PT.acessibilidade.leituraIniciadaPerguntas : TEXTOS_PT.acessibilidade.pararLeitura}
+        {isReading ? textos.acessibilidade.leituraIniciadaPerguntas : textos.acessibilidade.pararLeitura}
       </div>
 
       <main className="privacy-main-content container" id="conteudo-principal" role="main">
         <article className="privacy-document">
           <div className="read-aloud-header">
-            <span className="reading-time" aria-label={`Tempo estimado: ${readingTime} minutos`}>
+            <span className="reading-time" aria-label={`${textos.acessibilidade.tempoLeitura}: ${readingTime}`}>
               <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              ~{readingTime} {TEXTOS_PT.acessibilidade.tempoLeitura}
+              ~{readingTime} {textos.acessibilidade.tempoLeitura}
             </span>
             
             <button 
@@ -231,6 +232,7 @@ export default function PrivacyPolicy() {
               className={`btn-read-aloud ${isReading ? 'is-reading' : ''}`}
               onClick={toggleReading}
               aria-pressed={isReading}
+              aria-label={isReading ? textos.acessibilidade.botaoParar : textos.acessibilidade.botaoOuvir}
             >
               <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 {isReading ? (
@@ -239,7 +241,7 @@ export default function PrivacyPolicy() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                 )}
               </svg>
-              {isReading ? TEXTOS_PT.acessibilidade.botaoParar : TEXTOS_PT.acessibilidade.botaoOuvir}
+              {isReading ? textos.acessibilidade.botaoParar : textos.acessibilidade.botaoOuvir}
             </button>
           </div>
 
@@ -254,7 +256,7 @@ export default function PrivacyPolicy() {
           <hr className="privacy-divider" aria-hidden="true" />
           
           <p className="privacy-footer-note">
-            <strong>{TEXTOS_PT.politicaPrivacidade.notaLabel}</strong> {TEXTOS_PT.politicaPrivacidade.notaTexto}
+            <strong>{textos.politicaPrivacidade.notaLabel}</strong> {textos.politicaPrivacidade.notaTexto}
           </p>
         </article>
       </main>
