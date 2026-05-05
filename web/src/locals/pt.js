@@ -162,47 +162,47 @@ export const TEXTOS_PT = {
     breadcrumb: "Acessibilidade",
     tituloPrincipal: "Declaração de Acessibilidade e Usabilidade",
     introTexto1: "O",
-    grupo8: "Grupo 8 (Sapos)",
+    grupo8: "Grupo 8",
     introTexto2: "compromete-se a disponibilizar o sítio Web do sistema",
-    prodigi: "PRODIGI – Sistema de Gestão Hospitalar",
-    introTexto3: "em conformidade com o Decreto-Lei n.º 83/2018, de 19 de outubro, que transpõe a Diretiva (UE) 2016/2102 do Parlamento Europeu e do Conselho, relativa à acessibilidade dos sítios Web e das aplicações móveis.",
+    prodigi: "PRODIGI – SIAGUH",
+    introTexto3: "em conformidade com o Decreto-Lei n.º 83/2018, de 19 de outubro, que transpõe a Diretiva (UE) 2016/2102 do Parlamento e do Conselho Europeu, relativa à acessibilidade dos sítios Web e das aplicações móveis.",
     
-    statusTitulo: "I. Estado de conformidade",
-    statusTexto: "O sítio Web PRODIGI do Grupo 8 está plenamente conforme para com o Decreto-Lei n.º 83/2018 de 19 de outubro.",
+    statusTitulo: "I. Estado de Conformidade",
+    statusTexto: "O sítio Web SIAGUH está em conformidade com o Decreto-Lei n.º 83/2018 de 19 de outubro.",
     
-    elaboracaoTitulo: "II. Elaboração da presente declaração de acessibilidade e usabilidade",
-    elaboracaoTexto: "Esta declaração foi atualizada a 2026-04-17. De acordo com as normas vigentes, o grupo adotou os procedimentos de monitorização obrigatórios.",
+    elaboracaoTitulo: "II. Elaboração da Presente Declaração de Acessibilidade e Usabilidade",
+    elaboracaoTexto: "Esta declaração foi atualizada a 17-04-2026. De acordo com as normas vigentes e o grupo adotou os procedimentos de monitorização obrigatórios.",
     
-    avalAutoTitulo: "A. Avaliações automáticas levadas a efeito (2026-04-15):",
+    avalAutoTitulo: "A. Avaliações automáticas levadas a efeito (15-04-2026):",
     avalManualTitulo: "B. Avaliações manuais levadas a efeito:",
     testesUsaTitulo: "C. Testes de usabilidade com utilizadores:",
     
-    lblFerramenta: "Ferramenta utilizada:",
+    lblFerramenta: "Ferramenta Utilizada:",
     lblAmostra: "Amostra:",
-    lblResultados: "Principais resultados:",
-    lblParticipantes: "Caracterização dos participantes:",
+    lblResultados: "Principais Resultados:",
+    lblParticipantes: "Caracterização dos Participantes:",
     lblTarefas: "Tarefas/Processos:",
     lblResponsaveis: "Responsáveis:",
-    lblEmail: "Correio eletrónico:",
+    lblEmail: "Correio Eletrónico:",
 
     amostraWeb: "Páginas principais do frontend Web (HTML5/CSS3/JS).",
     resAuto: "Foi obtido um score elevado, com a maioria das páginas em conformidade com as normas WCAG 2.1.",
-    relManual: "(2026-04-10). Relatório: Checklist de Acessibilidade Funcional aplicada aos módulos SIGUI.",
+    relManual: "(10-04-2026). Relatório: Checklist de Acessibilidade Funcional aplicada aos módulos SIAGUH.",
     amostraModulos: "Ecrãs de Registo de Utente, Triagem e Internamento.",
     resManual: "100% de conformidade nas heurísticas aplicadas aos formulários e elementos de navegação.",
-    relUsa: "(2026-03-20). Relatório: Testes de Usabilidade Grupo 8.",
+    relUsa: "(20-03-2026). Relatório: Testes de Usabilidade SIAGUH.",
     participantesDesc: "Membros da equipa e utilizadores externos simulando os perfis de Administrativo, Médico e Enfermeiro.",
     tarefasDesc: "Localização de utentes, registo de sinais vitais na triagem e consulta de previsões de IA.",
     resUsa: "O portal apresenta um nível robusto de usabilidade, facilitando a interação mesmo em cenários críticos de urgência hospitalar.",
 
-    contactoTitulo: "III. Contacto e solicitação de informação relativa ao sítio Web",
-    contactoTexto: "Para contactar, enviar sugestões ou solicitar informação adicional relativamente às funcionalidades do sistema PRODIGI desenvolvido pelo Grupo 8, utilize o contacto dos responsáveis:",
+    contactoTitulo: "III. Contacto e Solicitação de Informação Relativa ao Sítio Web",
+    contactoTexto: "Para contactar, enviar sugestões ou solicitar informação adicional relativamente às funcionalidades do sistema SIAGUH desenvolvido pelo Grupo 8, utilize os contactos dos responsáveis:",
     responsaveisNomes: "João Martins, João Sacramento, Luís Franco e Pedro Antunes.",
     
-    evidenciasTitulo: "IV. Outras evidências",
+    evidenciasTitulo: "IV. Outras Evidências",
     evidenciasTexto: "O Grupo 8 implementou uma arquitetura modular no backend (FastAPI) e frontend para garantir que futuras atualizações de acessibilidade possam ser integradas sem comprometer a escalabilidade do sistema.",
     
-    denunciaTitulo: "V. Denúncia de situações de discriminação",
+    denunciaTitulo: "V. Denúncia de Situações de Discriminação",
     denunciaTexto: "Sempre que uma pessoa com deficiência seja objeto de um tratamento menos favorável que consubstancie uma prática discriminatória, pode apresentar queixa nos termos da legislação vigente. O Instituto Nacional para a Reabilitação (INR, I.P.) disponibiliza os canais competentes para o efeito.",
     
     notaRodape: "A presente Declaração foi criada para o Projeto Integrador PRODIGI (Grupo 8 - 2026) em conformidade com o Decreto-Lei n.º 83/2018, de 19 de outubro.",
@@ -223,23 +223,23 @@ export const TEXTOS_PT = {
   // 9. PÁGINA: FAQS
   // ==========================================
   faqs: {
-    titulo: "Perguntas Frequentes (FAQ)",
+    titulo: "Perguntas Frequentes (FAQs)",
     subtitulo: "Encontre respostas rápidas para as dúvidas mais comuns sobre o funcionamento do sistema SIAGUH.",
     expandirTudo: "Expandir tudo",
     colapsarTudo: "Colapsar tudo",
     
     // Perguntas
     q1: "O que é o SIAGUH?",
-    a1: "É o Sistema Integrado de Apoio à Gestão de Urgências Hospitalares, uma plataforma modular (SIGUI) desenvolvida para gerir desde a entrada do utente até à sua alta ou internamento.",
+    a1: "É o Sistema Integrado de Apoio à Gestão de Urgências Hospitalares, uma plataforma modular (SIAGUH) desenvolvida para gerir desde a entrada do utente até à sua alta ou internamento.",
     
     q2: "Os meus dados estão seguros?",
     a2: "Sim. O sistema utiliza autenticação robusta (JWT) e segue as normas do RGPD para garantir que apenas profissionais autorizados acedam aos dados clínicos.",
     
     q3: "Como é decidida a cor da minha pulseira?",
-    a3: "O enfermeiro introduz os seus sinais vitais e sintomas no sistema. A nossa IA analisa esses dados e sugere uma cor baseada no Protocolo de Manchester, mas a decisão final é sempre validada por um profissional de saúde.",
+    a3: "O enfermeiro introduz os seus sinais vitais e sintomas no sistema. A nossa IA analisa esses dados em conjunto com os antecedentes patológicos do doente e sugere uma cor baseada no Protocolo de Manchester, mas a decisão final é sempre validada por um profissional de saúde.",
     
     q4: "O tempo de espera indicado é exato?",
-    a4: "O tempo é uma estimativa calculada pela IA com base no histórico do hospital e no número de doentes em espera no momento. Pode sofrer alterações se surgirem casos de emergência crítica (pulseiras vermelhas).",
+    a4: "O tempo é uma estimativa calculada pela IA com base no histórico do hospital, quadro hospitalar e no número de doentes em espera no momento. Pode sofrer alterações se surgirem casos de emergência crítica (pulseiras vermelhas).",
     
     q5: "Como posso saber em que quarto estou internado?",
     a5: "Essa informação é gerida no módulo de internamentos, onde o sistema atribui automaticamente uma cama e serviço após a decisão médica.",
@@ -331,14 +331,14 @@ export const TEXTOS_PT = {
     s3Titulo: "3. Dados Pessoais Tratados",
     s3Intro: "O SIAGUH recolhe e trata dados necessários para a operação hospitalar segura:",
     lblDemog: "Dados Demográficos:",
-    txtDemog: "Nome, data de nascimento, NIF, número de utente e contactos.",
+    txtDemog: "Nome, data de nascimento, NIF, número de utente, localidade e contactos.",
     lblSaude: "Dados de Saúde:",
     txtSaude: "Sintomas, antecedentes clínicos, registos de triagem (sinais vitais), atos médicos e prescrições.",
     lblIA: "Dados de IA:",
     txtIA: "Resultados do processamento de linguagem natural e algoritmos de previsão para sugestão de cor de triagem e tempo de espera.",
 
     s4Titulo: "4. Finalidades e Fundamentos Jurídicos",
-    s4Intro: "O tratamento de dados no SIAGUH fundamenta-se na gestão e prestação de cuidados de saúde e no consentimento do titular:",
+    s4Intro: "O tratamento de dados no SIAGUH, fundamenta-se na gestão e prestação de cuidados de saúde e no consentimento do titular:",
     lblTriagem: "Triagem Clínica:",
     txtTriagem: "Utilização de IA para sugestão da cor da pulseira (Manchester).",
     lblDecisao: "Apoio à Decisao:",
