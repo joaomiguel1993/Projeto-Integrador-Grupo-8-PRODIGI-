@@ -16,10 +16,12 @@ import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import FooterLayout from '../../components/layout/FooterLayout';
-import { TEXTOS_PT } from '../../locals/pt'; // Importação das strings de interface
-import { ROLES } from '../../constants/roles'; // Importação das roles
+import { TEXTOS_PT } from '../../locals/pt'; 
+import { ROLES } from '../../constants/roles'; 
 
-// Funções utilitárias mantidas intactas
+// ==========================================
+// FUNÇÕES UTILITÁRIAS
+// ==========================================
 const normalizar = (texto) =>
   String(texto || '')
     .toLowerCase()
@@ -62,29 +64,33 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  // Estados
+  // Estados da Interface
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mainMenu, setMainMenu] = useState('utilizadores');
   const [userView, setUserView] = useState('lista');
   const [employeeView, setEmployeeView] = useState('lista');
   const [hospitalView, setHospitalView] = useState('lista');
 
+  // Estados de Dados
   const [profissionais, setProfissionais] = useState([]);
   const [utilizadores, setUtilizadores] = useState([]);
   const [hospitais, setHospitais] = useState([]);
   const [historico, setHistorico] = useState([]);
   const [logs, setLogs] = useState([]);
 
+  // Estados de Loading
   const [loadingProfissionais, setLoadingProfissionais] = useState(false);
   const [loadingUtilizadores, setLoadingUtilizadores] = useState(false);
   const [loadingHospitais, setLoadingHospitais] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
+  // Estados de Erro
   const [erroProfissionais, setErroProfissionais] = useState('');
   const [erroUtilizadores, setErroUtilizadores] = useState('');
   const [erroHospitais, setErroHospitais] = useState('');
   const [erroLogs, setErroLogs] = useState('');
 
+  // Estados de Filtro e Pesquisa
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const [pesquisaFuncionarioNovoUser, setPesquisaFuncionarioNovoUser] = useState('');
 
@@ -100,17 +106,17 @@ export default function AdminDashboard() {
   const [filtroHospitalNome, setFiltroHospitalNome] = useState('');
   const [filtroHospitalLocalidade, setFiltroHospitalLocalidade] = useState('');
 
-  // Estados Iniciais de Entidades
+  // Estados de Criação/Edição
   const [novoUtilizador, setNovoUtilizador] = useState({
     idfunc: '',
     username: '',
     password: '',
-    role: ROLES.ADMIN, // Utilização de Constante
+    role: ROLES.ADMIN,
   });
 
   const [novoProfissional, setNovoProfissional] = useState({
     nome: '',
-    tipofunc: ROLES.ADMIN, // Utilização de Constante
+    tipofunc: ROLES.ADMIN,
     sexo: 'M',
     id_hosp: '',
   });
@@ -145,7 +151,9 @@ export default function AdminDashboard() {
     { name: TEXTOS_PT.admin.tituloPainel, path: '/admin' }
   ];
 
-  // Ciclos de Vida (useEffect) mantidos iguais
+  // ==========================================
+  // CICLO DE VIDA (USEEFFECTS)
+  // ==========================================
   useEffect(() => {
     carregarTudo();
     iniciarHistoricoBase();
@@ -166,14 +174,18 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    if (mainMenu === 'relatorios') carregarLogs();
+    if (mainMenu === 'relatorios') {
+      carregarLogs();
+    }
   }, [mainMenu]);
 
-  // Lógicas e API Calls mantidas iguais
+  // ==========================================
+  // LÓGICA E CHAMADAS À API
+  // ==========================================
   const iniciarHistoricoBase = () => {
-    setHistorico([{
-      id: 1, acao: 'Sistema iniciado', detalhe: 'O painel de administração foi carregado.', data: new Date().toLocaleString('pt-PT'),
-    }]);
+    setHistorico([
+      { id: 1, acao: 'Sistema iniciado', detalhe: 'O painel de administração foi carregado.', data: new Date().toLocaleString('pt-PT') },
+    ]);
   };
 
   const adicionarHistorico = (acao, detalhe) => {
@@ -202,7 +214,7 @@ export default function AdminDashboard() {
   };
 
   const carregarTudo = async () => {
-    await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais(), carregarLogs()]);
+    await Promise.all([ carregarProfissionais(), carregarUtilizadores(), carregarHospitais(), carregarLogs() ]);
   };
 
   const carregarProfissionais = async () => {
@@ -229,6 +241,9 @@ export default function AdminDashboard() {
     finally { setLoadingLogs(false); }
   };
 
+  // ==========================================
+  // FILTROS E DADOS DERIVADOS
+  // ==========================================
   const idsComConta = useMemo(() => new Set(utilizadores.map((u) => u.idfunc).filter((id) => id !== null && id !== undefined)), [utilizadores]);
 
   const utilizadoresComConta = utilizadores.filter((u) => u.bloqueado !== true);
@@ -256,7 +271,9 @@ export default function AdminDashboard() {
 
   const hospitaisFiltrados = hospitais.filter((h) => normalizar(h.nome).includes(normalizar(filtroHospitalNome)) && normalizar(h.localidade || '').includes(normalizar(filtroHospitalLocalidade)));
 
-  // Funções de manipulação de vista
+  // ==========================================
+  // MANIPULAÇÃO DE VISTAS (NOVO/EDITAR)
+  // ==========================================
   const abrirNovoUtilizador = () => { resetMensagens(); setNovoUtilizador({ idfunc: '', username: '', password: '', role: ROLES.ADMIN }); setPesquisaFuncionarioNovoUser(''); setDropdownAberto(false); setUtilizadorEditando(null); setUserView('novo'); };
   const abrirEditarUtilizador = (utilizador) => { const prof = profissionais.find((p) => p.idfunc === utilizador.idfunc); resetMensagens(); setUtilizadorEditando({ ...utilizador, nome: prof?.nome || '', tipofunc: prof?.tipofunc || '', sexo: prof?.sexo || '', password: '' }); setUserView('editar'); };
   const abrirCriarAPartirFuncionario = (funcionario) => { resetMensagens(); setUtilizadorEditando({ idfunc: funcionario.idfunc, nome: funcionario.nome, tipofunc: funcionario.tipofunc, sexo: funcionario.sexo, username: gerarUsername(funcionario.nome), password: '', role: funcionario.tipofunc || ROLES.ADMIN, isNovo: true }); setUserView('editar'); };
@@ -278,7 +295,9 @@ export default function AdminDashboard() {
     setDropdownAberto(false);
   };
 
-  // Funções de CRUD
+  // ==========================================
+  // FUNÇÕES CRUD (CRIAR/EDITAR)
+  // ==========================================
   const criarUtilizador = async (e) => {
     e.preventDefault(); setMensagemUser(''); setErroUser('');
     try {
@@ -363,7 +382,6 @@ export default function AdminDashboard() {
           <form className="admin-form" onSubmit={criarUtilizador}>
             <div className="admin-form__grid">
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }} ref={dropdownRef}>
-                {/* O htmlFor liga a label ao input pela acessibilidade */}
                 <label htmlFor="search-func">{TEXTOS_PT.admin.lblNome}</label>
                 <div className="admin-dropdown">
                   <input
@@ -493,7 +511,9 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-toolbar admin-toolbar--left">
-          <button type="button" className="admin-primary-big-button" onClick={abrirNovoUtilizador}>{TEXTOS_PT.admin.btnNovoUtilizador}</button>
+          <button type="button" className="admin-primary-big-button" onClick={abrirNovoUtilizador}>
+            {TEXTOS_PT.admin.btnNovoUtilizador}
+          </button>
         </div>
 
         <div className="admin-filters">
@@ -505,9 +525,15 @@ export default function AdminDashboard() {
             <label htmlFor="filter-user-nome">{TEXTOS_PT.geral.pesquisarNome}</label>
             <input id="filter-user-nome" type="text" value={filtroUserNome} onChange={(e) => setFiltroUserNome(e.target.value)} />
           </div>
+          <div className="admin-form__group">
+            <label htmlFor="filter-user-num">{TEXTOS_PT.geral.pesquisarNumero}</label>
+            <input id="filter-user-num" type="text" value={filtroUserNumero} onChange={(e) => setFiltroUserNumero(e.target.value)} />
+          </div>
         </div>
 
         <div className="admin-users-grid-top">
+          
+          {/* TABELA 1: UTILIZADORES COM CONTA */}
           <div className="admin-table-card">
             <div className="admin-table-card__header">
               <h3>{TEXTOS_PT.admin.tblUtilizadoresComConta}</h3>
@@ -517,7 +543,7 @@ export default function AdminDashboard() {
               <table className="admin-table">
                 <thead><tr><th>{TEXTOS_PT.admin.lblNumFuncionario}</th><th>{TEXTOS_PT.admin.lblNome}</th><th>{TEXTOS_PT.admin.lblUsername}</th><th>{TEXTOS_PT.admin.lblFuncao}</th><th>{TEXTOS_PT.geral.editar}</th></tr></thead>
                 <tbody>
-                  {loadingUtilizadores ? (<tr><td colSpan="5">{TEXTOS_PT.geral.aCarregar}</td></tr>) : utilizadoresComContaFiltrados.length === 0 ? (<tr><td colSpan="5">{TEXTOS_PT.geral.semResultados}</td></tr>) : (
+                  {loadingUtilizadores || loadingProfissionais ? (<tr><td colSpan="5">{TEXTOS_PT.geral.aCarregar}</td></tr>) : utilizadoresComContaFiltrados.length === 0 ? (<tr><td colSpan="5">{TEXTOS_PT.geral.semResultados}</td></tr>) : (
                     utilizadoresComContaFiltrados.map((u) => {
                       const prof = profissionais.find((p) => p.idfunc === u.idfunc);
                       return (
@@ -531,6 +557,99 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* TABELA 2: FUNCIONÁRIOS SEM UTILIZADOR */}
+          <div className="admin-table-card">
+            <div className="admin-table-card__header">
+              <h3>{TEXTOS_PT.admin.tblFuncionariosSemConta}</h3>
+              <span>{funcionariosSemContaFiltrados.length}</span>
+            </div>
+
+            <div className="admin-table-scroll">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>{TEXTOS_PT.admin.lblNumFuncionario}</th>
+                    <th>{TEXTOS_PT.admin.lblNome}</th>
+                    <th>{TEXTOS_PT.admin.lblFuncao}</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingProfissionais ? (
+                    <tr>
+                      <td colSpan="4">{TEXTOS_PT.geral.aCarregar}</td>
+                    </tr>
+                  ) : funcionariosSemContaFiltrados.length === 0 ? (
+                    <tr>
+                      <td colSpan="4">{TEXTOS_PT.geral.semResultados}</td>
+                    </tr>
+                  ) : (
+                    funcionariosSemContaFiltrados.map((p) => (
+                      <tr key={p.idfunc}>
+                        <td>{p.idfunc}</td>
+                        <td>{p.nome}</td>
+                        <td>{p.tipofunc}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="admin-secondary-button"
+                            onClick={() => abrirCriarAPartirFuncionario(p)}
+                          >
+                            {TEXTOS_PT.admin.btnNovoUtilizador}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* TABELA 3: UTILIZADORES BLOQUEADOS */}
+        <div className="admin-table-card admin-table-card--bottom" style={{ marginTop: '1.25rem' }}>
+          <div className="admin-table-card__header">
+            <h3>{TEXTOS_PT.admin.tblUtilizadoresBloqueados}</h3>
+            <span>{utilizadoresBloqueadosFiltrados.length}</span>
+          </div>
+
+          <div className="admin-table-scroll admin-table-scroll--wide">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>{TEXTOS_PT.admin.lblNumFuncionario}</th>
+                  <th>{TEXTOS_PT.admin.lblNome}</th>
+                  <th>{TEXTOS_PT.admin.lblUsername}</th>
+                  <th>{TEXTOS_PT.admin.lblFuncao}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadingUtilizadores ? (
+                  <tr>
+                    <td colSpan="4">{TEXTOS_PT.geral.aCarregar}</td>
+                  </tr>
+                ) : utilizadoresBloqueadosFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="4">{TEXTOS_PT.admin.semBloqueados}</td>
+                  </tr>
+                ) : (
+                  utilizadoresBloqueadosFiltrados.map((u) => {
+                    const prof = profissionais.find((p) => p.idfunc === u.idfunc);
+                    return (
+                      <tr key={u.idfunc || u.username}>
+                        <td>{u.idfunc}</td>
+                        <td>{prof?.nome || '—'}</td>
+                        <td>{u.username}</td>
+                        <td>{u.role || prof?.tipofunc || '—'}</td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

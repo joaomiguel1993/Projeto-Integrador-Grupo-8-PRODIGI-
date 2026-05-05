@@ -17,3 +17,5 @@ export const STORAGE_KEYS = {
   USER_DATA: 'user',
   ACTIVE_HOSPITAL: 'hospital_ativo'
 };
+
+
