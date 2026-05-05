@@ -567,6 +567,41 @@
   align-items: center;
 }
 
+.admin-primary-big-button,
+.admin-secondary-button,
+.admin-form__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.admin-primary-big-button svg,
+.admin-secondary-button svg,
+.admin-form__submit svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.admin-primary-big-button span,
+.admin-secondary-button span,
+.admin-form__submit span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-warning {
+  background-color: #fff8e1;
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
+}
+
+.btn-warning:hover {
+  background-color: #f59e0b;
+  color: white;
+}
+
 /* =========================================
    MEDIA QUERIES
    ========================================= */

@@ -41,8 +41,15 @@ def criar_utilizador(idfunc: int, username: str, password: str, hospitais: list[
     return obter_utilizador(idfunc)
 
 
-def atualizar_utilizador(idfunc: int, username: str, password: str | None = None, hospitais: list[int] | None = None):
-    updated = update_utilizador_by_idfunc(idfunc, username, password)
+# FIX: adicionado parâmetro bloqueado
+def atualizar_utilizador(
+    idfunc: int,
+    username: str,
+    password: str | None = None,
+    hospitais: list[int] | None = None,
+    bloqueado: bool | None = None,
+):
+    updated = update_utilizador_by_idfunc(idfunc, username, password, bloqueado)
     if not updated:
         return None
 

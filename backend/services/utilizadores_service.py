@@ -15,7 +15,12 @@ def get_utilizador_service(idfunc: int):
     return obter_utilizador(idfunc)
 
 
-def create_utilizador_service(idfunc: int, username: str, password: str, hospitais: list[int] | None = None):
+def create_utilizador_service(
+    idfunc: int,
+    username: str,
+    password: str,
+    hospitais: list[int] | None = None
+):
     if not username or not username.strip():
         raise HTTPException(status_code=400, detail="Username é obrigatório.")
 
@@ -39,7 +44,13 @@ def create_utilizador_service(idfunc: int, username: str, password: str, hospita
     return criado
 
 
-def update_utilizador_service(idfunc: int, username: str, password: str | None = None, hospitais: list[int] | None = None):
+def update_utilizador_service(
+    idfunc: int,
+    username: str,
+    password: str | None = None,
+    hospitais: list[int] | None = None,
+    bloqueado: bool | None = None,
+):
     if not username or not username.strip():
         raise HTTPException(status_code=400, detail="Username é obrigatório.")
 
@@ -47,11 +58,13 @@ def update_utilizador_service(idfunc: int, username: str, password: str | None =
     if not existente:
         raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
 
+    # FIX: passa bloqueado ao repository — precisas de atualizar essa função também
     atualizado = atualizar_utilizador(
         idfunc=idfunc,
         username=username.strip(),
         password=password,
-        hospitais=hospitais or []
+        hospitais=hospitais or [],
+        bloqueado=bloqueado,
     )
 
     if not atualizado:

@@ -4,11 +4,7 @@ from backend.auth.security import hash_password, verify_password
 from backend.db import get_connection
 from backend.dao.logs_dao import insert_log
 
-
-router = APIRouter(
-    prefix="/auth",
-    tags=["Auth"]
-)
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def get_client_ip(request: Request):
@@ -38,21 +34,11 @@ def register(data: RegisterRequest, request: Request):
     cur = conn.cursor()
 
     try:
-        cur.execute("""
-            SELECT username
-            FROM utilizador
-            WHERE username = %s;
-        """, (data.username,))
-        existing_user = cur.fetchone()
-
-        if existing_user:
+        cur.execute("SELECT username FROM utilizador WHERE username = %s;", (data.username,))
+        if cur.fetchone():
             raise HTTPException(status_code=409, detail="Username já existe.")
 
-        cur.execute("""
-            SELECT idfunc, tipofunc
-            FROM funcionario
-            WHERE idfunc = %s;
-        """, (data.idfunc,))
+        cur.execute("SELECT idfunc, tipofunc FROM funcionario WHERE idfunc = %s;", (data.idfunc,))
         funcionario = cur.fetchone()
 
         if not funcionario:
@@ -61,10 +47,7 @@ def register(data: RegisterRequest, request: Request):
         _, tipo_func = funcionario
 
         if tipo_func != data.role:
-            raise HTTPException(
-                status_code=400,
-                detail="A role indicada não corresponde ao tipo do funcionário."
-            )
+            raise HTTPException(status_code=400, detail="A role indicada não corresponde ao tipo do funcionário.")
 
         password_hash = hash_password(data.password)
 
@@ -106,8 +89,9 @@ def login(data: LoginRequest, request: Request):
     cur = conn.cursor()
 
     try:
+        # FIX: inclui bloqueado no SELECT
         cur.execute("""
-            SELECT username, password, idfunc
+            SELECT username, password, idfunc, bloqueado
             FROM utilizador
             WHERE username = %s;
         """, (data.username,))
@@ -116,16 +100,16 @@ def login(data: LoginRequest, request: Request):
         if not user:
             raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-        username, password_hash, idfunc = user
+        username, password_hash, idfunc, bloqueado = user
+
+        # FIX: bloqueia o login se utilizador estiver bloqueado
+        if bloqueado:
+            raise HTTPException(status_code=403, detail="Utilizador bloqueado. Contacte o administrador.")
 
         if not verify_password(data.password, password_hash):
             raise HTTPException(status_code=401, detail="Credenciais inválidas.")
 
-        cur.execute("""
-            SELECT f.nome, f.tipofunc
-            FROM funcionario f
-            WHERE f.idfunc = %s;
-        """, (idfunc,))
+        cur.execute("SELECT f.nome, f.tipofunc FROM funcionario f WHERE f.idfunc = %s;", (idfunc,))
         funcionario = cur.fetchone()
 
         if not funcionario:
@@ -145,7 +129,6 @@ def login(data: LoginRequest, request: Request):
                 ORDER BY h.nome;
             """, (idfunc,))
             rows = cur.fetchall()
-
             for row in rows:
                 hospitais.append({
                     "idhosp": row[0],

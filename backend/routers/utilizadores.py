@@ -14,7 +14,6 @@ from backend.services.utilizadores_service import (
 )
 from backend.dao.logs_dao import insert_log
 
-
 router = APIRouter(prefix="/utilizadores", tags=["Utilizadores"])
 
 
@@ -22,6 +21,7 @@ class UtilizadorUpdateRequest(BaseModel):
     username: str
     password: Optional[str] = None
     hospitais: list[int] = []
+    bloqueado: Optional[bool] = None  # <-- adicionado
 
 
 def get_client_ip(request: Request) -> str | None:
@@ -32,14 +32,12 @@ def get_client_ip(request: Request) -> str | None:
 def get_utilizadores(request: Request):
     username = request.headers.get("X-Username", "desconhecido")
     resultado = get_utilizadores_service()
-
     insert_log(
         username=username,
         acao="LISTAR_UTILIZADORES",
         detalhe="Listagem de utilizadores consultada.",
         ip=get_client_ip(request)
     )
-
     return resultado
 
 
@@ -47,57 +45,49 @@ def get_utilizadores(request: Request):
 def get_utilizador(idfunc: int, request: Request):
     username = request.headers.get("X-Username", "desconhecido")
     resultado = get_utilizador_service(idfunc)
-
     if not resultado:
         raise HTTPException(status_code=404, detail="Utilizador não encontrado")
-
     insert_log(
         username=username,
         acao="CONSULTAR_UTILIZADOR",
         detalhe=f"Utilizador {idfunc} consultado.",
         ip=get_client_ip(request)
     )
-
     return resultado
 
 
 @router.post("/", response_model=UtilizadorDetalheResponse)
 def criar_utilizador(payload: UtilizadorCreate, request: Request):
     username_request = request.headers.get("X-Username", "desconhecido")
-
     resultado = create_utilizador_service(
         idfunc=payload.idfunc,
         username=payload.username,
         password=payload.password,
         hospitais=[]
     )
-
     insert_log(
         username=username_request,
         acao="CRIAR_UTILIZADOR",
         detalhe=f"Utilizador criado para o funcionário {payload.idfunc}.",
         ip=get_client_ip(request)
     )
-
     return resultado
 
 
 @router.put("/{idfunc}", response_model=UtilizadorDetalheResponse)
 def atualizar_utilizador(idfunc: int, payload: UtilizadorUpdateRequest, request: Request):
     username_request = request.headers.get("X-Username", "desconhecido")
-
     resultado = update_utilizador_service(
         idfunc=idfunc,
         username=payload.username,
         password=payload.password,
-        hospitais=payload.hospitais
+        hospitais=payload.hospitais,
+        bloqueado=payload.bloqueado,
     )
-
     insert_log(
         username=username_request,
         acao="ATUALIZAR_UTILIZADOR",
-        detalhe=f"Utilizador {idfunc} atualizado. Hospitais={payload.hospitais}",
+        detalhe=f"Utilizador {idfunc} atualizado. Hospitais={payload.hospitais} Bloqueado={payload.bloqueado}",
         ip=get_client_ip(request)
     )
-
     return resultado

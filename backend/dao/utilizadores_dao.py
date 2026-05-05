@@ -2,8 +2,9 @@ from backend.db import run_query, get_connection
 
 
 def select_all_utilizadores():
+    # FIX: adicionado u.bloqueado
     return run_query("""
-        SELECT u.idfunc, u.username, f.nome, f.tipofunc
+        SELECT u.idfunc, u.username, u.bloqueado, f.nome, f.tipofunc
         FROM utilizador u
         JOIN funcionario f ON u.idfunc = f.idfunc
         ORDER BY f.nome
@@ -11,8 +12,9 @@ def select_all_utilizadores():
 
 
 def select_utilizador_by_idfunc(idfunc: int):
+    # FIX: adicionado u.bloqueado
     return run_query("""
-        SELECT u.idfunc, u.username, f.nome, f.tipofunc
+        SELECT u.idfunc, u.username, u.bloqueado, f.nome, f.tipofunc
         FROM utilizador u
         JOIN funcionario f ON u.idfunc = f.idfunc
         WHERE u.idfunc = %s
@@ -22,7 +24,6 @@ def select_utilizador_by_idfunc(idfunc: int):
 def insert_utilizador(idfunc: int, username: str, password: str):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
         cur.execute("""
             INSERT INTO utilizador (idfunc, username, password)
@@ -31,17 +32,12 @@ def insert_utilizador(idfunc: int, username: str, password: str):
         """, (idfunc, username, password))
 
         created = cur.fetchone()
-
         if not created:
             conn.rollback()
             return None
 
         conn.commit()
-
-        return {
-            "idfunc": created[0],
-            "username": created[1]
-        }
+        return {"idfunc": created[0], "username": created[1]}
 
     except Exception:
         conn.rollback()
@@ -51,19 +47,43 @@ def insert_utilizador(idfunc: int, username: str, password: str):
         conn.close()
 
 
-def update_utilizador_by_idfunc(idfunc: int, username: str, password: str | None = None):
+# FIX: adicionado parâmetro bloqueado
+def update_utilizador_by_idfunc(
+    idfunc: int,
+    username: str,
+    password: str | None = None,
+    bloqueado: bool | None = None,
+):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
-        if password and password.strip():
+        tem_password = bool(password and password.strip())
+        tem_bloqueado = bloqueado is not None
+
+        if tem_password and tem_bloqueado:
             cur.execute("""
                 UPDATE utilizador
-                SET username = %s,
-                    password = %s
+                SET username = %s, password = %s, bloqueado = %s
+                WHERE idfunc = %s
+                RETURNING idfunc, username
+            """, (username, password, bloqueado, idfunc))
+
+        elif tem_password:
+            cur.execute("""
+                UPDATE utilizador
+                SET username = %s, password = %s
                 WHERE idfunc = %s
                 RETURNING idfunc, username
             """, (username, password, idfunc))
+
+        elif tem_bloqueado:
+            cur.execute("""
+                UPDATE utilizador
+                SET username = %s, bloqueado = %s
+                WHERE idfunc = %s
+                RETURNING idfunc, username
+            """, (username, bloqueado, idfunc))
+
         else:
             cur.execute("""
                 UPDATE utilizador
@@ -73,17 +93,12 @@ def update_utilizador_by_idfunc(idfunc: int, username: str, password: str | None
             """, (username, idfunc))
 
         updated = cur.fetchone()
-
         if not updated:
             conn.rollback()
             return None
 
         conn.commit()
-
-        return {
-            "idfunc": updated[0],
-            "username": updated[1]
-        }
+        return {"idfunc": updated[0], "username": updated[1]}
 
     except Exception:
         conn.rollback()
@@ -106,22 +121,19 @@ def select_hospitais_by_idfunc(idfunc: int):
 def replace_hospitais_utilizador(idfunc: int, hospitais: list[int]):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
         cur.execute("DELETE FROM trabalha WHERE idfunc = %s", (idfunc,))
-
         for idhosp in hospitais:
             cur.execute("""
                 INSERT INTO trabalha (idfunc, idhosp, ativo)
                 VALUES (%s, %s, TRUE)
             """, (idfunc, idhosp))
-
         conn.commit()
         return True
-
     except Exception:
         conn.rollback()
         raise
     finally:
         cur.close()
         conn.close()
+
