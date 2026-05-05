@@ -2,34 +2,38 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import HeaderPublic from './HeaderPublic';
 import FooterLayout from './FooterLayout';
-import { TEXTOS_PT } from '../../locals/pt'; 
+import { useLanguage } from '../../contexts/LanguageContext'; // Importação do contexto
 
 /**
  * @file PublicLayout.jsx
- * @description Layout principal para as páginas públicas do portal SIAGUH 
- * (ex: Início, Sobre Nós, Acessibilidade, FAQs).
- * Engloba as rotas filhas com o Cabeçalho Público e o Rodapé.
- * Inclui um atalho "Skip Link" para utilizadores que navegam por teclado.
+ * @description Layout principal para as páginas públicas do portal SIAGUH.
+ * Agora integrado com o sistema multi-idioma para garantir que ferramentas de
+ * acessibilidade (Skip Links) acompanham o idioma selecionado.
  * 
  * @component
  * @returns {JSX.Element} O layout com Header, conteúdo principal (Outlet) e Footer.
  */
 export default function PublicLayout() {
+  // Acesso ao dicionário de textos ativo (PT ou EN)
+  const { textos } = useLanguage();
+
   return (
     <div className="site-shell">
       
       {/* 
         Atalho de Acessibilidade (Skip Link): 
-        Fica escondido visualmente, mas aparece se o utilizador pressionar a tecla "Tab".
-        Leva o foco diretamente para o bloco <main> abaixo.
+        O texto é agora dinâmico e traduzido conforme a escolha do utilizador.
       */}
       <a href="#conteudo-principal" className="sr-only sr-only-focusable">
-        {TEXTOS_PT.acessibilidade.saltarConteudo}
+        {textos.acessibilidade.saltarConteudo}
       </a>
 
       <HeaderPublic />
       
-      {/* Adicionámos o id="conteudo-principal" para que o link acima funcione */}
+      {/* 
+        O id="conteudo-principal" é o alvo do Skip Link acima.
+        O role="main" ajuda tecnologias de assistência a identificar o núcleo da página.
+      */}
       <main id="conteudo-principal" role="main">
         <Outlet />
       </main>

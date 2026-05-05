@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TEXTOS_PT } from '../../locals/pt'; 
+import { useLanguage } from '../../contexts/LanguageContext'; // Integração do Contexto
 import '../../styles/Footer.css'; 
 
 // Importação das imagens
@@ -13,14 +13,15 @@ import ulisboaLogo from '../../imagens/Ulisboa-Branco.png';
 
 /**
  * @file FooterLayout.jsx
- * @description Componente estrutural que renderiza o Rodapé do sistema SIAGUH.
- * Inclui links de navegação secundária, contactos rápidos, informações de copyright 
- * e os logótipos das instituições parceiras/financiadoras.
+ * @description Componente de Rodapé do sistema SIAGUH com suporte multi-idioma.
+ * Renderiza informações institucionais, contactos e logótipos de parceiros.
  * 
  * @component
- * @returns {JSX.Element} O rodapé (footer) da aplicação, otimizado para acessibilidade.
+ * @returns {JSX.Element} O rodapé da aplicação.
  */
 export default function FooterLayout() {
+  const { textos } = useLanguage(); // Acesso aos textos traduzidos
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -28,30 +29,28 @@ export default function FooterLayout() {
   const anoAtual = new Date().getFullYear();
 
   return (
-    // role="contentinfo" é a tag de acessibilidade standard para rodapés de páginas web
-    <footer className="siaguh-footer" role="contentinfo" aria-label={TEXTOS_PT.footer.ariaLabel}>
+    <footer className="siaguh-footer" role="contentinfo" aria-label={textos.footer.ariaLabel}>
       
       {/* --- SUBFOOTER: Links e Contactos --- */}
       <div className="siaguh-subfooter">
                 
         {/* Navegação Secundária */}
-        <nav className="siaguh-subfooter-links" aria-label={TEXTOS_PT.footer.navSecundaria}>
-          <Link to="/sobre-nos">{TEXTOS_PT.footer.sobreNos}</Link>
-          <Link to="/mapa-site">{TEXTOS_PT.footer.mapaSite}</Link>
-          <Link to="/acessibilidade">{TEXTOS_PT.footer.acessibilidade}</Link>
-          <Link to="/politica-privacidade">{TEXTOS_PT.footer.politicaPrivacidade}</Link>
+        <nav className="siaguh-subfooter-links" aria-label={textos.footer.navSecundaria}>
+          <Link to="/sobre-nos">{textos.footer.sobreNos}</Link>
+          <Link to="/mapa-site">{textos.footer.mapaSite}</Link>
+          <Link to="/acessibilidade">{textos.footer.acessibilidade}</Link>
+          <Link to="/politica-privacidade">{textos.footer.politicaPrivacidade}</Link>
         </nav>
 
         <div className="siaguh-subfooter-contacts">
           
           <div className="siaguh-contact-item phone-link">
-            {/* aria-hidden="true" diz ao leitor de ecrã para ignorar o desenho do ícone */}
             <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             <div className="siaguh-contact-text">
-              <span className="siaguh-contact-label">{TEXTOS_PT.footer.telefone}</span>
-              <span className="siaguh-contact-value">{TEXTOS_PT.footer.numeroTelefone}</span>
+              <span className="siaguh-contact-label">{textos.footer.telefone}</span>
+              <span className="siaguh-contact-value">{textos.footer.numeroTelefone}</span>
             </div>
           </div>
 
@@ -61,7 +60,7 @@ export default function FooterLayout() {
             </svg>
             <div className="siaguh-contact-text">
               <span className="siaguh-contact-value">
-                {TEXTOS_PT.footer.perguntas} <br /> {TEXTOS_PT.footer.frequentes}
+                {textos.footer.perguntas} <br /> {textos.footer.frequentes}
               </span>
             </div>
           </Link>
@@ -75,25 +74,25 @@ export default function FooterLayout() {
         <div className="siaguh-footer-content-wrapper">
           
           <div className="siaguh-footer-text">
-            <p>&copy; {anoAtual} <strong>PRODIGI</strong> - {TEXTOS_PT.footer.projetoIntegrador}</p>
-            <p>{TEXTOS_PT.footer.direitosReservados}</p>
+            <p>&copy; {anoAtual} <strong>PRODIGI</strong> - {textos.footer.projetoIntegrador}</p>
+            <p>{textos.footer.direitosReservados}</p>
           </div>
 
           <div className="siaguh-logos-container">
-            <img src={prrLogo} alt={TEXTOS_PT.footer.altPrr} />
-            <img src={ulisboaLogo} alt={TEXTOS_PT.footer.altUlisboa} />
-            <img src={fculLogo} alt={TEXTOS_PT.footer.altFcul} />
-            <img src={iplLogo} alt={TEXTOS_PT.footer.altIpl} />
-            <img src={tecnicoLogo} alt={TEXTOS_PT.footer.altTecnico} />
-            <img src={iselLogo} alt={TEXTOS_PT.footer.altIsel} />
+            <img src={prrLogo} alt={textos.footer.altPrr} />
+            <img src={ulisboaLogo} alt={textos.footer.altUlisboa} />
+            <img src={fculLogo} alt={textos.footer.altFcul} />
+            <img src={iplLogo} alt={textos.footer.altIpl} />
+            <img src={tecnicoLogo} alt={textos.footer.altTecnico} />
+            <img src={iselLogo} alt={textos.footer.altIsel} />
           </div>
         </div>
 
         <button 
           onClick={scrollToTop} 
           className="siaguh-btn-top" 
-          aria-label={TEXTOS_PT.footer.voltarAoTopo} 
-          title={TEXTOS_PT.footer.voltarAoTopo}
+          aria-label={textos.footer.voltarAoTopo} 
+          title={textos.footer.voltarAoTopo}
         >
           <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7" />
