@@ -33,12 +33,12 @@ const gerarUsername = (nome) => {
 const extrairHospitais = (entidade) => {
   if (!entidade) return [];
   let ids = [];
-  
+
   let raw = entidade.hospitais || entidade.hospital_id || entidade.id_hosp || entidade.idhosp;
   if (typeof raw === 'string') {
     try { raw = JSON.parse(raw); } catch { /* ignorar erro de parse */ }
   }
-  
+
   if (Array.isArray(raw)) {
     ids = raw.map(h => typeof h === 'object' && h !== null ? (h.idhosp ?? h.id_hosp ?? h.id ?? h.idHospital) : h);
   } else {
@@ -71,7 +71,7 @@ const SelectorHospitais = ({ hospitaisDisponiveisTotais, valoresSelecionados, on
 
   return (
     <div style={{ display: 'flex', gap: '1rem', width: '100%', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-      
+
       {/* Lado Esquerdo: Disponíveis */}
       <div style={{ flex: '1 1 250px', border: '1px solid #ccc', borderRadius: '6px', padding: '0.8rem', background: '#fff' }}>
         <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#666', fontSize: '0.9rem', borderBottom: '1px solid #eee', paddingBottom: '0.4rem' }}>
@@ -82,13 +82,13 @@ const SelectorHospitais = ({ hospitaisDisponiveisTotais, valoresSelecionados, on
           {disponiveis.map(h => (
             <button key={h.idhosp} type="button" onClick={() => onChange([...idsSelecionados, Number(h.idhosp)])}
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', border: '1px solid #eee', background: '#f9f9f9', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem' }}>
-              <span style={{ textAlign: 'left' }}>{h.nome}</span> 
+              <span style={{ textAlign: 'left' }}>{h.nome}</span>
               <span style={{ color: '#3498db', fontWeight: 'bold', fontSize: '1.2rem', lineHeight: '1' }}>&rarr;</span>
             </button>
           ))}
         </div>
       </div>
-      
+
       {/* Lado Direito: Selecionados */}
       <div style={{ flex: '1 1 250px', border: '2px solid #3eb489', borderRadius: '6px', padding: '0.8rem', background: '#f0fbf7' }}>
         <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#27ae60', fontSize: '0.9rem', borderBottom: '1px solid #c8e6c9', paddingBottom: '0.4rem' }}>
@@ -100,7 +100,7 @@ const SelectorHospitais = ({ hospitaisDisponiveisTotais, valoresSelecionados, on
             <button key={h.idhosp} type="button" onClick={() => onChange(idsSelecionados.filter(id => id !== Number(h.idhosp)))}
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', border: '1px solid #b2e2cd', background: '#d5f5e3', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem' }}>
               <span style={{ color: '#e74c3c', fontWeight: 'bold', fontSize: '1.2rem', lineHeight: '1' }}>&larr;</span>
-              <span style={{ textAlign: 'right', color: '#1e8449', fontWeight: 'bold' }}>{h.nome}</span> 
+              <span style={{ textAlign: 'right', color: '#1e8449', fontWeight: 'bold' }}>{h.nome}</span>
             </button>
           ))}
         </div>
@@ -243,39 +243,77 @@ export default function AdminDashboard() {
 
   // Abertura de Modos de Edição
   const abrirNovoUtilizador = () => { resetMensagens(); setNovoUtilizador({ idfunc: '', username: '', password: '', role: ROLES.ADMIN, hospitais: [] }); setPesquisaFuncionarioNovoUser(''); setDropdownAberto(false); setUtilizadorEditando(null); setUserView('novo'); };
-  
-  const abrirEditarUtilizador = (utilizador) => { 
-    const prof = profissionais.find((p) => p.idfunc === utilizador.idfunc); 
-    resetMensagens(); 
-    
-    // Assegurar que os hospitais vêm como Arrays de Numbers
-    const arrHospU = extrairHospitais(utilizador);
-    const arrHospP = prof ? extrairHospitais(prof) : [];
-    const hospitaisFundidos = [...new Set([...arrHospU, ...arrHospP])];
 
-    setUtilizadorEditando({ 
-      ...utilizador, 
-      nome: prof?.nome || '', 
-      tipofunc: prof?.tipofunc || '', 
-      sexo: prof?.sexo || '', 
-      password: '',
-      hospitais: hospitaisFundidos
-    }); 
-    setUserView('editar'); 
+  const abrirEditarUtilizador = async (utilizador) => {
+    resetMensagens();
+
+    // Carrega o professor da lista em memória, se existir
+    const prof = profissionais.find((p) => p.idfunc === utilizador.idfunc);
+
+    // Mostra a UI de imediato, mas com hospitais vazios até a chamada terminar
+    setUtilizadorEditando({
+      ...utilizador,
+      nome: prof?.nome || "",
+      tipofunc: prof?.tipofunc || "",
+      sexo: prof?.sexo || "",
+      password: "",
+      hospitais: []
+    });
+    setUserView("editar");
+
+    try {
+      setLoadingUtilizadores(true);
+      // Aqui vamos buscar a VERDADEIRA lista de hospitais deste utilizador/funcionário!
+      const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${utilizador.idfunc}`);
+
+      const idsHospitais = Array.isArray(hospitaisData)
+        ? hospitaisData.map(h => Number(h.idhosp || h.idHosp || h.id))
+        : [];
+
+      // Atualiza os hospitais visíveis no Dual Listbox (Lado Direito)
+      setUtilizadorEditando(prev => ({
+        ...prev,
+        hospitais: idsHospitais
+      }));
+    } catch (err) {
+      setErroUser("Aviso: Não foi possível carregar os hospitais associados: " + err.message);
+    } finally {
+      setLoadingUtilizadores(false);
+    }
   };
-  
+
   const abrirCriarAPartirFuncionario = (funcionario) => { resetMensagens(); setUtilizadorEditando({ idfunc: funcionario.idfunc, nome: funcionario.nome, tipofunc: funcionario.tipofunc, sexo: funcionario.sexo, username: gerarUsername(funcionario.nome), password: '', role: funcionario.tipofunc || ROLES.ADMIN, hospitais: extrairHospitais(funcionario), isNovo: true }); setUserView('editar'); };
   const abrirNovoFuncionario = () => { resetMensagens(); setNovoProfissional({ nome: '', tipofunc: ROLES.ADMIN, sexo: 'M', hospitais: [] }); setFuncionarioEditando(null); setEmployeeView('novo'); };
-  
-  const abrirEditarFuncionario = (funcionario) => { 
-    resetMensagens(); 
-    setFuncionarioEditando({ 
-      ...funcionario, 
-      hospitais: extrairHospitais(funcionario) 
-    }); 
-    setEmployeeView('editar'); 
+
+  const abrirEditarFuncionario = async (funcionario) => {
+    resetMensagens();
+    // Colocamos os dados base para a UI mostrar logo algo, assumindo hospitais vazios inicialmente
+    setFuncionarioEditando({ ...funcionario, hospitais: [] });
+    setEmployeeView("editar");
+
+    try {
+      setLoadingProfissionais(true);
+      // Vamos buscar os hospitais REAIS deste funcionário à tabela Trabalha
+      const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${funcionario.idfunc}`);
+
+      // Converte a resposta num array de IDs (números)
+      const idsHospitais = Array.isArray(hospitaisData)
+        ? hospitaisData.map(h => Number(h.idhosp || h.idHosp || h.id))
+        : [];
+
+      // Atualizamos o estado com a lista de IDs recebida
+      setFuncionarioEditando(prev => ({
+        ...prev,
+        hospitais: idsHospitais
+      }));
+    } catch (err) {
+      setErroFunc("Aviso: Não foi possível carregar os hospitais atuais deste funcionário.");
+      console.error(err);
+    } finally {
+      setLoadingProfissionais(false);
+    }
   };
-  
+
   const abrirNovoHospital = () => { resetMensagens(); setNovoHospital({ nome: '', email: '', localidade: '', contacto: '' }); setHospitalEditando(null); setHospitalView('novo'); };
   const abrirEditarHospital = (hospital) => { resetMensagens(); setHospitalEditando(mapHospitalFromApi(hospital)); setHospitalView('editar'); };
 
@@ -325,23 +363,133 @@ export default function AdminDashboard() {
   };
 
   const guardarUtilizadorEditado = async (e) => {
-    e.preventDefault(); setMensagemUser(''); setErroUser('');
+    e.preventDefault();
+    setMensagemUser("");
+    setErroUser("");
+
     try {
-      setSubmittingUser(true); const payload = { username: utilizadorEditando.username, role: utilizadorEditando.role, hospitais: utilizadorEditando.hospitais || [] };
-      await apiFetch(`/api/utilizadores/${utilizadorEditando.idfunc}`, { method: 'PUT', body: JSON.stringify(payload) });
-      setMensagemUser('Utilizador editado com sucesso!'); adicionarHistorico('Editar utilizador', `Foram atualizados os dados de ${utilizadorEditando.username}.`);
-      carregarUtilizadores(); setUtilizadorEditando(null); setUserView('lista');
-    } catch (err) { setErroUser(err.message); } finally { setSubmittingUser(false); }
+      setSubmittingUser(true);
+      const idfunc = utilizadorEditando.idfunc;
+
+      // 1. Atualizar apenas os dados do utilizador na tabela Utilizadores
+      const payloadUser = {
+        username: utilizadorEditando.username,
+        role: utilizadorEditando.role
+        // NOTA: Retiramos o "hospitais" daqui porque o router de utilizadores não mexe nisso
+      };
+      await apiFetch(`/api/utilizadores/${idfunc}`, {
+        method: "PUT",
+        body: JSON.stringify(payloadUser),
+      });
+
+      // 2. Ler as ligações reais aos Hospitais ANTES da edição
+      let hospitaisAntigos = [];
+      try {
+        const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+        if (Array.isArray(resAntigos)) {
+          hospitaisAntigos = resAntigos.map(h => Number(h.idhosp || h.idHosp || h.id));
+        }
+      } catch (e) {
+        console.warn("Nenhum hospital associado ou rota Trabalha falhou.");
+      }
+
+      // 3. Comparar para atualizar a tabela "Trabalha"
+      const hospitaisSelecionados = utilizadorEditando.hospitais.map(Number);
+
+      const adicionar = hospitaisSelecionados.filter(h => !hospitaisAntigos.includes(h));
+      const remover = hospitaisAntigos.filter(h => !hospitaisSelecionados.includes(h));
+
+      // 4. POST para os hospitais que adicionei agora
+      for (const idhosp of adicionar) {
+        await apiFetch(`/api/trabalha/`, {
+          method: "POST",
+          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp, ativo: true })
+        });
+      }
+
+      // 5. DELETE para os hospitais que tirei agora
+      for (const idhosp of remover) {
+        await apiFetch(`/api/trabalha/${idfunc}/${idhosp}`, {
+          method: "DELETE"
+        });
+      }
+
+      setMensagemUser("Utilizador editado com sucesso!");
+      adicionarHistorico("Editar utilizador", `Foram atualizados os dados de ${utilizadorEditando.username}.`);
+
+      await carregarUtilizadores();
+      setUtilizadorEditando(null);
+      setUserView("lista");
+    } catch (err) {
+      setErroUser(err.message);
+    } finally {
+      setSubmittingUser(false);
+    }
   };
 
   const guardarFuncionarioEditado = async (e) => {
-    e.preventDefault(); setMensagemFunc(''); setErroFunc('');
+    e.preventDefault();
+    setMensagemFunc("");
+    setErroFunc("");
+
     try {
-      setSubmittingFunc(true); const payload = { ...funcionarioEditando, hospitais: funcionarioEditando.hospitais || [] };
-      await apiFetch(`/api/profissionais/${funcionarioEditando.idfunc}`, { method: 'PUT', body: JSON.stringify(payload) });
-      setMensagemFunc(textos.admin.sucessoEditarFunc); adicionarHistorico('Editar funcionário', `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`);
-      carregarProfissionais(); setFuncionarioEditando(null); setEmployeeView('lista');
-    } catch (err) { setErroFunc(err.message); } finally { setSubmittingFunc(false); }
+      setSubmittingFunc(true);
+      const idfunc = funcionarioEditando.idfunc;
+
+      // 1. Atualizar dados na tabela Profissionais (nome, tipo, sexo)
+      const payloadFunc = {
+        nome: funcionarioEditando.nome,
+        tipofunc: funcionarioEditando.tipofunc,
+        sexo: funcionarioEditando.sexo
+      };
+      await apiFetch(`/api/profissionais/${idfunc}`, {
+        method: "PUT",
+        body: JSON.stringify(payloadFunc),
+      });
+
+      // 2. Obter as associações de hospitais atuais na tabela Trabalha
+      let hospitaisAntigos = [];
+      try {
+        const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+        if (Array.isArray(resAntigos)) {
+          hospitaisAntigos = resAntigos.map(h => Number(h.idhosp || h.idHosp || h.id));
+        }
+      } catch (e) {
+        console.warn("Sem hospitais anteriores ou erro ao consultar.");
+      }
+
+      // 3. Descobrir a diferença entre os Antigos e os Selecionados na edição
+      const hospitaisSelecionados = funcionarioEditando.hospitais.map(Number);
+
+      const adicionar = hospitaisSelecionados.filter(h => !hospitaisAntigos.includes(h));
+      const remover = hospitaisAntigos.filter(h => !hospitaisSelecionados.includes(h));
+
+      // 4. Executar os POST (Adicionar as novas associações à tabela Trabalha)
+      for (const idhosp of adicionar) {
+        await apiFetch(`/api/trabalha/`, {
+          method: "POST",
+          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp, ativo: true })
+        });
+      }
+
+      // 5. Executar os DELETE (Remover as associações retiradas na tabela Trabalha)
+      for (const idhosp of remover) {
+        await apiFetch(`/api/trabalha/${idfunc}/${idhosp}`, {
+          method: "DELETE"
+        });
+      }
+
+      setMensagemFunc(textos.admin.sucessoEditarFunc);
+      adicionarHistorico("Editar funcionário", `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`);
+
+      await carregarProfissionais();
+      setFuncionarioEditando(null);
+      setEmployeeView("lista");
+    } catch (err) {
+      setErroFunc(err.message);
+    } finally {
+      setSubmittingFunc(false);
+    }
   };
 
   const guardarHospitalEditado = async (e) => {
@@ -417,7 +565,7 @@ export default function AdminDashboard() {
                   {funcSelecionado && <div className="admin-dropdown__selected">✓ #{funcSelecionado.idfunc} — {funcSelecionado.nome}</div>}
                   {dropdownAberto && (
                     <div className="admin-dropdown__list">
-                      {funcionariosPesquisaNovoUser.length === 0 ? ( <div className="admin-dropdown__empty">{textos.geral.semResultados}</div> ) : (
+                      {funcionariosPesquisaNovoUser.length === 0 ? (<div className="admin-dropdown__empty">{textos.geral.semResultados}</div>) : (
                         funcionariosPesquisaNovoUser.map((p) => (
                           <button key={p.idfunc} type="button" className="admin-dropdown__item" onClick={() => selecionarFuncionarioNovoUser(p)}>
                             <span className="admin-dropdown__item-name">{p.nome}</span>
@@ -440,13 +588,13 @@ export default function AdminDashboard() {
                   <option value={ROLES.RECECIONISTA}>Rececionista</option>
                 </select>
               </div>
-              
+
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                 <label>Associar Hospitais</label>
-                <SelectorHospitais 
-                  hospitaisDisponiveisTotais={hospitais} 
-                  valoresSelecionados={novoUtilizador.hospitais} 
-                  onChange={(novosIds) => setNovoUtilizador(prev => ({ ...prev, hospitais: novosIds }))} 
+                <SelectorHospitais
+                  hospitaisDisponiveisTotais={hospitais}
+                  valoresSelecionados={novoUtilizador.hospitais}
+                  onChange={(novosIds) => setNovoUtilizador(prev => ({ ...prev, hospitais: novosIds }))}
                 />
               </div>
 
@@ -479,10 +627,10 @@ export default function AdminDashboard() {
 
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                 <label>Gerir Hospitais Associados</label>
-                <SelectorHospitais 
-                  hospitaisDisponiveisTotais={hospitais} 
-                  valoresSelecionados={utilizadorEditando.hospitais} 
-                  onChange={(novosIds) => setUtilizadorEditando(prev => ({ ...prev, hospitais: novosIds }))} 
+                <SelectorHospitais
+                  hospitaisDisponiveisTotais={hospitais}
+                  valoresSelecionados={utilizadorEditando.hospitais}
+                  onChange={(novosIds) => setUtilizadorEditando(prev => ({ ...prev, hospitais: novosIds }))}
                 />
               </div>
 
@@ -589,10 +737,10 @@ export default function AdminDashboard() {
 
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                 <label>Associar Hospitais</label>
-                <SelectorHospitais 
-                  hospitaisDisponiveisTotais={hospitais} 
-                  valoresSelecionados={novoProfissional.hospitais} 
-                  onChange={(novosIds) => setNovoProfissional(prev => ({ ...prev, hospitais: novosIds }))} 
+                <SelectorHospitais
+                  hospitaisDisponiveisTotais={hospitais}
+                  valoresSelecionados={novoProfissional.hospitais}
+                  onChange={(novosIds) => setNovoProfissional(prev => ({ ...prev, hospitais: novosIds }))}
                 />
               </div>
             </div>
@@ -610,13 +758,13 @@ export default function AdminDashboard() {
           <form className="admin-form" onSubmit={guardarFuncionarioEditado}>
             <div className="admin-form__grid">
               <div className="admin-form__group"><label htmlFor="efunc-nome">{textos.admin.lblNome}</label><input id="efunc-nome" name="nome" type="text" value={funcionarioEditando.nome || ''} onChange={handleEditarFuncChange} /></div>
-              
+
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                 <label>Gerir Hospitais Associados</label>
-                <SelectorHospitais 
-                  hospitaisDisponiveisTotais={hospitais} 
-                  valoresSelecionados={funcionarioEditando.hospitais} 
-                  onChange={(novosIds) => setFuncionarioEditando(prev => ({ ...prev, hospitais: novosIds }))} 
+                <SelectorHospitais
+                  hospitaisDisponiveisTotais={hospitais}
+                  valoresSelecionados={funcionarioEditando.hospitais}
+                  onChange={(novosIds) => setFuncionarioEditando(prev => ({ ...prev, hospitais: novosIds }))}
                 />
               </div>
             </div>
