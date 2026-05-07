@@ -1,0 +1,9 @@
+Certifica-te de que estás na pasta raiz (ia)
+Bash -> Instala as bibliotecas presentes em requirements.txt:
+pip install -r requirements.txt
+
+Executa o código com o comando:
+Bash
+python src/preprocess.py
+python src/train.py
+python src/predict.py
