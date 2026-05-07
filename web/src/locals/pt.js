@@ -379,6 +379,35 @@ export const TEXTOS_PT = {
     v6: "Secção 6. Conservação. Os dados são mantidos pelo período legalmente necessário e comunicados apenas a entidades autorizadas.",
     v7: "Secção 7. Direitos dos Titulares. Inclui acesso, retificação, apagamento e oposição a decisões automatizadas.",
     v8: "Secção 8. Foro. Atualizada em abril de 2026. Foro na comarca de Lisboa."
+  },
+
+// ==========================================
+  // 13. PÁGINA: PERFIL DO FUNCIONÁRIO
+  // ==========================================
+    perfil: {
+    titulo: "O Meu Perfil",
+    sucessoGuardar: "Perfil atualizado com sucesso!",
+    erroCarregar: "Não foi possível carregar os teus dados: ",
+    erroSessao: "Utilizador não encontrado na sessão.",
+    erroGuardar: "Erro ao guardar: ",
+    aCarregar: "A carregar o teu perfil...",
+    botaoGuardar: "Guardar Alterações",
+    botaoGuardarLoading: "A guardar...",
+    
+    // Cartão de Visita
+    numFuncionario: "Nº Funcionário:",
+    linkFotografia: "Link da Fotografia",
+    placeholderFotografia: "https://...",
+    telemovel: "Telemóvel",
+    emailPessoal: "Email Pessoal",
+    
+    // Biografia e Segurança
+    sobreMim: "Sobre Mim",
+    placeholderBiografia: "Escreve aqui uma breve descrição sobre a tua experiência profissional...",
+    segurancaAcesso: "Segurança de Acesso",
+    nomeUtilizador: "Nome de Utilizador",
+    novaPassword: "Nova Password",
+    placeholderPassword: "(Deixar em branco para manter)"
   }
 
 };

@@ -80,7 +80,11 @@ CREATE TABLE Funcionario (
     IdFunc SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     TipoFunc tipo_func_enum NOT NULL,
-    Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M', 'F'))
+    Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M', 'F')),
+    Email VARCHAR(150),
+    Telefone VARCHAR(20),
+    Biografia TEXT,
+    Foto_url TEXT
 );
 
 -- ------------------------------------------------------------
