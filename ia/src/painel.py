@@ -66,4 +66,4 @@ if __name__ == "__main__":
     atualizar_painel(hospital_agora)
 
 
-    //bbb
+    
