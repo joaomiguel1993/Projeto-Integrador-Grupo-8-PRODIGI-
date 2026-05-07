@@ -265,7 +265,8 @@ export default function AdminDashboard() {
       tipofunc: prof?.tipofunc || "",
       sexo: prof?.sexo || "",
       password: "",
-      hospitais: []
+      hospitais: [],
+      role: prof?.tipofunc || utilizador.tipofunc || ROLES.ADMIN,
     });
     setUserView("editar");
 
@@ -452,7 +453,7 @@ export default function AdminDashboard() {
       for (const idhosp of adicionar) {
         await apiFetch(`/api/trabalha/`, {
           method: "POST",
-          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp, ativo: true })
+          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp})
         });
       }
 

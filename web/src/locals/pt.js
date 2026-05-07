@@ -372,15 +372,44 @@
       s8Titulo: "8. Atualização e Foro",
       s8Texto: "Esta política foi atualizada em 17 de abril de 2026. Qualquer litígio será dirimido nos tribunais competentes da comarca de Lisboa, regendo-se pela lei portuguesa.",
 
-      // Textos puros para VOZ
-      v1: "Política de Privacidade SIAGUH. Secção 1. Enquadramento Geral. Esta Política de Privacidade aplica-se ao SIAGUH, incluindo o portal web, aplicação móvel Android e sistemas de triagem, desenvolvidos pelo Grupo 8, no âmbito do Projeto Integrador de 2026.",
-      v2: "Secção 2. Responsável pelo Tratamento. A entidade responsável pelo tratamento de dados é o Grupo 8. Pode contactar o encarregado através do e-mail d p o underscore grupo 8 arroba exemplo ponto pt.",
-      v3: "Secção 3. Dados Pessoais Tratados. Recolhemos dados demográficos, dados de saúde e dados de inteligência artificial.",
-      v4: "Secção 4. Finalidades. O tratamento fundamenta-se na triagem clínica, apoio à decisão e segurança do sistema.",
-      v5: "Secção 5. Utilização de Inteligência Artificial. A IA não decide de forma autónoma. O profissional de saúde tem sempre o controlo final.",
-      v6: "Secção 6. Conservação. Os dados são mantidos pelo período legalmente necessário e comunicados apenas a entidades autorizadas.",
-      v7: "Secção 7. Direitos dos Titulares. Inclui acesso, retificação, apagamento e oposição a decisões automatizadas.",
-      v8: "Secção 8. Foro. Atualizada em abril de 2026. Foro na comarca de Lisboa."
-    }
+    // Textos puros para VOZ
+    v1: "Política de Privacidade SIAGUH. Secção 1. Enquadramento Geral. Esta Política de Privacidade aplica-se ao SIAGUH, incluindo o portal web, aplicação móvel Android e sistemas de triagem, desenvolvidos pelo Grupo 8, no âmbito do Projeto Integrador de 2026.",
+    v2: "Secção 2. Responsável pelo Tratamento. A entidade responsável pelo tratamento de dados é o Grupo 8. Pode contactar o encarregado através do e-mail d p o underscore grupo 8 arroba exemplo ponto pt.",
+    v3: "Secção 3. Dados Pessoais Tratados. Recolhemos dados demográficos, dados de saúde e dados de inteligência artificial.",
+    v4: "Secção 4. Finalidades. O tratamento fundamenta-se na triagem clínica, apoio à decisão e segurança do sistema.",
+    v5: "Secção 5. Utilização de Inteligência Artificial. A IA não decide de forma autónoma. O profissional de saúde tem sempre o controlo final.",
+    v6: "Secção 6. Conservação. Os dados são mantidos pelo período legalmente necessário e comunicados apenas a entidades autorizadas.",
+    v7: "Secção 7. Direitos dos Titulares. Inclui acesso, retificação, apagamento e oposição a decisões automatizadas.",
+    v8: "Secção 8. Foro. Atualizada em abril de 2026. Foro na comarca de Lisboa."
+  },
+
+// ==========================================
+  // 13. PÁGINA: PERFIL DO FUNCIONÁRIO
+  // ==========================================
+    perfil: {
+    titulo: "O Meu Perfil",
+    sucessoGuardar: "Perfil atualizado com sucesso!",
+    erroCarregar: "Não foi possível carregar os teus dados: ",
+    erroSessao: "Utilizador não encontrado na sessão.",
+    erroGuardar: "Erro ao guardar: ",
+    aCarregar: "A carregar o teu perfil...",
+    botaoGuardar: "Guardar Alterações",
+    botaoGuardarLoading: "A guardar...",
+    
+    // Cartão de Visita
+    numFuncionario: "Nº Funcionário:",
+    linkFotografia: "Link da Fotografia",
+    placeholderFotografia: "https://...",
+    telemovel: "Telemóvel",
+    emailPessoal: "Email Pessoal",
+    
+    // Biografia e Segurança
+    sobreMim: "Sobre Mim",
+    placeholderBiografia: "Escreve aqui uma breve descrição sobre a tua experiência profissional...",
+    segurancaAcesso: "Segurança de Acesso",
+    nomeUtilizador: "Nome de Utilizador",
+    novaPassword: "Nova Password",
+    placeholderPassword: "(Deixar em branco para manter)"
+  }
 
   };

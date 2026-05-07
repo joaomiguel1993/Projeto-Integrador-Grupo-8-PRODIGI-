@@ -33,12 +33,16 @@ def run_query(query: str, params: Optional[tuple[Any, ...]] = None):
         cur = con.cursor()
         cur.execute(query, params)
 
+        result = None
         if cur.description is not None:
             colunas = [desc[0] for desc in cur.description]
             dados = cur.fetchall()
-            return [dict(zip(colunas, row)) for row in dados]
+            result = [dict(zip(colunas, row)) for row in dados]
 
-        con.commit()
+        con.commit()  # commit sempre
+
+        if result is not None:
+            return result
         return {"msg": "Operação realizada com sucesso"}
 
     except Exception as e:
