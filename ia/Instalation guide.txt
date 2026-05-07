@@ -5,15 +5,15 @@ pip install -r requirements.txt
 ia Tempo
 Executa o código com o comando:
 Bash
-python src/preprocess.py
-python src/train.py
-python src/predict.py
-python src/painel.py
+python src/preprocess_wait_time.py
+python src/train_wait_time.py
+python src/predict_wait_time.py
+python src/painel_wait_time.py
 
 
 ia Triagem
 Executa o código com o comando:
 Bash
-python src/gerar_dados.py
-python src/predict_triagem.py
+python src/gerar_dados_triagem.py
 python src/train_triagem.py
+python src/predict_triagem.py
