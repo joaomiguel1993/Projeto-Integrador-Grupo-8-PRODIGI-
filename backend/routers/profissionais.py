@@ -13,11 +13,9 @@ from backend.services.profissionais_service import (
 
 router = APIRouter(prefix="/profissionais", tags=["Profissionais"])
 
-
 @router.get("/", response_model=list[ProfissionalResponse])
 def get_profissionais():
     return get_profissionais_service()
-
 
 @router.get("/{id_func}", response_model=ProfissionalResponse)
 def get_profissional(id_func: int):
@@ -26,15 +24,17 @@ def get_profissional(id_func: int):
         raise HTTPException(status_code=404, detail="Profissional não encontrado")
     return resultado
 
-
 @router.post("/", response_model=ProfissionalResponse)
 def create_profissional(data: ProfissionalCreate):
     return create_profissional_service(
         nome=data.nome,
         tipofunc=data.tipofunc,
-        sexo=data.sexo
+        sexo=data.sexo,
+        email=data.email,
+        telefone=data.telefone,
+        biografia=data.biografia,
+        foto_url=data.foto_url
     )
-
 
 @router.put("/{id_func}", response_model=ProfissionalResponse)
 def update_profissional(id_func: int, data: ProfissionalUpdate):
@@ -42,7 +42,11 @@ def update_profissional(id_func: int, data: ProfissionalUpdate):
         id_func=id_func,
         nome=data.nome,
         tipofunc=data.tipofunc,
-        sexo=data.sexo
+        sexo=data.sexo,
+        email=data.email,
+        telefone=data.telefone,
+        biografia=data.biografia,
+        foto_url=data.foto_url
     )
     if not resultado:
         raise HTTPException(status_code=404, detail="Profissional não encontrado")

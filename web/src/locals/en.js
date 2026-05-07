@@ -136,7 +136,7 @@ export const TEXTOS_EN = {
     heroTituloDestaque: "Project",
     heroSubtitulo: "Group 8: Innovation, Team Spirit and Technical Excellence.",
     tituloEquipa: "The Team Behind the SIAGUH Project",
-    
+
     ariaHero: "Initial project presentation",
     ariaHistoria: "Project history and development",
     ariaPararLeitura: "Stop voice reading",
@@ -160,17 +160,17 @@ export const TEXTOS_EN = {
     introTexto2: "is committed to making the website of the",
     prodigi: "PRODIGI – SIAGUH",
     introTexto3: "system compliant with Decree-Law no. 83/2018 of October 19, which transposes Directive (EU) 2016/2102 of the European Parliament and Council regarding the accessibility of websites and mobile applications.",
-    
+
     statusTitulo: "I. Compliance Status",
     statusTexto: "The SIAGUH website complies with Decree-Law no. 83/2018 of October 19.",
-    
+
     elaboracaoTitulo: "II. Preparation of this Accessibility and Usability Statement",
     elaboracaoTexto: "This statement was updated on 17-04-2026. In accordance with current standards, the group adopted the mandatory monitoring procedures.",
-    
+
     avalAutoTitulo: "A. Automatic evaluations carried out (15-04-2026):",
     avalManualTitulo: "B. Manual evaluations carried out:",
     testesUsaTitulo: "C. Usability tests with users:",
-    
+
     lblFerramenta: "Tool Used:",
     lblAmostra: "Sample:",
     lblResultados: "Main Results:",
@@ -192,13 +192,13 @@ export const TEXTOS_EN = {
     contactoTitulo: "III. Contact and Information Requests Regarding the Website",
     contactoTexto: "To contact, send suggestions or request additional information regarding the functionalities of the SIAGUH system developed by Group 8, use the contacts of those responsible:",
     responsaveisNomes: "João Martins, João Sacramento, Luís Franco and Pedro Antunes.",
-    
+
     evidenciasTitulo: "IV. Other Evidence",
     evidenciasTexto: "Group 8 implemented a modular architecture in the backend (FastAPI) and frontend to ensure that future accessibility updates can be integrated without compromising system scalability.",
-    
+
     denunciaTitulo: "V. Reporting Discrimination Situations",
     denunciaTexto: "Whenever a person with disabilities is subject to less favorable treatment constituting discriminatory practice, they may file a complaint under current legislation. The National Institute for Rehabilitation (INR, I.P.) provides the appropriate channels for this purpose.",
-    
+
     notaRodape: "This Statement was created for the PRODIGI Integrative Project (Group 8 - 2026) in compliance with Decree-Law no. 83/2018 of October 19.",
 
     seccaoIntro: "Accessibility and Usability Statement. Group 8 Frogs is committed to making the PRODIGI Hospital Management System website compliant with current legislation.",
@@ -220,28 +220,28 @@ export const TEXTOS_EN = {
     subtitulo: "Find quick answers to the most common questions about how the SIAGUH system works.",
     expandirTudo: "Expand all",
     colapsarTudo: "Collapse all",
-    
+
     q1: "What is SIAGUH?",
     a1: "It is the Integrated Support System for Hospital Emergency Management, a modular platform (SIAGUH) developed to manage everything from patient admission to discharge or hospitalization.",
-    
+
     q2: "Is my data secure?",
     a2: "Yes. The system uses robust authentication (JWT) and follows GDPR standards to ensure that only authorized professionals can access clinical data.",
-    
+
     q3: "How is my wristband color decided?",
     a3: "The nurse enters your vital signs and symptoms into the system. Our AI analyzes this data together with the patient's medical history and suggests a color based on the Manchester Protocol, but the final decision is always validated by a healthcare professional.",
-    
+
     q4: "Is the waiting time accurate?",
     a4: "The time is an estimate calculated by AI based on the hospital's history, hospital workload and the number of patients currently waiting. It may change if critical emergency cases arise (red wristbands).",
-    
+
     q5: "How can I know which room I am hospitalized in?",
     a5: "This information is managed in the hospitalization module, where the system automatically assigns a bed and service after the medical decision.",
-    
+
     q6: "Where can I consult my prescriptions?",
     a6: "Prescriptions issued by doctors are recorded in your clinical history within SIAGUH and may be consulted by the professionals accompanying you.",
-    
+
     q7: "How do I recover my employee access?",
     a7: "You should contact the system Administrator, who is responsible for account and permission management in the professionals module.",
-    
+
     q8: "Does the system work on mobile devices?",
     a8: "Yes, SIAGUH has a dedicated Android application so professionals can consult data and record medical procedures on the move."
   },
@@ -277,7 +277,7 @@ export const TEXTOS_EN = {
     altSlide: "Highlight information number",
     ariaIrParaSlide: "Go to slide",
   },
-  
+
   // ==========================================
   // 11. PAGE: LOGIN
   // ==========================================
@@ -289,7 +289,7 @@ export const TEXTOS_EN = {
     labelPasso1: "Authentication",
     labelPasso2: "Hospital",
     btnEntrar: "Login",
-    
+
     erroLogin: "Error while attempting login.",
     erroRole: "User role not identified.",
     erroHospitais: "This user has no authorized hospitals.",
@@ -365,5 +365,35 @@ export const TEXTOS_EN = {
     v6: "Section 6. Retention. Data is kept for the legally required period and shared only with authorized entities.",
     v7: "Section 7. Data Subject Rights. Includes access, rectification, erasure and objection to automated decisions.",
     v8: "Section 8. Jurisdiction. Updated in April 2026. Jurisdiction in the Lisbon district."
+  },
+
+  // ==========================================
+  // 13. PÁGINA: PERFIL DO FUNCIONÁRIO
+  // ==========================================
+    perfil: {
+      titulo: "My Profile",
+      sucessoGuardar: "Profile updated successfully!",
+      erroCarregar: "Failed to load your data: ",
+      erroSessao: "User not found in session.",
+      erroGuardar: "Error saving changes: ",
+      aCarregar: "Loading your profile...",
+      botaoGuardar: "Save Changes",
+      botaoGuardarLoading: "Saving...",
+
+    // Business Card
+      numFuncionario: "Employee Number:",
+      linkFotografia: "Photo Link",
+      placeholderFotografia: "https://...",
+      telemovel: "Mobile Phone",
+      emailPessoal: "Personal Email",
+
+    // Biography and Security
+      sobreMim: "About Me",
+      placeholderBiografia: "Write a brief description of your professional experience...",
+      egurancaAcesso: "Access Security",
+      nomeUtilizador: "Username",
+      novaPassword: "New Password",
+      placeholderPassword: "(Leave blank to keep)"
   }
+
 };
