@@ -364,20 +364,30 @@ export default function AdminDashboard() {
 
   const guardarUtilizadorEditado = async (e) => {
     e.preventDefault();
-    resetMensagens();
+    setMensagemUser(""); setErroUser("");
+
     try {
       setSubmittingUser(true);
       const idfunc = utilizadorEditando.idfunc;
 
-      const payloadUser = {
-        username: utilizadorEditando.username,
-        hospitais: utilizadorEditando.hospitais.map(Number), // <-- aqui
-        bloqueado: utilizadorEditando.bloqueado ?? null,
-      };
-
+      // 1. Actualizar utilizador (username, hospitais, bloqueado)
       await apiFetch(`/api/utilizadores/${idfunc}`, {
         method: "PUT",
-        body: JSON.stringify(payloadUser),
+        body: JSON.stringify({
+          username: utilizadorEditando.username,
+          hospitais: utilizadorEditando.hospitais.map(Number),
+          bloqueado: utilizadorEditando.bloqueado ?? null,
+        }),
+      });
+
+      // 2. Actualizar tipofunc no funcionário
+      await apiFetch(`/api/profissionais/${idfunc}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          nome: utilizadorEditando.nome,
+          tipofunc: utilizadorEditando.role,
+          sexo: utilizadorEditando.sexo,
+        }),
       });
 
       setMensagemUser("Utilizador editado com sucesso!");
@@ -385,12 +395,11 @@ export default function AdminDashboard() {
       await carregarUtilizadores();
       await carregarProfissionais();
       setUtilizadorEditando(null);
-      setUserView('lista');
+      setUserView("lista");
     } catch (err) {
-      console.error(err);
       setErroUser(err.message);
     } finally {
-      setSubmittingUser(false); 
+      setSubmittingUser(false);
     }
   };
 
