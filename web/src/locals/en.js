@@ -157,7 +157,7 @@ export const TEXTOS_EN = {
     introTexto1: "The",
     grupo8: "Group 8 (Sapos)",
     introTexto2: "commits to making the SIAGUH system website,",
-    prodigi: "PRODIGI – Hospital Management System",
+    prodigi: "PRODIGI – SIAGUH",
     introTexto3: "available in accordance with Decree-Law No. 83/2018, of October 19, which transposes EU Directive 2016/2102 on the accessibility of websites and mobile applications.",
     statusTitulo: "I. Compliance Status",
     statusTexto: "Group 8's PRODIGI website is fully compliant with Decree-Law No. 83/2018 of October 19.",
