@@ -364,63 +364,31 @@ export default function AdminDashboard() {
 
   const guardarUtilizadorEditado = async (e) => {
     e.preventDefault();
-    setMensagemUser("");
-    setErroUser("");
-
+    resetMensagens();
     try {
       setSubmittingUser(true);
       const idfunc = utilizadorEditando.idfunc;
 
-      // 1. Atualizar apenas os dados do utilizador na tabela Utilizadores
+      // Enviamos TUDO no mesmo payload (como o Python está à espera)
       const payloadUser = {
         username: utilizadorEditando.username,
-        role: utilizadorEditando.role
-        // NOTA: Retiramos o "hospitais" daqui porque o router de utilizadores não mexe nisso
+        role: utilizadorEditando.role,
+        hospitais: utilizadorEditando.hospitais.map(Number), // O Python trata disto!
+        bloqueado: utilizadorEditando.bloqueado
       };
+
       await apiFetch(`/api/utilizadores/${idfunc}`, {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify(payloadUser),
       });
 
-      // 2. Ler as ligações reais aos Hospitais ANTES da edição
-      let hospitaisAntigos = [];
-      try {
-        const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
-        if (Array.isArray(resAntigos)) {
-          hospitaisAntigos = resAntigos.map(h => Number(h.idhosp || h.idHosp || h.id));
-        }
-      } catch (e) {
-        console.warn("Nenhum hospital associado ou rota Trabalha falhou.");
-      }
-
-      // 3. Comparar para atualizar a tabela "Trabalha"
-      const hospitaisSelecionados = utilizadorEditando.hospitais.map(Number);
-
-      const adicionar = hospitaisSelecionados.filter(h => !hospitaisAntigos.includes(h));
-      const remover = hospitaisAntigos.filter(h => !hospitaisSelecionados.includes(h));
-
-      // 4. POST para os hospitais que adicionei agora
-      for (const idhosp of adicionar) {
-        await apiFetch(`/api/trabalha/`, {
-          method: "POST",
-          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp, ativo: true })
-        });
-      }
-
-      // 5. DELETE para os hospitais que tirei agora
-      for (const idhosp of remover) {
-        await apiFetch(`/api/trabalha/${idfunc}/${idhosp}`, {
-          method: "DELETE"
-        });
-      }
-
       setMensagemUser("Utilizador editado com sucesso!");
       adicionarHistorico("Editar utilizador", `Foram atualizados os dados de ${utilizadorEditando.username}.`);
-
       await carregarUtilizadores();
       setUtilizadorEditando(null);
-      setUserView("lista");
+      setUserView('lista');
     } catch (err) {
+      console.error(err);
       setErroUser(err.message);
     } finally {
       setSubmittingUser(false);
