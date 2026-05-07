@@ -1,13 +1,12 @@
 import speech_recognition as sr
 import re
 import threading
-import time
 
 a_gravar = True
 frames_audio = []
 
 def gravar_audio_fundo(fonte):
-    """Fica a roubar o áudio do microfone em silêncio"""
+    """Fica a gravar o áudio do microfone em segundo plano"""
     global a_gravar, frames_audio
     while a_gravar:
         try:
@@ -32,39 +31,39 @@ def ouvir_enfermeiro():
         print("\n" + "="*50)
         print("🟢 PODE FALAR! (O microfone está a gravar sem limites)")
         print("   Faça as pausas que quiser.")
-        print("   👉 QUANDO TERMINAR: Pressione as teclas [Ctrl + C] para parar.")
+        print("   👉 QUANDO TERMINAR: Pressione a tecla [ENTER] para parar.")
         print("="*50 + "\n")
         
         # Inicia a gravação em segundo plano
         tarefa_gravacao = threading.Thread(target=gravar_audio_fundo, args=(fonte,))
         tarefa_gravacao.start()
         
-        # Fica num ciclo infinito à espera do Ctrl+C
+        # Fica à espera que o utilizador carregue no ENTER
         try:
-            while True:
-                time.sleep(0.1) # Fica a dormir para não gastar CPU
-        except KeyboardInterrupt:
-            # O utilizador carregou em Ctrl+C! Vamos agir!
-            print("\n🛑 Gravação parada com sucesso!")
+            input()
+        except EOFError:
+            pass # Ignora erros estranhos do VS Code, se acontecerem
             
+        print("\n🛑 Gravação parada com sucesso!")
         a_gravar = False
+        
         print("⏳ A processar o áudio com Inteligência Artificial... (aguarde)")
-        tarefa_gravacao.join()
+        tarefa_gravacao.join() # Espera que o microfone feche
         
         if len(frames_audio) == 0:
             print("❌ Erro: O microfone não captou nenhum som.")
             return None
             
-        # Junta os blocos de áudio
+        # Junta os blocos de áudio todos
         audio_completo = sr.AudioData(b"".join(frames_audio), fonte.SAMPLE_RATE, fonte.SAMPLE_WIDTH)
         
-    # Fase de Tradução
+    # Fase de Tradução (Google NLP)
     try:
         texto = reconhecedor.recognize_google(audio_completo, language="pt-PT")
         print(f"\n📝 Texto reconhecido: '{texto}'")
         return texto.lower()
     except sr.UnknownValueError:
-        print("❌ Erro: A IA não conseguiu perceber o que disse.")
+        print("❌ Erro: A IA não conseguiu perceber o que disse. Fale um pouco mais alto e perto do microfone.")
         return None
     except sr.RequestError:
         print("❌ Erro: Sem ligação à internet.")
