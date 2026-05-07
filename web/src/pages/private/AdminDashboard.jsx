@@ -201,8 +201,16 @@ export default function AdminDashboard() {
   useEffect(() => { if (mainMenu === 'relatorios') carregarLogs(); }, [mainMenu]);
 
   const iniciarHistoricoBase = () => { setHistorico([{ id: 1, acao: 'Sistema iniciado', detalhe: 'O painel de administração foi carregado.', data: new Date().toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB') }]); };
-  const adicionarHistorico = (acao, detalhe) => { setHistorico((prev) => [{ id: Date.now() + Math.random(), acao, detalhe, data: new Date().toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB') }, ...prev]); };
-
+  const adicionarHistorico = (acao, detalhe) => {
+    setHistorico(prev => [
+      {
+        // ...
+        username: funcionarioAutenticadoNome || "Sistema", // em vez de 'utilizador'
+        // ...
+      },
+      ...prev
+    ]);
+  };
   const resetMensagens = () => {
     setMensagemUser(''); setErroUser('');
     setMensagemFunc(''); setErroFunc('');
@@ -239,7 +247,7 @@ export default function AdminDashboard() {
   const funcionariosFiltrados = profissionais.filter((p) => normalizar(p.nome).includes(normalizar(filtroFuncNome)) && String(p.idfunc || '').includes(filtroFuncNumero) && (filtroFuncTipo === '' || normalizar(p.tipofunc) === normalizar(filtroFuncTipo)));
   const funcionariosPesquisaNovoUser = funcionariosSemConta.filter((p) => normalizar(p.nome).includes(normalizar(pesquisaFuncionarioNovoUser)) || String(p.idfunc).includes(pesquisaFuncionarioNovoUser));
   const hospitaisFiltrados = hospitais.filter((h) => normalizar(h.nome).includes(normalizar(filtroHospitalNome)) && normalizar(h.localidade || '').includes(normalizar(filtroHospitalLocalidade)));
-  const logsFiltrados = logs.filter(log => { const termo = normalizar(filtroLogTermo); const matchTermo = termo === '' || normalizar(log.acao || '').includes(termo) || normalizar(log.detalhe || '').includes(termo) || normalizar(log.utilizador || '').includes(termo); let matchData = true; if (filtroLogData) matchData = (log.criado_em ? new Date(log.criado_em).toISOString().split('T')[0] : '') === filtroLogData; return matchTermo && matchData; });
+  const logsFiltrados = logs.filter(log => { const termo = normalizar(filtroLogTermo); const matchTermo = termo === '' || normalizar(log.acao || '').includes(termo) || normalizar(log.detalhe || '').includes(termo) || normalizar(log.username || '').includes(termo); let matchData = true; if (filtroLogData) matchData = (log.criado_em ? new Date(log.criado_em).toISOString().split('T')[0] : '') === filtroLogData; return matchTermo && matchData; });
 
   // Abertura de Modos de Edição
   const abrirNovoUtilizador = () => { resetMensagens(); setNovoUtilizador({ idfunc: '', username: '', password: '', role: ROLES.ADMIN, hospitais: [] }); setPesquisaFuncionarioNovoUser(''); setDropdownAberto(false); setUtilizadorEditando(null); setUserView('novo'); };
@@ -499,7 +507,7 @@ export default function AdminDashboard() {
     const cabecalhos = ["Data/Hora", "Utilizador", "Ação", "Detalhe"];
     const linhas = logsFiltrados.map(log => [
       log.criado_em ? new Date(log.criado_em).toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB') : '',
-      `"${(log.utilizador || '').replace(/"/g, '""')}"`,
+      `"${(log.username || '').replace(/"/g, '""')}"`,
       `"${(log.acao || '').replace(/"/g, '""')}"`,
       `"${(log.detalhe || '').replace(/"/g, '""')}"`
     ]);
@@ -904,7 +912,7 @@ export default function AdminDashboard() {
                   logsFiltrados.map((item) => (
                     <tr key={item.idlog || item.id}>
                       <td>{item.criado_em ? new Date(item.criado_em).toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB') : item.data || '—'}</td>
-                      <td>{item.utilizador || '—'}</td>
+                      <td>{item.username || '—'}</td>
                       <td>{item.acao || '—'}</td>
                       <td>{item.detalhe || '—'}</td>
                     </tr>
