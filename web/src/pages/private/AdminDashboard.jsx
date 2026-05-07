@@ -390,7 +390,7 @@ export default function AdminDashboard() {
         }),
       });
 
-      setMensagemUser("Utilizador editado com sucesso!");
+      setMensagemUser(textos.admin.sucessoEditarUser);
       adicionarHistorico("Editar utilizador", `Foram atualizados os dados de ${utilizadorEditando.username}.`);
       await carregarUtilizadores();
       await carregarProfissionais();
