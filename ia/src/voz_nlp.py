@@ -3,27 +3,20 @@ import re
 
 def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20):
     """
-    Ouve o microfone e converte a voz em texto.
-    
-    Parâmetros:
-    - tempo_silencio: Segundos de silêncio necessários para a gravação parar (o "buffer").
-    - tempo_espera_inicio: Segundos que aguarda até a pessoa começar a falar.
-    - limite_frase: Tempo máximo (em segundos) que a gravação total pode durar.
+    Ouve o microfone e converte a voz em texto com calibração otimizada.
     """
     reconhecedor = sr.Recognizer()
-    
-    # A MÁGICA ACONTECE AQUI: Aumentamos o tempo de silêncio permitido antes de cortar
     reconhecedor.pause_threshold = tempo_silencio
+    reconhecedor.dynamic_energy_threshold = True 
     
     with sr.Microphone() as fonte:
-        print("\n🎤 A calibrar o ruído de fundo... (Silêncio de 1 segundo)")
-        reconhecedor.adjust_for_ambient_noise(fonte)
+        print("\n🎤 A calibrar o ruído de fundo... (Por favor, faça silêncio durante 2 segundos)")
+        reconhecedor.adjust_for_ambient_noise(fonte, duration=2)
         
-        print(f"\n🟢 PODE FALAR! (Pode fazer pausas de até {tempo_silencio} segundos sem que a gravação pare)")
+        print(f"\n🟢 PODE FALAR! (Pode fazer pausas de até {tempo_silencio} segundos)")
         print("Exemplo: 'Paciente com 68 anos, oxigénio a 88, 145 batimentos, temperatura de 39.5, dor 9, está confuso.'\n")
         
         try:
-            # Ouve o microfone usando as variáveis de controlo de tempo
             audio = reconhecedor.listen(
                 fonte, 
                 timeout=tempo_espera_inicio, 
@@ -31,7 +24,6 @@ def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20)
             )
             print("⏳ A processar o áudio (NLP)...")
             
-            # Traduz para texto (Português de Portugal)
             texto = reconhecedor.recognize_google(audio, language="pt-PT")
             print(f"\n📝 Texto reconhecido: '{texto}'")
             return texto.lower()
@@ -40,7 +32,7 @@ def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20)
             print("❌ Erro: Não detetei nenhuma voz dentro do tempo limite.")
             return None
         except sr.UnknownValueError:
-            print("❌ Erro: Não consegui perceber o que disse. Fale mais alto e devagar.")
+            print("❌ Erro: Não consegui perceber o que disse. Fale de forma mais clara.")
             return None
         except sr.RequestError:
             print("❌ Erro: Sem ligação à internet para processar a voz.")
@@ -49,20 +41,21 @@ def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20)
 def processar_texto_medico(texto):
     """
     Procura padrões (Regex) no texto para extrair os sinais vitais.
+    Se não encontrar, preenche com 'Dado não obtido'.
     """
     if not texto:
         return None
         
     print("\n🔍 A extrair dados clínicos do texto...")
     
-    # Dicionário padrão (valores normais caso a IA não ouça alguma coisa)
+    # NOVO: Dicionário inicializa tudo sem preenchimento automático numérico
     sinais_vitais = {
-        'Age': 45,
-        'Heart_Rate_BPM': 80,
-        'SpO2_Percent': 98,
-        'Temperature_C': 36.5,
-        'Pain_Level': 0,
-        'Consciousness': 'Acordado'
+        'Age': 'Dado não obtido',
+        'Heart_Rate_BPM': 'Dado não obtido',
+        'SpO2_Percent': 'Dado não obtido',
+        'Temperature_C': 'Dado não obtido',
+        'Pain_Level': 'Dado não obtido',
+        'Consciousness': 'Dado não obtido'
     }
     
     # 1. Extrair Idade
@@ -71,17 +64,17 @@ def processar_texto_medico(texto):
         sinais_vitais['Age'] = int(match_idade.group(1))
 
     # 2. Extrair SpO2 / Oxigénio
-    match_spo2 = re.search(r'(\d+)\s*(%|por cento|oxigénio|saturação)', texto)
+    match_spo2 = re.search(r'(\d+)\s*(%|por cento|oxigéni?o?|saturação|o2)', texto)
     if match_spo2:
         sinais_vitais['SpO2_Percent'] = int(match_spo2.group(1))
 
     # 3. Extrair BPM / Batimentos
-    match_bpm = re.search(r'(\d+)\s*(batimentos|pulsação|bpm)', texto)
+    match_bpm = re.search(r'(\d+)\s*(batimentos?|pulsação|bpm|batimento cardiaco|pulso)', texto)
     if match_bpm:
         sinais_vitais['Heart_Rate_BPM'] = int(match_bpm.group(1))
 
-    # 4. Extrair Temperatura (lida com vírgulas e pontos)
-    match_temp = re.search(r'(\d+[.,]?\d*)\s*(graus|temperatura|febre)', texto)
+    # 4. Extrair Temperatura
+    match_temp = re.search(r'(\d+[.,]?\d*)\s*(graus?|temperatura|febre)', texto)
     if match_temp:
         temp_str = match_temp.group(1).replace(',', '.')
         sinais_vitais['Temperature_C'] = float(temp_str)
@@ -91,16 +84,17 @@ def processar_texto_medico(texto):
     if match_dor:
         sinais_vitais['Pain_Level'] = int(match_dor.group(2))
 
-    # 6. NLP Simples para Nível de Consciência
-    if any(palavra in texto for palavra in ['confuso', 'desorientado']):
+    # 6. NLP para Nível de Consciência (NOVO: só assume estado se for dito)
+    if any(palavra in texto for palavra in ['confuso', 'desorientado', 'delírio']):
         sinais_vitais['Consciousness'] = 'Confuso'
-    elif any(palavra in texto for palavra in ['inconsciente', 'desmaiado']):
+    elif any(palavra in texto for palavra in ['inconsciente', 'desmaiado', 'coma']):
         sinais_vitais['Consciousness'] = 'Inconsciente'
+    elif any(palavra in texto for palavra in ['acordado', 'alerta', 'consciente', 'orientado']):
+        sinais_vitais['Consciousness'] = 'Acordado'
 
     return sinais_vitais
 
 if __name__ == "__main__":
-    # Podes ajustar os 2.5 segundos para o tempo que achares mais confortável
     texto_falado = ouvir_enfermeiro(tempo_silencio=2.5)
     
     if texto_falado:
