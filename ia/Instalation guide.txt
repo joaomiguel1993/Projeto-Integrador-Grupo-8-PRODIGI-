@@ -17,3 +17,9 @@ Bash
 python src/gerar_dados_triagem.py
 python src/train_triagem.py
 python src/predict_triagem.py
+
+
+Ia Leitura de sintomas por voz
+
+Bash
+python src/voz_nlp.py

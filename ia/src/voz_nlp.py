@@ -1,93 +1,107 @@
 import speech_recognition as sr
 import re
-import threading
 
-a_gravar = True
-frames_audio = []
-
-def gravar_audio_fundo(fonte):
-    """Fica a gravar o áudio do microfone em segundo plano"""
-    global a_gravar, frames_audio
-    while a_gravar:
-        try:
-            buffer = fonte.stream.read(fonte.CHUNK, exception_on_overflow=False)
-            frames_audio.append(buffer)
-        except Exception:
-            pass
-
-def ouvir_enfermeiro():
-    global a_gravar, frames_audio
-    a_gravar = True
-    frames_audio = []
+def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20):
+    """
+    Ouve o microfone e converte a voz em texto.
     
+    Parâmetros:
+    - tempo_silencio: Segundos de silêncio necessários para a gravação parar (o "buffer").
+    - tempo_espera_inicio: Segundos que aguarda até a pessoa começar a falar.
+    - limite_frase: Tempo máximo (em segundos) que a gravação total pode durar.
+    """
     reconhecedor = sr.Recognizer()
-    microfone = sr.Microphone()
     
-    print("\n🎤 A ligar e calibrar o microfone... (silêncio de 1 segundo)")
+    # A MÁGICA ACONTECE AQUI: Aumentamos o tempo de silêncio permitido antes de cortar
+    reconhecedor.pause_threshold = tempo_silencio
     
-    with microfone as fonte:
-        reconhecedor.adjust_for_ambient_noise(fonte, duration=1)
+    with sr.Microphone() as fonte:
+        print("\n🎤 A calibrar o ruído de fundo... (Silêncio de 1 segundo)")
+        reconhecedor.adjust_for_ambient_noise(fonte)
         
-        print("\n" + "="*50)
-        print("🟢 PODE FALAR! (O microfone está a gravar sem limites)")
-        print("   Faça as pausas que quiser.")
-        print("   👉 QUANDO TERMINAR: Pressione a tecla [ENTER] para parar.")
-        print("="*50 + "\n")
+        print(f"\n🟢 PODE FALAR! (Pode fazer pausas de até {tempo_silencio} segundos sem que a gravação pare)")
+        print("Exemplo: 'Paciente com 68 anos, oxigénio a 88, 145 batimentos, temperatura de 39.5, dor 9, está confuso.'\n")
         
-        # Inicia a gravação em segundo plano
-        tarefa_gravacao = threading.Thread(target=gravar_audio_fundo, args=(fonte,))
-        tarefa_gravacao.start()
-        
-        # Fica à espera que o utilizador carregue no ENTER
         try:
-            input()
-        except EOFError:
-            pass # Ignora erros estranhos do VS Code, se acontecerem
+            # Ouve o microfone usando as variáveis de controlo de tempo
+            audio = reconhecedor.listen(
+                fonte, 
+                timeout=tempo_espera_inicio, 
+                phrase_time_limit=limite_frase
+            )
+            print("⏳ A processar o áudio (NLP)...")
             
-        print("\n🛑 Gravação parada com sucesso!")
-        a_gravar = False
-        
-        print("⏳ A processar o áudio com Inteligência Artificial... (aguarde)")
-        tarefa_gravacao.join() # Espera que o microfone feche
-        
-        if len(frames_audio) == 0:
-            print("❌ Erro: O microfone não captou nenhum som.")
+            # Traduz para texto (Português de Portugal)
+            texto = reconhecedor.recognize_google(audio, language="pt-PT")
+            print(f"\n📝 Texto reconhecido: '{texto}'")
+            return texto.lower()
+            
+        except sr.WaitTimeoutError:
+            print("❌ Erro: Não detetei nenhuma voz dentro do tempo limite.")
             return None
-            
-        # Junta os blocos de áudio todos
-        audio_completo = sr.AudioData(b"".join(frames_audio), fonte.SAMPLE_RATE, fonte.SAMPLE_WIDTH)
-        
-    # Fase de Tradução (Google NLP)
-    try:
-        texto = reconhecedor.recognize_google(audio_completo, language="pt-PT")
-        print(f"\n📝 Texto reconhecido: '{texto}'")
-        return texto.lower()
-    except sr.UnknownValueError:
-        print("❌ Erro: A IA não conseguiu perceber o que disse. Fale um pouco mais alto e perto do microfone.")
-        return None
-    except sr.RequestError:
-        print("❌ Erro: Sem ligação à internet.")
-        return None
+        except sr.UnknownValueError:
+            print("❌ Erro: Não consegui perceber o que disse. Fale mais alto e devagar.")
+            return None
+        except sr.RequestError:
+            print("❌ Erro: Sem ligação à internet para processar a voz.")
+            return None
 
 def processar_texto_medico(texto):
-    if not texto: return None
+    """
+    Procura padrões (Regex) no texto para extrair os sinais vitais.
+    """
+    if not texto:
+        return None
+        
     print("\n🔍 A extrair dados clínicos do texto...")
     
-    sinais_vitais = {'Age': 45, 'Heart_Rate_BPM': 80, 'SpO2_Percent': 98, 'Temperature_C': 36.5, 'Pain_Level': 0, 'Consciousness': 'Acordado'}
+    # Dicionário padrão (valores normais caso a IA não ouça alguma coisa)
+    sinais_vitais = {
+        'Age': 45,
+        'Heart_Rate_BPM': 80,
+        'SpO2_Percent': 98,
+        'Temperature_C': 36.5,
+        'Pain_Level': 0,
+        'Consciousness': 'Acordado'
+    }
     
-    if match := re.search(r'(\d+)\s*(anos|idade)', texto): sinais_vitais['Age'] = int(match.group(1))
-    if match := re.search(r'(\d+)\s*(%|por cento|oxigénio|saturação)', texto): sinais_vitais['SpO2_Percent'] = int(match.group(1))
-    if match := re.search(r'(\d+)\s*(batimentos|pulsação|bpm)', texto): sinais_vitais['Heart_Rate_BPM'] = int(match.group(1))
-    if match := re.search(r'(\d+[.,]?\d*)\s*(graus|temperatura|febre)', texto): sinais_vitais['Temperature_C'] = float(match.group(1).replace(',', '.'))
-    if match := re.search(r'dor\s*(nível|de)?\s*(\d+)', texto): sinais_vitais['Pain_Level'] = int(match.group(2))
-    
-    if 'confuso' in texto or 'desorientado' in texto: sinais_vitais['Consciousness'] = 'Confuso'
-    elif 'inconsciente' in texto or 'desmaiado' in texto: sinais_vitais['Consciousness'] = 'Inconsciente'
-    
+    # 1. Extrair Idade
+    match_idade = re.search(r'(\d+)\s*(anos|idade)', texto)
+    if match_idade:
+        sinais_vitais['Age'] = int(match_idade.group(1))
+
+    # 2. Extrair SpO2 / Oxigénio
+    match_spo2 = re.search(r'(\d+)\s*(%|por cento|oxigénio|saturação)', texto)
+    if match_spo2:
+        sinais_vitais['SpO2_Percent'] = int(match_spo2.group(1))
+
+    # 3. Extrair BPM / Batimentos
+    match_bpm = re.search(r'(\d+)\s*(batimentos|pulsação|bpm)', texto)
+    if match_bpm:
+        sinais_vitais['Heart_Rate_BPM'] = int(match_bpm.group(1))
+
+    # 4. Extrair Temperatura (lida com vírgulas e pontos)
+    match_temp = re.search(r'(\d+[.,]?\d*)\s*(graus|temperatura|febre)', texto)
+    if match_temp:
+        temp_str = match_temp.group(1).replace(',', '.')
+        sinais_vitais['Temperature_C'] = float(temp_str)
+
+    # 5. Extrair Dor
+    match_dor = re.search(r'dor\s*(nível|de)?\s*(\d+)', texto)
+    if match_dor:
+        sinais_vitais['Pain_Level'] = int(match_dor.group(2))
+
+    # 6. NLP Simples para Nível de Consciência
+    if any(palavra in texto for palavra in ['confuso', 'desorientado']):
+        sinais_vitais['Consciousness'] = 'Confuso'
+    elif any(palavra in texto for palavra in ['inconsciente', 'desmaiado']):
+        sinais_vitais['Consciousness'] = 'Inconsciente'
+
     return sinais_vitais
 
 if __name__ == "__main__":
-    texto_falado = ouvir_enfermeiro()
+    # Podes ajustar os 2.5 segundos para o tempo que achares mais confortável
+    texto_falado = ouvir_enfermeiro(tempo_silencio=2.5)
     
     if texto_falado:
         ficha_paciente = processar_texto_medico(texto_falado)
@@ -97,3 +111,5 @@ if __name__ == "__main__":
         for chave, valor in ficha_paciente.items():
             print(f" - {chave}: {valor}")
         print("="*50)
+        
+        print("\n(Pronto para enviar para o modelo de Triagem!)")
