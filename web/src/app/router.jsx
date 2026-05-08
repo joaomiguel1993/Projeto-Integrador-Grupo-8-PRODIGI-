@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import PublicLayout from '../components/layout/PublicLayout';
 import ProtectedRoute from '../components/guards/ProtectedRoute';
 import RoleRoute from '../components/guards/RoleRoute';
-
+import Perfil from '../pages/private/Perfil';
 import Home from '../pages/public/Home';
 import Login from '../pages/public/Login';
 import About from '../pages/public/About';
@@ -24,7 +24,7 @@ const router = createBrowserRouter([
       { path: '/sobre-nos', element: <About /> },
       { path: '/politica-privacidade', element: <PrivacyPolicy /> },
       { path: '/acessibilidade', element: <Accessibility /> },
-      { path: '/faqs', element: <Faqs /> }
+      { path: '/faqs', element: <Faqs /> },
     ],
   },
   {
@@ -61,6 +61,10 @@ const router = createBrowserRouter([
             <DashboardMedico />
           </RoleRoute>
         ),
+      },
+      {
+        path: '/perfil',
+        element: <Perfil />,
       },
       { path: '/sem-permissao', element: <SemPermissao /> },
     ],

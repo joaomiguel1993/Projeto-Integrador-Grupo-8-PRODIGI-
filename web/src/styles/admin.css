@@ -57,7 +57,7 @@
   color: #ffffff;
   cursor: pointer;
   padding: 0.5rem;
-  align-self: flex-end;
+  align-self: flex-start;
   border-radius: 8px;
   transition: background 0.2s ease;
   margin-bottom: 1rem;
@@ -626,3 +626,38 @@
   .admin-filters--reports { grid-template-columns: 1fr; }
 }
 
+.admin-toolbar-horizontal {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2efe9;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 2rem;
+  gap: 0.75rem;
+}
+
+.admin-toolbar-horizontal__toggle {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #cfe8dd;
+  border-radius: 12px;
+  background: #f7fcf9;
+  color: #246b52;
+  display: inline-flex;
+  align-items: left;
+  justify-content: left;
+  cursor: pointer;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.admin-toolbar-horizontal__toggle:hover {
+  background: #eaf7f1;
+  border-color: #3eb489;
+}
+
+.admin-toolbar-horizontal__toggle svg {
+  width: 22px;
+  height: 22px;
+}

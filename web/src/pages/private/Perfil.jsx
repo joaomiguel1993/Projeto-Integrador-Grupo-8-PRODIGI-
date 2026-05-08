@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { apiFetch } from '../../services/api';
 
 export default function Perfil() {
   const { textos } = useLanguage();
+  const navigate = useNavigate();
 
   const [dadosIniciais, setDadosAtuais] = useState(null);
 
@@ -23,6 +25,7 @@ export default function Perfil() {
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [imgErro, setImgErro] = useState(false);
 
   const getUserId = () => {
     const rawUser = sessionStorage.getItem('user');
@@ -35,41 +38,70 @@ export default function Perfil() {
     }
   };
 
+  const getFallbackAvatar = (nomeValor) =>
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeValor || 'Utilizador')}&background=e2e8f0&color=7f8c8d`;
+
+  const getFotoSrc = (src) => {
+    if (!src) return getFallbackAvatar(nome);
+
+    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('blob:')) {
+      return src;
+    }
+
+    const apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_OPEN_APIURL || '';
+    if (!apiBase) return src.startsWith('/') ? src : `/${src}`;
+
+    const cleanBase = apiBase.replace(/\/+$/, '');
+    const cleanSrc = src.replace(/^\/+/, '');
+    return `${cleanBase}/${cleanSrc}`;
+  };
+
+  const carregarTudo = async () => {
+    const myId = getUserId();
+
+    if (!myId) {
+      setErro(textos.perfil.erroSessao);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setErro('');
+
+      const user = await apiFetch(`/api/utilizadores/${myId}`);
+      const prof = await apiFetch(`/api/profissionais/${myId}`);
+
+      const dados = { ...prof, ...user };
+      setDadosAtuais(dados);
+
+      setIdfunc(myId);
+      setNome(prof.nome || '');
+      setTipofunc(prof.tipofunc || '');
+      setUsername(user.username || '');
+      setEmail(prof.email || '');
+      setTelefone(prof.telefone || '');
+      setBiografia(prof.biografia || '');
+      setFotoUrl(prof.foto_url || '');
+      setImgErro(false);
+    } catch (err) {
+      setErro(textos.perfil.erroCarregar + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const carregarTudo = async () => {
-      const myId = getUserId();
-
-      if (!myId) {
-        setErro(textos.perfil.erroSessao);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-
-        const user = await apiFetch(`/api/utilizadores/${myId}`);
-        const prof = await apiFetch(`/api/profissionais/${myId}`);
-
-        setDadosAtuais({ ...prof, ...user });
-
-        setIdfunc(myId);
-        setNome(prof.nome || '');
-        setTipofunc(prof.tipofunc || '');
-        setUsername(user.username || '');
-        setEmail(prof.email || '');
-        setTelefone(prof.telefone || '');
-        setBiografia(prof.biografia || '');
-        setFotoUrl(prof.foto_url || '');
-      } catch (err) {
-        setErro(textos.perfil.erroCarregar + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     carregarTudo();
   }, [textos.perfil.erroCarregar, textos.perfil.erroSessao]);
+
+  const handleVoltar = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/admin');
+    }
+  };
 
   const handleGuardar = async (e) => {
     e.preventDefault();
@@ -85,16 +117,16 @@ export default function Perfil() {
 
     try {
       const payloadUser = {
-        username: username,
+        username: dadosIniciais.username || username,
         password: password || null,
         role: dadosIniciais.role,
         hospitais: dadosIniciais.hospitais || [],
-        bloqueado: dadosIniciais.bloqueado
+        bloqueado: dadosIniciais.bloqueado,
       };
 
       await apiFetch(`/api/utilizadores/${idfunc}`, {
         method: 'PUT',
-        body: JSON.stringify(payloadUser)
+        body: JSON.stringify(payloadUser),
       });
 
       const payloadProf = {
@@ -104,12 +136,12 @@ export default function Perfil() {
         email: email || null,
         telefone: telefone || null,
         biografia: biografia || null,
-        foto_url: fotoUrl || null
+        foto_url: fotoUrl || null,
       };
 
       await apiFetch(`/api/profissionais/${idfunc}`, {
         method: 'PUT',
-        body: JSON.stringify(payloadProf)
+        body: JSON.stringify(payloadProf),
       });
 
       setMensagem(textos.perfil.sucessoGuardar);
@@ -119,13 +151,15 @@ export default function Perfil() {
       if (rawUser) {
         try {
           const userObj = JSON.parse(rawUser);
-          userObj.username = username;
+          userObj.username = dadosIniciais.username || username;
           userObj.foto_url = fotoUrl;
           sessionStorage.setItem('user', JSON.stringify(userObj));
         } catch {
           // ignorar
         }
       }
+
+      await carregarTudo();
     } catch (err) {
       setErro(textos.perfil.erroGuardar + err.message);
     } finally {
@@ -141,9 +175,35 @@ export default function Perfil() {
     );
   }
 
+  const fotoFinal = imgErro ? getFallbackAvatar(nome) : getFotoSrc(fotoUrl);
+
   return (
     <div style={{ maxWidth: '900px', margin: '40px auto', padding: '20px' }}>
-      <h1 style={{ color: '#2c3e50', marginBottom: '20px', borderBottom: '2px solid #3eb489', paddingBottom: '10px' }}>
+      <button
+        type="button"
+        onClick={handleVoltar}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: '#3eb489',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          marginBottom: '15px',
+          padding: 0,
+          fontSize: '1rem',
+        }}
+      >
+        ← Voltar
+      </button>
+
+      <h1
+        style={{
+          color: '#2c3e50',
+          marginBottom: '20px',
+          borderBottom: '2px solid #3eb489',
+          paddingBottom: '10px',
+        }}
+      >
         {textos.perfil.titulo}
       </h1>
 
@@ -154,7 +214,7 @@ export default function Perfil() {
             background: '#d4edda',
             color: '#155724',
             borderRadius: '6px',
-            marginBottom: '20px'
+            marginBottom: '20px',
           }}
         >
           {mensagem}
@@ -168,7 +228,7 @@ export default function Perfil() {
             background: '#f8d7da',
             color: '#721c24',
             borderRadius: '6px',
-            marginBottom: '20px'
+            marginBottom: '20px',
           }}
         >
           {erro}
@@ -182,24 +242,32 @@ export default function Perfil() {
             background: '#fff',
             padding: '25px',
             borderRadius: '10px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
           }}
         >
           <div style={{ textAlign: 'center', marginBottom: '25px' }}>
             <img
-              src={fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(nome)}&background=e2e8f0&color=7f8c8d`}
+              src={fotoFinal}
               alt="Fotografia do utilizador"
+              onError={() => setImgErro(true)}
               style={{
                 width: '150px',
                 height: '150px',
                 borderRadius: '50%',
                 objectFit: 'cover',
                 border: '4px solid #3eb489',
-                marginBottom: '15px'
+                marginBottom: '15px',
               }}
             />
             <h2 style={{ margin: '0 0 5px 0', color: '#2c3e50' }}>{nome}</h2>
-            <p style={{ margin: '0', color: '#7f8c8d', fontSize: '1.1rem', textTransform: 'capitalize' }}>
+            <p
+              style={{
+                margin: '0',
+                color: '#7f8c8d',
+                fontSize: '1.1rem',
+                textTransform: 'capitalize',
+              }}
+            >
               {tipofunc}
             </p>
             <span
@@ -210,7 +278,7 @@ export default function Perfil() {
                 padding: '5px 15px',
                 borderRadius: '20px',
                 fontSize: '0.85rem',
-                color: '#7f8c8d'
+                color: '#7f8c8d',
               }}
             >
               {textos.perfil.numFuncionario} {idfunc}
@@ -227,14 +295,17 @@ export default function Perfil() {
               <input
                 type="url"
                 value={fotoUrl}
-                onChange={(e) => setFotoUrl(e.target.value)}
+                onChange={(e) => {
+                  setFotoUrl(e.target.value);
+                  setImgErro(false);
+                }}
                 placeholder={textos.perfil.placeholderFotografia}
                 style={{
                   width: '100%',
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '6px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -252,7 +323,7 @@ export default function Perfil() {
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '6px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -270,7 +341,7 @@ export default function Perfil() {
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '6px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -283,7 +354,7 @@ export default function Perfil() {
             background: '#fff',
             padding: '25px',
             borderRadius: '10px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
           }}
         >
           <form onSubmit={handleGuardar} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -303,7 +374,7 @@ export default function Perfil() {
                 borderRadius: '6px',
                 resize: 'vertical',
                 fontFamily: 'inherit',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
               }}
             />
 
@@ -319,14 +390,16 @@ export default function Perfil() {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
+                  readOnly
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #ddd',
                     borderRadius: '6px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    background: '#f8f9fa',
+                    color: '#6c757d',
+                    cursor: 'not-allowed',
                   }}
                 />
               </div>
@@ -345,7 +418,7 @@ export default function Perfil() {
                     padding: '10px',
                     border: '1px solid #ddd',
                     borderRadius: '6px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -364,7 +437,7 @@ export default function Perfil() {
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   fontWeight: 'bold',
                   fontSize: '1rem',
-                  transition: 'background 0.2s'
+                  transition: 'background 0.2s',
                 }}
               >
                 {submitting ? textos.perfil.botaoGuardarLoading : textos.perfil.botaoGuardar}

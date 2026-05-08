@@ -2,7 +2,7 @@
  * @file AdminDashboard.jsx
  * @description Painel central de gestão para os administradores do sistema SIAGUH.
  */
-
+import HeaderPrivate from '../../components/layout/HeaderPrivate';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/logo100fundo.png';
@@ -453,7 +453,7 @@ export default function AdminDashboard() {
       for (const idhosp of adicionar) {
         await apiFetch(`/api/trabalha/`, {
           method: "POST",
-          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp})
+          body: JSON.stringify({ idfunc: idfunc, idhosp: idhosp })
         });
       }
 
@@ -937,62 +937,139 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-page-wrapper">
-      <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+      <HeaderPrivate
+        breadcrumbs={breadcrumbsLinks}
+        userName={funcionarioAutenticadoNome}
+      />
 
+      <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
         <aside className="admin-sidebar" aria-label="Navegação Lateral do Administrador">
-          <button className="admin-sidebar__toggle" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} aria-expanded={!isSidebarCollapsed}>
-            <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          <button
+            className="admin-sidebar__toggle"
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            aria-expanded={!isSidebarCollapsed}
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
           </button>
-          <div className="admin-sidebar__brand"><img src={logo} alt="Logótipo SIAGUH" className="admin-sidebar__logo" /><div className="admin-sidebar__brand-text"><strong>SIAGUH</strong><span>{funcionarioAutenticadoNome}</span></div></div>
+
+          
+         
 
           <nav className="admin-sidebar__nav" role="navigation">
-            <button type="button" className={`admin-sidebar__link ${mainMenu === 'utilizadores' ? 'is-active' : ''}`} onClick={() => { resetMensagens(); setMainMenu('utilizadores'); setUserView('lista'); }}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'utilizadores' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('utilizadores');
+                setUserView('lista');
+              }}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
               <span className="link-text">{textos.admin.menuUtilizadores}</span>
             </button>
-            <button type="button" className={`admin-sidebar__link ${mainMenu === 'funcionarios' ? 'is-active' : ''}`} onClick={() => { resetMensagens(); setMainMenu('funcionarios'); setEmployeeView('lista'); }}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'funcionarios' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('funcionarios');
+                setEmployeeView('lista');
+              }}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+              </svg>
               <span className="link-text">{textos.admin.menuFuncionarios}</span>
             </button>
-            <button type="button" className={`admin-sidebar__link ${mainMenu === 'hospitais' ? 'is-active' : ''}`} onClick={() => { resetMensagens(); setMainMenu('hospitais'); setHospitalView('lista'); }}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'hospitais' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('hospitais');
+                setHospitalView('lista');
+              }}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
               <span className="link-text">{textos.admin.menuHospitais}</span>
             </button>
-            <button type="button" className={`admin-sidebar__link ${mainMenu === 'relatorios' ? 'is-active' : ''}`} onClick={() => { resetMensagens(); setMainMenu('relatorios'); }}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+
+            <button
+              type="button"
+              className={`admin-sidebar__link ${mainMenu === 'relatorios' ? 'is-active' : ''}`}
+              onClick={() => {
+                resetMensagens();
+                setMainMenu('relatorios');
+              }}
+            >
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               <span className="link-text">{textos.admin.menuRelatorios}</span>
             </button>
           </nav>
 
           <div className="admin-sidebar__footer">
-            <div className="admin-sidebar__lang-switcher" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <button type="button" onClick={() => mudarIdioma('pt')} style={{ background: 'none', border: 'none', color: idioma === 'pt' ? '#3eb489' : '#fff', cursor: 'pointer', fontWeight: 'bold' }}>PT</button>
+            <div
+              className="admin-sidebar__lang-switcher"
+              style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              <button
+                type="button"
+                onClick={() => mudarIdioma('pt')}
+                style={{ background: 'none', border: 'none', color: idioma === 'pt' ? '#3eb489' : '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                PT
+              </button>
               <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-              <button type="button" onClick={() => mudarIdioma('en')} style={{ background: 'none', border: 'none', color: idioma === 'en' ? '#3eb489' : '#fff', cursor: 'pointer', fontWeight: 'bold' }}>EN</button>
+              <button
+                type="button"
+                onClick={() => mudarIdioma('en')}
+                style={{ background: 'none', border: 'none', color: idioma === 'en' ? '#3eb489' : '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                EN
+              </button>
             </div>
+
             <button type="button" className="admin-logout-button" onClick={() => navigate('/')}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
               <span className="link-text">{textos.admin.botaoSair}</span>
             </button>
           </div>
         </aside>
 
         <section className="admin-content-wrapper">
+          
           <div className="admin-content-inner">
-            <div className="admin-breadcrumbs-container"><Breadcrumbs items={breadcrumbsLinks} /></div>
-            <div className="admin-content__top">
-              <h1>{textos.admin.tituloPainel}</h1>
-              <p>
-                {mainMenu === 'utilizadores' && textos.admin.descUtilizadores}
-                {mainMenu === 'funcionarios' && textos.admin.descFuncionarios}
-                {mainMenu === 'hospitais' && textos.admin.descHospitais}
-                {mainMenu === 'relatorios' && textos.admin.descRelatorios}
-              </p>
+            <div className="admin-contentbody">
+              {renderCenter()}
             </div>
-            <div className="admin-content__body">{renderCenter()}</div>
           </div>
         </section>
       </main>
+
       <FooterLayout />
     </div>
   );
