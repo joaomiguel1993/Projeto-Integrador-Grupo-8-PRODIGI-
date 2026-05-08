@@ -1,3 +1,11 @@
+.header-private {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
 .header-private__avatar-image {
   width: 100px;
   height: 100px;

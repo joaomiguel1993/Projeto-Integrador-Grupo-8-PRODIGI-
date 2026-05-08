@@ -1,35 +1,37 @@
 /* =========================================
-   LAYOUT BASE DA ADMINISTRAÇÃO E FOOTER
+   LAYOUT BASE DA ADMINISTRAÇÃO
    ========================================= */
 
 .admin-page-wrapper {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   background: #f4f7f4;
 }
 
 .admin-layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  transition: grid-template-columns 0.3s ease;
+  min-height: 100vh;
   background: #f4f7f4;
 }
 
-.admin-layout.is-collapsed {
-  grid-template-columns: 80px 1fr;
-}
-
 .admin-content-wrapper {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
 .admin-content-inner {
   flex: 1;
   padding: 2rem 2.5rem;
+  padding-top: calc(160px + 2rem);
+  margin-left: 300px;
+  transition: margin-left 0.3s ease;
+}
+
+.admin-layout.is-collapsed .admin-content-inner {
+  margin-left: 96px;
+}
+
+html {
+  scroll-padding-top: 160px;
 }
 
 .admin-breadcrumbs-container {
@@ -41,14 +43,24 @@
    ========================================= */
 
 .admin-sidebar {
+  position: fixed;
+  top: 160px;
+  left: 0;
+  bottom: 0;
+  width: 300px;
   display: flex;
   flex-direction: column;
   background: #3eb489;
   color: #ffffff;
   padding: 1.25rem 0.85rem;
   border-right: 1px solid rgba(255, 255, 255, 0.16);
-  position: relative;
-  transition: all 0.3s ease;
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  z-index: 900;
+}
+
+.admin-layout.is-collapsed .admin-sidebar {
+  width: 96px;
 }
 
 .admin-sidebar__toggle {
@@ -93,6 +105,11 @@
   transition: all 0.3s ease;
 }
 
+.admin-layout.is-collapsed .admin-sidebar__logo {
+  width: 50px;
+  height: 50px;
+}
+
 .admin-sidebar__brand-text strong {
   display: block;
   font-size: 1.45rem;
@@ -112,11 +129,6 @@
 .admin-layout.is-collapsed .admin-sidebar__brand-text,
 .admin-layout.is-collapsed .link-text {
   display: none;
-}
-
-.admin-layout.is-collapsed .admin-sidebar__logo {
-  width: 50px;
-  height: 50px;
 }
 
 .admin-sidebar__nav {
@@ -163,7 +175,7 @@
   color: #2d7f64;
 }
 
-/* RODAPÉ DA SIDEBAR (NOVO SELETOR + BOTÃO SAIR) */
+/* RODAPÉ DA SIDEBAR */
 .admin-sidebar__footer {
   margin-top: auto;
   padding-top: 1.5rem;
@@ -608,22 +620,60 @@
 
 @media (max-width: 1100px) {
   .admin-users-grid-top,
-  .admin-report-grid { grid-template-columns: 1fr; }
+  .admin-report-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 980px) {
-  .admin-layout { grid-template-columns: 1fr; }
-  .admin-sidebar { padding: 1rem; }
-  .admin-sidebar__toggle { display: none; }
-  .admin-sidebar__logo { width: 88px; height: 88px; }
-  .admin-layout.is-collapsed .admin-sidebar__logo { width: 88px; height: 88px; }
+  .admin-content-inner {
+    margin-left: 0;
+    padding-top: calc(160px + 2rem);
+  }
+
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+    bottom: auto;
+    top: auto;
+    overflow: visible;
+    padding: 1rem;
+  }
+
+  .admin-sidebar__toggle {
+    display: none;
+  }
+
+  .admin-sidebar__logo {
+    width: 88px;
+    height: 88px;
+  }
+
+  .admin-layout.is-collapsed .admin-sidebar {
+    width: 100%;
+  }
+
+  .admin-layout.is-collapsed .admin-sidebar__logo {
+    width: 88px;
+    height: 88px;
+  }
+
   .admin-layout.is-collapsed .admin-sidebar__brand-text,
-  .admin-layout.is-collapsed .link-text { display: block; }
-  .admin-sidebar__nav { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  .admin-content-inner { padding: 1rem; }
+  .admin-layout.is-collapsed .link-text {
+    display: block;
+  }
+
+  .admin-sidebar__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
   .admin-form__grid,
   .admin-filters,
-  .admin-filters--reports { grid-template-columns: 1fr; }
+  .admin-filters--reports {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-toolbar-horizontal {
@@ -645,8 +695,8 @@
   background: #f7fcf9;
   color: #246b52;
   display: inline-flex;
-  align-items: left;
-  justify-content: left;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   margin-left: 0;
   margin-right: 0;

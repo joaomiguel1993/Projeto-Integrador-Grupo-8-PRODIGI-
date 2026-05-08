@@ -3,9 +3,12 @@
    ========================================= */
 
 .siaguh-footer {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: fixed;
+  left: 0;
+  bottom: 0;
   width: 100%;
-  margin-top: auto; 
+  z-index: 1000;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* --------------------------------- */
@@ -103,7 +106,7 @@
 
 /* Container que envolve o Copyright e os Logos */
 .siaguh-footer-content-wrapper {
-  display: flex;
+  display: fixed;
   align-items: center;
   justify-content: space-between;
   width: 100%;
@@ -147,11 +150,18 @@
   display: block;
 }
 
+.siaguh-main-footer {
+  background-color: #007456;
+  padding: 1.5rem 4rem;
+  color: #ffffff;
+  position: relative;
+}
+
 /* Botão de voltar ao topo */
 .siaguh-btn-top {
   position: absolute;
-  right: 4rem;
-  top: -1.25rem; /* Faz o botão "cortar" a linha divisória */
+  right: 1.5rem;
+  top: 1rem;
   background-color: #ffffff;
   color: #007456;
   border: none;
@@ -164,6 +174,7 @@
   cursor: pointer;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, background-color 0.2s ease;
+  z-index: 2;
 }
 
 .siaguh-btn-top svg {
