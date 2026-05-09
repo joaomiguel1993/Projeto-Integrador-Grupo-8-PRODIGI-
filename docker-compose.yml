@@ -37,5 +37,16 @@ services:
     env_file:
       - .env
 
+  ia:
+    build: ./ia
+    container_name: prodigi_ia
+    restart: always
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   prodigi_data:
