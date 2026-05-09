@@ -37,5 +37,12 @@ services:
     env_file:
       - .env
 
+  ai_service:
+    build: ./ia
+    container_name: prodigi_ai
+    restart: always
+    ports:
+      - "8001:8001"
+
 volumes:
   prodigi_data:
