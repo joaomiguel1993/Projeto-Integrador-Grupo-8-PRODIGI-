@@ -11,7 +11,7 @@ import re
 #
 # Instalar Ollama (gratuito, local):
 #   1. Descarregar em https://ollama.com
-#   2. No terminal: ollama pull llama3.2
+#   2. No terminal (Powershell): iwr https://ollama.com/install.ps1 | iex
 #   3. Correr: python voz_nlp.py
 # ─────────────────────────────────────────────
 
