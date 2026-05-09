@@ -490,6 +490,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const criarUtilizadorAPartirFuncionario = async (e) => {
+    e.preventDefault();
+    setMensagemUser(""); setErroUser("");
+    try {
+      setSubmittingUser(true);
+      const payload = {
+        idfunc: utilizadorEditando.idfunc,
+        username: utilizadorEditando.username,
+        password: utilizadorEditando.password,
+        hospitais: utilizadorEditando.hospitais.map(Number),
+      };
+      const data = await apiFetch('/api/utilizadores/', { method: 'POST', body: JSON.stringify(payload) });
+      setMensagemUser(textos.admin.sucessoCriarUser);
+      adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username}.`);
+      await carregarUtilizadores();
+      setUtilizadorEditando(null);
+      setUserView('lista');
+    } catch (err) { setErroUser(err.message); } finally { setSubmittingUser(false); }
+  };
+
   const guardarHospitalEditado = async (e) => {
     e.preventDefault(); setMensagemHospital(''); setErroHospital('');
     try {
@@ -608,11 +628,17 @@ export default function AdminDashboard() {
       return (
         <section className="admin-panel-section">
           <div className="admin-panel-section__header"><h2>{utilizadorEditando.isNovo ? textos.admin.btnNovoUtilizador : textos.geral.editar}</h2><p>#{utilizadorEditando.idfunc} — {utilizadorEditando.nome}</p></div>
-          <form className="admin-form" onSubmit={guardarUtilizadorEditado}>
+          <form className="admin-form" onSubmit={utilizadorEditando.isNovo ? criarUtilizadorAPartirFuncionario : guardarUtilizadorEditado}>
             <div className="admin-form__grid">
               <div className="admin-form__group"><label htmlFor="edit-user-id">{textos.admin.lblNumFuncionario}</label><input id="edit-user-id" type="text" value={utilizadorEditando.idfunc || ''} readOnly /></div>
               <div className="admin-form__group"><label htmlFor="edit-user-nome">{textos.admin.lblNome}</label><input id="edit-user-nome" name="nome" type="text" value={utilizadorEditando.nome || ''} onChange={handleEditarUserChange} /></div>
               <div className="admin-form__group"><label htmlFor="edit-user-username">{textos.admin.lblUsername}</label><input id="edit-user-username" name="username" type="text" value={utilizadorEditando.username || ''} onChange={handleEditarUserChange} /></div>
+              {utilizadorEditando.isNovo && (
+                <div className="admin-form__group">
+                  <label htmlFor="edit-user-password">{textos.admin.lblPassword}</label>
+                  <input id="edit-user-password" name="password" type="password" value={utilizadorEditando.password || ''} onChange={handleEditarUserChange} required />
+                </div>
+              )}
               <div className="admin-form__group">
                 <label htmlFor="edit-user-role">{textos.admin.lblFuncao}</label>
                 <select id="edit-user-role" name="role" value={utilizadorEditando.role || ROLES.ADMIN} onChange={handleEditarUserChange}>
