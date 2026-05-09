@@ -1,4 +1,10 @@
 Certifica-te de que estás na pasta raiz (ia)
+
+# Instalar Ollama (gratuito, local):
+#   1. Descarregar em https://ollama.com
+#   2. No terminal (Powershell): iwr https://ollama.com/install.ps1 | iex
+#   3. Correr: python voz_nlp.py
+
 Bash -> Instala as bibliotecas presentes em requirements.txt:
 pip install -r requirements.txt
 

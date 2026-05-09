@@ -3,18 +3,6 @@ import requests
 import json
 import re
 
-# ─────────────────────────────────────────────
-# CONFIGURAÇÃO
-# ─────────────────────────────────────────────
-# Instalar dependências:
-#   pip install SpeechRecognition pyaudio requests
-#
-# Instalar Ollama (gratuito, local):
-#   1. Descarregar em https://ollama.com
-#   2. No terminal: ollama pull llama3.2
-#   3. Correr: python voz_nlp.py
-# ─────────────────────────────────────────────
-
 OLLAMA_URL   = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.2"
 
