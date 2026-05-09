@@ -32,8 +32,8 @@ def load_and_preprocess_triagem(file_path):
     encoders['Target'] = le_target  # Guardamos isto para a IA nos poder "dizer" a cor em texto depois
     
     # 4. Guardar os "tradutores"
-    os.makedirs('models', exist_ok=True)
-    joblib.dump(encoders, 'models/encoders_triagem.joblib')
+    os.makedirs('data/processed', exist_ok=True)
+    joblib.dump(encoders, 'data/processed/encoders_triagem.joblib')
     
     return X, y
 

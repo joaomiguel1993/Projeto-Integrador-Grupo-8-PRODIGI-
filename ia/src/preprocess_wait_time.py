@@ -33,15 +33,15 @@ def load_and_preprocess(file_path):
         encoders[col] = le
         
     # 3. Criar a pasta 'models' se não existir e guardar os encoders
-    os.makedirs('models', exist_ok=True)
-    joblib.dump(encoders, 'models/encoders.joblib')
-    print("Encoders guardados com sucesso em 'models/encoders.joblib'.")
+    os.makedirs('data/processed', exist_ok=True)
+    joblib.dump(encoders, 'data/processed/encoders_wait_time.joblib')
+    print("Encoders guardados com sucesso em 'data/processed/encoders_wait_time.joblib'.")
     
     return X, y
 
 if __name__ == "__main__":
     # Caminho para o teu ficheiro CSV
-    caminho_csv = 'data/raw/ER Wait Time Dataset.csv'
+    caminho_csv = 'data/raw/Wait_Time_Dataset.csv'
     
     # Executa a função
     X, y = load_and_preprocess(caminho_csv)

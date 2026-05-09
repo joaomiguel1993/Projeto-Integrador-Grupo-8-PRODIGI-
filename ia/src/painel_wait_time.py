@@ -9,8 +9,8 @@ def atualizar_painel(estado_hospital):
 
     try:
         # Carregar a inteligência da nossa IA
-        modelo = joblib.load('models/xgboost_model.joblib')
-        encoders = joblib.load('models/encoders.joblib')
+        modelo = joblib.load('models/xgboost_wait_time.joblib')
+        encoders = joblib.load('data/processed/encoders_wait_time.joblib')
     except FileNotFoundError:
         return "Erro: Ficheiros da IA não encontrados. Corre o train.py primeiro!"
 

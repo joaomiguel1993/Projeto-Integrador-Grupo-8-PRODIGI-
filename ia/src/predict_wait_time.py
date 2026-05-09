@@ -4,8 +4,8 @@ import joblib
 def prever_espera(dados_paciente):
     # 1. Carregar o "cérebro" (XGBoost) e os "tradutores" (Encoders) que guardámos no treino
     try:
-        modelo = joblib.load('models/xgboost_model.joblib')
-        encoders = joblib.load('models/encoders.joblib')
+        modelo = joblib.load('models/xgboost_wait_time.joblib')
+        encoders = joblib.load('data/processed/encoders_wait_time.joblib')
     except FileNotFoundError:
         return "Erro: Modelos não encontrados. Executa primeiro o 'train.py'!"
 

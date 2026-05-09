@@ -5,13 +5,13 @@ from sklearn.metrics import mean_absolute_error
 from xgboost import XGBRegressor
 
 # Importar a função de limpeza do nosso ficheiro preprocess.py
-from preprocess import load_and_preprocess
+from preprocess_wait_time import load_and_preprocess
 
 def train():
     print("\n--- INÍCIO DO TREINO DA IA (XGBOOST) ---")
     
     # 1. Carregar e tratar os dados
-    caminho_csv = 'data/raw/ER Wait Time Dataset.csv'
+    caminho_csv = 'data/raw/Wait_Time_Dataset.csv'
     X, y = load_and_preprocess(caminho_csv)
     
     # 2. Separar dados: 80% para Treino (estudar) e 20% para Teste (avaliar)
@@ -34,7 +34,8 @@ def train():
     print(f"📊 Erro Médio Absoluto (MAE): O sistema prevê o tempo de espera com uma margem de erro de {erro_medio:.2f} minutos.")
     
     # 5. Guardar a IA treinada na pasta models
-    caminho_modelo = 'models/xgboost_model.joblib'
+    os.makedirs('models', exist_ok=True)
+    caminho_modelo = 'models/xgboost_wait_time.joblib'
     joblib.dump(modelo, caminho_modelo)
     print(f"💾 Cérebro da IA guardado em: '{caminho_modelo}'")
 

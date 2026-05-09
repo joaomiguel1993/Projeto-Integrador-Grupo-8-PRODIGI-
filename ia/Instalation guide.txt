@@ -15,6 +15,7 @@ ia Triagem
 Executa o código com o comando:
 Bash
 python src/gerar_dados_triagem.py
+python src/preprocess_triagem.py
 python src/train_triagem.py
 python src/predict_triagem.py
 

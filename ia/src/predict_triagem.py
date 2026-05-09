@@ -5,12 +5,13 @@ def fazer_triagem(sinais_vitais):
     # 1. Carregar o modelo e os "tradutores"
     try:
         modelo = joblib.load('models/xgboost_triagem.joblib')
-        encoders = joblib.load('models/encoders_triagem.joblib')
+        encoders = joblib.load('data/processed/encoders_triagem.joblib')
     except FileNotFoundError:
         return "Erro: Ficheiros da IA não encontrados. Corre o train_triagem.py primeiro!"
 
     # 2. Criar a tabela com os dados do paciente
     df_paciente = pd.DataFrame([sinais_vitais])
+    
 
     # 3. Converter o texto ("Acordado", "Confuso", etc.) para números usando o nosso tradutor
     df_paciente['Consciousness'] = encoders['Consciousness'].transform(df_paciente['Consciousness'])
