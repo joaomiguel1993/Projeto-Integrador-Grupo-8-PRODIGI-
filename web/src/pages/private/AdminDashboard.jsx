@@ -353,10 +353,23 @@ export default function AdminDashboard() {
   const criarFuncionario = async (e) => {
     e.preventDefault(); setMensagemFunc(''); setErroFunc('');
     try {
-      setSubmittingFunc(true); const payload = { ...novoProfissional, hospitais: novoProfissional.hospitais || [] };
+      setSubmittingFunc(true);
+      const payload = { nome: novoProfissional.nome, tipofunc: novoProfissional.tipofunc, sexo: novoProfissional.sexo };
       const data = await apiFetch('/api/profissionais/', { method: 'POST', body: JSON.stringify(payload) });
-      setMensagemFunc(textos.admin.sucessoCriarFunc); adicionarHistorico('Criar funcionário', `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`);
-      setNovoProfissional({ nome: '', tipofunc: ROLES.ADMIN, sexo: 'M', hospitais: [] }); carregarProfissionais(); setEmployeeView('lista');
+
+      // Associar hospitais na tabela trabalha
+      for (const idhosp of novoProfissional.hospitais || []) {
+        await apiFetch(`/api/trabalha/`, {
+          method: 'POST',
+          body: JSON.stringify({ idfunc: data.idfunc, idhosp: Number(idhosp) })
+        });
+      }
+
+      setMensagemFunc(textos.admin.sucessoCriarFunc);
+      adicionarHistorico('Criar funcionário', `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`);
+      setNovoProfissional({ nome: '', tipofunc: ROLES.ADMIN, sexo: 'M', hospitais: [] });
+      carregarProfissionais();
+      setEmployeeView('lista');
     } catch (err) { setErroFunc(err.message); } finally { setSubmittingFunc(false); }
   };
 
@@ -965,8 +978,8 @@ export default function AdminDashboard() {
             </svg>
           </button>
 
-          
-         
+
+
 
           <nav className="admin-sidebar__nav" role="navigation">
             <button
@@ -1061,7 +1074,7 @@ export default function AdminDashboard() {
         </aside>
 
         <section className="admin-content-wrapper">
-          
+
           <div className="admin-content-inner">
             <div className="admin-contentbody">
               {renderCenter()}
