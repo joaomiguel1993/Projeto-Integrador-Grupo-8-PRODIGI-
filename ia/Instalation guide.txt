@@ -1,9 +1,17 @@
 Certifica-te de que estás na pasta raiz (ia)
 
-# Instalar Ollama (gratuito, local):
-#   1. Descarregar em https://ollama.com
-#   2. No terminal (Powershell): iwr https://ollama.com/install.ps1 | iex
-#   3. Correr: python voz_nlp.py
+# Configurar o Groq API (gratuito, sem instalação local):
+#   1. Aceder a https://console.groq.com
+#   2. Criar conta (se ainda não tiveres)
+#   3. Clicar em "API Keys" -> "Create API Key" e copiar a chave gerada
+#   4. Adicionar a chave ao ficheiro .env na raiz do projeto:
+#      GROQ_API_KEY=gsk_...
+
+# Para correr localmente (teste)
+#   5. Antes de correr o voz_nlp.py, definir a variável no terminal:
+#      Git Bash:   export GROQ_API_KEY="gsk_..."
+
+
 
 Bash -> Instala as bibliotecas presentes em requirements.txt:
 pip install -r requirements.txt
@@ -27,6 +35,12 @@ python src/predict_triagem.py
 
 
 Ia Leitura de sintomas por voz
-
+Executa o código com o comando:
 Bash
 python src/voz_nlp.py
+
+
+Ia Servidor (API)
+Executa o código com o comando:
+Bash
+python main_ai.py
