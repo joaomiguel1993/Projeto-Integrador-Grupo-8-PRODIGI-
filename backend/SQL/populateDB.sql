@@ -6421,7 +6421,7 @@ INSERT INTO Prescreve (IdPrescricao, IdAto, CodMedicamento, Dosagem, Observacoes
 (197, 197, 80, '500 mg', 'Prescricao 197 associada ao ato 197', '2025-02-19 17:42:00'),
 (198, 198, 3, '20 mg', 'Prescricao 198 associada ao ato 198', '2025-02-19 23:43:00'),
 (199, 199, 30, '5 ml', 'Prescricao 199 associada ao ato 199', '2025-02-20 05:44:00'),
-(200, 200, 56, '250 mg', 'Prescricao 200 associada ao ato 200', '2025-02-20 11:45:00');
+(200, 200, 56, '250 mg', 'Prescricao 200 associada ao ato 200', '2025-02-20 11:45:00'),
 (201, 201, 84, '5 ml', 'Prescricao 201 associada ao ato 201', '2025-02-20 17:46:00'),
 (202, 202, 11, '250 mg', 'Prescricao 202 associada ao ato 202', '2025-02-20 23:47:00'),
 (203, 203, 37, '1 comprimido', 'Prescricao 203 associada ao ato 203', '2025-02-21 05:48:00'),
@@ -6621,7 +6621,7 @@ INSERT INTO Prescreve (IdPrescricao, IdAto, CodMedicamento, Dosagem, Observacoes
 (397, 397, 98, '250 mg', 'Prescricao 397 associada ao ato 397', '2025-04-10 16:02:00'),
 (398, 398, 25, '1 comprimido', 'Prescricao 398 associada ao ato 398', '2025-04-10 22:03:00'),
 (399, 399, 53, '500 mg', 'Prescricao 399 associada ao ato 399', '2025-04-11 04:04:00'),
-(400, 400, 80, '20 mg', 'Prescricao 400 associada ao ato 400', '2025-04-11 10:05:00');
+(400, 400, 80, '20 mg', 'Prescricao 400 associada ao ato 400', '2025-04-11 10:05:00'),
 (401, 401, 1, '1 comprimido', 'Prescricao 401 associada ao ato 401', '2025-04-11 16:06:00'),
 (402, 402, 2, '500 mg', 'Prescricao 402 associada ao ato 402', '2025-04-11 22:07:00'),
 (403, 403, 3, '20 mg', 'Prescricao 403 associada ao ato 403', '2025-04-12 04:08:00'),
@@ -6821,7 +6821,7 @@ INSERT INTO Prescreve (IdPrescricao, IdAto, CodMedicamento, Dosagem, Observacoes
 (597, 597, 97, '500 mg', 'Prescricao 597 associada ao ato 597', '2025-01-25 19:22:00'),
 (598, 598, 98, '20 mg', 'Prescricao 598 associada ao ato 598', '2025-01-26 01:23:00'),
 (599, 599, 99, '5 ml', 'Prescricao 599 associada ao ato 599', '2025-01-26 07:24:00'),
-(600, 600, 100, '250 mg', 'Prescricao 600 associada ao ato 600', '2025-01-26 08:25:00');
+(600, 600, 100, '250 mg', 'Prescricao 600 associada ao ato 600', '2025-01-26 08:25:00'),
 (601, 601, 10, '1 comprimido', 'Prescricao 601 associada ao ato 601', '2025-01-26 14:26:00'),
 (602, 602, 11, '500 mg', 'Prescricao 602 associada ao ato 602', '2025-01-26 20:27:00'),
 (603, 603, 12, '20 mg', 'Prescricao 603 associada ao ato 603', '2025-01-27 02:28:00'),
@@ -7021,7 +7021,7 @@ INSERT INTO Prescreve (IdPrescricao, IdAto, CodMedicamento, Dosagem, Observacoes
 (797, 797, 6, '500 mg', 'Prescricao 797 associada ao ato 797', '2025-03-16 17:42:00'),
 (798, 798, 7, '20 mg', 'Prescricao 798 associada ao ato 798', '2025-03-16 23:43:00'),
 (799, 799, 8, '5 ml', 'Prescricao 799 associada ao ato 799', '2025-03-17 05:44:00'),
-(800, 800, 9, '250 mg', 'Prescricao 800 associada ao ato 800', '2025-03-17 11:45:00');
+(800, 800, 9, '250 mg', 'Prescricao 800 associada ao ato 800', '2025-03-17 11:45:00'),
 (801, 801, 1, '1 comprimido', 'Prescricao 801 associada ao ato 801', '2025-03-17 17:46:00'),
 (802, 802, 2, '500 mg', 'Prescricao 802 associada ao ato 802', '2025-03-17 23:47:00'),
 (803, 803, 3, '20 mg', 'Prescricao 803 associada ao ato 803', '2025-03-18 05:48:00'),
@@ -7945,17 +7945,20 @@ INSERT INTO Internamento (CodInternamento, CodEpUrgenc, IdFunc, DataHoraInt, Dat
 (100, 100, 11, '2025-01-26 12:00:00', '2025-01-27 00:00:00', '2025-01-30 12:00:00', 'Motivo de internamento 100', 'C100', 'Medicina', 'clinica');
 
 
-SELECT setval('hospital_idhosp_seq', MAX(idhosp)) FROM hospital;
-SELECT setval('funcionario_idfunc_seq', MAX(idfunc)) FROM funcionario;
-SELECT setval('antecedente_codantecedente_seq', MAX(codantecedente)) FROM antecedente;
-SELECT setval('medicamento_codmedicamento_seq', MAX(codmedicamento)) FROM medicamento;
-SELECT setval('utente_numutent_seq', MAX(numutent)) FROM utente;
-SELECT setval('medicacaoativa_codmedicacaoativa_seq', MAX(codmedicacaoativa)) FROM medicacaoativa;
-SELECT setval('epurgencia_codepurgenc_seq', MAX(codepurgenc)) FROM epurgencia;
-SELECT setval('ato_idato_seq', MAX(idato)) FROM ato;
-SELECT setval('prescreve_idprescricao_seq', MAX(idprescricao)) FROM prescreve;
-SELECT setval('alerta_codalerta_seq', MAX(codalerta)) FROM alerta;
-SELECT setval('internamento_codinternamento_seq', MAX(codinternamento)) FROM internamento;
-SELECT setval('alergia_codalergia_seq', MAX(codalergia)) FROM alergia;
+-- ------------------------------------------------------------
+-- ATUALIZAÇÃO DAS SEQUÊNCIAS (Correção dos nomes padrão)
+-- ------------------------------------------------------------
+SELECT setval('hospital_idhosp_seq', MAX(idhosp)) FROM Hospital;
+SELECT setval('funcionario_idfunc_seq', MAX(idfunc)) FROM Funcionario;
+SELECT setval('antecedente_codantecedente_seq', MAX(codantecedente)) FROM Antecedente;
+SELECT setval('alergia_codalergia_seq', MAX(codalergia)) FROM Alergia;
+SELECT setval('medicamento_codmedicamento_seq', MAX(codmedicamento)) FROM Medicamento;
+SELECT setval('utente_numutent_seq', MAX(numutent)) FROM Utente;
+SELECT setval('medicacaoativa_codmedicacaoativa_seq', MAX(codmedicacaoativa)) FROM MedicacaoAtiva;
+SELECT setval('epurgencia_codepurgenc_seq', MAX(codepurgenc)) FROM EpUrgencia;
+SELECT setval('ato_idato_seq', MAX(idato)) FROM Ato;
+SELECT setval('prescreve_idprescricao_seq', MAX(idprescricao)) FROM Prescreve;
+SELECT setval('alerta_codalerta_seq', MAX(codalerta)) FROM Alerta;
+SELECT setval('internamento_codinternamento_seq', MAX(codinternamento)) FROM Internamento;
 
 COMMIT;

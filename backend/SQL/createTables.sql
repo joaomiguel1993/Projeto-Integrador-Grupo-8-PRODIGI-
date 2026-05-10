@@ -152,6 +152,16 @@ CREATE TABLE UtenteAntecedente (
 );
 
 -- ------------------------------------------------------------
+-- MEDICAMENTO (ATUALIZADO - IA DE MEDICAMENTOS)
+-- ------------------------------------------------------------
+CREATE TABLE Medicamento (
+    CodMedicamento SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    PrincipioAtivo VARCHAR(100) NOT NULL,
+    ClasseTerapeuticaID INT NOT NULL -- Essencial para o Dataset da IA (Classe_Novo_Med)
+);
+
+-- ------------------------------------------------------------
 -- ALERGIA (NOVA TABELA - IA DE MEDICAMENTOS)
 -- ------------------------------------------------------------
 CREATE TABLE Alergia (
@@ -163,16 +173,6 @@ CREATE TABLE Alergia (
     DataRegisto DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE CASCADE,
     UNIQUE (NumUtent, ClasseTerapeuticaID)
-);
-
--- ------------------------------------------------------------
--- MEDICAMENTO (ATUALIZADO - IA DE MEDICAMENTOS)
--- ------------------------------------------------------------
-CREATE TABLE Medicamento (
-    CodMedicamento SERIAL PRIMARY KEY,
-    Nome VARCHAR(100) NOT NULL,
-    PrincipioAtivo VARCHAR(100) NOT NULL,
-    ClasseTerapeuticaID INT NOT NULL -- Essencial para o Dataset da IA (Classe_Novo_Med)
 );
 
 -- ------------------------------------------------------------
