@@ -54,7 +54,7 @@ print("A aplicar regras clínicas de risco...")
 df['Risco'] = df.apply(calcular_risco, axis=1)
 
 # 3. Guardar o ficheiro CSV
-csv_filename = 'dataset_risco_medicamentoso.csv'
+csv_filename = 'data/raw/medicine_risk_Dataset.csv'
 df.to_csv(csv_filename, index=False)
 
 # Mostrar um resumo do que foi criado
