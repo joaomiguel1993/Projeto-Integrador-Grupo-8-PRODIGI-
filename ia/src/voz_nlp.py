@@ -1,10 +1,20 @@
 import speech_recognition as sr
-import requests
+from groq import Groq
 import json
 import re
+import os
 
-OLLAMA_URL   = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.2"
+# ─────────────────────────────────────────────
+# CONFIGURAÇÃO
+# ─────────────────────────────────────────────
+# Instalar dependências:
+#   pip install SpeechRecognition pyaudio groq
+#
+# Adicionar ao .env:
+#   GROQ_API_KEY=gsk_...
+# ─────────────────────────────────────────────
+
+cliente = Groq(api_key=os.environ["GROQ_API_KEY"])
 
 CAMPOS_ESPERADOS = {
     "Age":            "Dado não obtido",
@@ -55,50 +65,45 @@ def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20)
 
 def processar_texto_medico(texto: str) -> dict:
     """
-    Usa o Ollama (LLM local, gratuito) para extrair sinais vitais do texto.
-    Não requer chave de API nem ligação à internet.
+    Usa o Groq (llama-3.3-70b) para extrair sinais vitais do texto em português.
     """
     if not texto:
         return None
 
-    print("\n🤖 A extrair dados clínicos com IA local (Ollama)...")
+    print("\n🤖 A extrair dados clínicos com IA (Groq)...")
 
-    prompt = f"""You are a clinical assistant. Extract vital signs from the following text spoken by a nurse.
-Return ONLY a valid JSON object with exactly these keys (no explanation, no markdown):
-- "Age": integer (years) or null
-- "Heart_Rate_BPM": integer or null
-- "SpO2_Percent": integer (oxygen saturation percentage) or null
-- "Temperature_C": decimal number (Celsius) or null
-- "Pain_Level": integer 0-10 or null
-- "Consciousness": one of ["Acordado", "Confuso", "Inconsciente"] or null
+    prompt = f"""És um assistente clínico. Extrai os sinais vitais do seguinte texto falado por um enfermeiro em português.
+Devolve APENAS um objeto JSON válido, sem explicações nem markdown, com exatamente estas chaves:
+- "Age": número inteiro (anos) ou null
+- "Heart_Rate_BPM": número inteiro ou null
+- "SpO2_Percent": número inteiro (percentagem de saturação) ou null
+- "Temperature_C": número decimal (graus Celsius) ou null
+- "Pain_Level": número inteiro de 0 a 10 ou null
+- "Consciousness": uma de ["Acordado", "Confuso", "Inconsciente"] ou null
 
-Rules:
-- If a value is not mentioned, use null.
-- Interpret natural language: "quase noventa de saturação" -> 89, "febre de 39 e meio" -> 39.5, "está desorientado" -> "Confuso".
-- Output ONLY the JSON object, nothing else.
+Regras:
+- Se um valor não for mencionado, usa null.
+- Interpreta linguagem natural: "quase noventa de saturação" → 89, "febre de 39 e meio" → 39.5, "está desorientado" → "Confuso".
+- Devolve APENAS o JSON, sem mais nada.
 
-Text: "{texto}"
+Texto: "{texto}"
 
 JSON:"""
 
     try:
-        resposta = requests.post(
-            OLLAMA_URL,
-            json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
-            timeout=120,
+        resposta = cliente.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
         )
-        resposta.raise_for_status()
+        conteudo = resposta.choices[0].message.content.strip()
 
-        conteudo = resposta.json().get("response", "").strip()
-
-        # Extrair apenas o JSON da resposta
         match = re.search(r'\{.*\}', conteudo, re.DOTALL)
         if not match:
             raise ValueError(f"Resposta inesperada do modelo: {conteudo}")
 
         dados = json.loads(match.group())
 
-        # Preencher campos em falta com "Dado não obtido"
         sinais_vitais = {}
         for campo, default in CAMPOS_ESPERADOS.items():
             valor = dados.get(campo)
@@ -106,14 +111,9 @@ JSON:"""
 
         return sinais_vitais
 
-    except requests.exceptions.ConnectionError:
-        print("❌ Ollama não está a correr. Inicia-o com: ollama serve")
-    except requests.exceptions.Timeout:
-        print("❌ O modelo demorou demasiado. Tenta novamente.")
-    except (json.JSONDecodeError, ValueError) as e:
-        print(f"❌ Erro ao interpretar a resposta do modelo: {e}")
-
-    return None
+    except Exception as e:
+        print(f"❌ Erro ao chamar o Groq: {str(e)}")
+        return None
 
 
 # ─────────────────────────────────────────────
