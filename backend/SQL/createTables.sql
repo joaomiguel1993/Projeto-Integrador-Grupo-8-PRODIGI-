@@ -1,6 +1,6 @@
 -- ============================================================
 -- PRODIGI — Sistema de Gestão Hospitalar
--- createTables.sql (VERSÃO FINAL CORRIGIDA)
+-- createTables.sql (VERSÃO FINAL COM SUPORTE PARA IA)
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS Internamento CASCADE;
 DROP TABLE IF EXISTS EpUrgencia CASCADE;
 DROP TABLE IF EXISTS MedicacaoAtiva CASCADE;
 DROP TABLE IF EXISTS Medicamento CASCADE;
+DROP TABLE IF EXISTS Alergia CASCADE; -- Adicionado para a IA de Prescrição
 DROP TABLE IF EXISTS UtenteAntecedente CASCADE;
 DROP TABLE IF EXISTS Antecedente CASCADE;
 DROP TABLE IF EXISTS Utilizador CASCADE;
@@ -119,8 +120,6 @@ CREATE TABLE Enfermeiro (
 
 -- ------------------------------------------------------------
 -- UTILIZADOR
--- UserName pode ser gerado automaticamente a partir do IdFunc,
--- por exemplo: adm1, rec2, enf3, med4
 -- ------------------------------------------------------------
 CREATE TABLE Utilizador (
     IdFunc INT PRIMARY KEY,
@@ -153,12 +152,27 @@ CREATE TABLE UtenteAntecedente (
 );
 
 -- ------------------------------------------------------------
--- MEDICAMENTO
+-- ALERGIA (NOVA TABELA - IA DE MEDICAMENTOS)
+-- ------------------------------------------------------------
+CREATE TABLE Alergia (
+    CodAlergia SERIAL PRIMARY KEY,
+    NumUtent INT NOT NULL,
+    Substancia VARCHAR(100) NOT NULL,
+    ClasseTerapeuticaID INT NOT NULL, -- Essencial para ligar ao Dataset da IA (Tem_Alergia_Classe)
+    NivelGravidade VARCHAR(50),
+    DataRegisto DATE NOT NULL DEFAULT CURRENT_DATE,
+    FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE CASCADE,
+    UNIQUE (NumUtent, ClasseTerapeuticaID)
+);
+
+-- ------------------------------------------------------------
+-- MEDICAMENTO (ATUALIZADO - IA DE MEDICAMENTOS)
 -- ------------------------------------------------------------
 CREATE TABLE Medicamento (
     CodMedicamento SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
-    PrincipioAtivo VARCHAR(100) NOT NULL
+    PrincipioAtivo VARCHAR(100) NOT NULL,
+    ClasseTerapeuticaID INT NOT NULL -- Essencial para o Dataset da IA (Classe_Novo_Med)
 );
 
 -- ------------------------------------------------------------
@@ -177,13 +191,14 @@ CREATE TABLE MedicacaoAtiva (
 );
 
 -- ------------------------------------------------------------
--- EPISODIO DE URGENCIA
+-- EPISODIO DE URGENCIA (ATUALIZADO - IA WAIT TIME)
 -- ------------------------------------------------------------
 CREATE TABLE EpUrgencia (
     CodEpUrgenc SERIAL PRIMARY KEY,
     NumUtent INT NOT NULL,
     IdHosp INT NOT NULL,
     DataHoraEntr TIMESTAMP NOT NULL DEFAULT NOW(),
+    DataHoraAtendimento TIMESTAMP, -- Permite calcular tempo de espera real para treinar IA no futuro
     DataHoraSaida TIMESTAMP,
     Estado estado_ep_enum NOT NULL DEFAULT 'aberto',
     FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE RESTRICT,
@@ -191,7 +206,7 @@ CREATE TABLE EpUrgencia (
 );
 
 -- ------------------------------------------------------------
--- TRIAGEM (1:1)
+-- TRIAGEM (ATUALIZADA - IA TRIAGEM E NLP)
 -- ------------------------------------------------------------
 CREATE TABLE Triagem (
     CodEpUrgenc INT PRIMARY KEY,
@@ -205,6 +220,9 @@ CREATE TABLE Triagem (
     SpO2 DECIMAL(4,1),
     Sistolica INT,
     Diastolica INT,
+    NivelDor INT CHECK (NivelDor >= 0 AND NivelDor <= 10), -- Extraído pela IA de Voz
+    Consciencia VARCHAR(50) CHECK (Consciencia IN ('Acordado', 'Confuso', 'Inconsciente')), -- Extraído pela IA de Voz
+    TempoEsperaPrevisto INT, -- Gerado pela IA de Wait Time
     FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE
 );
 
@@ -233,14 +251,17 @@ CREATE TABLE Realiza (
 );
 
 -- ------------------------------------------------------------
--- PRESCREVE
+-- PRESCREVE (ATUALIZADA - IA DE MEDICAMENTOS)
 -- ------------------------------------------------------------
 CREATE TABLE Prescreve (
     IdPrescricao SERIAL PRIMARY KEY,
     IdAto INT NOT NULL,
-    Descricao TEXT NOT NULL,
+    CodMedicamento INT NOT NULL, -- Ligação direta à tabela Medicamento para a IA saber a classe
+    Dosagem VARCHAR(50) NOT NULL,
+    Observacoes TEXT,
     DataHoraPresc TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (IdAto) REFERENCES Ato(IdAto) ON DELETE CASCADE
+    FOREIGN KEY (IdAto) REFERENCES Ato(IdAto) ON DELETE CASCADE,
+    FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento) ON DELETE RESTRICT
 );
 
 -- ------------------------------------------------------------
