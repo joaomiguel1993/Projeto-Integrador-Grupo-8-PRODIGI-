@@ -1,18 +1,19 @@
 /* =========================================
-   FOOTER SIAGUH - ESTILOS COMPLETOS
-   ========================================= */
+FOOTER SIAGUH - ESTILOS COMPLETOS
+========================================= */
 
 .siaguh-footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
+  position: static;
+  left: auto;
+  bottom: auto;
   width: 100%;
-  z-index: 1000;
+  z-index: auto;
+  margin-top: 2rem;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* --------------------------------- */
-/* SUBFOOTER (Fundo Claro)           */
+/* SUBFOOTER (Fundo Claro) */
 /* --------------------------------- */
 .siaguh-subfooter {
   background-color: #f8f9fa;
@@ -33,7 +34,7 @@
 .siaguh-subfooter-links a {
   color: #4a5568;
   text-decoration: none;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   font-weight: 500;
   transition: color 0.2s ease;
 }
@@ -56,7 +57,6 @@
   color: #007456;
 }
 
-/* Força o tamanho dos SVGs para 24px */
 .siaguh-contact-item svg {
   width: 24px;
   height: 24px;
@@ -74,14 +74,14 @@
 }
 
 .siaguh-contact-label {
-  font-size: 0.75rem; /* 12px */
+  font-size: 0.75rem;
   color: #718096;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .siaguh-contact-value {
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.125rem;
   font-weight: bold;
   line-height: 1.2;
 }
@@ -95,7 +95,7 @@
 }
 
 /* --------------------------------- */
-/* FOOTER PRINCIPAL (Fundo Verde)    */
+/* FOOTER PRINCIPAL (Fundo Verde) */
 /* --------------------------------- */
 .siaguh-main-footer {
   background-color: #007456;
@@ -104,60 +104,45 @@
   position: relative;
 }
 
-/* Container que envolve o Copyright e os Logos */
 .siaguh-footer-content-wrapper {
-  display: fixed;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding-right: 3rem; /* Espaço para o botão de subir */
-  gap: 2rem; /* Garante que há sempre espaço entre o texto e os logos */
+  padding-right: 3rem;
+  gap: 2rem;
 }
 
-/* Área do texto (Esquerda) */
 .siaguh-footer-text {
-  flex: 0 0 auto; /* Impede terminantemente a caixa de texto de encolher */
-  white-space: nowrap; /* Força o texto a não quebrar em mais do que as duas linhas definidas */
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .siaguh-footer-text p {
   margin: 0;
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
   font-weight: 300;
   line-height: 1.5;
 }
 
-/* Área dos logótipos (Direita) */
 .siaguh-logos-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start; 
-  margin-left: auto; 
-  gap: 1.5rem; 
-  flex-wrap: wrap; /* SUBSTITUÍDO: Permite que os logos passem para a linha de baixo, eliminando o scroll */
-  flex: 1 1 auto; 
-  /* APAGADO: overflow-x e padding do scroll */
+  justify-content: flex-start;
+  margin-left: auto;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
 }
 
-/* APAGADO: As regras ::-webkit-scrollbar foram eliminadas pois já não há scroll */
-
-/* Tamanho padrão das imagens e proteção contra esmagamento */
 .siaguh-logos-container img {
-  max-height: 32px; /* REDUZIDO: de 38px para 32px (um pouco mais pequenas) */
+  max-height: 32px;
   width: auto;
   object-fit: contain;
-  flex-shrink: 0; 
+  flex-shrink: 0;
   display: block;
 }
 
-.siaguh-main-footer {
-  background-color: #007456;
-  padding: 1.5rem 4rem;
-  color: #ffffff;
-  position: relative;
-}
-
-/* Botão de voltar ao topo */
 .siaguh-btn-top {
   position: absolute;
   right: 1.5rem;
@@ -172,7 +157,8 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, background-color 0.2s ease;
   z-index: 2;
 }
@@ -188,10 +174,9 @@
 }
 
 /* --------------------------------- */
-/* RESPONSIVIDADE                    */
+/* RESPONSIVIDADE */
 /* --------------------------------- */
 
-/* Tablets (Logos passam para baixo do texto se o ecrã for mais apertado) */
 @media (max-width: 1280px) {
   .siaguh-footer-content-wrapper {
     flex-direction: column;
@@ -201,17 +186,16 @@
   }
 
   .siaguh-footer-text {
-    white-space: normal; /* Permite que o texto faça quebra de linha em ecrãs menores */
+    white-space: normal;
   }
-  
+
   .siaguh-logos-container {
     justify-content: flex-start;
-    margin-left: 0; /* Reseta a margem para tablets/mobile */
+    margin-left: 0;
     width: 100%;
   }
 }
 
-/* Telemóveis */
 @media (max-width: 768px) {
   .siaguh-subfooter {
     flex-direction: column;
@@ -219,7 +203,7 @@
     padding: 2rem;
     gap: 2.5rem;
   }
-  
+
   .siaguh-subfooter-links {
     flex-direction: column;
     gap: 1rem;
@@ -236,7 +220,7 @@
   }
 
   .siaguh-footer-content-wrapper {
-    align-items: flex-start; 
+    align-items: flex-start;
   }
 
   .siaguh-btn-top {

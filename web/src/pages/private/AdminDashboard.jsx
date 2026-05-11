@@ -2,13 +2,11 @@
  * @file AdminDashboard.jsx
  * @description Painel central de gestão para os administradores do sistema SIAGUH.
  */
-import HeaderPrivate from '../../components/layout/HeaderPrivate';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../imagens/logo100fundo.png';
+import logo from '../../imagens/Logo.png';
 import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
-import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ROLES } from '../../constants/roles';
@@ -185,6 +183,7 @@ export default function AdminDashboard() {
   const [submittingHospital, setSubmittingHospital] = useState(false);
 
   const [funcionarioAutenticadoNome, setFuncionarioAutenticadoNome] = useState(textos.admin.tituloPainel);
+  const [fotoUtilizador, setFotoUtilizador] = useState('');
 
   const breadcrumbsLinks = [
     { name: textos.geral.inicio, path: '/' },
@@ -221,14 +220,41 @@ export default function AdminDashboard() {
     try {
       const rawUser = sessionStorage.getItem('user');
       const userObj = rawUser ? JSON.parse(rawUser) : null;
-      if (userObj?.nome) return setFuncionarioAutenticadoNome(userObj.nome);
-      if (userObj?.username) return setFuncionarioAutenticadoNome(userObj.username);
-      setFuncionarioAutenticadoNome(textos.admin.tituloPainel);
+
+      if (userObj?.nome) {
+        setFuncionarioAutenticadoNome(userObj.nome);
+      } else if (userObj?.username) {
+        setFuncionarioAutenticadoNome(userObj.username);
+      } else {
+        setFuncionarioAutenticadoNome(textos.admin.tituloPainel);
+      }
+
+      setFotoUtilizador(
+        userObj?.foto ||
+        userObj?.avatar ||
+        userObj?.fotoPerfil ||
+        userObj?.imagem ||
+        ''
+      );
     } catch {
       setFuncionarioAutenticadoNome(textos.admin.tituloPainel);
+      setFotoUtilizador('');
     }
   };
 
+  const obterIniciais = (nome = '') =>
+    String(nome)
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0]?.toUpperCase() || '')
+      .join('');
+
+  const fazerLogout = () => {
+    sessionStorage.removeItem('user');
+    navigate('/');
+  };
   const carregarTudo = async () => { await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais(), carregarLogs()]); };
   const carregarProfissionais = async () => { try { setLoadingProfissionais(true); setErroProfissionais(''); const data = await apiFetch('/api/profissionais/'); setProfissionais(Array.isArray(data) ? data : []); } catch (err) { setErroProfissionais(err.message); setProfissionais([]); } finally { setLoadingProfissionais(false); } };
   const carregarUtilizadores = async () => { try { setLoadingUtilizadores(true); setErroUtilizadores(''); const data = await apiFetch('/api/utilizadores/'); setUtilizadores(Array.isArray(data) ? data : []); } catch (err) { setErroUtilizadores(err.message); setUtilizadores([]); } finally { setLoadingUtilizadores(false); } };
@@ -386,25 +412,31 @@ export default function AdminDashboard() {
 
   const guardarUtilizadorEditado = async (e) => {
     e.preventDefault();
-    setMensagemUser(""); setErroUser("");
+    setMensagemUser('');
+    setErroUser('');
 
     try {
       setSubmittingUser(true);
+
       const idfunc = utilizadorEditando.idfunc;
 
-      // 1. Actualizar utilizador (username, hospitais, bloqueado)
+      const payloadUser = {
+        username: utilizadorEditando.username,
+        hospitais: utilizadorEditando.hospitais.map(Number),
+        bloqueado: utilizadorEditando.bloqueado ?? null,
+      };
+
+      if (utilizadorEditando.password?.trim()) {
+        payloadUser.password = utilizadorEditando.password.trim();
+      }
+
       await apiFetch(`/api/utilizadores/${idfunc}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          username: utilizadorEditando.username,
-          hospitais: utilizadorEditando.hospitais.map(Number),
-          bloqueado: utilizadorEditando.bloqueado ?? null,
-        }),
+        method: 'PUT',
+        body: JSON.stringify(payloadUser),
       });
 
-      // 2. Actualizar tipofunc no funcionário
       await apiFetch(`/api/profissionais/${idfunc}`, {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify({
           nome: utilizadorEditando.nome,
           tipofunc: utilizadorEditando.role,
@@ -413,11 +445,16 @@ export default function AdminDashboard() {
       });
 
       setMensagemUser(textos.admin.sucessoEditarUser);
-      adicionarHistorico("Editar utilizador", `Foram atualizados os dados de ${utilizadorEditando.username}.`);
+      adicionarHistorico(
+        'Editar utilizador',
+        `Foram atualizados os dados de ${utilizadorEditando.username}.`
+      );
+
       await carregarUtilizadores();
       await carregarProfissionais();
+
       setUtilizadorEditando(null);
-      setUserView("lista");
+      setUserView('lista');
     } catch (err) {
       setErroUser(err.message);
     } finally {
@@ -492,22 +529,38 @@ export default function AdminDashboard() {
 
   const criarUtilizadorAPartirFuncionario = async (e) => {
     e.preventDefault();
-    setMensagemUser(""); setErroUser("");
+    setMensagemUser('');
+    setErroUser('');
+
     try {
       setSubmittingUser(true);
+
       const payload = {
-        idfunc: utilizadorEditando.idfunc,
+        idfunc: Number(utilizadorEditando.idfunc),
         username: utilizadorEditando.username,
         password: utilizadorEditando.password,
-        hospitais: utilizadorEditando.hospitais.map(Number),
+        role: utilizadorEditando.role,
       };
-      const data = await apiFetch('/api/utilizadores/', { method: 'POST', body: JSON.stringify(payload) });
+
+      const data = await apiFetch('api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
       setMensagemUser(textos.admin.sucessoCriarUser);
-      adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username}.`);
+      adicionarHistorico(
+        'Criar utilizador',
+        `Foi criado o utilizador ${data.username}.`
+      );
+
       await carregarUtilizadores();
       setUtilizadorEditando(null);
       setUserView('lista');
-    } catch (err) { setErroUser(err.message); } finally { setSubmittingUser(false); }
+    } catch (err) {
+      setErroUser(err.message);
+    } finally {
+      setSubmittingUser(false);
+    }
   };
 
   const guardarHospitalEditado = async (e) => {
@@ -633,12 +686,26 @@ export default function AdminDashboard() {
               <div className="admin-form__group"><label htmlFor="edit-user-id">{textos.admin.lblNumFuncionario}</label><input id="edit-user-id" type="text" value={utilizadorEditando.idfunc || ''} readOnly /></div>
               <div className="admin-form__group"><label htmlFor="edit-user-nome">{textos.admin.lblNome}</label><input id="edit-user-nome" name="nome" type="text" value={utilizadorEditando.nome || ''} onChange={handleEditarUserChange} /></div>
               <div className="admin-form__group"><label htmlFor="edit-user-username">{textos.admin.lblUsername}</label><input id="edit-user-username" name="username" type="text" value={utilizadorEditando.username || ''} onChange={handleEditarUserChange} /></div>
-              {utilizadorEditando.isNovo && (
-                <div className="admin-form__group">
-                  <label htmlFor="edit-user-password">{textos.admin.lblPassword}</label>
-                  <input id="edit-user-password" name="password" type="password" value={utilizadorEditando.password || ''} onChange={handleEditarUserChange} required />
-                </div>
-              )}
+              <div className="admin-form__group">
+                <label htmlFor="edit-user-password">
+                  {utilizadorEditando.isNovo
+                    ? textos.admin.lblPassword
+                    : `${textos.admin.lblPassword} (opcional)`}
+                </label>
+                <input
+                  id="edit-user-password"
+                  name="password"
+                  type="password"
+                  value={utilizadorEditando.password || ''}
+                  onChange={handleEditarUserChange}
+                  required={!!utilizadorEditando.isNovo}
+                  placeholder={
+                    utilizadorEditando.isNovo
+                      ? textos.admin.lblPassword
+                      : 'Deixa vazio para manter a password atual'
+                  }
+                />
+              </div>
               <div className="admin-form__group">
                 <label htmlFor="edit-user-role">{textos.admin.lblFuncao}</label>
                 <select id="edit-user-role" name="role" value={utilizadorEditando.role || ROLES.ADMIN} onChange={handleEditarUserChange}>
@@ -976,36 +1043,47 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-page-wrapper">
-      <HeaderPrivate
-        breadcrumbs={breadcrumbsLinks}
-        userName={funcionarioAutenticadoNome}
-      />
-
       <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
-        <aside className="admin-sidebar" aria-label="Navegação Lateral do Administrador">
+        <aside className="admin-sidebar" aria-label="Navegação lateral do Administrador">
           <button
             className="admin-sidebar__toggle"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             aria-expanded={!isSidebarCollapsed}
+            aria-label="Expandir ou recolher menu"
+            type="button"
           >
-            <svg
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+            <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
+          <div className="admin-sidebar__brand">
+            <img src={logo} alt="SIAGUH" className="admin-sidebar__logo" />
+          </div>
 
+          <div className="admin-sidebar__divider" />
 
+          <button
+            type="button"
+            className="admin-sidebar__profile"
+            onClick={() => navigate('/perfil')}
+            title="Ir para o perfil"
+          >
+            {fotoUtilizador ? (
+              <img
+                src={fotoUtilizador}
+                alt={funcionarioAutenticadoNome}
+                className="admin-sidebar__profile-avatar"
+              />
+            ) : (
+              <div className="admin-sidebar__profile-avatar admin-sidebar__profile-avatar--fallback">
+                {obterIniciais(funcionarioAutenticadoNome)}
+              </div>
+            )}
+            <span className="admin-sidebar__profile-name">{funcionarioAutenticadoNome}</span>
+          </button>
+
+          <div className="admin-sidebar__divider" />
 
           <nav className="admin-sidebar__nav" role="navigation">
             <button
@@ -1017,7 +1095,7 @@ export default function AdminDashboard() {
                 setUserView('lista');
               }}
             >
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
               <span className="link-text">{textos.admin.menuUtilizadores}</span>
@@ -1032,7 +1110,7 @@ export default function AdminDashboard() {
                 setEmployeeView('lista');
               }}
             >
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
               </svg>
               <span className="link-text">{textos.admin.menuFuncionarios}</span>
@@ -1047,7 +1125,7 @@ export default function AdminDashboard() {
                 setHospitalView('lista');
               }}
             >
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               <span className="link-text">{textos.admin.menuHospitais}</span>
@@ -1061,7 +1139,7 @@ export default function AdminDashboard() {
                 setMainMenu('relatorios');
               }}
             >
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <span className="link-text">{textos.admin.menuRelatorios}</span>
@@ -1069,29 +1147,26 @@ export default function AdminDashboard() {
           </nav>
 
           <div className="admin-sidebar__footer">
-            <div
-              className="admin-sidebar__lang-switcher"
-              style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}
-            >
+            <div className="admin-sidebar__lang-switcher">
               <button
                 type="button"
                 onClick={() => mudarIdioma('pt')}
-                style={{ background: 'none', border: 'none', color: idioma === 'pt' ? '#3eb489' : '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                className={`admin-lang-btn ${idioma === 'pt' ? 'is-active' : ''}`}
               >
                 PT
               </button>
-              <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
+              <span>/</span>
               <button
                 type="button"
                 onClick={() => mudarIdioma('en')}
-                style={{ background: 'none', border: 'none', color: idioma === 'en' ? '#3eb489' : '#fff', cursor: 'pointer', fontWeight: 'bold' }}
+                className={`admin-lang-btn ${idioma === 'en' ? 'is-active' : ''}`}
               >
                 EN
               </button>
             </div>
 
-            <button type="button" className="admin-logout-button" onClick={() => navigate('/')}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <button type="button" className="admin-logout-button" onClick={fazerLogout}>
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="link-text">{textos.admin.botaoSair}</span>
@@ -1100,16 +1175,27 @@ export default function AdminDashboard() {
         </aside>
 
         <section className="admin-content-wrapper">
-
           <div className="admin-content-inner">
-            <div className="admin-contentbody">
-              {renderCenter()}
+            <div className="admin-page-breadcrumbs">
+              {breadcrumbsLinks.map((item, index) => (
+                <button
+                  key={`${item.name}-${index}`}
+                  type="button"
+                  className={`admin-page-breadcrumbs__item ${index === breadcrumbsLinks.length - 1 ? 'is-current' : ''}`}
+                  onClick={() => item.path && navigate(item.path)}
+                >
+                  {index > 0 && <span className="admin-page-breadcrumbs__separator">/</span>}
+                  <span>{item.name}</span>
+                </button>
+              ))}
             </div>
+
+            <div className="admin-content__body">{renderCenter()}</div>
           </div>
+
+          <FooterLayout />
         </section>
       </main>
-
-      <FooterLayout />
     </div>
   );
 }

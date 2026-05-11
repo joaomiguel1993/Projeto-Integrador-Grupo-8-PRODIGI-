@@ -1,4 +1,5 @@
 from typing import Any, cast
+from backend.auth.security import hash_password
 from backend.dao.utilizadores_dao import (
     select_all_utilizadores,
     select_utilizador_by_idfunc,
@@ -31,7 +32,9 @@ def obter_utilizador(idfunc: int):
 
 
 def criar_utilizador(idfunc: int, username: str, password: str, hospitais: list[int] | None = None):
-    created = insert_utilizador(idfunc, username, password)
+    password_hash = hash_password(password)
+
+    created = insert_utilizador(idfunc, username, password_hash)
     if not created:
         return None
 
@@ -41,7 +44,6 @@ def criar_utilizador(idfunc: int, username: str, password: str, hospitais: list[
     return obter_utilizador(idfunc)
 
 
-# FIX: adicionado parâmetro bloqueado
 def atualizar_utilizador(
     idfunc: int,
     username: str,
@@ -49,7 +51,16 @@ def atualizar_utilizador(
     hospitais: list[int] | None = None,
     bloqueado: bool | None = None,
 ):
-    updated = update_utilizador_by_idfunc(idfunc, username, password, bloqueado)
+    password_hash = None
+    if password is not None and password.strip():
+        password_hash = hash_password(password)
+
+    updated = update_utilizador_by_idfunc(
+        idfunc,
+        username,
+        password_hash,
+        bloqueado
+    )
     if not updated:
         return None
 
