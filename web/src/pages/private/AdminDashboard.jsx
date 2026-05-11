@@ -9,7 +9,7 @@ import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { ROLES } from '../../constants/roles';
+import { ROLES, STORAGE_KEYS } from '../../constants/roles';
 
 // ==========================================
 // FUNÇÕES UTILITÁRIAS
@@ -218,7 +218,10 @@ export default function AdminDashboard() {
 
   const resolverUtilizadorAutenticado = () => {
     try {
-      const rawUser = sessionStorage.getItem('user');
+      const rawUser =
+        sessionStorage.getItem(STORAGE_KEYS.USER_DATA) ||
+        sessionStorage.getItem('user');
+
       const userObj = rawUser ? JSON.parse(rawUser) : null;
 
       if (userObj?.nome) {
@@ -229,13 +232,37 @@ export default function AdminDashboard() {
         setFuncionarioAutenticadoNome(textos.admin.tituloPainel);
       }
 
-      setFotoUtilizador(
+      let fotoGuardada =
+        userObj?.foto_url ||
         userObj?.foto ||
         userObj?.avatar ||
         userObj?.fotoPerfil ||
         userObj?.imagem ||
-        ''
-      );
+        '';
+
+      if (
+        fotoGuardada &&
+        !fotoGuardada.startsWith('http://') &&
+        !fotoGuardada.startsWith('https://') &&
+        !fotoGuardada.startsWith('blob:')
+      ) {
+        const apiBase =
+          import.meta.env.VITE_API_URL ||
+          import.meta.env.VITE_OPEN_APIURL ||
+          '';
+
+        if (apiBase) {
+          const cleanBase = apiBase.replace(/\/+$/, '');
+          const cleanSrc = fotoGuardada.replace(/^\/+/, '');
+          fotoGuardada = `${cleanBase}/${cleanSrc}`;
+        } else {
+          fotoGuardada = fotoGuardada.startsWith('/')
+            ? fotoGuardada
+            : `/${fotoGuardada}`;
+        }
+      }
+
+      setFotoUtilizador(fotoGuardada);
     } catch {
       setFuncionarioAutenticadoNome(textos.admin.tituloPainel);
       setFotoUtilizador('');
@@ -255,37 +282,20 @@ export default function AdminDashboard() {
     sessionStorage.removeItem('user');
     navigate('/');
   };
-  const carregarTudo = async () => { await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais(), carregarLogs()]); };
+  const carregarTudo = async () => {
+    await Promise.all([
+      carregarProfissionais(),
+      carregarUtilizadores(),
+      carregarHospitais()
+    ]);
+  };
+
   const carregarProfissionais = async () => {
     try {
       setLoadingProfissionais(true);
       setErroProfissionais('');
-
       const data = await apiFetch('/api/profissionais');
-      const listaBase = Array.isArray(data) ? data : [];
-
-      const listaComHospitais = await Promise.all(
-        listaBase.map(async (prof) => {
-          try {
-            const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${prof.idfunc}`);
-            const idsHospitais = Array.isArray(hospitaisData)
-              ? hospitaisData.map((h) => Number(h.idhosp ?? h.idHosp ?? h.id))
-              : [];
-
-            return {
-              ...prof,
-              hospitais: idsHospitais,
-            };
-          } catch {
-            return {
-              ...prof,
-              hospitais: [],
-            };
-          }
-        })
-      );
-
-      setProfissionais(listaComHospitais);
+      setProfissionais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroProfissionais(err.message);
       setProfissionais([]);
@@ -293,6 +303,11 @@ export default function AdminDashboard() {
       setLoadingProfissionais(false);
     }
   };
+
+  // desativar este efeito
+  // useEffect(() => {
+  //   if (mainMenu === 'relatorios') carregarLogs();
+  // }, [mainMenu]);
   const carregarUtilizadores = async () => { try { setLoadingUtilizadores(true); setErroUtilizadores(''); const data = await apiFetch('/api/utilizadores/'); setUtilizadores(Array.isArray(data) ? data : []); } catch (err) { setErroUtilizadores(err.message); setUtilizadores([]); } finally { setLoadingUtilizadores(false); } };
   const carregarHospitais = async () => { try { setLoadingHospitais(true); setErroHospitais(''); const data = await apiFetch('/api/api/hospitais/'); setHospitais(Array.isArray(data) ? data.map(mapHospitalFromApi) : []); } catch (err) { setErroHospitais(err.message); setHospitais([]); } finally { setLoadingHospitais(false); } };
   const carregarLogs = async () => { try { setLoadingLogs(true); setErroLogs(''); const data = await apiFetch('/api/logs/'); setLogs(Array.isArray(data) ? data : []); } catch (err) { setErroLogs(err.message); setLogs([]); } finally { setLoadingLogs(false); } };
@@ -952,16 +967,81 @@ export default function AdminDashboard() {
     if (hospitalView === 'novo') {
       return (
         <section className="admin-panel-section">
-          <div className="admin-panel-section__header"><h2>{textos.admin.btnNovoHospital}</h2></div>
+          <div className="admin-panel-section__header">
+            <h2>{textos.admin.btnNovoHospital}</h2>
+          </div>
+
           <form className="admin-form" onSubmit={criarHospital}>
             <div className="admin-form__grid">
-              <div className="admin-form__group"><label htmlFor="hosp-nome">{textos.admin.lblNome}</label><input id="hosp-nome" name="nome" type="text" value={novoHospital.nome} onChange={handleNovoHospitalChange} required /></div>
-              <div className="admin-form__group"><label htmlFor="hosp-loc">{textos.admin.lblLocalizacao}</label><input id="hosp-loc" name="localidade" type="text" value={novoHospital.localidade} onChange={handleNovoHospitalChange} required /></div>
-              <div className="admin-form__group"><label htmlFor="hosp-email">Email</label><input id="hosp-email" name="email" type="email" value={novoHospital.email} onChange={handleNovoHospitalChange} /></div>
-              <div className="admin-form__group"><label htmlFor="hosp-contacto">Contacto</label><input id="hosp-contacto" name="contacto" type="text" value={novoHospital.contacto} onChange={handleNovoHospitalChange} /></div>
+              <div className="admin-form__group">
+                <label htmlFor="hosp-nome">{textos.admin.lblNome}</label>
+                <input
+                  id="hosp-nome"
+                  name="nome"
+                  type="text"
+                  value={novoHospital.nome}
+                  onChange={handleNovoHospitalChange}
+                  required
+                />
+              </div>
+
+              <div className="admin-form__group">
+                <label htmlFor="hosp-loc">{textos.admin.lblLocalizacao}</label>
+                <input
+                  id="hosp-loc"
+                  name="localidade"
+                  type="text"
+                  value={novoHospital.localidade}
+                  onChange={handleNovoHospitalChange}
+                  required
+                />
+              </div>
+
+              <div className="admin-form__group">
+                <label htmlFor="hosp-email">{textos.admin.lblEmail}</label>
+                <input
+                  id="hosp-email"
+                  name="email"
+                  type="email"
+                  value={novoHospital.email}
+                  onChange={handleNovoHospitalChange}
+                />
+              </div>
+
+              <div className="admin-form__group">
+                <label htmlFor="hosp-contacto">{textos.admin.lblContacto}</label>
+                <input
+                  id="hosp-contacto"
+                  name="contacto"
+                  type="text"
+                  value={novoHospital.contacto}
+                  onChange={handleNovoHospitalChange}
+                />
+              </div>
             </div>
-            <div aria-live="polite">{mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}{erroHospital && <p className="admin-form__error">{erroHospital}</p>}</div>
-            <div className="admin-actions-row"><button type="submit" className="admin-form__submit" disabled={submittingHospital}>{textos.geral.guardar}</button><button type="button" className="admin-secondary-button" onClick={() => setHospitalView('lista')}>{textos.geral.cancelar}</button></div>
+
+            <div aria-live="polite">
+              {mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}
+              {erroHospital && <p className="admin-form__error">{erroHospital}</p>}
+            </div>
+
+            <div className="admin-actions-row">
+              <button
+                type="submit"
+                className="admin-form__submit"
+                disabled={submittingHospital}
+              >
+                {textos.geral.guardar}
+              </button>
+
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() => setHospitalView('lista')}
+              >
+                {textos.geral.cancelar}
+              </button>
+            </div>
           </form>
         </section>
       );
@@ -970,16 +1050,82 @@ export default function AdminDashboard() {
     if (hospitalView === 'editar' && hospitalEditando) {
       return (
         <section className="admin-panel-section">
-          <div className="admin-panel-section__header"><h2>{textos.geral.editar}</h2></div>
+          <div className="admin-panel-section__header">
+            <h2>{textos.geral.editar}</h2>
+          </div>
+
           <form className="admin-form" onSubmit={guardarHospitalEditado}>
             <div className="admin-form__grid">
-              <div className="admin-form__group"><label htmlFor="ehosp-nome">{textos.admin.lblNome}</label><input id="ehosp-nome" name="nome" type="text" value={hospitalEditando.nome || ''} onChange={handleEditarHospitalChange} /></div>
-              <div className="admin-form__group"><label htmlFor="ehosp-loc">{textos.admin.lblLocalizacao}</label><input id="ehosp-loc" name="localidade" type="text" value={hospitalEditando.localidade || ''} onChange={handleEditarHospitalChange} /></div>
-              <div className="admin-form__group"><label htmlFor="ehosp-email">Email</label><input id="ehosp-email" name="email" type="email" value={hospitalEditando.email || ''} onChange={handleEditarHospitalChange} /></div>
-              <div className="admin-form__group"><label htmlFor="ehosp-contacto">Contacto</label><input id="ehosp-contacto" name="contacto" type="text" value={hospitalEditando.contacto || ''} onChange={handleEditarHospitalChange} /></div>
+              <div className="admin-form__group">
+                <label htmlFor="ehosp-nome">{textos.admin.lblNome}</label>
+                <input
+                  id="ehosp-nome"
+                  name="nome"
+                  type="text"
+                  value={hospitalEditando.nome}
+                  onChange={handleEditarHospitalChange}
+                />
+              </div>
+
+              <div className="admin-form__group">
+                <label htmlFor="ehosp-loc">{textos.admin.lblLocalizacao}</label>
+                <input
+                  id="ehosp-loc"
+                  name="localidade"
+                  type="text"
+                  value={hospitalEditando.localidade}
+                  onChange={handleEditarHospitalChange}
+                />
+              </div>
+
+              <div className="admin-form__group">
+                <label htmlFor="ehosp-email">{textos.admin.lblEmail}</label>
+                <input
+                  id="ehosp-email"
+                  name="email"
+                  type="email"
+                  value={hospitalEditando.email}
+                  onChange={handleEditarHospitalChange}
+                />
+              </div>
+
+              <div className="admin-form__group">
+                <label htmlFor="ehosp-contacto">{textos.admin.lblContacto}</label>
+                <input
+                  id="ehosp-contacto"
+                  name="contacto"
+                  type="text"
+                  value={hospitalEditando.contacto}
+                  onChange={handleEditarHospitalChange}
+                />
+              </div>
             </div>
-            <div aria-live="polite">{mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}{erroHospital && <p className="admin-form__error">{erroHospital}</p>}</div>
-            <div className="admin-actions-row"><button type="submit" className="admin-form__submit" disabled={submittingHospital}>{textos.geral.guardar}</button><button type="button" className="admin-secondary-button" onClick={() => { setHospitalEditando(null); setHospitalView('lista'); }}>{textos.geral.cancelar}</button></div>
+
+            <div aria-live="polite">
+              {mensagemHospital && <p className="admin-form__success">{mensagemHospital}</p>}
+              {erroHospital && <p className="admin-form__error">{erroHospital}</p>}
+            </div>
+
+            <div className="admin-actions-row">
+              <button
+                type="submit"
+                className="admin-form__submit"
+                disabled={submittingHospital}
+              >
+                {textos.geral.guardar}
+              </button>
+
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() => {
+                  setHospitalEditando(null);
+                  setHospitalView('lista');
+                }}
+              >
+                {textos.geral.cancelar}
+              </button>
+            </div>
           </form>
         </section>
       );
@@ -987,28 +1133,88 @@ export default function AdminDashboard() {
 
     return (
       <section className="admin-panel-section">
-        <div className="admin-panel-section__header"><h2>{textos.admin.menuHospitais}</h2><p>{textos.admin.descHospitais}</p></div>
-        <div className="admin-toolbar admin-toolbar--left"><button type="button" className="admin-primary-big-button" onClick={abrirNovoHospital}>{textos.admin.btnNovoHospital}</button></div>
+        <div className="admin-panel-section__header">
+          <h2>{textos.admin.menuHospitais}</h2>
+          <p>{textos.admin.descHospitais}</p>
+        </div>
+
+        <div className="admin-toolbar admin-toolbar--left">
+          <button
+            type="button"
+            className="admin-primary-big-button"
+            onClick={abrirNovoHospital}
+          >
+            {textos.admin.btnNovoHospital}
+          </button>
+        </div>
 
         <div className="admin-filters">
           <div className="admin-form__group">
             <label htmlFor="filter-hosp-nome">{textos.geral.pesquisarNome}</label>
-            <input id="filter-hosp-nome" type="text" value={filtroHospitalNome} onChange={(e) => setFiltroHospitalNome(e.target.value)} />
+            <input
+              id="filter-hosp-nome"
+              type="text"
+              value={filtroHospitalNome}
+              onChange={(e) => setFiltroHospitalNome(e.target.value)}
+            />
           </div>
+
           <div className="admin-form__group">
             <label htmlFor="filter-hosp-loc">{textos.admin.lblLocalizacao}</label>
-            <input id="filter-hosp-loc" type="text" value={filtroHospitalLocalidade} onChange={(e) => setFiltroHospitalLocalidade(e.target.value)} />
+            <input
+              id="filter-hosp-loc"
+              type="text"
+              value={filtroHospitalLocalidade}
+              onChange={(e) => setFiltroHospitalLocalidade(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="admin-table-card admin-table-card--full">
-          <div className="admin-table-card__header"><h3>{textos.admin.menuHospitais}</h3><span>{hospitaisFiltrados.length}</span></div>
-          <div className="admin-table-scroll admin-table-scroll--employees">
+          <div className="admin-table-card__header">
+            <h3>{textos.admin.menuHospitais}</h3>
+            <span>{hospitaisFiltrados.length}</span>
+          </div>
+
+          <div className="admin-table-scroll admin-table-scroll--wide">
             <table className="admin-table">
-              <thead><tr><th>{textos.admin.lblNome}</th><th>{textos.admin.lblLocalizacao}</th><th>{textos.geral.editar}</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>{textos.admin.lblNome}</th>
+                  <th>{textos.admin.lblLocalizacao}</th>
+                  <th>{textos.admin.lblEmail}</th>
+                  <th>{textos.admin.lblContacto}</th>
+                  <th>{textos.geral.editar}</th>
+                </tr>
+              </thead>
+
               <tbody>
-                {loadingHospitais ? (<tr><td colSpan="3">{textos.geral.aCarregar}</td></tr>) : hospitaisFiltrados.length === 0 ? (<tr><td colSpan="3">{textos.geral.semResultados}</td></tr>) : (
-                  hospitaisFiltrados.map((h) => (<tr key={h.idhosp || h.nome}><td>{h.nome || '—'}</td><td>{h.localidade || '—'}</td><td><button type="button" className="admin-secondary-button" onClick={() => abrirEditarHospital(h)}>{textos.geral.editar}</button></td></tr>))
+                {loadingHospitais ? (
+                  <tr>
+                    <td colSpan="5">{textos.geral.aCarregar}</td>
+                  </tr>
+                ) : hospitaisFiltrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="5">{textos.geral.semResultados}</td>
+                  </tr>
+                ) : (
+                  hospitaisFiltrados.map((h) => (
+                    <tr key={h.idhosp}>
+                      <td>{h.nome || '—'}</td>
+                      <td>{h.localidade || '—'}</td>
+                      <td>{h.email || '—'}</td>
+                      <td>{h.contacto || '—'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="admin-secondary-button"
+                          onClick={() => abrirEditarHospital(h)}
+                        >
+                          {textos.geral.editar}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>

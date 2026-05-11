@@ -108,6 +108,7 @@ export const TEXTOS_EN = {
     tblUtilizadoresComConta: "Users with account",
     tblFuncionariosSemConta: "Employees without user account",
     tblUtilizadoresBloqueados: "Blocked users",
+    sucessoEditarUser: "User updated successfully.",
     semBloqueados: "No blocked users.",
     sucessoCriarUser: "User created successfully.",
     sucessoCriarFunc: "Employee created successfully.",
@@ -370,30 +371,30 @@ export const TEXTOS_EN = {
   // ==========================================
   // 13. PÁGINA: PERFIL DO FUNCIONÁRIO
   // ==========================================
-    perfil: {
-      titulo: "My Profile",
-      sucessoGuardar: "Profile updated successfully!",
-      erroCarregar: "Failed to load your data: ",
-      erroSessao: "User not found in session.",
-      erroGuardar: "Error saving changes: ",
-      aCarregar: "Loading your profile...",
-      botaoGuardar: "Save Changes",
-      botaoGuardarLoading: "Saving...",
+  perfil: {
+    titulo: "My Profile",
+    sucessoGuardar: "Profile updated successfully!",
+    erroCarregar: "Failed to load your data: ",
+    erroSessao: "User not found in session.",
+    erroGuardar: "Error saving changes: ",
+    aCarregar: "Loading your profile...",
+    botaoGuardar: "Save Changes",
+    botaoGuardarLoading: "Saving...",
 
     // Business Card
-      numFuncionario: "Employee Number:",
-      linkFotografia: "Photo Link",
-      placeholderFotografia: "https://...",
-      telemovel: "Mobile Phone",
-      emailPessoal: "Personal Email",
+    numFuncionario: "Employee Number:",
+    linkFotografia: "Photo Link",
+    placeholderFotografia: "https://...",
+    telemovel: "Mobile Phone",
+    emailPessoal: "Personal Email",
 
     // Biography and Security
-      sobreMim: "About Me",
-      placeholderBiografia: "Write a brief description of your professional experience...",
-      egurancaAcesso: "Access Security",
-      nomeUtilizador: "Username",
-      novaPassword: "New Password",
-      placeholderPassword: "(Leave blank to keep)"
+    sobreMim: "About Me",
+    placeholderBiografia: "Write a brief description of your professional experience...",
+    egurancaAcesso: "Access Security",
+    nomeUtilizador: "Username",
+    novaPassword: "New Password",
+    placeholderPassword: "(Leave blank to keep)"
   }
 
 };
