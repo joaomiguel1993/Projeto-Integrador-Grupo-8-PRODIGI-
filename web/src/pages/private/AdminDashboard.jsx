@@ -256,7 +256,43 @@ export default function AdminDashboard() {
     navigate('/');
   };
   const carregarTudo = async () => { await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais(), carregarLogs()]); };
-  const carregarProfissionais = async () => { try { setLoadingProfissionais(true); setErroProfissionais(''); const data = await apiFetch('/api/profissionais/'); setProfissionais(Array.isArray(data) ? data : []); } catch (err) { setErroProfissionais(err.message); setProfissionais([]); } finally { setLoadingProfissionais(false); } };
+  const carregarProfissionais = async () => {
+    try {
+      setLoadingProfissionais(true);
+      setErroProfissionais('');
+
+      const data = await apiFetch('/api/profissionais');
+      const listaBase = Array.isArray(data) ? data : [];
+
+      const listaComHospitais = await Promise.all(
+        listaBase.map(async (prof) => {
+          try {
+            const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${prof.idfunc}`);
+            const idsHospitais = Array.isArray(hospitaisData)
+              ? hospitaisData.map((h) => Number(h.idhosp ?? h.idHosp ?? h.id))
+              : [];
+
+            return {
+              ...prof,
+              hospitais: idsHospitais,
+            };
+          } catch {
+            return {
+              ...prof,
+              hospitais: [],
+            };
+          }
+        })
+      );
+
+      setProfissionais(listaComHospitais);
+    } catch (err) {
+      setErroProfissionais(err.message);
+      setProfissionais([]);
+    } finally {
+      setLoadingProfissionais(false);
+    }
+  };
   const carregarUtilizadores = async () => { try { setLoadingUtilizadores(true); setErroUtilizadores(''); const data = await apiFetch('/api/utilizadores/'); setUtilizadores(Array.isArray(data) ? data : []); } catch (err) { setErroUtilizadores(err.message); setUtilizadores([]); } finally { setLoadingUtilizadores(false); } };
   const carregarHospitais = async () => { try { setLoadingHospitais(true); setErroHospitais(''); const data = await apiFetch('/api/api/hospitais/'); setHospitais(Array.isArray(data) ? data.map(mapHospitalFromApi) : []); } catch (err) { setErroHospitais(err.message); setHospitais([]); } finally { setLoadingHospitais(false); } };
   const carregarLogs = async () => { try { setLoadingLogs(true); setErroLogs(''); const data = await apiFetch('/api/logs/'); setLogs(Array.isArray(data) ? data : []); } catch (err) { setErroLogs(err.message); setLogs([]); } finally { setLoadingLogs(false); } };
