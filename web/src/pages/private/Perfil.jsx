@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { apiFetch } from '../../services/api';
+import { STORAGE_KEYS } from '../../constants/roles';
 
 export default function Perfil() {
   const { textos } = useLanguage();
@@ -28,7 +29,7 @@ export default function Perfil() {
   const [imgErro, setImgErro] = useState(false);
 
   const getUserId = () => {
-    const rawUser = sessionStorage.getItem('user');
+    const rawUser = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
     if (!rawUser) return null;
     try {
       const userObj = JSON.parse(rawUser);
@@ -153,7 +154,7 @@ export default function Perfil() {
           const userObj = JSON.parse(rawUser);
           userObj.username = dadosIniciais.username || username;
           userObj.foto_url = fotoUrl;
-          sessionStorage.setItem('user', JSON.stringify(userObj));
+          sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userObj));
         } catch {
           // ignorar
         }
