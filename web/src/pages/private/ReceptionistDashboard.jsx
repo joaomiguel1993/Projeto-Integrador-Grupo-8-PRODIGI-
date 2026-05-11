@@ -5,6 +5,7 @@ import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
+import '../../styles/receptionist-dashboard.css';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -610,7 +611,8 @@ export default function ReceptionistDashboard() {
   };
 
   return (
-    <div className="admin-page-wrapper">
+    // ReceptionistDashboard.jsx
+    <div className="admin-page-wrapper receptionist-dashboard">
       <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
         <aside className="admin-sidebar" aria-label="Navegação lateral do Rececionista">
           <button

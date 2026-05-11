@@ -5,6 +5,7 @@ import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
+import '../../styles/doctor-dashboard.css';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -77,7 +78,7 @@ const mapEpisodio = (ep) => ({
   alta: Boolean(ep?.alta ?? (normalizar(ep?.estado) === 'alta')),
   internamento: Boolean(
     ep?.internamento ??
-      normalizar(ep?.estado).includes('intern')
+    normalizar(ep?.estado).includes('intern')
   ),
 });
 
@@ -781,7 +782,8 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className="admin-page-wrapper">
+    // DoctorDashboard.jsx
+    <div className="admin-page-wrapper doctor-dashboard">
       <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
         <aside className="admin-sidebar" aria-label="Navegação lateral do Médico">
           <button

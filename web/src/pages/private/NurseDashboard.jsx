@@ -5,6 +5,7 @@ import '../../styles/admin.css';
 import { apiFetch } from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
+import '../../styles/nurse-dashboard.css';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -547,7 +548,8 @@ export default function NurseDashboard() {
   };
 
   return (
-    <div className="admin-page-wrapper">
+    // NurseDashboard.jsx
+    <div className="admin-page-wrapper nurse-dashboard">
       <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
         <aside className="admin-sidebar" aria-label="Navegação lateral do Enfermeiro">
           <button
