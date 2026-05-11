@@ -75,12 +75,11 @@
 }
 
 .receptionist-dashboard .admin-stat-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f7f5ff 100%);
-  border: 1px solid #e3dbff;
-  border-top: 4px solid #3eb489;
+  background: #ffffff;
+  border: 1px solid #e2efe9;
   border-radius: 18px;
-  padding: 1rem 1.1rem;
-  box-shadow: 0 10px 24px rgba(62, 180, 137, 0.08);
+  padding: 1rem;
+  box-shadow: 0 12px 28px rgba(62, 180, 137, 0.1);
 }
 
 .receptionist-dashboard .admin-stat-card span {
@@ -94,7 +93,7 @@
 .receptionist-dashboard .admin-stat-card strong {
   display: block;
   font-size: 1.6rem;
-  color: #3eb489;
+  color: #18794e;
 }
 
 .receptionist-dashboard .admin-table-card {
@@ -126,20 +125,22 @@
 .receptionist-dashboard textarea {
   width: 100%;
   min-height: 120px;
-  border: 1px solid #ddd4ff;
+  border: 1px solid #cfe8dd;
   border-radius: 14px;
   padding: 0.85rem 0.95rem;
   font-size: 0.95rem;
   font-family: inherit;
+  background: #ffffff;
   resize: vertical;
   outline: none;
 }
 
 .receptionist-dashboard .admin-form__group textarea:focus,
 .receptionist-dashboard textarea:focus {
-  border-color: #7c5cff;
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.12);
+  border-color: #3eb489;
+  box-shadow: 0 0 0 3px rgba(62, 180, 137, 0.12);
 }
+
 
 @media (max-width: 1280px) {
   .receptionist-dashboard .admin-stats-grid {
@@ -148,17 +149,7 @@
 }
 
 @media (max-width: 980px) {
-  .receptionist-dashboard .admin-content {
-    margin-left: 0;
-    padding: 1.25rem;
-    padding-top: 1.25rem;
-  }
-
   .receptionist-dashboard .admin-stats-grid {
     grid-template-columns: 1fr;
-  }
-
-  .receptionist-dashboard .admin-sidebar__profile-name {
-    display: block;
   }
 }

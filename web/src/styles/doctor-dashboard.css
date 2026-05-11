@@ -75,12 +75,11 @@
 }
 
 .doctor-dashboard .admin-stat-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f4fbf8 100%);
-  border: 1px solid #dcefe8;
-  border-top: 4px solid #1f8a70;
+  background: #ffffff;
+  border: 1px solid #e2efe9;
   border-radius: 18px;
-  padding: 1rem 1.1rem;
-  box-shadow: 0 10px 24px rgba(31, 138, 112, 0.08);
+  padding: 1rem;
+  box-shadow: 0 12px 28px rgba(62, 180, 137, 0.1);
 }
 
 .doctor-dashboard .admin-stat-card span {
@@ -94,7 +93,61 @@
 .doctor-dashboard .admin-stat-card strong {
   display: block;
   font-size: 1.6rem;
-  color: #3eb489;
+  color: #18794e;
+}
+
+.doctor-dashboard .admin-form__group textarea,
+.doctor-dashboard textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #cfe8dd;
+  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #ffffff;
+  resize: vertical;
+  outline: none;
+}
+
+.doctor-dashboard .admin-form__group textarea:focus,
+.doctor-dashboard textarea:focus {
+  border-color: #3eb489;
+  box-shadow: 0 0 0 3px rgba(62, 180, 137, 0.12);
+}
+
+@media (max-width: 1280px) {
+  .doctor-dashboard .admin-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .doctor-dashboard .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doctor-dashboard .admin-stat-card {
+  background: #ffffff;
+  border: 1px solid #e2efe9;
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: 0 12px 28px rgba(62, 180, 137, 0.1);
+}
+
+.doctor-dashboard .admin-stat-card span {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.88rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.doctor-dashboard .admin-stat-card strong {
+  display: block;
+  font-size: 1.6rem;
+  color: #18794e;
 }
 
 .doctor-dashboard .admin-table-card {
@@ -131,6 +184,7 @@
   padding: 0.85rem 0.95rem;
   font-size: 0.95rem;
   font-family: inherit;
+  background: #ffffff;
   resize: vertical;
   outline: none;
 }
@@ -148,17 +202,7 @@
 }
 
 @media (max-width: 980px) {
-  .doctor-dashboard .admin-content {
-    margin-left: 0;
-    padding: 1.25rem;
-    padding-top: 1.25rem;
-  }
-
   .doctor-dashboard .admin-stats-grid {
     grid-template-columns: 1fr;
-  }
-
-  .doctor-dashboard .admin-sidebar__profile-name {
-    display: block;
   }
 }
