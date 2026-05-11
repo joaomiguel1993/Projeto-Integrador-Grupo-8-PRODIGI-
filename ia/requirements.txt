@@ -6,6 +6,4 @@ groq
 fastapi
 uvicorn
 numpy
-SpeechRecognition 
-pyaudio 
 groq
