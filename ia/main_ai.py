@@ -76,7 +76,7 @@ def predict_triage(d: DadosTriagem):
     )
 
     previsao = modelo_triagem.predict(df)[0]
-    return {"pulseira": previsao}
+    return {"pulseira": str(previsao)}
 
 # --- ROTA 2: Prever Tempo de Espera ---
 @app.post("/predict/wait-time")
