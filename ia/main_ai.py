@@ -20,8 +20,9 @@ app.add_middleware(
 )
 
 # --- 1. Carregar os Modelos Treinados ---
-modelo_triagem = joblib.load('models/xgboost_triagem.joblib')
-modelo_espera  = joblib.load('models/xgboost_wait_time.joblib')
+modelo_triagem   = joblib.load('models/xgboost_triagem.joblib')
+modelo_espera    = joblib.load('models/xgboost_wait_time.joblib')
+modelo_risco_med = joblib.load('models/randomforest_medicine_risk.joblib')
 
 # --- 2. Configuração do Groq ---
 cliente = Groq(api_key=os.environ["GROQ_API_KEY"])
@@ -52,6 +53,13 @@ class DadosEspera(BaseModel):
 
 class DadosVoz(BaseModel):
     texto: str
+
+class DadosRiscoMed(BaseModel):
+    Classe_Novo_Med: int
+    Tem_Alergia_Classe: int
+    Gravidade_Alergia: int
+    Tem_Interacao_Ativa: int
+    Idade_Utente: int
 
 # --- 4. Dicionários de Tradução ---
 tradutor_cons = {'Acordado': 1, 'Confuso': 2, 'Inconsciente': 3}
@@ -122,6 +130,25 @@ JSON:"""
 
     except Exception as e:
         return {"erro": f"Erro ao chamar o Groq: {str(e)}"}
+
+# --- ROTA 4: Prever Risco de Medicação ---
+@app.post("/predict/medicine-risk")
+def predict_medicine_risk(d: DadosRiscoMed):
+    df = pd.DataFrame(
+        [[d.Classe_Novo_Med, d.Tem_Alergia_Classe, d.Gravidade_Alergia,
+          d.Tem_Interacao_Ativa, d.Idade_Utente]],
+        columns=['Classe_Novo_Med', 'Tem_Alergia_Classe', 'Gravidade_Alergia',
+                 'Tem_Interacao_Ativa', 'Idade_Utente']
+    )
+
+    risco = int(modelo_risco_med.predict(df)[0])
+    prob  = float(modelo_risco_med.predict_proba(df)[0][1])
+
+    return {
+        "risco": risco,
+        "resultado": "COM RISCO" if risco == 1 else "SEM RISCO",
+        "probabilidade": round(prob, 4)
+    }
 
 if __name__ == "__main__":
     import uvicorn

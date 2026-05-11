@@ -10,11 +10,15 @@ Certifica-te de que estás na pasta raiz (ia)
 # Para correr localmente (teste)
 #   5. Antes de correr o voz_nlp.py, definir a variável no terminal:
 #      Git Bash:   export GROQ_API_KEY="gsk_..."
-
+#      PowerShell: $env:GROQ_API_KEY="gsk_..."
 
 
 Bash -> Instala as bibliotecas presentes em requirements.txt:
 pip install -r requirements.txt
+
+Bash -> Para correr o voz_nlp.py localmente, instala também:
+pip install SpeechRecognition pyaudio
+
 
 ia Tempo
 Executa o código com o comando:
@@ -40,13 +44,17 @@ Bash
 python src/voz_nlp.py
 
 
-Ia Servidor (API)
+IA Medicine Risk
 Executa o código com o comando:
 Bash
-python main_ai.py
-
-IA Medicine Risk
 python src/gerar_dados_medicine_risk.py
 python src/preprocess_medicine_risk.py
 python src/train_medicine_risk.py
 python src/predict_medicine_risk.py
+
+
+Ia Servidor (API)
+Nota: Garante que todos os modelos estão treinados antes de iniciar o servidor.
+Executa o código com o comando:
+Bash
+python main_ai.py
