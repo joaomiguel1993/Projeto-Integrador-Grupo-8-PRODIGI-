@@ -7,6 +7,7 @@ import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_IA= import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 
 const normalizar = (texto) =>
   String(texto || '')
