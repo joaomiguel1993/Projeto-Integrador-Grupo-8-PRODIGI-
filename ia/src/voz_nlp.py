@@ -14,6 +14,10 @@ from groq import Groq
 import json
 import re
 import os
+from dotenv import load_dotenv  
+
+# CARREGAR O FICHEIRO .env 
+load_dotenv()
 
 # ─────────────────────────────────────────────
 # CONFIGURAÇÃO
