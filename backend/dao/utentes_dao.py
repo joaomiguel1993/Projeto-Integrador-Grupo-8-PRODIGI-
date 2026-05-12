@@ -1,37 +1,41 @@
-# backend/dao/utentes_dao.py
 import psycopg2
 from backend.db import run_query, get_connection
 
 
-
 def select_all_utentes():
     return run_query("""
-        SELECT numutent, nome, nif, datanasc, sexo, localidade
+        SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
         FROM utente
         ORDER BY nome
     """)
 
 
-
 def select_utente_by_id(num_utente: int):
     return run_query("""
-        SELECT numutent, nome, nif, datanasc, sexo, localidade
+        SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
         FROM utente
         WHERE numutent = %s
     """, (num_utente,))
 
 
-
-def insert_utente(nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
+def insert_utente(
+    nome: str,
+    nif: str,
+    datanasc,
+    sexo: str,
+    localidade: str | None = None,
+    telefone: str | None = None,
+    email: str | None = None
+):
     conn = get_connection()
     cur = conn.cursor()
 
     try:
         cur.execute("""
-            INSERT INTO utente (nome, nif, datanasc, sexo, localidade)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING numutent, nome, nif, datanasc, sexo, localidade
-        """, (nome, nif, datanasc, sexo, localidade))
+            INSERT INTO utente (nome, nif, datanasc, sexo, localidade, telefone, email)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        """, (nome, nif, datanasc, sexo, localidade, telefone, email))
 
         created = cur.fetchone()
 
@@ -47,7 +51,9 @@ def insert_utente(nome: str, nif: str, datanasc, sexo: str, localidade: str | No
             "nif": created[2],
             "datanasc": created[3],
             "sexo": created[4],
-            "localidade": created[5]
+            "localidade": created[5],
+            "telefone": created[6],
+            "email": created[7]
         }
 
     except psycopg2.errors.UniqueViolation:
@@ -61,8 +67,16 @@ def insert_utente(nome: str, nif: str, datanasc, sexo: str, localidade: str | No
         conn.close()
 
 
-
-def update_utente_by_id(num_utente: int, nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
+def update_utente_by_id(
+    num_utente: int,
+    nome: str,
+    nif: str,
+    datanasc,
+    sexo: str,
+    localidade: str | None = None,
+    telefone: str | None = None,
+    email: str | None = None
+):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -73,10 +87,12 @@ def update_utente_by_id(num_utente: int, nome: str, nif: str, datanasc, sexo: st
                 nif = %s,
                 datanasc = %s,
                 sexo = %s,
-                localidade = %s
+                localidade = %s,
+                telefone = %s,
+                email = %s
             WHERE numutent = %s
-            RETURNING numutent, nome, nif, datanasc, sexo, localidade
-        """, (nome, nif, datanasc, sexo, localidade, num_utente))
+            RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        """, (nome, nif, datanasc, sexo, localidade, telefone, email, num_utente))
 
         updated = cur.fetchone()
 
@@ -92,7 +108,9 @@ def update_utente_by_id(num_utente: int, nome: str, nif: str, datanasc, sexo: st
             "nif": updated[2],
             "datanasc": updated[3],
             "sexo": updated[4],
-            "localidade": updated[5]
+            "localidade": updated[5],
+            "telefone": updated[6],
+            "email": updated[7]
         }
 
     except psycopg2.errors.UniqueViolation:

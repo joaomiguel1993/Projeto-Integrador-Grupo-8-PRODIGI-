@@ -20,7 +20,9 @@ const emptyUtente = {
   data_nascimento: '',
   sexo: 'M',
   morada: '',
-  num_utente: '',
+  telefone: '',
+  email: '',
+  numutent: '',
 };
 
 const IconMenu = () => (
@@ -154,6 +156,8 @@ export default function ReceptionistDashboard() {
       data_nascimento: u?.datanasc ?? '',
       sexo: u?.sexo ?? 'M',
       morada: u?.localidade ?? '',
+      telefone: u?.telefone ?? '',
+      email: u?.email ?? '',
       numutent: u?.numutent ?? '',
     });
     setUtentesView('criar');
@@ -193,6 +197,8 @@ export default function ReceptionistDashboard() {
       datanasc: novoUtente.data_nascimento || null,
       sexo: novoUtente.sexo ?? 'M',
       localidade: novoUtente.morada ?? '',
+      telefone: novoUtente.telefone ?? '',
+      email: novoUtente.email ?? '',
     };
 
     try {
@@ -202,14 +208,10 @@ export default function ReceptionistDashboard() {
         body: JSON.stringify(payloadUtente),
       });
 
-      const raw = await res.text();
-      console.log('STATUS:', res.status);
-      console.log('RAW RESPONSE:', raw);
-      console.log('URL:', url);
-      console.log('PAYLOAD:', payloadUtente);
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(raw || 'Erro ao processar dados do utente.');
+        throw new Error(data?.detail || 'Erro ao processar dados do utente.');
       }
 
       setMensagem(
@@ -219,11 +221,11 @@ export default function ReceptionistDashboard() {
       );
 
       setNovoUtente(emptyUtente);
+      setUtenteSelecionado(data);
       await carregarTudo();
-      setUtentesView('lista');
+      setUtentesView('ficha');
       setMainMenu('utentes');
     } catch (e) {
-      console.error('ERRO COMPLETO:', e);
       setErro(e.message || 'Erro ao guardar utente.');
     }
   };
@@ -337,14 +339,22 @@ export default function ReceptionistDashboard() {
               <p><strong>{textos?.receptionist?.dataNascimento || 'Data de nascimento'}:</strong> {utenteSelecionado.datanasc || '—'}</p>
               <p><strong>{textos?.receptionist?.sexo || 'Sexo'}:</strong> {utenteSelecionado.sexo || '—'}</p>
               <p><strong>{textos?.receptionist?.morada || 'Localidade'}:</strong> {utenteSelecionado.localidade || '—'}</p>
+              <p><strong>{textos?.receptionist?.telefone || 'Telefone'}:</strong> {utenteSelecionado.telefone || '—'}</p>
+              <p><strong>{textos?.receptionist?.email || 'Email'}:</strong> {utenteSelecionado.email || '—'}</p>
 
               <div className="admin-actions-row" style={{ marginTop: '1rem' }}>
-                <button type="button" className="admin-form__submit" onClick={() => setMainMenu('episodio')}>
-                  {textos?.receptionist?.abrirEpisodioBtn || 'Dar entrada no hospital'}
+                <button
+                  type="button"
+                  className="admin-form__submit"
+                  onClick={() => prepararEdicao(utenteSelecionado)}
+                >
+                  {textos?.common?.edit || 'Editar'}
                 </button>
               </div>
             </div>
-          ) : <p>{textos?.receptionist?.selecionaUtente || 'Selecione um utente.'}</p>}
+          ) : (
+            <p>{textos?.receptionist?.selecionaUtente || 'Selecione um utente.'}</p>
+          )}
         </section>
       );
     }

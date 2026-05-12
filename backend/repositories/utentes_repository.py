@@ -1,4 +1,3 @@
-# backend/repositories/utentes_repository.py
 from typing import Any, cast
 
 from backend.dao.utentes_dao import (
@@ -9,13 +8,11 @@ from backend.dao.utentes_dao import (
 )
 
 
-
 def listar_utentes():
     result = select_all_utentes()
     if not result:
         return []
     return result
-
 
 
 def obter_utente(num_utente: int):
@@ -27,11 +24,26 @@ def obter_utente(num_utente: int):
     return result_list[0]
 
 
+def criar_utente(
+    nome: str,
+    nif: str,
+    datanasc,
+    sexo: str,
+    localidade: str | None = None,
+    telefone: str | None = None,
+    email: str | None = None
+):
+    return insert_utente(nome, nif, datanasc, sexo, localidade, telefone, email)
 
-def criar_utente(nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
-    return insert_utente(nome, nif, datanasc, sexo, localidade)
 
-
-
-def atualizar_utente(num_utente: int, nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
-    return update_utente_by_id(num_utente, nome, nif, datanasc, sexo, localidade)
+def atualizar_utente(
+    num_utente: int,
+    nome: str,
+    nif: str,
+    datanasc,
+    sexo: str,
+    localidade: str | None = None,
+    telefone: str | None = None,
+    email: str | None = None
+):
+    return update_utente_by_id(num_utente, nome, nif, datanasc, sexo, localidade, telefone, email)

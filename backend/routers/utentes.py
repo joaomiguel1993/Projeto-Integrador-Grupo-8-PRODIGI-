@@ -59,7 +59,9 @@ def criar_utente(payload: UtenteCreate, request: Request):
         nif=payload.nif,
         datanasc=payload.datanasc,
         sexo=payload.sexo,
-        localidade=payload.localidade
+        localidade=payload.localidade,
+        telefone=payload.telefone,
+        email=payload.email
     )
 
     insert_log(
@@ -82,8 +84,13 @@ def atualizar_utente(num_utente: int, payload: UtenteCreate, request: Request):
         nif=payload.nif,
         datanasc=payload.datanasc,
         sexo=payload.sexo,
-        localidade=payload.localidade
+        localidade=payload.localidade,
+        telefone=payload.telefone,
+        email=payload.email
     )
+
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Utente não encontrado")
 
     insert_log(
         username=username,
