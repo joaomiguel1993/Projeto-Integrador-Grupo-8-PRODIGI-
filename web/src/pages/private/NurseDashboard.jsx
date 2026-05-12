@@ -154,7 +154,7 @@ export default function NurseDashboard() {
     setMensagem('');
 
     try {
-      const utenteId = ep.id_utente || ep.idutente;
+      const utenteId = ep.num_utente || ep.numutente;
       const [uRes, mRes] = await Promise.all([
         fetch(`${API_URL}/api/utentes/${num_utente}`),
         fetch(`${API_URL}/api/medicacaoativa/utente/${num_utente}`),

@@ -148,7 +148,7 @@ export default function ReceptionistDashboard() {
     try {
       const [uRes, eRes] = await Promise.all([
         fetch(`${API_URL}/api/utentes`),
-        fetch(`${API_URL}/api/episodios/recentes`),
+        fetch(`${API_URL}/api/episodios`),
       ]);
 
       const uData = await uRes.json();
@@ -235,7 +235,7 @@ export default function ReceptionistDashboard() {
     setErro('');
 
     try {
-      const res = await fetch(`${API_URL}/api/epurgencia`, {
+      const res = await fetch(`${API_URL}/api/episodios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -261,7 +261,7 @@ export default function ReceptionistDashboard() {
     setErro('');
 
     try {
-      const res = await fetch(`${API_URL}/api/epurgencia/abrir`, {
+      const res = await fetch(`${API_URL}/api/episodios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
