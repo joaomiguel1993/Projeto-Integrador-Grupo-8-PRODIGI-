@@ -23,6 +23,7 @@ app.add_middleware(
 modelo_triagem   = joblib.load('models/xgboost_triagem.joblib')
 modelo_espera    = joblib.load('models/xgboost_wait_time.joblib')
 modelo_risco_med = joblib.load('models/randomforest_medicine_risk.joblib')
+encoders_espera  = joblib.load('data/processed/encoders_wait_time.joblib')
 
 # --- 2. Configuração do Groq ---
 cliente = Groq(api_key=os.environ["GROQ_API_KEY"])
@@ -46,10 +47,13 @@ class DadosTriagem(BaseModel):
     Consciousness: str
 
 class DadosEspera(BaseModel):
-    Urgency_Level: str  # 'Critical', 'High', 'Medium', 'Low'
-    Nurse_Ratio: int
-    Specialists: int
-    Beds: int
+    Urgency_Level: str          # 'Critical', 'High', 'Medium', 'Low'
+    Nurse_to_Patient_Ratio: int # ex: 7
+    Specialist_Availability: int # ex: 2
+    Facility_Size_Beds: int     # ex: 92
+    Day_of_Week: str            # 'Monday', 'Tuesday', ...
+    Time_of_Day: str            # 'Morning', 'Afternoon', 'Evening', 'Night'
+    Season: str                 # 'Winter', 'Spring', 'Summer', 'Autumn'
 
 class DadosVoz(BaseModel):
     texto: str
@@ -63,7 +67,6 @@ class DadosRiscoMed(BaseModel):
 
 # --- 4. Dicionários de Tradução ---
 tradutor_cons = {'Acordado': 1, 'Confuso': 2, 'Inconsciente': 3}
-tradutor_urg  = {'Low': 1, 'Medium': 2, 'High': 3, 'Critical': 4}
 
 # --- ROTA 1: Prever Cor da Pulseira ---
 @app.post("/predict/triage")
@@ -76,15 +79,44 @@ def predict_triage(d: DadosTriagem):
     )
 
     previsao = modelo_triagem.predict(df)[0]
-    return {"pulseira": previsao}
+    return {"pulseira": str(previsao)}
 
-# --- ROTA 2: Prever Tempo de Espera ---
+# --- ROTA 2: Prever Tempo de Espera por Nível de Urgência ---
 @app.post("/predict/wait-time")
 def predict_wait(d: DadosEspera):
-    agora = datetime.now()
-    dia = agora.strftime('%A')
-    # TODO: adicionar lógica completa de tempo/estação
-    return {"tempo_estimado_minutos": 45}
+    resultados = {}
+
+    pulseiras = ['Critical', 'High', 'Medium', 'Low']
+
+    for nivel in pulseiras:
+        df = pd.DataFrame([{
+            'Urgency Level':           nivel,
+            'Nurse-to-Patient Ratio':  d.Nurse_to_Patient_Ratio,
+            'Specialist Availability': d.Specialist_Availability,
+            'Facility Size (Beds)':    d.Facility_Size_Beds,
+            'Day of Week':             d.Day_of_Week,
+            'Time of Day':             d.Time_of_Day,
+            'Season':                  d.Season,
+        }])
+
+        # Aplicar encoders às colunas categóricas
+        for col in ['Urgency Level', 'Day of Week', 'Time of Day', 'Season']:
+            df[col] = encoders_espera[col].transform(df[col])
+
+        features = [
+            'Urgency Level', 'Nurse-to-Patient Ratio', 'Specialist Availability',
+            'Facility Size (Beds)', 'Day of Week', 'Time of Day', 'Season'
+        ]
+
+        tempo = float(modelo_espera.predict(df[features])[0])
+        resultados[nivel] = round(tempo)
+
+    return {
+        "Critical": resultados['Critical'],
+        "High":     resultados['High'],
+        "Medium":   resultados['Medium'],
+        "Low":      resultados['Low'],
+    }
 
 # --- ROTA 3: Processar Texto e Extrair Sinais Vitais via Groq ---
 @app.post("/predict/voz")
