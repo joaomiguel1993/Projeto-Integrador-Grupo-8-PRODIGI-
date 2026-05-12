@@ -133,7 +133,7 @@ export default function DoctorDashboard() {
   const carregarEpisodios = async () => {
     try {
       setErro('');
-      const res = await fetch(`${API_URL}/api/episodios-triados`);
+      const res = await fetch(`${API_URL}/api/triagens`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
       setEpisodios(Array.isArray(data) ? data : []);
@@ -167,7 +167,7 @@ export default function DoctorDashboard() {
       const [uRes, aRes, mRes] = await Promise.all([
         fetch(`${API_URL}/api/utentes/${utenteId}`),
         fetch(`${API_URL}/api/alertas/${utenteId}`),
-        fetch(`${API_URL}/api/medicacao-ativa/${utenteId}`),
+        fetch(`${API_URL}/api/medicacaoativa/${utenteId}`),
       ]);
 
       const uData = await uRes.json();
@@ -202,7 +202,7 @@ export default function DoctorDashboard() {
       setMensagem('');
       setErro('');
 
-      const res = await fetch(`${API_URL}/api/prescricao`, {
+      const res = await fetch(`${API_URL}/api/prescricoes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
