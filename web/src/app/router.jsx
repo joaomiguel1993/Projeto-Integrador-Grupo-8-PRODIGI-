@@ -27,6 +27,9 @@ const router = createBrowserRouter([
       { path: '/politica-privacidade',  element: <PrivacyPolicy /> },
       { path: '/acessibilidade',        element: <Accessibility /> },
       { path: '/faqs',                  element: <Faqs /> },
+      { path: '/sobre-nos',             element: <About /> },
+      { path: '/politica-privacidade',  element: <PrivacyPolicy /> },
+      { path: '/FAQS',                   element: <Faqs /> },
     ],
   },
   {

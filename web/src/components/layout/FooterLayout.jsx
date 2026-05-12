@@ -23,8 +23,8 @@ export default function FooterLayout() {
     <footer className="siaguh-footer">
       <div className="siaguh-subfooter">
         <div className="siaguh-subfooter-links">
-          <Link to="/termos">{textos?.footer?.termos || 'Termos e Condições'}</Link>
-          <Link to="/privacidade">{textos?.footer?.privacidade || 'Política de Privacidade'}</Link>
+          <Link to="/sobre-nos">{textos?.footer?.termos || 'Sobre Nós'}</Link>
+          <Link to="/politica-privacidade">{textos?.footer?.privacidade || 'Política de Privacidade'}</Link>
           <Link to="/acessibilidade">{textos?.footer?.acessibilidade || 'Acessibilidade'}</Link>
         </div>
 
@@ -40,7 +40,9 @@ export default function FooterLayout() {
 
             <div className="siaguh-contact-text">
               <span className="siaguh-contact-label">{textos?.footer?.faqLabel || 'Ajuda'}</span>
-              <span className="siaguh-contact-value">{textos?.footer?.faqValue || 'FAQ'}</span>
+              <Link to="/FAQS" className="siaguh-contact-value">
+                               {textos?.footer?.faqValue || 'FAQ'}
+              </Link>
             </div>
           </a>
 
