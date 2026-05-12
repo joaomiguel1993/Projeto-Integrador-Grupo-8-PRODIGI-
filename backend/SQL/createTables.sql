@@ -60,7 +60,9 @@ CREATE TABLE Utente (
     NIF VARCHAR(9) NOT NULL UNIQUE,
     DataNasc DATE NOT NULL,
     Sexo CHAR(1) NOT NULL CHECK (Sexo IN ('M', 'F')),
-    Localidade VARCHAR(100)
+    Localidade VARCHAR(100),
+    Telefone VARCHAR(20),
+    Email VARCHAR(255)
 );
 
 -- ------------------------------------------------------------

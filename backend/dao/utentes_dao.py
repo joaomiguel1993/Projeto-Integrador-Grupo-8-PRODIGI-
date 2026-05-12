@@ -1,4 +1,7 @@
+# backend/dao/utentes_dao.py
+import psycopg2
 from backend.db import run_query, get_connection
+
 
 
 def select_all_utentes():
@@ -9,12 +12,14 @@ def select_all_utentes():
     """)
 
 
+
 def select_utente_by_id(num_utente: int):
     return run_query("""
         SELECT numutent, nome, nif, datanasc, sexo, localidade
         FROM utente
         WHERE numutent = %s
     """, (num_utente,))
+
 
 
 def insert_utente(nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
@@ -45,12 +50,16 @@ def insert_utente(nome: str, nif: str, datanasc, sexo: str, localidade: str | No
             "localidade": created[5]
         }
 
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        raise
     except Exception:
         conn.rollback()
         raise
     finally:
         cur.close()
         conn.close()
+
 
 
 def update_utente_by_id(num_utente: int, nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
@@ -86,6 +95,9 @@ def update_utente_by_id(num_utente: int, nome: str, nif: str, datanasc, sexo: st
             "localidade": updated[5]
         }
 
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        raise
     except Exception:
         conn.rollback()
         raise
