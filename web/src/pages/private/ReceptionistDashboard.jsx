@@ -333,27 +333,108 @@ export default function ReceptionistDashboard() {
             </div>
           </div>
           {utenteSelecionado ? (
-            <div className="admin-table-card">
-              <p><strong>{textos?.receptionist?.nome || 'Nome'}:</strong> {utenteSelecionado.nome || '—'}</p>
-              <p><strong>{textos?.receptionist?.nif || 'NIF'}:</strong> {utenteSelecionado.nif || '—'}</p>
-              <p><strong>{textos?.receptionist?.dataNascimento || 'Data de nascimento'}:</strong> {utenteSelecionado.datanasc || '—'}</p>
-              <p><strong>{textos?.receptionist?.sexo || 'Sexo'}:</strong> {utenteSelecionado.sexo || '—'}</p>
-              <p><strong>{textos?.receptionist?.morada || 'Localidade'}:</strong> {utenteSelecionado.localidade || '—'}</p>
-              <p><strong>{textos?.receptionist?.telefone || 'Telefone'}:</strong> {utenteSelecionado.telefone || '—'}</p>
-              <p><strong>{textos?.receptionist?.email || 'Email'}:</strong> {utenteSelecionado.email || '—'}</p>
+            <div className="patient-card">
+              <div className="patient-card__header">
+                <div className="patient-card__avatar">
+                  {(utenteSelecionado.nome || '?').charAt(0).toUpperCase()}
+                </div>
 
-              <div className="admin-actions-row" style={{ marginTop: '1rem' }}>
+                <div className="patient-card__intro">
+                  <h2 className="patient-card__name">
+                    {utenteSelecionado.nome || 'Utente sem nome'}
+                  </h2>
+
+                  <div className="patient-card__badges">
+                    <span className="patient-badge">
+                      NIF: {utenteSelecionado.nif || '—'}
+                    </span>
+                    <span className="patient-badge">
+                      Nº Utente: {utenteSelecionado.numutent || '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="patient-card__section">
+                <h3 className="patient-card__section-title">Dados pessoais</h3>
+
+                <div className="patient-card__grid">
+                  <div className="patient-info">
+                    <span className="patient-info__label">
+                      {textos?.receptionist?.dataNascimento || 'Data de nascimento'}
+                    </span>
+                    <span className="patient-info__value">
+                      {utenteSelecionado.datanasc || '—'}
+                    </span>
+                  </div>
+
+                  <div className="patient-info">
+                    <span className="patient-info__label">
+                      {textos?.receptionist?.sexo || 'Sexo'}
+                    </span>
+                    <span className="patient-info__value">
+                      {utenteSelecionado.sexo || '—'}
+                    </span>
+                  </div>
+
+                  <div className="patient-info">
+                    <span className="patient-info__label">
+                      {textos?.receptionist?.morada || 'Localidade'}
+                    </span>
+                    <span className="patient-info__value">
+                      {utenteSelecionado.localidade || '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="patient-card__section">
+                <h3 className="patient-card__section-title">Contactos</h3>
+
+                <div className="patient-card__grid">
+                  <div className="patient-info">
+                    <span className="patient-info__label">
+                      {textos?.receptionist?.telefone || 'Telefone'}
+                    </span>
+                    <span className="patient-info__value">
+                      {utenteSelecionado.telefone || '—'}
+                    </span>
+                  </div>
+
+                  <div className="patient-info">
+                    <span className="patient-info__label">
+                      {textos?.receptionist?.email || 'Email'}
+                    </span>
+                    <span className="patient-info__value">
+                      {utenteSelecionado.email || '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="patient-card__actions">
                 <button
                   type="button"
-                  className="admin-form__submit"
+                  className="patient-btn patient-btn--secondary"
                   onClick={() => prepararEdicao(utenteSelecionado)}
                 >
                   {textos?.common?.edit || 'Editar'}
                 </button>
+
+                <button
+                  type="button"
+                  className="patient-btn patient-btn--primary"
+                  onClick={() => setMainMenu('episodio')}
+                >
+                  {textos?.receptionist?.abrirEpisodioBtn || 'Dar entrada no hospital'}
+                </button>
               </div>
             </div>
           ) : (
-            <p>{textos?.receptionist?.selecionaUtente || 'Selecione um utente.'}</p>
+            <div className="patient-empty">
+              <h3>Sem utente selecionado</h3>
+              <p>{textos?.receptionist?.selecionaUtente || 'Selecione um utente para ver a ficha.'}</p>
+            </div>
           )}
         </section>
       );
