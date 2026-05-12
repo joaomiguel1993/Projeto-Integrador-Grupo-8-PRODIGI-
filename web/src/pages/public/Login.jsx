@@ -1,16 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login as loginRequest } from '../../services/auth';
-import { useLanguage } from '../../contexts/LanguageContext'; // Integração do Contexto
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ROLES, STORAGE_KEYS } from '../../constants/roles';
-
-/**
- * @file Login.jsx
- * @description Página de autenticação do sistema SIAGUH com suporte multi-idioma.
- * Gere o fluxo de login e a seleção de unidade hospitalar ativa.
- * 
- * @component
- */
 
 const normalizarRole = (role) =>
   String(role || '')
@@ -30,20 +22,16 @@ const mapearRole = (rawRole) => {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { textos } = useLanguage(); // Acesso aos textos dinâmicos (PT/EN)
+  const { textos } = useLanguage();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [showHospitalStep, setShowHospitalStep] = useState(false);
   const [roleSelecionada, setRoleSelecionada] = useState('');
   const [hospitais, setHospitais] = useState([]);
 
-  /**
-   * Submissão do formulário de login
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
@@ -56,9 +44,7 @@ export default function Login() {
         data?.user?.role || data?.role || data?.tipofunc || data?.tipoFunc || data?.funcao
       );
 
-      if (!role) {
-        throw new Error(textos.login.erroRole);
-      }
+      if (!role) throw new Error(textos.login.erroRole);
 
       sessionStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'true');
       sessionStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
@@ -79,17 +65,13 @@ export default function Login() {
       setHospitais(hospitaisAutorizados);
       setShowHospitalStep(true);
     } catch (err) {
-      // Limpa dados de sessão exceto a preferência de idioma
-      Object.values(STORAGE_KEYS).forEach(key => sessionStorage.removeItem(key));
+      Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
       setErro(err.message || textos.login.erroLogin);
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Finaliza o login guardando o hospital ativo
-   */
   const handleEscolherHospital = (hospital) => {
     sessionStorage.setItem(STORAGE_KEYS.ACTIVE_HOSPITAL, JSON.stringify(hospital));
 
@@ -109,89 +91,109 @@ export default function Login() {
   };
 
   return (
-    <main className="login-page" role="main">
-      {/* Feedback para leitores de ecrã sobre erros ou mudança de passo */}
+    <main className="login-shell-pro" role="main">
       <div aria-live="assertive" className="sr-only">
         {erro}
         {showHospitalStep && textos.login.ariaPassoHospital}
       </div>
 
-      <section className="login-page__card" aria-labelledby="login-title">
-        <button
-          type="button"
-          className="login-page__back"
-          onClick={() => navigate('/')}
-          aria-label={textos.login.ariaVoltar}
-        >
-          {textos.geral.voltar}
-        </button>
+      <section className="login-shell-pro__grid" aria-labelledby="login-title">
+        <aside className="login-brand-panel">
+          <span className="login-brand-panel__eyebrow">SIAGUH</span>
+          <h1 className="login-brand-panel__title">Gestão inteligente para urgências hospitalares.</h1>
+          <p className="login-brand-panel__text">
+            Acede à plataforma para gerir atendimento, triagem, episódios clínicos e operação hospitalar com maior rapidez e controlo.
+          </p>
 
-        {!showHospitalStep ? (
-          <>
-            <p className="section-label" aria-hidden="true">{textos.login.labelPasso1}</p>
-            <h1 id="login-title" className="login-page__title">{textos.login.tituloLogin}</h1>
-            <p className="login-page__subtitle">{textos.login.subtituloLogin}</p>
-
-            <form className="login-form" onSubmit={handleSubmit}>
-              <div className="login-form__group">
-                <label htmlFor="username">{textos.admin.lblUsername}</label>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  autoComplete="username"
-                />
-              </div>
-
-              <div className="login-form__group">
-                <label htmlFor="password">{textos.admin.lblPassword}</label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-
-              {erro && <p className="login-form__error" role="alert">{erro}</p>}
-
-              <button
-                type="submit"
-                className="login-form__submit"
-                disabled={loading}
-              >
-                {loading ? textos.geral.aCarregar : textos.login.btnEntrar}
-              </button>
-            </form>
-          </>
-        ) : (
-          <>
-            <p className="section-label" aria-hidden="true">{textos.login.labelPasso2}</p>
-            <h1 id="login-title" className="login-page__title">{textos.login.tituloHospital}</h1>
-            <p className="login-page__subtitle">{textos.login.subtituloHospital}</p>
-
-            {erro && <p className="login-form__error" role="alert">{erro}</p>}
-
-            <div className="hospital-select-list" role="list" aria-label={textos.login.tituloHospital}>
-              {hospitais.map((hospital, index) => (
-                <button
-                  key={hospital.idhosp || index}
-                  type="button"
-                  className="hospital-select-card"
-                  onClick={() => handleEscolherHospital(hospital)}
-                  role="listitem"
-                >
-                  <strong>{hospital.nome || `Hospital ${index + 1}`}</strong>
-                  <span>{hospital.localizacao || hospital.morada || ''}</span>
-                </button>
-              ))}
+          <div className="login-brand-panel__highlights">
+            <div className="login-brand-chip">
+              <strong>Tempo real</strong>
+              <span>Filas, estados e contexto hospitalar centralizado.</span>
             </div>
-          </>
-        )}
+            <div className="login-brand-chip">
+              <strong>Acesso por perfil</strong>
+              <span>Fluxos dedicados para administração, receção, enfermagem e medicina.</span>
+            </div>
+          </div>
+        </aside>
+
+        <section className="login-card-pro">
+          <button
+            type="button"
+            className="login-page__back login-page__back--pro"
+            onClick={() => navigate('/')}
+            aria-label={textos.login.ariaVoltar}
+          >
+            {textos.geral.voltar}
+          </button>
+
+          {!showHospitalStep ? (
+            <>
+              <div className="login-card-pro__header">
+                <span className="login-card-pro__step">{textos.login.labelPasso1}</span>
+                <h2 id="login-title" className="login-card-pro__title">{textos.login.tituloLogin}</h2>
+                <p className="login-card-pro__subtitle">{textos.login.subtituloLogin}</p>
+              </div>
+
+              <form className="login-form login-form--pro" onSubmit={handleSubmit}>
+                <div className="login-form__group login-form__group--pro">
+                  <label htmlFor="username">{textos.admin.lblUsername}</label>
+                  <input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    autoComplete="username"
+                  />
+                </div>
+
+                <div className="login-form__group login-form__group--pro">
+                  <label htmlFor="password">{textos.admin.lblPassword}</label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                {erro && <p className="login-form__error login-form__error--pro" role="alert">{erro}</p>}
+
+                <button type="submit" className="login-form__submit login-form__submit--pro" disabled={loading}>
+                  {loading ? textos.geral.aCarregar : textos.login.btnEntrar}
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="login-card-pro__header">
+                <span className="login-card-pro__step">{textos.login.labelPasso2}</span>
+                <h2 id="login-title" className="login-card-pro__title">{textos.login.tituloHospital}</h2>
+                <p className="login-card-pro__subtitle">{textos.login.subtituloHospital}</p>
+              </div>
+
+              {erro && <p className="login-form__error login-form__error--pro" role="alert">{erro}</p>}
+
+              <div className="hospital-select-list hospital-select-list--pro" role="list" aria-label={textos.login.tituloHospital}>
+                {hospitais.map((hospital, index) => (
+                  <button
+                    key={hospital.idhosp || index}
+                    type="button"
+                    className="hospital-select-card hospital-select-card--pro"
+                    onClick={() => handleEscolherHospital(hospital)}
+                    role="listitem"
+                  >
+                    <strong>{hospital.nome || `Hospital ${index + 1}`}</strong>
+                    <span>{hospital.localizacao || hospital.morada || ''}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
       </section>
     </main>
   );

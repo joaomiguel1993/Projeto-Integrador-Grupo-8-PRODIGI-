@@ -9,6 +9,7 @@ import About from '../pages/public/About';
 import Accessibility from '../pages/public/Accessibility';
 import PrivacyPolicy from '../pages/public/PrivacyPolicy';
 import Faqs from '../pages/public/FAQ';
+import HospitalDetalhe from '../pages/public/HospitalDetalhe';
 import DashboardAdmin from '../pages/private/AdminDashboard';
 import DashboardRececionista from '../pages/private/ReceptionistDashboard';
 import DashboardEnfermeiro from '../pages/private/NurseDashboard';
@@ -19,12 +20,13 @@ const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-      { path: '/', element: <Home /> },
-      { path: '/login', element: <Login /> },
-      { path: '/sobre-nos', element: <About /> },
-      { path: '/politica-privacidade', element: <PrivacyPolicy /> },
-      { path: '/acessibilidade', element: <Accessibility /> },
-      { path: '/faqs', element: <Faqs /> },
+      { path: '/',                      element: <Home /> },
+      { path: '/hospital/:id',          element: <HospitalDetalhe /> },
+      { path: '/login',                 element: <Login /> },
+      { path: '/sobre-nos',             element: <About /> },
+      { path: '/politica-privacidade',  element: <PrivacyPolicy /> },
+      { path: '/acessibilidade',        element: <Accessibility /> },
+      { path: '/faqs',                  element: <Faqs /> },
     ],
   },
   {
