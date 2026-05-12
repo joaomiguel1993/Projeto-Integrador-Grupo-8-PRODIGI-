@@ -1,3 +1,5 @@
+# backend/services/utentes_service.py
+import psycopg2
 from fastapi import HTTPException
 
 from backend.repositories.utentes_repository import (
@@ -8,12 +10,15 @@ from backend.repositories.utentes_repository import (
 )
 
 
+
 def get_utentes_service():
     return listar_utentes()
 
 
+
 def get_utente_service(num_utente: int):
     return obter_utente(num_utente)
+
 
 
 def create_utente_service(nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
@@ -26,18 +31,22 @@ def create_utente_service(nome: str, nif: str, datanasc, sexo: str, localidade: 
     if sexo not in {"M", "F"}:
         raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
 
-    criado = criar_utente(
-        nome=nome.strip(),
-        nif=nif.strip(),
-        datanasc=datanasc,
-        sexo=sexo,
-        localidade=localidade.strip() if localidade else None
-    )
+    try:
+        criado = criar_utente(
+            nome=nome.strip(),
+            nif=nif.strip(),
+            datanasc=datanasc,
+            sexo=sexo,
+            localidade=localidade.strip() if localidade else None
+        )
+    except psycopg2.errors.UniqueViolation:
+        raise HTTPException(status_code=409, detail="Já existe um utente com este NIF.")
 
     if not criado:
         raise HTTPException(status_code=500, detail="Erro ao criar utente.")
 
     return criado
+
 
 
 def update_utente_service(num_utente: int, nome: str, nif: str, datanasc, sexo: str, localidade: str | None = None):
@@ -54,14 +63,17 @@ def update_utente_service(num_utente: int, nome: str, nif: str, datanasc, sexo: 
     if sexo not in {"M", "F"}:
         raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
 
-    atualizado = atualizar_utente(
-        num_utente=num_utente,
-        nome=nome.strip(),
-        nif=nif.strip(),
-        datanasc=datanasc,
-        sexo=sexo,
-        localidade=localidade.strip() if localidade else None
-    )
+    try:
+        atualizado = atualizar_utente(
+            num_utente=num_utente,
+            nome=nome.strip(),
+            nif=nif.strip(),
+            datanasc=datanasc,
+            sexo=sexo,
+            localidade=localidade.strip() if localidade else None
+        )
+    except psycopg2.errors.UniqueViolation:
+        raise HTTPException(status_code=409, detail="Já existe um utente com este NIF.")
 
     if not atualizado:
         raise HTTPException(status_code=500, detail="Erro ao atualizar utente.")
