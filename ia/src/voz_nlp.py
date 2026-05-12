@@ -1,3 +1,14 @@
+"""
+Módulo de Processamento de Linguagem Natural (NLP) e Voz para Triagem.
+
+Este script atua como uma interface inteligente de recolha de dados para os enfermeiros.
+Em vez de inserção manual, o sistema utiliza reconhecimento de voz (Speech-to-Text) 
+para captar a descrição clínica em tempo real. Em seguida, interage com um Large 
+Language Model (LLM - Llama 3 via Groq API) para interpretar o texto não estruturado 
+e extrair os sinais vitais vitais num formato JSON padronizado, pronto a alimentar 
+o modelo preditivo de XGBoost da Triagem.
+"""
+
 import speech_recognition as sr
 from groq import Groq
 import json
@@ -28,7 +39,28 @@ CAMPOS_ESPERADOS = {
 
 def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20):
     """
-    Ouve o microfone e converte a voz em texto (Google Speech-to-Text).
+    Capta o áudio do microfone e converte a voz do enfermeiro em texto.
+
+    Utiliza a biblioteca SpeechRecognition com o motor do Google Speech-to-Text 
+    para detetar a fala e transcrevê-la para o idioma Português (pt-PT). A função 
+    calibra-se automaticamente ao ruído de fundo antes de começar a ouvir.
+
+    Parâmetros:
+    -----------
+    tempo_silencio : float, opcional
+        O tempo em segundos de silêncio necessário para a IA assumir que o enfermeiro 
+        terminou a frase (por defeito é 2.5s).
+    tempo_espera_inicio : int, opcional
+        O tempo máximo em segundos que o sistema aguarda até que alguém comece a falar 
+        (por defeito é 5s).
+    limite_frase : int, opcional
+        A duração máxima em segundos de gravação contínua permitida (por defeito é 20s).
+
+    Retorno:
+    --------
+    str ou None
+        Retorna uma string em minúsculas com o texto transcrito em caso de sucesso.
+        Retorna None se ocorrer um erro (timeout, voz impercetível ou falha de rede).
     """
     reconhecedor = sr.Recognizer()
     reconhecedor.pause_threshold = tempo_silencio
@@ -65,7 +97,23 @@ def ouvir_enfermeiro(tempo_silencio=2.5, tempo_espera_inicio=5, limite_frase=20)
 
 def processar_texto_medico(texto: str) -> dict:
     """
-    Usa o Groq (llama-3.3-70b) para extrair sinais vitais do texto em português.
+    Processa linguagem natural clínica e extrai sinais vitais através de IA Generativa.
+
+    Submete a transcrição de voz a um LLM (Llama-3.3-70b-versatile via Groq), através de um 
+    prompt de engenharia rígido que obriga o modelo a agir como assistente clínico e a
+    devolver exclusivamente um objeto JSON limpo com os parâmetros médicos detetados.
+
+    Parâmetros:
+    -----------
+    texto : str
+        A frase em linguagem natural descritiva dos sintomas e sinais vitais do paciente.
+
+    Retorno:
+    --------
+    dict ou None
+        Retorna um dicionário estruturado com as chaves correspondentes aos 
+        sinais vitais (Age, Heart_Rate_BPM, SpO2_Percent, Temperature_C, Pain_Level, 
+        Consciousness). Se a IA falhar na conversão, retorna None.
     """
     if not texto:
         return None

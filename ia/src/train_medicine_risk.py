@@ -1,3 +1,21 @@
+"""
+Módulo de Treino do Modelo de Risco Medicamentoso.
+
+Este script executa a pipeline completa de treino da Inteligência Artificial
+focada na segurança clínica (Medicine Risk AI). O processo abrange o carregamento
+do dataset de históricos clínicos, a separação das variáveis preditivas (features)
+da variável alvo (target), e o treino de um algoritmo Random Forest Classifier.
+Por fim, avalia a precisão da aprendizagem e serializa o modelo treinado em disco
+para utilização futura em inferências em tempo real na API hospitalar.
+
+Inputs (Entradas):
+    - 'data/raw/medicine_risk_Dataset.csv': Dataset com dados sintéticos clínicos.
+
+Outputs (Saídas):
+    - 'models/randomforest_medicine_risk.joblib': Ficheiro binário contendo o
+      modelo treinado ("cérebro" da IA) pronto a ser carregado no servidor.
+"""
+
 import os
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier

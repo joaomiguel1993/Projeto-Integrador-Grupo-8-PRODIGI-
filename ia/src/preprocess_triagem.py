@@ -1,9 +1,40 @@
+"""
+Módulo de Pré-processamento de Dados para a Triagem Clínica.
+
+Este script prepara os dados brutos gerados sobre os pacientes da urgência
+para que possam ser compreendidos pelo algoritmo de Inteligência Artificial.
+Realiza a leitura do dataset, seleção de variáveis (features) e a conversão 
+de texto (variáveis categóricas e o alvo final) para valores numéricos, 
+guardando os codificadores para uso futuro na fase de inferência.
+"""
+
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import joblib
 import os
 
 def load_and_preprocess_triagem(file_path):
+    """
+    Carrega e pré-processa o dataset de triagem hospitalar.
+
+    A função isola as variáveis de interesse clínico e transforma os dados
+    de texto (como o estado de consciência e a cor da pulseira) em números.
+    Exporta também os "tradutores" (encoders) para o disco, garantindo que
+    a aplicação final consiga reverter a previsão numérica para a cor original.
+
+    Parâmetros:
+    -----------
+    file_path : str
+        O caminho local para o ficheiro CSV contendo os dados brutos da triagem.
+
+    Retorno:
+    --------
+    tuple
+        Retorna um tuplo (X, y) onde:
+        - X (pandas.DataFrame): Tabela contendo as variáveis independentes numéricas.
+        - y (numpy.ndarray ou pandas.Series): Array contendo o alvo codificado 
+          (as categorias de cor transformadas em números inteiros de 0 a 4).
+    """
     print(f"A carregar os dados clínicos de: {file_path}")
     df = pd.read_csv(file_path)
     

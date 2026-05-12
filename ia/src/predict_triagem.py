@@ -1,7 +1,40 @@
+"""
+Módulo de Inferência de Triagem Clínica.
+
+Este script é responsável por carregar o modelo de Machine Learning treinado
+(XGBoost) e utilizá-lo para prever, em tempo real, o nível de urgência
+(cor da pulseira) de um paciente que acaba de dar entrada no hospital,
+baseando-se nos seus sinais vitais.
+"""
+
 import pandas as pd
 import joblib
 
 def fazer_triagem(sinais_vitais):
+    """
+    Analisa os sinais vitais de um paciente e recomenda a cor da pulseira de triagem.
+
+    A função carrega o modelo previamente treinado e os codificadores (encoders) 
+    necessários para transformar dados de texto em números compreensíveis pela IA. 
+    Após a predição, traduz o resultado numérico de volta para a categoria de cor original.
+
+    Parâmetros:
+    -----------
+    sinais_vitais : dict
+        Dicionário contendo as medições clínicas do paciente. Deve conter as chaves:
+        - 'Age' (int): Idade do paciente.
+        - 'Heart_Rate_BPM' (int): Frequência cardíaca em batimentos por minuto.
+        - 'SpO2_Percent' (int): Saturação de oxigénio em percentagem.
+        - 'Temperature_C' (float): Temperatura corporal em graus Celsius.
+        - 'Pain_Level' (int): Nível de dor avaliado de 0 a 10.
+        - 'Consciousness' (str): Estado mental (ex: 'Acordado', 'Confuso', 'Inconsciente').
+
+    Retorno:
+    --------
+    str
+        A cor da pulseira recomendada ('Red', 'Orange', 'Yellow', 'Green' ou 'Blue').
+        Em caso de erro ao carregar os modelos, retorna uma string de erro.
+    """
     # 1. Carregar o modelo e os "tradutores"
     try:
         modelo = joblib.load('models/xgboost_triagem.joblib')

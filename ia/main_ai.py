@@ -1,3 +1,16 @@
+"""
+Servidor Central de Inteligência Artificial Hospitalar (FastAPI).
+
+Este módulo atua como o motor principal do ecossistema de IA. Ele carrega 
+os modelos de Machine Learning pré-treinados para a memória e expõe 
+endpoints (rotas RESTful) que permitem ao frontend/backend consultar 
+as predições em tempo real. As rotas incluem:
+- Triagem preditiva (XGBoost Classifier)
+- Estimativa de tempos de espera por prioridade (XGBoost Regressor)
+- Extração de sinais vitais por voz via LLM (Groq / Llama 3)
+- Avaliação de risco de prescrição medicamentosa (Random Forest)
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -39,6 +52,7 @@ CAMPOS_ESPERADOS = {
 
 # --- 3. Modelos de Dados ---
 class DadosTriagem(BaseModel):
+    """Esquema de dados esperados para a inferência de Triagem."""
     Age: int
     Heart_Rate_BPM: int
     SpO2_Percent: int
@@ -47,6 +61,7 @@ class DadosTriagem(BaseModel):
     Consciousness: str
 
 class DadosEspera(BaseModel):
+    """Esquema de dados operacionais esperados para o cálculo de tempos de espera."""
     Urgency_Level: str          # 'Critical', 'High', 'Medium', 'Low'
     Nurse_to_Patient_Ratio: int # ex: 7
     Specialist_Availability: int # ex: 2
@@ -56,9 +71,11 @@ class DadosEspera(BaseModel):
     Season: str                 # 'Winter', 'Spring', 'Summer', 'Autumn'
 
 class DadosVoz(BaseModel):
+    """Esquema de dados para a rota de Processamento de Linguagem Natural."""
     texto: str
 
 class DadosRiscoMed(BaseModel):
+    """Esquema de dados para a validação de segurança de uma prescrição."""
     Classe_Novo_Med: int
     Tem_Alergia_Classe: int
     Gravidade_Alergia: int
@@ -71,6 +88,15 @@ tradutor_cons = {'Acordado': 1, 'Confuso': 2, 'Inconsciente': 3}
 # --- ROTA 1: Prever Cor da Pulseira ---
 @app.post("/predict/triage")
 def predict_triage(d: DadosTriagem):
+    """
+    Endpoint para classificar o nível de urgência de um utente.
+
+    Recebe os sinais vitais, transforma-os numa estrutura tabular (DataFrame) 
+    e utiliza o modelo XGBoost de Triagem para prever a cor da pulseira correspondente.
+
+    Retorno:
+        dict: Um dicionário com a chave "pulseira" contendo a classe prevista.
+    """
     cons_num = tradutor_cons.get(d.Consciousness, 1)
 
     df = pd.DataFrame(
@@ -84,6 +110,17 @@ def predict_triage(d: DadosTriagem):
 # --- ROTA 2: Prever Tempo de Espera por Nível de Urgência ---
 @app.post("/predict/wait-time")
 def predict_wait(d: DadosEspera):
+    """
+    Endpoint para estimar o tempo de espera no painel da urgência.
+
+    Recebe o estado operacional do hospital e clona esse estado para os 4 níveis 
+    principais de triagem. Aplica os codificadores (encoders) e utiliza o XGBoost 
+    Regressor para devolver os tempos de espera previstos (em minutos) para cada cor.
+
+    Retorno:
+        dict: Um dicionário mapeando cada nível de urgência (Critical, High, Medium, Low)
+        aos respetivos minutos de espera estimados.
+    """
     resultados = {}
 
     pulseiras = ['Critical', 'High', 'Medium', 'Low']
@@ -121,6 +158,16 @@ def predict_wait(d: DadosEspera):
 # --- ROTA 3: Processar Texto e Extrair Sinais Vitais via Groq ---
 @app.post("/predict/voz")
 def predict_voz(d: DadosVoz):
+    """
+    Endpoint de NLP para extração de dados clínicos a partir de texto.
+
+    Submete o texto (ditado por voz ou escrito livremente) à API do Groq (LLM Llama 3)
+    com um prompt rígido, forçando o modelo a estruturar a informação num JSON 
+    limpo e formatado, ideal para alimentar a rota de triagem preditiva.
+
+    Retorno:
+        dict: Um dicionário com os sinais vitais estruturados ou uma mensagem de erro.
+    """
     prompt = f"""És um assistente clínico. Extrai os sinais vitais do seguinte texto falado por um enfermeiro em português.
 Devolve APENAS um objeto JSON válido, sem explicações nem markdown, com exatamente estas chaves:
 - "Age": número inteiro (anos) ou null
@@ -166,6 +213,17 @@ JSON:"""
 # --- ROTA 4: Prever Risco de Medicação ---
 @app.post("/predict/medicine-risk")
 def predict_medicine_risk(d: DadosRiscoMed):
+    """
+    Endpoint para validação de segurança clínica de prescrições.
+
+    Cruza o perfil do paciente e as interações medicamentosas com o modelo
+    Random Forest. Avalia o grau de perigo e devolve a predição juntamente com 
+    a percentagem de certeza do algoritmo.
+
+    Retorno:
+        dict: Dicionário contendo o nível de risco binário, uma etiqueta legível
+        e a probabilidade estatística do evento ocorrer.
+    """
     df = pd.DataFrame(
         [[d.Classe_Novo_Med, d.Tem_Alergia_Classe, d.Gravidade_Alergia,
           d.Tem_Interacao_Ativa, d.Idade_Utente]],

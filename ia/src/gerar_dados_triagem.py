@@ -1,9 +1,37 @@
+"""
+Módulo de Geração de Dados Sintéticos para Modelo de Triagem Clínica.
+
+Este script é responsável por criar um dataset virtual de pacientes que dão entrada
+numa urgência hospitalar. O objetivo é fornecer dados de treino estruturados para
+um modelo de Inteligência Artificial (ex: XGBoost) aprender a prever o nível
+de prioridade do utente com base no Protocolo de Triagem de Manchester.
+"""
+
 import pandas as pd
 import numpy as np
 import os
 import random
 
 def gerar_dataset_triagem(num_linhas=5000):
+    """
+    Gera casos clínicos fictícios aplicando regras lógicas para simular sinais vitais
+    coerentes com as diferentes cores/prioridades da Triagem de Manchester.
+
+    A função distribui os pacientes virtualmente pelas 5 cores de triagem (Vermelho, 
+    Laranja, Amarelo, Verde, Azul) utilizando probabilidades baseadas na realidade 
+    hospitalar comum, e ajusta os sinais vitais (Dor, SpO2, BPM, Temperatura e Consciência)
+    de acordo com a gravidade associada a cada cor.
+
+    Parâmetros:
+    -----------
+    num_linhas : int, opcional
+        O número de pacientes/registos a gerar (por defeito é 5000).
+
+    Retorno:
+    --------
+    Nenhum. (A função exporta diretamente um ficheiro CSV 'Triage_Dataset.csv' 
+    para o diretório 'data/raw/').
+    """
     print(f"A gerar {num_linhas} pacientes virtuais... 🧬")
     np.random.seed(42)
     

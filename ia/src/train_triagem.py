@@ -1,3 +1,21 @@
+"""
+Módulo de Treino do Modelo de Triagem Clínica.
+
+Este script é responsável por treinar a Inteligência Artificial dedicada
+à atribuição do nível de urgência (Cor da Pulseira) aos pacientes. 
+O processo importa o módulo de pré-processamento para formatar os dados brutos, 
+divide o dataset em conjuntos de treino e teste, e treina um algoritmo 
+XGBoost Classifier. Após avaliar a precisão clínica do modelo, guarda 
+o "cérebro" treinado em formato binário para ser consumido pela API.
+
+Inputs (Entradas):
+    - 'data/raw/Triage_Dataset.csv': Dataset bruto com os sinais vitais gerados.
+
+Outputs (Saídas):
+    - 'models/xgboost_triagem.joblib': Ficheiro binário contendo o
+      modelo de classificação treinado e pronto a classificar novos doentes.
+"""
+
 import joblib
 import os
 from sklearn.model_selection import train_test_split
@@ -7,6 +25,21 @@ from xgboost import XGBClassifier # <-- Repara, agora usamos o Classificador!
 from preprocess_triagem import load_and_preprocess_triagem
 
 def train_triagem():
+    """
+    Executa a pipeline de treino do modelo preditivo de triagem.
+
+    A função orquestra as seguintes fases:
+    1. Ingestão e limpeza dos dados através da função `load_and_preprocess_triagem`.
+    2. Divisão dos dados (80% para treino / 20% para validação).
+    3. Inicialização e treino do XGBoost Classifier.
+    4. Cálculo da métrica de Accuracy (Precisão) face aos dados de teste.
+    5. Serialização (exportação) do modelo final treinado para a pasta 'models'.
+
+    Retorno:
+    --------
+    Nenhum. A função exporta o modelo para o disco de forma silenciosa, 
+    imprimindo os logs de progresso e precisão no terminal.
+    """
     print("\n--- INÍCIO DO TREINO: TRIAGEM IA (CLASSIFICAÇÃO) ---")
     
     # 1. Carregar os dados limpos

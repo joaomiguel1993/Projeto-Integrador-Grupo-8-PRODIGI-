@@ -1,3 +1,13 @@
+"""
+Módulo de Inferência de Risco Medicamentoso.
+
+Este script atua como o "motor de decisão" para a segurança de prescrições.
+Ele carrega um modelo de Machine Learning previamente treinado (Random Forest)
+e disponibiliza uma função para avaliar em tempo real se a prescrição de um
+medicamento para um determinado utente é segura ou apresenta risco elevado,
+retornando a decisão e a respetiva probabilidade de perigo.
+"""
+
 import joblib
 import pandas as pd
 
@@ -7,17 +17,33 @@ modelo = joblib.load('models/randomforest_medicine_risk.joblib')
 def prever_risco_medicamento(classe_med, tem_alergia, gravidade_alergia,
                               tem_interacao, idade_utente):
     """
-    Prevê se uma prescrição representa risco para o utente.
+    Prevê se uma prescrição médica representa um risco para o utente.
+
+    Cruza os dados do paciente com o modelo de IA para determinar a segurança
+    da administração do medicamento, tendo em conta alergias, choques com
+    medicação ativa e o fator idade.
 
     Parâmetros:
-      classe_med        - Classe do novo medicamento (1-10)
-      tem_alergia       - Tem alergia à classe? (0=Não, 1=Sim)
-      gravidade_alergia - Gravidade da alergia (0=Nenhuma, 1=Leve, 2=Moderada, 3=Grave, 4=Muito Grave)
-      tem_interacao     - Tem interação ativa com outro medicamento? (0=Não, 1=Sim)
-      idade_utente      - Idade do utente (anos)
+    -----------
+    classe_med : int
+        Classe terapêutica do novo medicamento (ID numérico de 1 a 10).
+    tem_alergia : int
+        Indicador binário de histórico de alergia à classe (0 = Não, 1 = Sim).
+    gravidade_alergia : int
+        Escala de gravidade da alergia (0=Nenhuma, 1=Leve, 2=Moderada, 3=Grave, 4=Muito Grave).
+    tem_interacao : int
+        Indicador binário se o medicamento tem interação ativa negativa com outro 
+        que o utente já toma (0 = Não, 1 = Sim).
+    idade_utente : int
+        A idade atual do utente (em anos).
 
-    Retorna:
-      dict com 'risco' (0 ou 1) e 'probabilidade'
+    Retorno:
+    --------
+    dict
+        Um dicionário contendo o resultado da avaliação de risco:
+        - 'risco' (int): 0 para Seguro, 1 para Risco Elevado.
+        - 'resultado' (str): Etiqueta visual de formatação (ex: '⚠️  COM RISCO').
+        - 'probabilidade' (str): A percentagem de certeza do modelo (ex: '95.0%').
     """
     dados = pd.DataFrame([[
         classe_med, tem_alergia, gravidade_alergia,

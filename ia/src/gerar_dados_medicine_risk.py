@@ -1,3 +1,12 @@
+"""
+Módulo de Geração de Dados Sintéticos para Modelo de Risco Medicamentoso.
+
+Este script gera um dataset com 10.000 casos clínicos simulados para treinar
+um modelo de Machine Learning. O objetivo é prever se a prescrição de um
+determinado medicamento é segura (0) ou perigosa (1) com base no histórico
+do utente, alergias e possíveis interações medicamentosas.
+"""
+
 import pandas as pd
 import numpy as np
 
@@ -35,6 +44,25 @@ df.loc[df['Tem_Alergia_Classe'] == 0, 'Gravidade_Alergia'] = 0
 
 # 2. Definir as Regras de Risco (O nosso "Target" que a IA vai tentar adivinhar)
 def calcular_risco(row):
+    """
+    Avalia o risco de uma prescrição médica baseando-se no perfil e histórico do utente.
+
+    Aplica um conjunto de protocolos clínicos (Regras If-Then) para determinar
+    se a prescrição de uma nova classe terapêutica representa um perigo para o utente.
+
+    Parâmetros:
+    -----------
+    row : pandas.Series
+        Uma linha do DataFrame contendo as features do utente simulado. 
+        As chaves esperadas são 'Tem_Interacao_Ativa', 'Tem_Alergia_Classe', 
+        'Gravidade_Alergia' e 'Idade_Utente'.
+
+    Retorno:
+    --------
+    int
+        Retorna 1 (Risco Alto) se a prescrição violar alguma regra de segurança.
+        Retorna 0 (Seguro) se a prescrição for validada sem alertas.
+    """
     # REGRA 1: Interação medicamentosa ativa é sempre perigosa
     if row['Tem_Interacao_Ativa'] == 1:
         return 1

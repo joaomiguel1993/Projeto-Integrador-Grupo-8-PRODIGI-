@@ -1,7 +1,43 @@
+"""
+Módulo de Inferência de Tempo de Espera.
+
+Este script utiliza um modelo de regressão treinado (XGBoost) para estimar
+o tempo exato que um utente terá de aguardar até ser atendido na urgência.
+O algoritmo cruza a prioridade clínica do doente com métricas operacionais do 
+hospital em tempo real (como o rácio de enfermeiros, número de camas disponíveis 
+e a sazonalidade) para devolver uma previsão em minutos.
+"""
+
 import pandas as pd
 import joblib
 
 def prever_espera(dados_paciente):
+    """
+    Estima o tempo de espera de um paciente na urgência em minutos.
+
+    A função carrega o modelo de predição e os codificadores. Converte os dados 
+    categóricos (texto) do novo paciente para o formato numérico correto e pede 
+    à Inteligência Artificial que calcule o tempo com base no cenário submetido.
+
+    Parâmetros:
+    -----------
+    dados_paciente : dict
+        Dicionário com as informações do utente e do estado do hospital no momento.
+        Deve conter as seguintes chaves:
+        - 'Urgency Level' (str): Nível de urgência (ex: 'High', 'Medium', 'Low').
+        - 'Nurse-to-Patient Ratio' (int/float): Número de pacientes por enfermeiro.
+        - 'Specialist Availability' (int): Número de médicos especialistas disponíveis.
+        - 'Facility Size (Beds)' (int): Número total de camas no serviço.
+        - 'Day of Week' (str): Dia da semana (ex: 'Monday', 'Friday').
+        - 'Time of Day' (str): Período do dia (ex: 'Morning', 'Late Morning', 'Night').
+        - 'Season' (str): Estação do ano (ex: 'Winter', 'Summer').
+
+    Retorno:
+    --------
+    float ou str
+        Retorna um valor do tipo float representando os minutos de espera previstos.
+        Em caso de ausência dos ficheiros do modelo, retorna uma string com o erro.
+    """
     # 1. Carregar o "cérebro" (XGBoost) e os "tradutores" (Encoders) que guardámos no treino
     try:
         modelo = joblib.load('models/xgboost_wait_time.joblib')

@@ -23,6 +23,7 @@ pip install SpeechRecognition pyaudio
 ia Tempo
 Executa o código com o comando:
 Bash
+python src/gerar_dados_wait_time.py
 python src/preprocess_wait_time.py
 python src/train_wait_time.py
 python src/predict_wait_time.py
