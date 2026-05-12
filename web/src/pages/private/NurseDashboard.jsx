@@ -7,6 +7,7 @@ import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -126,7 +127,7 @@ export default function NurseDashboard() {
     setLoading(true);
     setErro('');
     try {
-      const res = await fetch(`${API_URL}/api/epurgencia/abertos-sem-triagem`);
+      const res = await fetch(`${API_URL}/api/episodios`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar fila.');
       setEpisodios(Array.isArray(data) ? data : []);
@@ -155,8 +156,8 @@ export default function NurseDashboard() {
     try {
       const utenteId = ep.id_utente || ep.idutente;
       const [uRes, mRes] = await Promise.all([
-        fetch(`${API_URL}/api/utentes/${utenteId}`),
-        fetch(`${API_URL}/api/medicacao-ativa/${utenteId}`),
+        fetch(`${API_URL}/api/utentes/${num_utente}`),
+        fetch(`${API_URL}/api/medicacaoativa/utente/${num_utente}`),
       ]);
 
       const uData = await uRes.json();
@@ -182,7 +183,7 @@ export default function NurseDashboard() {
       setMensagem('');
       setErro('');
 
-      const res = await fetch(`${API_URL}/api/ia-triagem/sugerir-cor`, {
+      const res = await fetch(`${API_IA}/api/predict/triagem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ utente, triagem }),
@@ -210,7 +211,7 @@ export default function NurseDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id_epurgencia: episodioSelecionado?.id_epurgencia || episodioSelecionado?.id,
+          id_episodio: episodioSelecionado?.id_episodio || episodioSelecionado?.id,
           ...triagem,
         }),
       });
