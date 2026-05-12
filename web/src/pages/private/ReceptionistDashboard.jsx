@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/Logo.png';
 import '../../styles/admin.css';
-import { apiFetch } from '../../services/api';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { STORAGE_KEYS } from '../../constants/roles';
 import '../../styles/receptionist-dashboard.css';
+import FooterLayout from '../../components/layout/FooterLayout';
+import { useLanguage } from '../../contexts/LanguageContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -13,690 +14,594 @@ const normalizar = (texto) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-const apiTry = async (tentativas) => {
-  let ultimoErro = null;
-  for (const tentativa of tentativas) {
-    try {
-      return await apiFetch(tentativa.url, tentativa.options || {});
-    } catch (err) {
-      ultimoErro = err;
-    }
-  }
-  throw ultimoErro || new Error('Não foi possível concluir o pedido.');
-};
+const IconMenu = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 7h16" />
+    <path d="M4 12h16" />
+    <path d="M4 17h16" />
+  </svg>
+);
 
-const toArray = (value) => (Array.isArray(value) ? value : []);
+const IconSearch = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </svg>
+);
 
-const obterNomeSessao = () => {
-  try {
-    const raw =
-      sessionStorage.getItem(STORAGE_KEYS?.USER_DATA) ||
-      sessionStorage.getItem('user');
-    const user = raw ? JSON.parse(raw) : null;
-    return user?.nome || user?.username || 'Rececionista';
-  } catch {
-    return 'Rececionista';
-  }
-};
+const IconUserPlus = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+    <circle cx="9.5" cy="7" r="4" />
+    <path d="M20 8v6" />
+    <path d="M17 11h6" />
+  </svg>
+);
 
-const obterIniciais = (nome = '') =>
-  String(nome)
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((parte) => parte[0]?.toUpperCase() || '')
-    .join('');
+const IconUser = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20a8 8 0 0 1 16 0" />
+  </svg>
+);
 
-const formatarDataHora = (valor) => {
-  if (!valor) return '—';
-  const data = new Date(valor);
-  return Number.isNaN(data.getTime()) ? String(valor) : data.toLocaleString('pt-PT');
-};
+const IconDoor = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 21h16" />
+    <path d="M7 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16" />
+    <path d="M10 12h.01" />
+  </svg>
+);
 
-const mapUtente = (u) => ({
-  ...u,
-  id: Number(u?.idutente ?? u?.id_utente ?? u?.idut ?? u?.id ?? 0),
-  nome: u?.nome ?? '',
-  nif: u?.nif ?? '',
-  sexo: u?.sexo ?? '',
-  data_nascimento: u?.data_nascimento ?? u?.datanascimento ?? '',
-  telefone: u?.telefone ?? u?.telemovel ?? '',
-  email: u?.email ?? '',
-  morada: u?.morada ?? u?.localidade ?? '',
-});
+const IconFolder = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
+  </svg>
+);
 
-const mapEpisodio = (ep) => ({
-  ...ep,
-  id: Number(ep?.id_epurgencia ?? ep?.idepisodio ?? ep?.id ?? 0),
-  nome_utente: ep?.nome_utente ?? ep?.utente_nome ?? ep?.nomeutente ?? ep?.utente?.nome ?? '',
-  datahoraentr: ep?.datahoraentr ?? ep?.datahora ?? ep?.created_at ?? ep?.criado_em ?? '',
-  estado: ep?.estado ?? ep?.status ?? 'Aberto',
-});
+const IconClock = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
 
-const obterHospitalSessao = () => {
-  try {
-    const raw =
-      sessionStorage.getItem('hospitalAtivo') ||
-      sessionStorage.getItem(STORAGE_KEYS?.HOSPITAL_ATIVO || '');
-    const hospital = raw ? JSON.parse(raw) : null;
-    return hospital?.nome || hospital?.localizacao || 'Hospital ativo';
-  } catch {
-    return 'Hospital ativo';
-  }
-};
+const IconExit = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="M16 17l5-5-5-5" />
+    <path d="M21 12H9" />
+  </svg>
+);
 
 export default function ReceptionistDashboard() {
   const navigate = useNavigate();
-  const { textos } = useLanguage();
+  const { textos, idioma, mudarIdioma } = useLanguage();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mainMenu, setMainMenu] = useState('pesquisar');
   const [utentes, setUtentes] = useState([]);
-  const [episodiosRecentes, setEpisodiosRecentes] = useState([]);
-  const [utenteSelecionado, setUtenteSelecionado] = useState(null);
+  const [episodios, setEpisodios] = useState([]);
+  const [hospitalAtivo, setHospitalAtivo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
-  const [funcionarioAutenticadoNome, setFuncionarioAutenticadoNome] = useState('Rececionista');
-  const [hospitalAtivoNome, setHospitalAtivoNome] = useState('Hospital ativo');
-
-  const [filtroNome, setFiltroNome] = useState('');
-  const [filtroNif, setFiltroNif] = useState('');
-
+  const [filtro, setFiltro] = useState('');
+  const [utenteSelecionado, setUtenteSelecionado] = useState(null);
   const [novoUtente, setNovoUtente] = useState({
     nome: '',
     nif: '',
-    sexo: 'F',
     data_nascimento: '',
+    sexo: 'M',
     telefone: '',
     email: '',
     morada: '',
   });
-
-  const [entradaForm, setEntradaForm] = useState({
-    observacoes: '',
+  const [novoEpisodio, setNovoEpisodio] = useState({
+    motivo: '',
+    observacao: '',
   });
 
-  const [entradaRegistada, setEntradaRegistada] = useState(null);
-
-  const [episodioForm, setEpisodioForm] = useState({
-    queixa_principal: '',
-    observacoes: '',
-  });
-
-  useEffect(() => {
-    setFuncionarioAutenticadoNome(obterNomeSessao());
-    setHospitalAtivoNome(obterHospitalSessao());
-    carregarUtentes();
-    carregarEpisodiosRecentes();
+  const utilizadorLogado = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('user') || '{}');
+    } catch {
+      return {};
+    }
   }, []);
 
-  const fazerLogout = () => {
-    sessionStorage.removeItem(STORAGE_KEYS?.USER_DATA || 'user');
-    sessionStorage.removeItem('user');
-    navigate('/');
+  const nomeUtilizador =
+    utilizadorLogado?.nome ||
+    utilizadorLogado?.name ||
+    utilizadorLogado?.username ||
+    'Utilizador';
+
+  const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
+
+  useEffect(() => {
+    const storedHospital = sessionStorage.getItem('hospitalAtivo');
+    if (storedHospital) {
+      try {
+        setHospitalAtivo(JSON.parse(storedHospital));
+      } catch {
+        setHospitalAtivo(null);
+      }
+    }
+    carregarTudo();
+  }, []);
+
+  const abrirPerfilUtilizador = () => {
+    const userId =
+      utilizadorLogado?.id_utilizador ||
+      utilizadorLogado?.idutilizador ||
+      utilizadorLogado?.id_user ||
+      utilizadorLogado?.id ||
+      utilizadorLogado?.utilizador_id;
+
+    if (userId) navigate(`/perfil/${userId}`);
+    else navigate('/perfil');
   };
 
-  const carregarUtentes = async () => {
+  const carregarTudo = async () => {
+    setLoading(true);
+    setErro('');
     try {
-      setLoading(true);
-      setErro('');
-      const data = await apiTry([
-        { url: '/api/utentes' },
-        { url: '/api/utentes/' },
+      const [uRes, eRes] = await Promise.all([
+        fetch(`${API_URL}/api/utentes`),
+        fetch(`${API_URL}/api/episodios/recentes`),
       ]);
-      setUtentes(toArray(data).map(mapUtente).filter((u) => u.id > 0));
-    } catch (err) {
-      setErro(err.message || 'Não foi possível carregar os utentes.');
+
+      const uData = await uRes.json();
+      const eData = await eRes.json();
+
+      if (!uRes.ok) throw new Error(uData?.detail || 'Erro ao carregar utentes.');
+      if (!eRes.ok) throw new Error(eData?.detail || 'Erro ao carregar episódios.');
+
+      setUtentes(Array.isArray(uData) ? uData : []);
+      setEpisodios(Array.isArray(eData) ? eData : []);
+    } catch (e) {
+      setErro(e.message || 'Erro ao carregar dados.');
       setUtentes([]);
+      setEpisodios([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const carregarEpisodiosRecentes = async () => {
-    try {
-      const data = await apiTry([
-        { url: '/api/episodios' },
-        { url: '/api/episodios/' },
-      ]);
-      setEpisodiosRecentes(toArray(data).map(mapEpisodio).slice(0, 10));
-    } catch {
-      setEpisodiosRecentes([]);
-    }
+  const utentesFiltrados = useMemo(() => {
+    return utentes.filter((u) => {
+      const texto = [u.nome, u.nif, u.numero_utente, u.telefone].join(' ');
+      return normalizar(texto).includes(normalizar(filtro));
+    });
+  }, [utentes, filtro]);
+
+  const selecionarUtente = (u) => {
+    setUtenteSelecionado(u);
+    setMainMenu('ficha');
+    setMensagem('');
+    setErro('');
+  };
+
+  const handleNovoUtenteChange = (e) => {
+    const { name, value } = e.target;
+    setNovoUtente((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNovoEpisodioChange = (e) => {
+    const { name, value } = e.target;
+    setNovoEpisodio((prev) => ({ ...prev, [name]: value }));
   };
 
   const criarUtente = async (e) => {
     e.preventDefault();
-
+    setMensagem('');
+    setErro('');
     try {
-      setErro('');
-      setMensagem('');
-      const data = await apiTry([
-        {
-          url: '/api/utentes',
-          options: {
-            method: 'POST',
-            body: JSON.stringify(novoUtente),
-          },
-        },
-        {
-          url: '/api/utente',
-          options: {
-            method: 'POST',
-            body: JSON.stringify(novoUtente),
-          },
-        },
-      ]);
+      const res = await fetch(`${API_URL}/api/utentes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(novoUtente),
+      });
 
-      const criado = mapUtente(data);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Erro ao criar utente.');
+
       setMensagem('Utente criado com sucesso.');
-      setUtenteSelecionado(criado.id ? criado : null);
       setNovoUtente({
         nome: '',
         nif: '',
-        sexo: 'F',
         data_nascimento: '',
+        sexo: 'M',
         telefone: '',
         email: '',
         morada: '',
       });
-
-      await carregarUtentes();
+      await carregarTudo();
       setMainMenu('pesquisar');
-    } catch (err) {
-      setErro(err.message || 'Não foi possível criar o utente.');
+    } catch (e) {
+      setErro(e.message);
     }
   };
 
-  const darEntradaHospital = (e) => {
-    e.preventDefault();
+  const darEntrada = async () => {
+    if (!utenteSelecionado) return;
 
-    if (!utenteSelecionado) {
-      setErro('Seleciona um utente primeiro.');
+    if (!hospitalAtivo) {
+      setErro('Não existe hospital ativo selecionado.');
       return;
     }
 
+    setMensagem('');
     setErro('');
-    setMensagem('Entrada registada localmente. Já podes abrir o episódio de urgência.');
-    setEntradaRegistada({
-      datahora: new Date().toISOString(),
-      observacoes: entradaForm.observacoes,
-    });
-    setMainMenu('episodio');
-  };
-
-  const abrirEpisodioUrgencia = async (e) => {
-    e.preventDefault();
-
-    if (!utenteSelecionado) {
-      setErro('Seleciona um utente primeiro.');
-      return;
-    }
 
     try {
-      setErro('');
-      setMensagem('');
+      const res = await fetch(`${API_URL}/api/epurgencia`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          utente_id: utenteSelecionado.id_utente || utenteSelecionado.idutente,
+          hospital_id: hospitalAtivo?.id_hosp || hospitalAtivo?.idhosp || hospitalAtivo?.id,
+        }),
+      });
 
-      await apiTry([
-        {
-          url: '/api/episodios',
-          options: {
-            method: 'POST',
-            body: JSON.stringify({
-              id_utente: utenteSelecionado.id,
-              datahoraentr: entradaRegistada?.datahora || new Date().toISOString(),
-              estado: 'ABERTO',
-              queixa_principal: episodioForm.queixa_principal,
-              observacoes: [entradaRegistada?.observacoes, episodioForm.observacoes]
-                .filter(Boolean)
-                .join(' | '),
-            }),
-          },
-        },
-        {
-          url: '/api/episodio',
-          options: {
-            method: 'POST',
-            body: JSON.stringify({
-              id_utente: utenteSelecionado.id,
-              datahoraentr: entradaRegistada?.datahora || new Date().toISOString(),
-              estado: 'ABERTO',
-              queixa_principal: episodioForm.queixa_principal,
-              observacoes: [entradaRegistada?.observacoes, episodioForm.observacoes]
-                .filter(Boolean)
-                .join(' | '),
-            }),
-          },
-        },
-      ]);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Erro ao dar entrada.');
 
-      setMensagem('Episódio de urgência aberto com sucesso.');
-      setEntradaForm({ observacoes: '' });
-      setEntradaRegistada(null);
-      setEpisodioForm({ queixa_principal: '', observacoes: '' });
-      await carregarEpisodiosRecentes();
-      setMainMenu('recentes');
-    } catch (err) {
-      setErro(err.message || 'Não foi possível abrir o episódio.');
+      setMensagem('Entrada registada com sucesso.');
+      await carregarTudo();
+    } catch (e) {
+      setErro(e.message);
     }
   };
 
-  const utentesFiltrados = useMemo(() => {
-    return utentes.filter((u) => {
-      const matchNome = normalizar(u.nome).includes(normalizar(filtroNome));
-      const matchNif = String(u.nif || '').includes(filtroNif);
-      return matchNome && matchNif;
-    });
-  }, [utentes, filtroNome, filtroNif]);
+  const abrirEpisodio = async () => {
+    if (!utenteSelecionado) return;
 
-  const renderPesquisar = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>Dashboard Rececionista</h2>
-        <p>Fluxo rápido de registo, admissão e abertura de episódio.</p>
-      </div>
+    setMensagem('');
+    setErro('');
 
-      <div className="admin-filters">
-        <div className="admin-form__group">
-          <label>{textos.geral.pesquisarNome}</label>
-          <input
-            type="text"
-            value={filtroNome}
-            onChange={(e) => setFiltroNome(e.target.value)}
-            placeholder="Nome do utente"
-          />
-        </div>
-        <div className="admin-form__group">
-          <label>NIF</label>
-          <input
-            type="text"
-            value={filtroNif}
-            onChange={(e) => setFiltroNif(e.target.value)}
-            placeholder="Pesquisar por NIF"
-          />
-        </div>
-      </div>
+    try {
+      const res = await fetch(`${API_URL}/api/epurgencia/abrir`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          utente_id: utenteSelecionado.id_utente || utenteSelecionado.idutente,
+          motivo: novoEpisodio.motivo,
+          observacao: novoEpisodio.observacao,
+        }),
+      });
 
-      <div className="admin-table-card admin-table-card--full">
-        <div className="admin-table-card__header">
-          <h3>Utentes</h3>
-          <span>{utentesFiltrados.length}</span>
-        </div>
-        <div className="admin-table-scroll admin-table-scroll--wide">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>NIF</th>
-                <th>Sexo</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="4">{textos.geral.aCarregar}</td>
-                </tr>
-              ) : utentesFiltrados.length === 0 ? (
-                <tr>
-                  <td colSpan="4">Nenhum utente encontrado.</td>
-                </tr>
-              ) : (
-                utentesFiltrados.map((u) => (
-                  <tr key={u.id}>
-                    <td>{u.nome}</td>
-                    <td>{u.nif || '—'}</td>
-                    <td>{u.sexo || '—'}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="admin-secondary-button"
-                        onClick={() => setUtenteSelecionado(u)}
-                      >
-                        Selecionar
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Erro ao abrir episódio.');
 
-      <div className="admin-table-card admin-table-card--bottom" style={{ marginTop: '1.25rem' }}>
-        <div className="admin-table-card__header">
-          <h3>Ficha base do utente</h3>
-        </div>
-        <div style={{ padding: '1rem', display: 'grid', gap: '0.5rem' }}>
-          {utenteSelecionado ? (
-            <>
-              <div><strong>Nome:</strong> {utenteSelecionado.nome}</div>
-              <div><strong>NIF:</strong> {utenteSelecionado.nif || '—'}</div>
-              <div><strong>Telefone:</strong> {utenteSelecionado.telefone || '—'}</div>
-              <div><strong>Email:</strong> {utenteSelecionado.email || '—'}</div>
-              <div><strong>Morada:</strong> {utenteSelecionado.morada || '—'}</div>
-            </>
-          ) : (
-            <div>Seleciona um utente na pesquisa.</div>
-          )}
-        </div>
-      </div>
-    </section>
-  );
+      setMensagem('Episódio aberto com sucesso.');
+      setNovoEpisodio({ motivo: '', observacao: '' });
+      await carregarTudo();
+    } catch (e) {
+      setErro(e.message);
+    }
+  };
 
-  const renderNovoUtente = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>Novo utente</h2>
-        <p>Registo base para admissão rápida.</p>
-      </div>
-
-      <form className="admin-form" onSubmit={criarUtente}>
-        <div className="admin-form__grid">
-          <div className="admin-form__group">
-            <label>Nome</label>
-            <input
-              value={novoUtente.nome}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, nome: e.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="admin-form__group">
-            <label>NIF</label>
-            <input
-              value={novoUtente.nif}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, nif: e.target.value }))}
-            />
-          </div>
-
-          <div className="admin-form__group">
-            <label>Sexo</label>
-            <select
-              value={novoUtente.sexo}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, sexo: e.target.value }))}
-            >
-              <option value="F">F</option>
-              <option value="M">M</option>
-            </select>
-          </div>
-
-          <div className="admin-form__group">
-            <label>Data nascimento</label>
-            <input
-              type="date"
-              value={novoUtente.data_nascimento}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, data_nascimento: e.target.value }))}
-            />
-          </div>
-
-          <div className="admin-form__group">
-            <label>Telefone</label>
-            <input
-              value={novoUtente.telefone}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, telefone: e.target.value }))}
-            />
-          </div>
-
-          <div className="admin-form__group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={novoUtente.email}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, email: e.target.value }))}
-            />
-          </div>
-
-          <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-            <label>Morada</label>
-            <input
-              value={novoUtente.morada}
-              onChange={(e) => setNovoUtente((prev) => ({ ...prev, morada: e.target.value }))}
-            />
-          </div>
-        </div>
-
-        <div className="admin-actions-row">
-          <button type="submit" className="admin-form__submit">
-            Criar utente
-          </button>
-          <button
-            type="button"
-            className="admin-secondary-button"
-            onClick={() => setMainMenu('pesquisar')}
-          >
-            {textos.geral.cancelar}
-          </button>
-        </div>
-      </form>
-    </section>
-  );
-
-  const renderEntrada = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>Dar entrada no hospital</h2>
-        <p>Confirmação rápida do utente antes da abertura do episódio.</p>
-      </div>
-
-      <form className="admin-form" onSubmit={darEntradaHospital}>
-        <div className="admin-form__grid">
-          <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-            <label>Utente selecionado</label>
-            <input
-              value={utenteSelecionado ? utenteSelecionado.nome : 'Seleciona um utente primeiro.'}
-              readOnly
-            />
-          </div>
-
-          <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-            <label>Observações de receção</label>
-            <textarea
-              rows="5"
-              value={entradaForm.observacoes}
-              onChange={(e) => setEntradaForm({ observacoes: e.target.value })}
-            />
-          </div>
-        </div>
-
-        <div className="admin-actions-row">
-          <button type="submit" className="admin-form__submit">
-            Registar entrada
-          </button>
-        </div>
-      </form>
-    </section>
-  );
-
-  const renderAbrirEpisodio = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>Abrir episódio de urgência</h2>
-        <p>Criação do episódio clínico após a admissão.</p>
-      </div>
-
-      <form className="admin-form" onSubmit={abrirEpisodioUrgencia}>
-        <div className="admin-form__grid">
-          <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-            <label>Utente selecionado</label>
-            <input
-              value={utenteSelecionado ? utenteSelecionado.nome : 'Seleciona um utente primeiro.'}
-              readOnly
-            />
-          </div>
-
-          <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-            <label>Queixa principal</label>
-            <input
-              value={episodioForm.queixa_principal}
-              onChange={(e) =>
-                setEpisodioForm((prev) => ({ ...prev, queixa_principal: e.target.value }))
-              }
-              required
-            />
-          </div>
-
-          <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-            <label>Observações adicionais</label>
-            <textarea
-              rows="5"
-              value={episodioForm.observacoes}
-              onChange={(e) =>
-                setEpisodioForm((prev) => ({ ...prev, observacoes: e.target.value }))
-              }
-            />
-          </div>
-        </div>
-
-        <div className="admin-actions-row">
-          <button type="submit" className="admin-form__submit">
-            Abrir episódio
-          </button>
-        </div>
-      </form>
-    </section>
-  );
-
-  const renderRecentes = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>Episódios recentes</h2>
-        <p>Consulta rápida da atividade mais recente do hospital ativo.</p>
-      </div>
-
-      <div className="admin-table-card admin-table-card--full">
-        <div className="admin-table-card__header">
-          <h3>{hospitalAtivoNome}</h3>
-        </div>
-        <div className="admin-table-scroll admin-table-scroll--wide">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Utente</th>
-                <th>Entrada</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {episodiosRecentes.length === 0 ? (
-                <tr>
-                  <td colSpan="3">Sem episódios recentes.</td>
-                </tr>
-              ) : (
-                episodiosRecentes.map((ep) => (
-                  <tr key={ep.id}>
-                    <td>{ep.nome_utente || '—'}</td>
-                    <td>{formatarDataHora(ep.datahoraentr)}</td>
-                    <td>{ep.estado || 'Aberto'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  );
+  const fazerLogout = () => {
+    sessionStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('userRole');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('hospitalAtivo');
+    navigate('/login', { replace: true });
+  };
 
   const renderCenter = () => {
-    if (mainMenu === 'pesquisar') return renderPesquisar();
-    if (mainMenu === 'novo') return renderNovoUtente();
-    if (mainMenu === 'entrada') return renderEntrada();
-    if (mainMenu === 'episodio') return renderAbrirEpisodio();
-    if (mainMenu === 'recentes') return renderRecentes();
-    return null;
+    if (loading) return <p>{textos?.geral?.aCarregar || 'A carregar...'}</p>;
+
+    if (mainMenu === 'pesquisar') {
+      return (
+        <section className="admin-panel-section">
+          <div className="admin-panel-section__header">
+            <h2>{textos?.receptionist?.pesquisarUtente || 'Pesquisar utente'}</h2>
+          </div>
+
+          <div className="admin-toolbar admin-toolbar--left">
+            <button type="button" className="admin-primary-big-button" onClick={() => setMainMenu('criar')}>
+              {textos?.receptionist?.novoUtente || 'Novo utente'}
+            </button>
+          </div>
+
+          <div className="admin-form__group">
+            <label>{textos?.receptionist?.pesquisaRapida || 'Pesquisa rápida'}</label>
+            <input
+              value={filtro}
+              onChange={(e) => setFiltro(e.target.value)}
+              placeholder={textos?.receptionist?.placeholderPesquisa || 'Nome, NIF, número de utente...'}
+            />
+          </div>
+
+          <div className="admin-table-card admin-table-card--full">
+            <div className="admin-table-card__header">
+              <h3>{textos?.receptionist?.utentes || 'Utentes'}</h3>
+              <span>{utentesFiltrados.length}</span>
+            </div>
+            <div className="admin-table-scroll admin-table-scroll--employees">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>{textos?.receptionist?.nome || 'Nome'}</th>
+                    <th>NIF</th>
+                    <th>{textos?.receptionist?.sexo || 'Sexo'}</th>
+                    <th>{textos?.geral?.acoes || 'Ações'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {utentesFiltrados.length > 0 ? (
+                    utentesFiltrados.map((u) => (
+                      <tr key={u.id_utente || u.idutente}>
+                        <td>{u.nome}</td>
+                        <td>{u.nif}</td>
+                        <td>{u.sexo}</td>
+                        <td>
+                          <button type="button" className="admin-secondary-button" onClick={() => selecionarUtente(u)}>
+                            {textos?.receptionist?.verFicha || 'Ver ficha'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4">{textos?.receptionist?.nenhumUtente || 'Nenhum utente encontrado.'}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    if (mainMenu === 'criar') {
+      return (
+        <section className="admin-panel-section">
+          <div className="admin-panel-section__header">
+            <h2>{textos?.receptionist?.novoUtente || 'Novo utente'}</h2>
+          </div>
+
+          <form className="admin-form" onSubmit={criarUtente}>
+            <div className="admin-form__grid">
+              <div className="admin-form__group">
+                <label>{textos?.receptionist?.nome || 'Nome'}</label>
+                <input name="nome" value={novoUtente.nome} onChange={handleNovoUtenteChange} required />
+              </div>
+              <div className="admin-form__group">
+                <label>NIF</label>
+                <input name="nif" value={novoUtente.nif} onChange={handleNovoUtenteChange} />
+              </div>
+              <div className="admin-form__group">
+                <label>{textos?.receptionist?.dataNascimento || 'Data nascimento'}</label>
+                <input type="date" name="data_nascimento" value={novoUtente.data_nascimento} onChange={handleNovoUtenteChange} />
+              </div>
+              <div className="admin-form__group">
+                <label>{textos?.receptionist?.sexo || 'Sexo'}</label>
+                <select name="sexo" value={novoUtente.sexo} onChange={handleNovoUtenteChange}>
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select>
+              </div>
+              <div className="admin-form__group">
+                <label>{textos?.receptionist?.telefone || 'Telefone'}</label>
+                <input name="telefone" value={novoUtente.telefone} onChange={handleNovoUtenteChange} />
+              </div>
+              <div className="admin-form__group">
+                <label>Email</label>
+                <input name="email" value={novoUtente.email} onChange={handleNovoUtenteChange} />
+              </div>
+              <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
+                <label>{textos?.receptionist?.morada || 'Morada'}</label>
+                <input name="morada" value={novoUtente.morada} onChange={handleNovoUtenteChange} />
+              </div>
+            </div>
+
+            <div className="admin-actions-row">
+              <button className="admin-form__submit" type="submit">{textos?.receptionist?.criarUtente || 'Criar utente'}</button>
+              <button className="admin-secondary-button" type="button" onClick={() => setMainMenu('pesquisar')}>
+                {textos?.geral?.cancelar || 'Cancelar'}
+              </button>
+            </div>
+          </form>
+        </section>
+      );
+    }
+
+    if (mainMenu === 'ficha') {
+      return (
+        <section className="admin-panel-section">
+          <div className="admin-panel-section__header">
+            <h2>{textos?.receptionist?.fichaBase || 'Ficha base do utente'}</h2>
+          </div>
+
+          {utenteSelecionado ? (
+            <div className="admin-table-card">
+              <p><strong>{textos?.receptionist?.nome || 'Nome'}:</strong> {utenteSelecionado.nome}</p>
+              <p><strong>NIF:</strong> {utenteSelecionado.nif || '—'}</p>
+              <p><strong>{textos?.receptionist?.telefone || 'Telefone'}:</strong> {utenteSelecionado.telefone || '—'}</p>
+              <p><strong>Email:</strong> {utenteSelecionado.email || '—'}</p>
+              <p><strong>{textos?.receptionist?.morada || 'Morada'}:</strong> {utenteSelecionado.morada || '—'}</p>
+            </div>
+          ) : (
+            <p>{textos?.receptionist?.selecionaPesquisa || 'Seleciona um utente na pesquisa.'}</p>
+          )}
+        </section>
+      );
+    }
+
+    if (mainMenu === 'entrada') {
+      return (
+        <section className="admin-panel-section">
+          <div className="admin-panel-section__header">
+            <h2>{textos?.receptionist?.darEntrada || 'Dar entrada no hospital'}</h2>
+          </div>
+
+          <p>{utenteSelecionado ? `Utente selecionado: ${utenteSelecionado.nome}` : (textos?.receptionist?.selecionaPrimeiro || 'Seleciona um utente primeiro.')}</p>
+
+          <div className="admin-actions-row">
+            <button className="admin-form__submit" type="button" onClick={darEntrada} disabled={!utenteSelecionado}>
+              {textos?.receptionist?.darEntrada || 'Dar entrada'}
+            </button>
+          </div>
+        </section>
+      );
+    }
+
+    if (mainMenu === 'episodio') {
+      return (
+        <section className="admin-panel-section">
+          <div className="admin-panel-section__header">
+            <h2>{textos?.receptionist?.abrirEpisodio || 'Abrir episódio de urgência'}</h2>
+          </div>
+
+          <p>{utenteSelecionado ? `Utente selecionado: ${utenteSelecionado.nome}` : (textos?.receptionist?.selecionaPrimeiro || 'Seleciona um utente primeiro.')}</p>
+
+          <div className="admin-form__grid">
+            <div className="admin-form__group">
+              <label>{textos?.receptionist?.motivo || 'Motivo'}</label>
+              <input name="motivo" value={novoEpisodio.motivo} onChange={handleNovoEpisodioChange} />
+            </div>
+            <div className="admin-form__group">
+              <label>{textos?.receptionist?.observacao || 'Observação'}</label>
+              <input name="observacao" value={novoEpisodio.observacao} onChange={handleNovoEpisodioChange} />
+            </div>
+          </div>
+
+          <div className="admin-actions-row">
+            <button className="admin-form__submit" type="button" onClick={abrirEpisodio} disabled={!utenteSelecionado}>
+              {textos?.receptionist?.abrirEpisodio || 'Abrir episódio'}
+            </button>
+          </div>
+        </section>
+      );
+    }
+
+    return (
+      <section className="admin-panel-section">
+        <div className="admin-panel-section__header">
+          <h2>{textos?.receptionist?.episodiosRecentes || 'Episódios recentes'}</h2>
+        </div>
+
+        <div className="admin-table-card admin-table-card--full">
+          <div className="admin-table-card__header">
+            <h3>{hospitalAtivo?.nome || textos?.receptionist?.hospitalAtivo || 'Hospital ativo'}</h3>
+          </div>
+          <div className="admin-table-scroll">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>{textos?.receptionist?.utente || 'Utente'}</th>
+                  <th>{textos?.receptionist?.entrada || 'Entrada'}</th>
+                  <th>{textos?.receptionist?.estado || 'Estado'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {episodios.length > 0 ? (
+                  episodios.map((ep) => (
+                    <tr key={ep.id_epurgencia || ep.id}>
+                      <td>{ep.nome_utente || ep.utente_nome || '—'}</td>
+                      <td>{ep.datahoraentr || ep.datahora || '—'}</td>
+                      <td>{ep.estado || 'Aberto'}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3">{textos?.receptionist?.semEpisodios || 'Sem episódios recentes.'}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    );
   };
 
   return (
-    // ReceptionistDashboard.jsx
-    <div className="admin-page-wrapper receptionist-dashboard">
-      <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
-        <aside className="admin-sidebar" aria-label="Navegação lateral do Rececionista">
-          <button
-            className="admin-sidebar__toggle"
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            aria-expanded={!isSidebarCollapsed}
-            type="button"
-          >
-            ☰
-          </button>
+    <main className={`admin-layout receptionist-dashboard ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+      <aside className="admin-sidebar">
+        <button
+          type="button"
+          className="admin-sidebar__toggle"
+          onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+          aria-label="Alternar menu lateral"
+        >
+          <IconMenu />
+        </button>
 
-          <div className="admin-sidebar__brand">
-            <img src={logo} alt="SIAGUH" className="admin-sidebar__logo" />
+        <div className="admin-sidebar__brand">
+          <img src={logo} alt="SIAGUH" className="admin-sidebar__logo" />
+        </div>
+
+        <div className="admin-sidebar__divider" />
+
+        <button type="button" className="admin-sidebar__profile" onClick={abrirPerfilUtilizador}>
+          <div className="admin-sidebar__profile-avatar admin-sidebar__profile-avatar--fallback">{iniciaisUtilizador}</div>
+          <span className="admin-sidebar__profile-name">{nomeUtilizador}</span>
+        </button>
+
+        <div className="admin-sidebar__divider" />
+
+        <nav className="admin-sidebar__nav">
+          <button type="button" className={`admin-sidebar__link ${mainMenu === 'pesquisar' ? 'is-active' : ''}`} onClick={() => setMainMenu('pesquisar')}>
+            <IconSearch />
+            <span className="link-text">{textos?.receptionist?.menuPesquisar || 'Pesquisar utente'}</span>
+          </button>
+          <button type="button" className={`admin-sidebar__link ${mainMenu === 'criar' ? 'is-active' : ''}`} onClick={() => setMainMenu('criar')}>
+            <IconUserPlus />
+            <span className="link-text">{textos?.receptionist?.menuCriar || 'Criar utente'}</span>
+          </button>
+          <button type="button" className={`admin-sidebar__link ${mainMenu === 'ficha' ? 'is-active' : ''}`} onClick={() => setMainMenu('ficha')}>
+            <IconUser />
+            <span className="link-text">{textos?.receptionist?.menuFicha || 'Ficha base'}</span>
+          </button>
+          <button type="button" className={`admin-sidebar__link ${mainMenu === 'entrada' ? 'is-active' : ''}`} onClick={() => setMainMenu('entrada')}>
+            <IconDoor />
+            <span className="link-text">{textos?.receptionist?.menuEntrada || 'Dar entrada'}</span>
+          </button>
+          <button type="button" className={`admin-sidebar__link ${mainMenu === 'episodio' ? 'is-active' : ''}`} onClick={() => setMainMenu('episodio')}>
+            <IconFolder />
+            <span className="link-text">{textos?.receptionist?.menuEpisodio || 'Abrir episódio'}</span>
+          </button>
+          <button type="button" className={`admin-sidebar__link ${mainMenu === 'recentes' ? 'is-active' : ''}`} onClick={() => setMainMenu('recentes')}>
+            <IconClock />
+            <span className="link-text">{textos?.receptionist?.menuRecentes || 'Entradas recentes'}</span>
+          </button>
+        </nav>
+
+        <div className="admin-sidebar__footer">
+          <div className="admin-sidebar__lang-switcher">
+            <button type="button" className={`admin-lang-btn ${idioma === 'pt' ? 'is-active' : ''}`} onClick={() => mudarIdioma('pt')}>PT</button>
+            <span>/</span>
+            <button type="button" className={`admin-lang-btn ${idioma === 'en' ? 'is-active' : ''}`} onClick={() => mudarIdioma('en')}>EN</button>
           </div>
 
-          <div className="admin-sidebar__divider" />
-
-          <button
-            type="button"
-            className="admin-sidebar__profile"
-            onClick={() => navigate('/perfil')}
-            title="Ir para o perfil"
-          >
-            <div className="admin-sidebar__profile-avatar admin-sidebar__profile-avatar--fallback">
-              {obterIniciais(funcionarioAutenticadoNome)}
-            </div>
-            <span className="admin-sidebar__profile-name">{funcionarioAutenticadoNome}</span>
+          <button type="button" className="admin-logout-button" onClick={fazerLogout}>
+            <IconExit />
+            <span className="link-text">{textos?.geral?.sair || 'Sair'}</span>
           </button>
+        </div>
+      </aside>
 
-          <div className="admin-sidebar__divider" />
+      <section className="admin-content-wrapper">
+        <div className="admin-content-inner">
+          <div className="admin-content-top">
+            <h1>{textos?.receptionist?.tituloPainel || 'Dashboard Rececionista'}</h1>
+            <p>{textos?.receptionist?.descricaoPainel || 'Fluxo rápido de registo, admissão e abertura de episódio.'}</p>
+          </div>
 
-          <nav className="admin-sidebar__nav">
-            <button
-              type="button"
-              className={`admin-sidebar__link ${mainMenu === 'pesquisar' ? 'is-active' : ''}`}
-              onClick={() => setMainMenu('pesquisar')}
-            >
-              <span className="link-text">Pesquisar utente</span>
-            </button>
-            <button
-              type="button"
-              className={`admin-sidebar__link ${mainMenu === 'novo' ? 'is-active' : ''}`}
-              onClick={() => setMainMenu('novo')}
-            >
-              <span className="link-text">Novo utente</span>
-            </button>
-            <button
-              type="button"
-              className={`admin-sidebar__link ${mainMenu === 'entrada' ? 'is-active' : ''}`}
-              onClick={() => setMainMenu('entrada')}
-            >
-              <span className="link-text">Dar entrada</span>
-            </button>
-            <button
-              type="button"
-              className={`admin-sidebar__link ${mainMenu === 'episodio' ? 'is-active' : ''}`}
-              onClick={() => setMainMenu('episodio')}
-            >
-              <span className="link-text">Abrir episódio</span>
-            </button>
-            <button
-              type="button"
-              className={`admin-sidebar__link ${mainMenu === 'recentes' ? 'is-active' : ''}`}
-              onClick={() => setMainMenu('recentes')}
-            >
-              <span className="link-text">Episódios recentes</span>
-            </button>
-          </nav>
-
-          <div className="admin-sidebar__divider" />
-
-          <button type="button" className="admin-sidebar__logout" onClick={fazerLogout}>
-            {textos.admin?.botaoSair || 'Sair'}
-          </button>
-        </aside>
-
-        <section className="admin-content">
-          <div className="admin-content__body">
+          <div className="admin-content-body">
             {erro && <p className="admin-form__error">{erro}</p>}
             {mensagem && <p className="admin-form__success">{mensagem}</p>}
             {renderCenter()}
           </div>
-        </section>
-      </main>
-    </div>
+        </div>
+
+        <FooterLayout />
+      </section>
+    </main>
   );
 }

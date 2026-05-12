@@ -1263,3 +1263,16 @@ html {
   align-items: center;
   justify-content: center;
 }
+
+.admin-sidebar__toggle {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-sidebar__toggle svg {
+  width: 24px;
+  height: 24px;
+}
