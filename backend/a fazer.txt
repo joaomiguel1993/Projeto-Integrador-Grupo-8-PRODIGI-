@@ -1,0 +1,5 @@
+backend/schemas/
+backend/dao/
+backend/repositories/
+backend/services/
+backend/routers/

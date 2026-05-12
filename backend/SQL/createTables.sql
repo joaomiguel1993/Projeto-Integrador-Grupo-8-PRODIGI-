@@ -1,11 +1,12 @@
 -- ============================================================
 -- PRODIGI — Sistema de Gestão Hospitalar
--- createTables.sql (VERSÃO FINAL COM SUPORTE PARA IA)
+-- createTables.sql (VERSÃO FINAL OTIMIZADA PARA IA)
 -- ============================================================
 
 -- ------------------------------------------------------------
 -- LIMPEZA
 -- ------------------------------------------------------------
+DROP VIEW IF EXISTS v_estatisticas_ia;
 DROP TABLE IF EXISTS Trabalha CASCADE;
 DROP TABLE IF EXISTS Alerta CASCADE;
 DROP TABLE IF EXISTS Prescreve CASCADE;
@@ -16,7 +17,7 @@ DROP TABLE IF EXISTS Internamento CASCADE;
 DROP TABLE IF EXISTS EpUrgencia CASCADE;
 DROP TABLE IF EXISTS MedicacaoAtiva CASCADE;
 DROP TABLE IF EXISTS Medicamento CASCADE;
-DROP TABLE IF EXISTS Alergia CASCADE; -- Adicionado para a IA de Prescrição
+DROP TABLE IF EXISTS Alergia CASCADE;
 DROP TABLE IF EXISTS UtenteAntecedente CASCADE;
 DROP TABLE IF EXISTS Antecedente CASCADE;
 DROP TABLE IF EXISTS Utilizador CASCADE;
@@ -35,21 +36,10 @@ DROP TYPE IF EXISTS tipo_alta_enum CASCADE;
 -- ------------------------------------------------------------
 -- TIPOS
 -- ------------------------------------------------------------
-CREATE TYPE cor_triagem_enum AS ENUM (
-    'vermelho', 'laranja', 'amarelo', 'verde', 'azul'
-);
-
-CREATE TYPE tipo_func_enum AS ENUM (
-    'medico', 'enfermeiro', 'admin', 'rececionista'
-);
-
-CREATE TYPE estado_ep_enum AS ENUM (
-    'aberto', 'em_triagem', 'em_atendimento', 'internado', 'terminado'
-);
-
-CREATE TYPE tipo_alta_enum AS ENUM (
-    'clinica', 'voluntaria', 'transferencia', 'obito'
-);
+CREATE TYPE cor_triagem_enum AS ENUM ('vermelho', 'laranja', 'amarelo', 'verde', 'azul');
+CREATE TYPE tipo_func_enum AS ENUM ('medico', 'enfermeiro', 'admin', 'rececionista');
+CREATE TYPE estado_ep_enum AS ENUM ('aberto', 'em_triagem', 'em_atendimento', 'internado', 'terminado');
+CREATE TYPE tipo_alta_enum AS ENUM ('clinica', 'voluntaria', 'transferencia', 'obito');
 
 -- ------------------------------------------------------------
 -- UTENTE
@@ -66,14 +56,15 @@ CREATE TABLE Utente (
 );
 
 -- ------------------------------------------------------------
--- HOSPITAL
+-- HOSPITAL (ATUALIZADO COM CAPACIDADE PARA IA)
 -- ------------------------------------------------------------
 CREATE TABLE Hospital (
     IdHosp SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Localizacao VARCHAR(200) NOT NULL,
     Email VARCHAR(150),
-    Telefone VARCHAR(30)
+    Telefone VARCHAR(30),
+    TotalCamas INT DEFAULT 100 -- Exigido pela IA: Facility_Size_Beds
 );
 
 -- ------------------------------------------------------------
@@ -103,7 +94,7 @@ CREATE TABLE Trabalha (
 );
 
 -- ------------------------------------------------------------
--- MEDICO
+-- MEDICO / ENFERMEIRO / UTILIZADOR
 -- ------------------------------------------------------------
 CREATE TABLE Medico (
     IdFunc INT PRIMARY KEY,
@@ -112,17 +103,11 @@ CREATE TABLE Medico (
     FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE
 );
 
--- ------------------------------------------------------------
--- ENFERMEIRO
--- ------------------------------------------------------------
 CREATE TABLE Enfermeiro (
     IdFunc INT PRIMARY KEY,
     FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE CASCADE
 );
 
--- ------------------------------------------------------------
--- UTILIZADOR
--- ------------------------------------------------------------
 CREATE TABLE Utilizador (
     IdFunc INT PRIMARY KEY,
     UserName VARCHAR(50) NOT NULL UNIQUE,
@@ -133,7 +118,7 @@ CREATE TABLE Utilizador (
 );
 
 -- ------------------------------------------------------------
--- ANTECEDENTE
+-- ANTECEDENTES E MEDICAMENTOS
 -- ------------------------------------------------------------
 CREATE TABLE Antecedente (
     CodAntecedente SERIAL PRIMARY KEY,
@@ -141,9 +126,6 @@ CREATE TABLE Antecedente (
     Tipo VARCHAR(50)
 );
 
--- ------------------------------------------------------------
--- UTENTEANTECEDENTE
--- ------------------------------------------------------------
 CREATE TABLE UtenteAntecedente (
     NumUtent INT NOT NULL,
     CodAntecedente INT NOT NULL,
@@ -153,33 +135,24 @@ CREATE TABLE UtenteAntecedente (
     FOREIGN KEY (CodAntecedente) REFERENCES Antecedente(CodAntecedente) ON DELETE CASCADE
 );
 
--- ------------------------------------------------------------
--- MEDICAMENTO (ATUALIZADO - IA DE MEDICAMENTOS)
--- ------------------------------------------------------------
 CREATE TABLE Medicamento (
     CodMedicamento SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     PrincipioAtivo VARCHAR(100) NOT NULL,
-    ClasseTerapeuticaID INT NOT NULL -- Essencial para o Dataset da IA (Classe_Novo_Med)
+    ClasseTerapeuticaID INT NOT NULL 
 );
 
--- ------------------------------------------------------------
--- ALERGIA (NOVA TABELA - IA DE MEDICAMENTOS)
--- ------------------------------------------------------------
 CREATE TABLE Alergia (
     CodAlergia SERIAL PRIMARY KEY,
     NumUtent INT NOT NULL,
     Substancia VARCHAR(100) NOT NULL,
-    ClasseTerapeuticaID INT NOT NULL, -- Essencial para ligar ao Dataset da IA (Tem_Alergia_Classe)
+    ClasseTerapeuticaID INT NOT NULL,
     NivelGravidade VARCHAR(50),
     DataRegisto DATE NOT NULL DEFAULT CURRENT_DATE,
     FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE CASCADE,
     UNIQUE (NumUtent, ClasseTerapeuticaID)
 );
 
--- ------------------------------------------------------------
--- MEDICACAO ATIVA
--- ------------------------------------------------------------
 CREATE TABLE MedicacaoAtiva (
     CodMedicacaoAtiva SERIAL PRIMARY KEY,
     NumUtent INT NOT NULL,
@@ -193,23 +166,20 @@ CREATE TABLE MedicacaoAtiva (
 );
 
 -- ------------------------------------------------------------
--- EPISODIO DE URGENCIA (ATUALIZADO - IA WAIT TIME)
+-- EPISODIOS E TRIAGEM
 -- ------------------------------------------------------------
 CREATE TABLE EpUrgencia (
     CodEpUrgenc SERIAL PRIMARY KEY,
     NumUtent INT NOT NULL,
     IdHosp INT NOT NULL,
     DataHoraEntr TIMESTAMP NOT NULL DEFAULT NOW(),
-    DataHoraAtendimento TIMESTAMP, -- Permite calcular tempo de espera real para treinar IA no futuro
+    DataHoraAtendimento TIMESTAMP, 
     DataHoraSaida TIMESTAMP,
     Estado estado_ep_enum NOT NULL DEFAULT 'aberto',
     FOREIGN KEY (NumUtent) REFERENCES Utente(NumUtent) ON DELETE RESTRICT,
     FOREIGN KEY (IdHosp) REFERENCES Hospital(IdHosp) ON DELETE RESTRICT
 );
 
--- ------------------------------------------------------------
--- TRIAGEM (ATUALIZADA - IA TRIAGEM E NLP)
--- ------------------------------------------------------------
 CREATE TABLE Triagem (
     CodEpUrgenc INT PRIMARY KEY,
     DataHoraInicio TIMESTAMP NOT NULL,
@@ -222,14 +192,14 @@ CREATE TABLE Triagem (
     SpO2 DECIMAL(4,1),
     Sistolica INT,
     Diastolica INT,
-    NivelDor INT CHECK (NivelDor >= 0 AND NivelDor <= 10), -- Extraído pela IA de Voz
-    Consciencia VARCHAR(50) CHECK (Consciencia IN ('Acordado', 'Confuso', 'Inconsciente')), -- Extraído pela IA de Voz
-    TempoEsperaPrevisto INT, -- Gerado pela IA de Wait Time
+    NivelDor INT CHECK (NivelDor >= 0 AND NivelDor <= 10),
+    Consciencia VARCHAR(50) CHECK (Consciencia IN ('Acordado', 'Confuso', 'Inconsciente')),
+    TempoEsperaPrevisto INT, 
     FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE
 );
 
 -- ------------------------------------------------------------
--- ATO
+-- ATOS, PRESCRIÇÕES E ALERTAS
 -- ------------------------------------------------------------
 CREATE TABLE Ato (
     IdAto SERIAL PRIMARY KEY,
@@ -241,9 +211,6 @@ CREATE TABLE Ato (
     FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE
 );
 
--- ------------------------------------------------------------
--- REALIZA (N:N)
--- ------------------------------------------------------------
 CREATE TABLE Realiza (
     IdAto INT NOT NULL,
     IdFunc INT NOT NULL,
@@ -252,13 +219,10 @@ CREATE TABLE Realiza (
     FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE RESTRICT
 );
 
--- ------------------------------------------------------------
--- PRESCREVE (ATUALIZADA - IA DE MEDICAMENTOS)
--- ------------------------------------------------------------
 CREATE TABLE Prescreve (
     IdPrescricao SERIAL PRIMARY KEY,
     IdAto INT NOT NULL,
-    CodMedicamento INT NOT NULL, -- Ligação direta à tabela Medicamento para a IA saber a classe
+    CodMedicamento INT NOT NULL,
     Dosagem VARCHAR(50) NOT NULL,
     Observacoes TEXT,
     DataHoraPresc TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -266,9 +230,6 @@ CREATE TABLE Prescreve (
     FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento) ON DELETE RESTRICT
 );
 
--- ------------------------------------------------------------
--- ALERTA
--- ------------------------------------------------------------
 CREATE TABLE Alerta (
     CodAlerta SERIAL PRIMARY KEY,
     IdPrescricao INT NOT NULL,
@@ -282,7 +243,7 @@ CREATE TABLE Alerta (
 );
 
 -- ------------------------------------------------------------
--- INTERNAMENTO
+-- INTERNAMENTO E LOGS
 -- ------------------------------------------------------------
 CREATE TABLE Internamento (
     CodInternamento SERIAL PRIMARY KEY,
@@ -297,16 +258,9 @@ CREATE TABLE Internamento (
     TipoAlta tipo_alta_enum,
     FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE,
     FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL,
-    CHECK (
-        (DataHoraAlta IS NULL AND TipoAlta IS NULL)
-        OR
-        (DataHoraAlta IS NOT NULL AND TipoAlta IS NOT NULL)
-    )
+    CHECK ((DataHoraAlta IS NULL AND TipoAlta IS NULL) OR (DataHoraAlta IS NOT NULL AND TipoAlta IS NOT NULL))
 );
 
--- ------------------------------------------------------------
--- LOG DE ATIVIDADE
--- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS log_atividade (
     idlog       BIGSERIAL PRIMARY KEY,
     username    VARCHAR(50),
@@ -316,5 +270,27 @@ CREATE TABLE IF NOT EXISTS log_atividade (
     criado_em   TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ------------------------------------------------------------
+-- VISTA DE ESTATÍSTICAS PARA IA (PEÇA CHAVE)
+-- ------------------------------------------------------------
+CREATE OR REPLACE VIEW v_estatisticas_ia AS
+SELECT 
+    h.IdHosp,
+    h.Nome AS HospitalNome,
+    h.TotalCamas AS facility_size_beds,
+    (SELECT COUNT(*) FROM Trabalha t JOIN Funcionario f ON t.IdFunc = f.IdFunc 
+     WHERE t.IdHosp = h.IdHosp AND f.TipoFunc = 'enfermeiro' AND t.Ativo = TRUE) AS contagem_enfermeiros,
+    (SELECT COUNT(*) FROM Trabalha t JOIN Funcionario f ON t.IdFunc = f.IdFunc 
+     WHERE t.IdHosp = h.IdHosp AND f.TipoFunc = 'medico' AND t.Ativo = TRUE) AS contagem_medicos,
+    (SELECT COUNT(*) FROM EpUrgencia e 
+     WHERE e.IdHosp = h.IdHosp AND e.Estado IN ('aberto', 'em_triagem', 'em_atendimento')) AS pacientes_ativos
+FROM Hospital h;
+
+-- ------------------------------------------------------------
+-- ÍNDICES DE PERFORMANCE
+-- ------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_log_username ON log_atividade(username);
 CREATE INDEX IF NOT EXISTS idx_log_criado_em ON log_atividade(criado_em);
+CREATE INDEX IF NOT EXISTS idx_epurgencia_hosp_estado ON EpUrgencia(IdHosp, Estado);
+CREATE INDEX IF NOT EXISTS idx_trabalha_hosp_ativo ON Trabalha(IdHosp, Ativo);
+CREATE INDEX IF NOT EXISTS idx_funcionario_tipo ON Funcionario(TipoFunc);
