@@ -9,7 +9,10 @@ import info3 from '../../imagens/Info3.png';
 import info4 from '../../imagens/Info4.png';
 import info5 from '../../imagens/Info5.png';
 
+const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 const CAROUSEL_IMAGES = [info1, info2, info3, info4, info5];
+
+// --- FUNÇÕES DE APOIO (IA E UI) ---
 
 function waitColor(mins) {
     if (mins == null) return '#94a3b8';
@@ -18,8 +21,62 @@ function waitColor(mins) {
     return '#dc2626';
 }
 
+const obterContextoIA = () => {
+    const agora = new Date();
+    const mes = agora.getMonth();
+    const hora = agora.getHours();
+    const seasonMap = ["Winter", "Winter", "Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Autumn", "Autumn", "Autumn", "Winter"];
+    
+    let timeOfDay = "Night";
+    if (hora >= 6 && hora < 12) timeOfDay = "Morning";
+    else if (hora >= 12 && hora < 18) timeOfDay = "Afternoon";
+    else if (hora >= 18 && hora < 24) timeOfDay = "Evening";
+
+    return {
+        Day_of_Week: agora.toLocaleDateString('en-US', { weekday: 'long' }),
+        Season: seasonMap[mes],
+        Time_of_Day: timeOfDay
+    };
+};
+
+async function consultarIACompleta(hospital) {
+    try {
+        const contexto = obterContextoIA();
+        // Dados operacionais vindos do SQL (Trabalha/EpUrgencia)
+        const enfermeiros = hospital.contagem_enfermeiros || 1;
+        const pacientes = hospital.pacientes_ativos || 1;
+        const medicos = hospital.contagem_medicos || 1;
+
+        const body = {
+            "Urgency_Level": "Medium", 
+            "Nurse_to_Patient_Ratio": parseFloat((enfermeiros / pacientes).toFixed(2)),
+            "Specialist_Availability": medicos,
+            "Facility_Size_Beds": hospital.total_camas || 100,
+            "Day_of_Week": contexto.Day_of_Week,
+            "Time_of_Day": contexto.Time_of_Day,
+            "Season": contexto.Season
+        };
+
+        const response = await fetch(`${API_IA}/predict/wait-time`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json(); 
+        // Retorna o mapeamento total: { Critical, High, Medium, Low, "Not Urgent" }
+        return data; 
+    } catch (err) {
+        console.error("Erro na predição IA:", err);
+        return null;
+    }
+}
+
+// --- COMPONENTES ---
+
 function HospitalCard({ hospital, onClick, textos }) {
-    const espera = hospital.tempo_espera ?? hospital.tempoEspera;
+    // Para o card inicial, usamos o nível 'Medium' como referência visual
+    const espera = hospital.previsoes_ia?.Medium || hospital.previsoes_ia?.medium;
     const ativo = hospital.ativo !== false;
 
     return (
@@ -42,12 +99,12 @@ function HospitalCard({ hospital, onClick, textos }) {
 
             <div className="hcard2__foot">
                 <div className="hcard2__wait">
-                    <span className="hcard2__wait-label">{textos.home?.labelEspera || 'Tempo de espera'}</span>
+                    <span className="hcard2__wait-label">{textos.home?.labelEspera || 'Média (Urgente)'}</span>
                     <strong className="hcard2__wait-val" style={{ color: waitColor(espera) }}>
                         {ativo && espera != null ? `${espera} min` : (textos.home?.valorEsperaIndisponivel || '-- min')}
                     </strong>
                 </div>
-                <span className="hcard2__cta">Detalhes</span>
+                <span className="hcard2__cta">Ver Detalhes</span>
             </div>
         </button>
     );
@@ -64,6 +121,8 @@ function SkeletonCard() {
     );
 }
 
+// --- PÁGINA HOME ---
+
 export default function Home() {
     const navigate = useNavigate();
     const { textos } = useLanguage();
@@ -75,20 +134,34 @@ export default function Home() {
     const scrollRef = useRef(null);
 
     useEffect(() => {
-        async function loadHospitais() {
+        async function loadData() {
             try {
                 setLoading(true);
                 setError(null);
+                
+                // 1. Busca dados do SQL via Backend
                 const data = await listarHospitais();
-                setHospitais(Array.isArray(data) ? data : data?.data ?? []);
-            } catch {
-                setError('Erro ao carregar hospitais.');
-                setHospitais([]);
+                const listaBase = Array.isArray(data) ? data : data?.data ?? [];
+
+                // 2. Realiza o mapeamento total para cada hospital
+                const listaComIA = await Promise.all(
+                    listaBase.map(async (h) => {
+                        const dictIA = await consultarIACompleta(h);
+                        return { 
+                            ...h, 
+                            previsoes_ia: dictIA // Guarda Critical, High, Medium, Low, Not Urgent
+                        };
+                    })
+                );
+
+                setHospitais(listaComIA);
+            } catch (err) {
+                setError('Erro ao sincronizar com servidor de IA.');
             } finally {
                 setLoading(false);
             }
         }
-        loadHospitais();
+        loadData();
     }, []);
 
     useEffect(() => {
@@ -99,9 +172,10 @@ export default function Home() {
     }, []);
 
     const handleCardClick = useCallback((hospital) => {
-        const hospitalId = hospital?.idhosp ?? hospital?.id;
-        if (!hospitalId) return;
-        navigate(`/hospital/${hospitalId}`);
+        const id = hospital?.idhosp ?? hospital?.id;
+        if (!id) return;
+        // Passamos o hospital com as predições já carregadas para a view de detalhes
+        navigate(`/hospital/${id}`, { state: { hospitalData: hospital } });
     }, [navigate]);
 
     const filteredHospitais = hospitais.filter((h) => {
@@ -110,79 +184,53 @@ export default function Home() {
             || (h.morada || h.localizacao || '').toLowerCase().includes(search);
     });
 
-    const scrollLeft = () => {
-        if (scrollRef.current) scrollRef.current.scrollBy({ left: -340, behavior: 'smooth' });
-    };
-
-    const scrollRight = () => {
-        if (scrollRef.current) scrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
-    };
+    const scrollLeft = () => scrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' });
+    const scrollRight = () => scrollRef.current?.scrollBy({ left: 340, behavior: 'smooth' });
 
     return (
         <>
-            <section className="home-intro-pro" aria-labelledby="home-hero-title">
+            <section className="home-intro-pro">
                 <div className="container">
                     <div className="home-intro-pro__panel">
                         <div className="home-intro-pro__header">
                             <span className="home-intro-pro__eyebrow">{textos.home.labelIntro}</span>
-                            <span className="home-intro-pro__divider" aria-hidden="true" />
+                            <span className="home-intro-pro__divider" />
                             <span className="home-intro-pro__meta">{textos.home.valorProjeto}</span>
                         </div>
-
                         <div className="home-intro-pro__grid">
                             <div className="home-intro-pro__main">
-                                <h1 id="home-hero-title" className="home-intro-pro__title">
-                                    {textos.home.tituloPrincipal}
-                                </h1>
+                                <h1 className="home-intro-pro__title">{textos.home.tituloPrincipal}</h1>
                                 <p className="home-intro-pro__text">{textos.home.subtituloPrincipal}</p>
                             </div>
-
-                            <aside className="home-intro-pro__aside" aria-label="Resumo do projeto">
-                                <div className="home-intro-pro__stat">
-                                    <span>{textos.home.labelProjeto}</span>
-                                    <strong>{textos.home.valorProjeto}</strong>
-                                </div>
-                                <div className="home-intro-pro__stat">
-                                    <span>{textos.home.labelArea}</span>
-                                    <strong>{textos.home.valorArea}</strong>
-                                </div>
-                                <div className="home-intro-pro__stat">
-                                    <span>{textos.home.labelTech}</span>
-                                    <strong>{textos.home.valorTech}</strong>
-                                </div>
+                            <aside className="home-intro-pro__aside">
+                                <div className="home-intro-pro__stat"><span>Projeto</span><strong>Prodigi</strong></div>
+                                <div className="home-intro-pro__stat"><span>Área</span><strong>Saúde</strong></div>
+                                <div className="home-intro-pro__stat"><span>Tecnologia</span><strong>XGBoost IA</strong></div>
                             </aside>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section className="hospital-section hospital-section--scroll" aria-labelledby="hospitais-title">
+            <section className="hospital-section hospital-section--scroll">
                 <div className="container">
                     <div className="hospital-section__topbar">
                         <div>
-                            <p className="section-label" aria-hidden="true">{textos.home.labelHospitais}</p>
-                            <h2 id="hospitais-title" className="hospital-section__title">{textos.home.tituloHospitais}</h2>
-                            <p className="hospital-section__subtitle">{textos.home.subtituloHospitais}</p>
+                            <h2 className="hospital-section__title">{textos.home.tituloHospitais}</h2>
+                            <p className="hospital-section__subtitle">Tempos reais calculados por Inteligência Artificial</p>
                         </div>
-
                         <div className="hospital-section__tools">
                             <div className="hospital-search-box">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <path d="m21 21-4.35-4.35" />
-                                </svg>
-                                <input
-                                    type="search"
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    placeholder={textos.home.placeholderPesquisa || 'Pesquisar hospital ou localização'}
-                                    aria-label={textos.home.placeholderPesquisa || 'Pesquisar hospital ou localização'}
+                                <input 
+                                    type="search" 
+                                    value={query} 
+                                    onChange={(e) => setQuery(e.target.value)} 
+                                    placeholder="Pesquisar..." 
                                 />
                             </div>
-
-                            <div className="hospital-scroll-actions" role="group" aria-label={textos.home.ariaPaginacao}>
-                                <button type="button" className="hospital-arrow" onClick={scrollLeft} aria-label={textos.home.btnAnterior}>←</button>
-                                <button type="button" className="hospital-arrow" onClick={scrollRight} aria-label={textos.home.btnSeguinte}>→</button>
+                            <div className="hospital-scroll-actions">
+                                <button onClick={scrollLeft} className="hospital-arrow">←</button>
+                                <button onClick={scrollRight} className="hospital-arrow">→</button>
                             </div>
                         </div>
                     </div>
@@ -191,15 +239,13 @@ export default function Home() {
                         <div className="hospital-loading">{error}</div>
                     ) : loading ? (
                         <div className="hospital-scroll-row" ref={scrollRef}>
-                            {[1, 2, 3, 4].map((item) => <SkeletonCard key={item} />)}
+                            {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
                         </div>
-                    ) : filteredHospitais.length === 0 ? (
-                        <div className="hospital-loading">{textos.geral?.semResultados || 'Sem resultados.'}</div>
                     ) : (
-                        <div className="hospital-scroll-row" ref={scrollRef} role="list">
-                            {filteredHospitais.map((hospital) => (
-                                <div key={hospital.idhosp ?? hospital.id} className="hospital-scroll-item" role="listitem">
-                                    <HospitalCard hospital={hospital} onClick={handleCardClick} textos={textos} />
+                        <div className="hospital-scroll-row" ref={scrollRef}>
+                            {filteredHospitais.map((h) => (
+                                <div key={h.idhosp || h.id} className="hospital-scroll-item">
+                                    <HospitalCard hospital={h} onClick={handleCardClick} textos={textos} />
                                 </div>
                             ))}
                         </div>
@@ -207,38 +253,14 @@ export default function Home() {
                 </div>
             </section>
 
-            <section className="info-section" aria-labelledby="info-title">
+            <section className="info-section">
                 <div className="container">
                     <div className="info-box-carousel">
-                        <p className="section-label" aria-hidden="true">{textos.home.labelInfo}</p>
-                        <h2 id="info-title" className="info-title">{textos.home.tituloInfo}</h2>
-
-                        <div className="carousel-wrapper" role="region" aria-roledescription="carousel" aria-label={textos.home.ariaCarrossel}>
-                            <div aria-live="polite">
-                                {CAROUSEL_IMAGES.map((img, index) => (
-                                    <img
-                                        key={index}
-                                        src={img}
-                                        alt={`${textos.home.altSlide} ${index + 1}`}
-                                        className={`carousel-image ${index === currentSlide ? 'active' : ''}`}
-                                        aria-hidden={index !== currentSlide}
-                                    />
-                                ))}
-                            </div>
-
-                            <div className="carousel-indicators" role="tablist">
-                                {CAROUSEL_IMAGES.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
-                                        onClick={() => setCurrentSlide(index)}
-                                        aria-label={`${textos.home.ariaIrParaSlide} ${index + 1}`}
-                                        aria-selected={index === currentSlide}
-                                        role="tab"
-                                    />
-                                ))}
-                            </div>
+                        <h2 className="info-title">Informações Adicionais</h2>
+                        <div className="carousel-wrapper">
+                            {CAROUSEL_IMAGES.map((img, idx) => (
+                                <img key={idx} src={img} className={`carousel-image ${idx === currentSlide ? 'active' : ''}`} alt="info" />
+                            ))}
                         </div>
                     </div>
                 </div>
