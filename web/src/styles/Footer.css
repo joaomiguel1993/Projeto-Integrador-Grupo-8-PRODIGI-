@@ -227,3 +227,45 @@ FOOTER SIAGUH - ESTILOS COMPLETOS
     right: 1.5rem;
   }
 }
+.siaguh-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+html, body, #root {
+  min-height: 100%;
+}
+
+.site-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1 0 auto;
+}
+html, body, #root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.site-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+.siaguh-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}
