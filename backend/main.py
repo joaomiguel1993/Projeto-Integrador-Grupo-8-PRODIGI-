@@ -18,7 +18,8 @@ from backend.routers import (
     medicacaoativa,
     utenteantecedente,
     logs,
-    alergia
+    alergia,
+    painel_router
 )
 
 app = FastAPI(
@@ -65,3 +66,4 @@ app.include_router(medicacaoativa.router, prefix=API_PREFIX)
 app.include_router(utenteantecedente.router, prefix=API_PREFIX)
 app.include_router(logs.router, prefix=API_PREFIX)
 app.include_router(alergia.router, prefix=API_PREFIX)
+app.include_router(painel_router.router, prefix=API_PREFIX)
