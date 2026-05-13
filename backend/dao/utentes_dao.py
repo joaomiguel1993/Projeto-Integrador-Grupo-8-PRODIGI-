@@ -1,21 +1,28 @@
-import psycopg2
-from backend.db import run_query, get_connection
+from backend.db import run_query
 
 
 def select_all_utentes():
     return run_query("""
         SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
         FROM utente
-        ORDER BY nome
+        ORDER BY nome ASC
     """)
 
 
-def select_utente_by_id(num_utente: int):
+def select_utente_by_id(numutent: int):
     return run_query("""
         SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
         FROM utente
         WHERE numutent = %s
-    """, (num_utente,))
+    """, (numutent,))
+
+
+def select_utente_by_nif(nif: str):
+    return run_query("""
+        SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        FROM utente
+        WHERE nif = %s
+    """, (nif,))
 
 
 def insert_utente(
@@ -23,102 +30,83 @@ def insert_utente(
     nif: str,
     datanasc,
     sexo: str,
-    localidade: str | None = None,
-    telefone: str | None = None,
-    email: str | None = None
+    localidade=None,
+    telefone=None,
+    email=None,
 ):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute("""
-            INSERT INTO utente (nome, nif, datanasc, sexo, localidade, telefone, email)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
-        """, (nome, nif, datanasc, sexo, localidade, telefone, email))
-
-        created = cur.fetchone()
-
-        if not created:
-            conn.rollback()
-            return None
-
-        conn.commit()
-
-        return {
-            "numutent": created[0],
-            "nome": created[1],
-            "nif": created[2],
-            "datanasc": created[3],
-            "sexo": created[4],
-            "localidade": created[5],
-            "telefone": created[6],
-            "email": created[7]
-        }
-
-    except psycopg2.errors.UniqueViolation:
-        conn.rollback()
-        raise
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close()
-        conn.close()
+    return run_query("""
+        INSERT INTO utente (nome, nif, datanasc, sexo, localidade, telefone, email)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+    """, (
+        nome,
+        nif,
+        datanasc,
+        sexo,
+        localidade,
+        telefone,
+        email,
+    ))
 
 
-def update_utente_by_id(
-    num_utente: int,
-    nome: str,
-    nif: str,
-    datanasc,
-    sexo: str,
-    localidade: str | None = None,
-    telefone: str | None = None,
-    email: str | None = None
+def update_utente(
+    numutent: int,
+    nome=None,
+    nif=None,
+    datanasc=None,
+    sexo=None,
+    localidade=None,
+    telefone=None,
+    email=None,
 ):
-    conn = get_connection()
-    cur = conn.cursor()
+    campos = []
+    valores = []
 
-    try:
-        cur.execute("""
-            UPDATE utente
-            SET nome = %s,
-                nif = %s,
-                datanasc = %s,
-                sexo = %s,
-                localidade = %s,
-                telefone = %s,
-                email = %s
-            WHERE numutent = %s
-            RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
-        """, (nome, nif, datanasc, sexo, localidade, telefone, email, num_utente))
+    if nome is not None:
+        campos.append("nome = %s")
+        valores.append(nome)
 
-        updated = cur.fetchone()
+    if nif is not None:
+        campos.append("nif = %s")
+        valores.append(nif)
 
-        if not updated:
-            conn.rollback()
-            return None
+    if datanasc is not None:
+        campos.append("datanasc = %s")
+        valores.append(datanasc)
 
-        conn.commit()
+    if sexo is not None:
+        campos.append("sexo = %s")
+        valores.append(sexo)
 
-        return {
-            "numutent": updated[0],
-            "nome": updated[1],
-            "nif": updated[2],
-            "datanasc": updated[3],
-            "sexo": updated[4],
-            "localidade": updated[5],
-            "telefone": updated[6],
-            "email": updated[7]
-        }
+    if localidade is not None:
+        campos.append("localidade = %s")
+        valores.append(localidade)
 
-    except psycopg2.errors.UniqueViolation:
-        conn.rollback()
-        raise
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close()
-        conn.close()
+    if telefone is not None:
+        campos.append("telefone = %s")
+        valores.append(telefone)
+
+    if email is not None:
+        campos.append("email = %s")
+        valores.append(email)
+
+    if len(campos) == 0:
+        return select_utente_by_id(numutent)
+
+    valores.append(numutent)
+
+    query = f"""
+        UPDATE utente
+        SET {', '.join(campos)}
+        WHERE numutent = %s
+        RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+    """
+    return run_query(query, tuple(valores))
+
+
+def delete_utente(numutent: int):
+    return run_query("""
+        DELETE FROM utente
+        WHERE numutent = %s
+        RETURNING numutent
+    """, (numutent,))

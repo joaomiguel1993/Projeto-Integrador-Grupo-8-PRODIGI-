@@ -1,26 +1,23 @@
-from datetime import datetime
+from pydantic import BaseModel
+from datetime import date
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
 
 
-class UtenteAntecedenteCreate(BaseModel):
-    codantecedente: int
+class UtenteAntecedenteBase(BaseModel):
+    num_utent: int
+    cod_antecedente: int
+    data_registo: Optional[date] = None
 
 
-class UtenteAntecedenteResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    numutent: int
-    codantecedente: int
-    dataregisto: datetime
+class UtenteAntecedenteCreate(UtenteAntecedenteBase):
+    pass
 
 
-class UtenteAntecedenteDetalheResponse(UtenteAntecedenteResponse):
-    nome: str
-    tipo: Optional[str] = None
+class UtenteAntecedenteUpdate(BaseModel):
+    data_registo: Optional[date] = None
 
-from typing import List
 
-class ListaAntecedentesUtente(BaseModel):
-    numutent: int
-    antecedentes: List[UtenteAntecedenteDetalheResponse]
+class UtenteAntecedenteOut(BaseModel):
+    num_utent: int
+    cod_antecedente: int
+    data_registo: date

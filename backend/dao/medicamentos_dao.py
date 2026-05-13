@@ -1,62 +1,63 @@
-from backend.db import run_query, get_connection
+from backend.db import run_query
+
 
 def select_all_medicamentos():
     return run_query("""
-        SELECT codmedicamento, nome, principioativo, classeterapeuticaid 
-        FROM medicamento 
-        ORDER BY nome
+        SELECT codmedicamento, nome, principioativo, classeterapeuticaid
+        FROM medicamento
+        ORDER BY nome ASC
     """)
 
-def select_medicamento_by_id(cod_medicamento: int):
+
+def select_medicamento_by_id(codmedicamento: int):
     return run_query("""
-        SELECT codmedicamento, nome, principioativo, classeterapeuticaid 
-        FROM medicamento 
+        SELECT codmedicamento, nome, principioativo, classeterapeuticaid
+        FROM medicamento
         WHERE codmedicamento = %s
-    """, (cod_medicamento,))
+    """, (codmedicamento,))
+
 
 def insert_medicamento(nome: str, principioativo: str, classeterapeuticaid: int):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            INSERT INTO medicamento (nome, principioativo, classeterapeuticaid)
-            VALUES (%s, %s, %s)
-            RETURNING codmedicamento, nome, principioativo, classeterapeuticaid
-        """, (nome, principioativo, classeterapeuticaid))
-        created = cur.fetchone()
-        conn.commit()
-        return {
-            "codmedicamento": created[0],
-            "nome": created[1],
-            "principioativo": created[2],
-            "classeterapeuticaid": created[3]
-        }
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close(); conn.close()
+    return run_query("""
+        INSERT INTO medicamento (nome, principioativo, classeterapeuticaid)
+        VALUES (%s, %s, %s)
+        RETURNING codmedicamento, nome, principioativo, classeterapeuticaid
+    """, (nome, principioativo, classeterapeuticaid))
 
-def update_medicamento(cod_medicamento: int, nome: str, principioativo: str, classeterapeuticaid: int):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            UPDATE medicamento
-            SET nome = %s, principioativo = %s, classeterapeuticaid = %s
-            WHERE codmedicamento = %s
-            RETURNING codmedicamento, nome, principioativo, classeterapeuticaid
-        """, (nome, principioativo, classeterapeuticaid, cod_medicamento))
-        updated = cur.fetchone()
-        conn.commit()
-        return {
-            "codmedicamento": updated[0],
-            "nome": updated[1],
-            "principioativo": updated[2],
-            "classeterapeuticaid": updated[3]
-        }
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close(); conn.close()
+
+def update_medicamento(codmedicamento: int, nome=None, principioativo=None, classeterapeuticaid=None):
+    campos = []
+    valores = []
+
+    if nome is not None:
+        campos.append("nome = %s")
+        valores.append(nome)
+
+    if principioativo is not None:
+        campos.append("principioativo = %s")
+        valores.append(principioativo)
+
+    if classeterapeuticaid is not None:
+        campos.append("classeterapeuticaid = %s")
+        valores.append(classeterapeuticaid)
+
+    if len(campos) == 0:
+        return select_medicamento_by_id(codmedicamento)
+
+    valores.append(codmedicamento)
+
+    query = f"""
+        UPDATE medicamento
+        SET {', '.join(campos)}
+        WHERE codmedicamento = %s
+        RETURNING codmedicamento, nome, principioativo, classeterapeuticaid
+    """
+    return run_query(query, tuple(valores))
+
+
+def delete_medicamento(codmedicamento: int):
+    return run_query("""
+        DELETE FROM medicamento
+        WHERE codmedicamento = %s
+        RETURNING codmedicamento
+    """, (codmedicamento,))

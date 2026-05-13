@@ -1,93 +1,44 @@
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
+from fastapi import APIRouter
+from typing import List
 
 from backend.schemas.utilizador import (
     UtilizadorCreate,
-    UtilizadorDetalheResponse
+    UtilizadorUpdate,
+    UtilizadorOut,
 )
-from backend.services.utilizadores_service import (
-    get_utilizadores_service,
-    get_utilizador_service,
-    create_utilizador_service,
-    update_utilizador_service
-)
-from backend.dao.logs_dao import insert_log
+from backend.services import utilizadores_service
 
 router = APIRouter(prefix="/utilizadores", tags=["Utilizadores"])
 
 
-class UtilizadorUpdateRequest(BaseModel):
-    username: str
-    password: Optional[str] = None
-    hospitais: list[int] = []
-    bloqueado: Optional[bool] = None  # <-- adicionado
+@router.get("/", response_model=List[UtilizadorOut])
+def listar_utilizadores():
+    return utilizadores_service.listar_utilizadores()
 
 
-def get_client_ip(request: Request) -> str | None:
-    return request.client.host if request.client else None
+@router.get("/username/{username}", response_model=UtilizadorOut)
+def obter_utilizador_por_username(username: str):
+    return utilizadores_service.obter_utilizador_por_username(username)
 
 
-@router.get("/", response_model=list[UtilizadorDetalheResponse])
-def get_utilizadores(request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_utilizadores_service()
-    insert_log(
-        username=username,
-        acao="LISTAR_UTILIZADORES",
-        detalhe="Listagem de utilizadores consultada.",
-        ip=get_client_ip(request)
+@router.get("/{id_func}", response_model=UtilizadorOut)
+def obter_utilizador(id_func: int):
+    return utilizadores_service.obter_utilizador(id_func)
+
+
+@router.post("/", response_model=UtilizadorOut, status_code=201)
+def criar_utilizador(data: UtilizadorCreate):
+    return utilizadores_service.criar_utilizador(data.model_dump())
+
+
+@router.put("/{id_func}", response_model=UtilizadorOut)
+def atualizar_utilizador(id_func: int, data: UtilizadorUpdate):
+    return utilizadores_service.atualizar_utilizador(
+        id_func,
+        data.model_dump(exclude_unset=True)
     )
-    return resultado
 
 
-@router.get("/{idfunc}", response_model=UtilizadorDetalheResponse)
-def get_utilizador(idfunc: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_utilizador_service(idfunc)
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Utilizador não encontrado")
-    insert_log(
-        username=username,
-        acao="CONSULTAR_UTILIZADOR",
-        detalhe=f"Utilizador {idfunc} consultado.",
-        ip=get_client_ip(request)
-    )
-    return resultado
-
-
-@router.post("/", response_model=UtilizadorDetalheResponse)
-def criar_utilizador(payload: UtilizadorCreate, request: Request):
-    username_request = request.headers.get("X-Username", "desconhecido")
-    resultado = create_utilizador_service(
-        idfunc=payload.idfunc,
-        username=payload.username,
-        password=payload.password,
-        hospitais=[]
-    )
-    insert_log(
-        username=username_request,
-        acao="CRIAR_UTILIZADOR",
-        detalhe=f"Utilizador criado para o funcionário {payload.idfunc}.",
-        ip=get_client_ip(request)
-    )
-    return resultado
-
-
-@router.put("/{idfunc}", response_model=UtilizadorDetalheResponse)
-def atualizar_utilizador(idfunc: int, payload: UtilizadorUpdateRequest, request: Request):
-    username_request = request.headers.get("X-Username", "desconhecido")
-    resultado = update_utilizador_service(
-        idfunc=idfunc,
-        username=payload.username,
-        password=payload.password,
-        hospitais=payload.hospitais,
-        bloqueado=payload.bloqueado,
-    )
-    insert_log(
-        username=username_request,
-        acao="ATUALIZAR_UTILIZADOR",
-        detalhe=f"Utilizador {idfunc} atualizado. Hospitais={payload.hospitais} Bloqueado={payload.bloqueado}",
-        ip=get_client_ip(request)
-    )
-    return resultado
+@router.delete("/{id_func}")
+def remover_utilizador(id_func: int):
+    return utilizadores_service.remover_utilizador(id_func)

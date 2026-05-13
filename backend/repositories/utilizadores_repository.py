@@ -1,70 +1,73 @@
-from typing import Any, cast
-from backend.auth.security import hash_password
-from backend.dao.utilizadores_dao import (
-    select_all_utilizadores,
-    select_utilizador_by_idfunc,
-    insert_utilizador,
-    update_utilizador_by_idfunc,
-    select_hospitais_by_idfunc,
-    replace_hospitais_utilizador
-)
+from backend.dao import utilizadores_dao
+
+
+def _first_or_none(rows):
+    if rows is None or len(rows) == 0:
+        return None
+    return rows[0]
+
+
+def _map_row(row):
+    if row is None:
+        return None
+
+    return {
+        "id_func": row[0],
+        "username": row[1],
+        "password": row[2],
+        "bloqueado": row[3],
+        "role": row[4],
+    }
 
 
 def listar_utilizadores():
-    result = select_all_utilizadores()
-    if not result:
+    rows = utilizadores_dao.select_all_utilizadores()
+    if rows is None:
         return []
-    return result
+    return [_map_row(row) for row in rows]
 
 
-def obter_utilizador(idfunc: int):
-    result = select_utilizador_by_idfunc(idfunc)
-    if not result:
-        return None
-
-    result_list = cast(list[dict[str, Any]], result)
-    utilizador = result_list[0]
-
-    hospitais = select_hospitais_by_idfunc(idfunc) or []
-    utilizador["hospitais"] = hospitais
-
-    return utilizador
+def obter_utilizador_por_id_func(id_func: int):
+    rows = utilizadores_dao.select_utilizador_by_idfunc(id_func)
+    row = _first_or_none(rows)
+    return _map_row(row)
 
 
-def criar_utilizador(idfunc: int, username: str, password: str, hospitais: list[int] | None = None):
-    password_hash = hash_password(password)
-
-    created = insert_utilizador(idfunc, username, password_hash)
-    if not created:
-        return None
-
-    if hospitais is not None:
-        replace_hospitais_utilizador(idfunc, hospitais)
-
-    return obter_utilizador(idfunc)
+def obter_utilizador_por_username(username: str):
+    rows = utilizadores_dao.select_utilizador_by_username(username)
+    row = _first_or_none(rows)
+    return _map_row(row)
 
 
-def atualizar_utilizador(
-    idfunc: int,
-    username: str,
-    password: str | None = None,
-    hospitais: list[int] | None = None,
-    bloqueado: bool | None = None,
-):
-    password_hash = None
-    if password is not None and password.strip():
-        password_hash = hash_password(password)
-
-    updated = update_utilizador_by_idfunc(
-        idfunc,
-        username,
-        password_hash,
-        bloqueado
+def criar_utilizador(data: dict):
+    rows = utilizadores_dao.insert_utilizador(
+        data["id_func"],
+        data["username"],
+        data["password"],
+        data.get("bloqueado", False),
+        data.get("role", ""),
     )
-    if not updated:
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def atualizar_utilizador(id_func: int, data: dict):
+    rows = utilizadores_dao.update_utilizador(
+        id_func,
+        data.get("username"),
+        data.get("password"),
+        data.get("bloqueado"),
+        data.get("role"),
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def remover_utilizador(id_func: int):
+    rows = utilizadores_dao.delete_utilizador(id_func)
+    row = _first_or_none(rows)
+
+    if row is None:
         return None
 
-    if hospitais is not None:
-        replace_hospitais_utilizador(idfunc, hospitais)
-
-    return obter_utilizador(idfunc)
+    return row[0]

@@ -1,37 +1,110 @@
-from typing import Any, cast
+from backend.dao import episodios_dao
 
-from backend.dao.episodios_dao import (
-    select_all_episodios,
-    select_episodio_by_id,
-    insert_episodio,
-    update_episodio
-)
+
+def _first_or_none(rows):
+    if rows is None or len(rows) == 0:
+        return None
+    return rows[0]
+
+
+def _map_row(row):
+    if row is None:
+        return None
+
+    return {
+        "cod_ep_urgenc": row[0],
+        "num_utent": row[1],
+        "id_hosp": row[2],
+        "data_hora_entr": row[3],
+        "data_hora_atendimento": row[4],
+        "data_hora_saida": row[5],
+        "estado": row[6],
+    }
 
 
 def listar_episodios():
-    result = select_all_episodios()
-    if not result:
+    rows = episodios_dao.select_all_episodios()
+    if rows is None:
         return []
-    return result
+    return [_map_row(row) for row in rows]
 
 
-def obter_episodio(cod_ep_urgenc: int):
-    result = select_episodio_by_id(cod_ep_urgenc)
-    if not result:
+def obter_episodio_por_id(cod_ep_urgenc: int):
+    rows = episodios_dao.select_episodio_by_id(cod_ep_urgenc)
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def listar_episodios_por_utente(num_utent: int):
+    rows = episodios_dao.select_episodios_by_utente(num_utent)
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]
+
+
+def listar_episodios_por_hospital(id_hosp: int):
+    rows = episodios_dao.select_episodios_by_hospital(id_hosp)
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]
+
+
+def criar_episodio(data: dict):
+    num_utent = data["num_utent"]
+    id_hosp = data["id_hosp"]
+
+    data_hora_entr = None
+    if "data_hora_entr" in data:
+        data_hora_entr = data["data_hora_entr"]
+
+    estado = "aberto"
+    if "estado" in data:
+        estado = data["estado"]
+
+    rows = episodios_dao.insert_episodio(
+        num_utent,
+        id_hosp,
+        data_hora_entr,
+        estado,
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def atualizar_episodio(cod_ep_urgenc: int, data: dict):
+    id_hosp = None
+    data_hora_atendimento = None
+    data_hora_saida = None
+    estado = None
+
+    if "id_hosp" in data:
+        id_hosp = data["id_hosp"]
+
+    if "data_hora_atendimento" in data:
+        data_hora_atendimento = data["data_hora_atendimento"]
+
+    if "data_hora_saida" in data:
+        data_hora_saida = data["data_hora_saida"]
+
+    if "estado" in data:
+        estado = data["estado"]
+
+    rows = episodios_dao.update_episodio(
+        cod_ep_urgenc,
+        id_hosp,
+        data_hora_atendimento,
+        data_hora_saida,
+        estado,
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def remover_episodio(cod_ep_urgenc: int):
+    rows = episodios_dao.delete_episodio(cod_ep_urgenc)
+    row = _first_or_none(rows)
+
+    if row is None:
         return None
 
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
-
-
-def criar_episodio(num_utente: int, id_hosp: int):
-    result = insert_episodio(num_utente, id_hosp)
-    if not result:
-        return None
-
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
-
-
-def atualizar_episodio(cod_ep_urgenc: int, num_utente: int, id_hosp: int, datahora_saida, estado: str):
-    return update_episodio(cod_ep_urgenc, num_utente, id_hosp, datahora_saida, estado)
+    return row[0]

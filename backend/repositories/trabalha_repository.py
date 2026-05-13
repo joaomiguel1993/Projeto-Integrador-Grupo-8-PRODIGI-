@@ -1,41 +1,78 @@
-from typing import Any, cast
-from backend.dao.trabalha_dao import (
-    select_funcionarios_by_hospital,
-    select_hospitais_by_funcionario,
-    insert_trabalha,
-    update_trabalha_ativo,
-    delete_trabalha
-)
+from backend.dao import trabalha_dao
 
-def listar_funcionarios_do_hospital(idhosp: int):
-    result = select_funcionarios_by_hospital(idhosp)
-    if not result:
+
+def _first_or_none(rows):
+    if rows is None or len(rows) == 0:
+        return None
+    return rows[0]
+
+
+def _map_row(row):
+    if row is None:
+        return None
+
+    return {
+        "id_func": row[0],
+        "id_hosp": row[1],
+        "ativo": row[2],
+    }
+
+
+def listar_trabalhos():
+    rows = trabalha_dao.select_all_trabalhos()
+    if rows is None:
         return []
-    return result
+    return [_map_row(row) for row in rows]
 
-def listar_hospitais_do_funcionario(idfunc: int):
-    result = select_hospitais_by_funcionario(idfunc)
-    if not result:
+
+def obter_trabalho(id_func: int, id_hosp: int):
+    rows = trabalha_dao.select_trabalho_by_ids(id_func, id_hosp)
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def listar_trabalhos_por_funcionario(id_func: int):
+    rows = trabalha_dao.select_trabalhos_by_funcionario(id_func)
+    if rows is None:
         return []
-    return result
+    return [_map_row(row) for row in rows]
 
-def criar_trabalha(idfunc: int, idhosp: int):
-    result = insert_trabalha(idfunc, idhosp)
-    if not result:
-        return None
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
 
-def atualizar_trabalha_ativo(idfunc: int, idhosp: int, ativo: bool):
-    result = update_trabalha_ativo(idfunc, idhosp, ativo)
-    if not result:
-        return None
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
+def listar_trabalhos_por_hospital(id_hosp: int):
+    rows = trabalha_dao.select_trabalhos_by_hospital(id_hosp)
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]
 
-def remover_trabalha(idfunc: int, idhosp: int):
-    result = delete_trabalha(idfunc, idhosp)
-    if not result:
+
+def criar_trabalho(data: dict):
+    id_func = data["id_func"]
+    id_hosp = data["id_hosp"]
+    ativo = data.get("ativo", True)
+
+    rows = trabalha_dao.insert_trabalho(id_func, id_hosp, ativo)
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def atualizar_trabalho(id_func: int, id_hosp: int, data: dict):
+    rows = trabalha_dao.update_trabalho(
+        id_func,
+        id_hosp,
+        data.get("ativo"),
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def remover_trabalho(id_func: int, id_hosp: int):
+    rows = trabalha_dao.delete_trabalho(id_func, id_hosp)
+    row = _first_or_none(rows)
+
+    if row is None:
         return None
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
+
+    return {
+        "id_func": row[0],
+        "id_hosp": row[1],
+    }

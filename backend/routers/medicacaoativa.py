@@ -1,92 +1,44 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter
+from typing import List
+
 from backend.schemas.medicacaoativa import (
     MedicacaoAtivaCreate,
     MedicacaoAtivaUpdate,
-    MedicacaoAtivaResponse,
-    MedicacaoAtivaDetalheResponse
+    MedicacaoAtivaOut,
 )
-from backend.services.medicacaoativa_service import (
-    get_medicacaoativa_service,
-    get_medicacaoativa_por_utente_service,
-    criar_medicacaoativa_service,
-    atualizar_medicacaoativa_service,
-    remover_medicacaoativa_service
-)
-from backend.dao.logs_dao import insert_log
+from backend.services import medicacaoativa_service
+
+router = APIRouter(prefix="/medicacao-ativa", tags=["Medicação Ativa"])
 
 
-router = APIRouter(prefix="/medicacaoativa", tags=["Medicação Ativa"])
+@router.get("/", response_model=List[MedicacaoAtivaOut])
+def listar_medicacoes_ativas():
+    return medicacaoativa_service.listar_medicacoes_ativas()
 
 
-def get_client_ip(request: Request):
-    return request.client.host if request.client else None
+@router.get("/utente/{num_utent}", response_model=List[MedicacaoAtivaOut])
+def listar_medicacoes_ativas_por_utente(num_utent: int):
+    return medicacaoativa_service.listar_medicacoes_ativas_por_utente(num_utent)
 
 
-@router.get("/", response_model=list[MedicacaoAtivaResponse])
-def get_medicacaoativa(request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_medicacaoativa_service()
-    insert_log(
-        username=username,
-        acao="LISTAR_MEDICACAO_ATIVA",
-        detalhe="Listagem de medicação ativa consultada.",
-        ip=get_client_ip(request)
+@router.get("/{cod_medicacao_ativa}", response_model=MedicacaoAtivaOut)
+def obter_medicacao_ativa(cod_medicacao_ativa: int):
+    return medicacaoativa_service.obter_medicacao_ativa(cod_medicacao_ativa)
+
+
+@router.post("/", response_model=MedicacaoAtivaOut, status_code=201)
+def criar_medicacao_ativa(data: MedicacaoAtivaCreate):
+    return medicacaoativa_service.criar_medicacao_ativa(data.model_dump())
+
+
+@router.put("/{cod_medicacao_ativa}", response_model=MedicacaoAtivaOut)
+def atualizar_medicacao_ativa(cod_medicacao_ativa: int, data: MedicacaoAtivaUpdate):
+    return medicacaoativa_service.atualizar_medicacao_ativa(
+        cod_medicacao_ativa,
+        data.model_dump(exclude_unset=True)
     )
-    return resultado
 
 
-@router.get("/utente/{numutent}", response_model=list[MedicacaoAtivaDetalheResponse])
-def get_medicacaoativa_por_utente(numutent: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_medicacaoativa_por_utente_service(numutent)
-    insert_log(
-        username=username,
-        acao="LISTAR_MEDICACAO_ATIVA_UTENTE",
-        detalhe=f"Medicação ativa do utente {numutent} consultada.",
-        ip=get_client_ip(request)
-    )
-    return resultado
-
-
-@router.post("/", response_model=MedicacaoAtivaResponse, status_code=status.HTTP_201_CREATED)
-def post_medicacaoativa(data: MedicacaoAtivaCreate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = criar_medicacaoativa_service(data)
-    if not resultado:
-        raise HTTPException(status_code=400, detail="Não foi possível registar a medicação")
-    insert_log(
-        username=username,
-        acao="CRIAR_MEDICACAO_ATIVA",
-        detalhe=f"Medicação ativa registada para utente {data.numutent}.",
-        ip=get_client_ip(request)
-    )
-    return resultado
-
-
-@router.put("/{codmedicacaoativa}", response_model=MedicacaoAtivaResponse)
-def put_medicacaoativa(codmedicacaoativa: int, data: MedicacaoAtivaUpdate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = atualizar_medicacaoativa_service(codmedicacaoativa, data)
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Medicação não encontrada")
-    insert_log(
-        username=username,
-        acao="ATUALIZAR_MEDICACAO_ATIVA",
-        detalhe=f"Medicação ativa {codmedicacaoativa} atualizada.",
-        ip=get_client_ip(request)
-    )
-    return resultado
-
-
-@router.delete("/{codmedicacaoativa}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_medicacaoativa(codmedicacaoativa: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = remover_medicacaoativa_service(codmedicacaoativa)
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Medicação não encontrada")
-    insert_log(
-        username=username,
-        acao="APAGAR_MEDICACAO_ATIVA",
-        detalhe=f"Medicação ativa {codmedicacaoativa} removida.",
-        ip=get_client_ip(request)
-    )
+@router.delete("/{cod_medicacao_ativa}")
+def remover_medicacao_ativa(cod_medicacao_ativa: int):
+    return medicacaoativa_service.remover_medicacao_ativa(cod_medicacao_ativa)

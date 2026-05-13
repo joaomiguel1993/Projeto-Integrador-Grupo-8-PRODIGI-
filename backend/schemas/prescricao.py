@@ -1,28 +1,38 @@
+from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, Literal
+
 
 class PrescricaoBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    idato: int
-    codmedicamento: int  # Adicionado: essencial para o banco
-    dosagem: str        # Adicionado: obrigatório no SQL
-    observacoes: Optional[str] = None # Ajustado: reflete o 'Observacoes' do SQL
+    id_ato: int
+    cod_medicamento: int
+    dosagem: str
+    observacoes: Optional[str] = None
 
 
 class PrescricaoCreate(PrescricaoBase):
-    # Pode incluir datahorapresc como opcional se quiser retroagir a data
     pass
 
 
 class PrescricaoUpdate(BaseModel):
-    # Geralmente prescrições não são editadas (por questões legais), 
-    # mas se forem, apenas observações ou dosagem fariam sentido.
+    id_ato: Optional[int] = None
+    cod_medicamento: Optional[int] = None
     dosagem: Optional[str] = None
     observacoes: Optional[str] = None
+    estado_prescricao: Optional[Literal["pendente", "aprovada", "bloqueada", "anulada"]] = None
+    score_risco_ia: Optional[float] = None
+    validado_por_ia: Optional[bool] = None
+    data_hora_validacao_ia: Optional[datetime] = None
 
 
-class PrescricaoResponse(PrescricaoBase):
-    idprescricao: int
-    datahorapresc: datetime
+class PrescricaoOut(BaseModel):
+    id_prescricao: int
+    id_ato: int
+    cod_medicamento: int
+    dosagem: str
+    observacoes: Optional[str] = None
+    data_hora_presc: datetime
+    estado_prescricao: str
+    score_risco_ia: Optional[float] = None
+    validado_por_ia: bool
+    data_hora_validacao_ia: Optional[datetime] = None

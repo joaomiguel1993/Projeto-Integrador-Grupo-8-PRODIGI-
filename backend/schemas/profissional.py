@@ -1,28 +1,35 @@
-from typing import Optional
 from pydantic import BaseModel
+from typing import Optional, Literal
 
-class ProfissionalCreate(BaseModel):
+
+class ProfissionalBase(BaseModel):
     nome: str
-    tipofunc: str
-    sexo: str
+    tipo_func: Literal["medico", "enfermeiro", "admin", "rececionista"]
+    sexo: Literal["M", "F"]
     email: Optional[str] = None
     telefone: Optional[str] = None
     biografia: Optional[str] = None
     foto_url: Optional[str] = None
+
+
+class ProfissionalCreate(ProfissionalBase):
+    pass
+
 
 class ProfissionalUpdate(BaseModel):
-    nome: str
-    tipofunc: str
-    sexo: str
+    nome: Optional[str] = None
+    tipo_func: Optional[Literal["medico", "enfermeiro", "admin", "rececionista"]] = None
+    sexo: Optional[Literal["M", "F"]] = None
     email: Optional[str] = None
     telefone: Optional[str] = None
     biografia: Optional[str] = None
     foto_url: Optional[str] = None
 
-class ProfissionalResponse(BaseModel):
-    idfunc: int
+
+class ProfissionalOut(BaseModel):
+    id_func: int
     nome: str
-    tipofunc: str
+    tipo_func: str
     sexo: str
     email: Optional[str] = None
     telefone: Optional[str] = None

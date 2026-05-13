@@ -1,14 +1,53 @@
-from datetime import datetime
-from backend.repositories.atos_repository import *
+from fastapi import HTTPException
+from backend.repositories import atos_repository
 
-def get_atos_service(): return listar_atos()
-def get_ato_service(id): return obter_ato(id)
-def get_atos_por_episodio_service(cod): return listar_atos_por_episodio(cod)
-def get_funcionarios_do_ato_service(id): return listar_funcionarios_do_ato(id)
-def get_prescricoes_do_ato_service(id): return listar_prescricoes_do_ato(id)
 
-def criar_ato_service(data):
-    return criar_ato(data.codepurgenc, data.tipo, data.descricao, data.datahorainicio or datetime.now())
+def listar_atos():
+    return atos_repository.listar_atos()
 
-def atualizar_ato_service(id, data):
-    return atualizar_ato(id, data.tipo, data.descricao, data.datahorafim)
+
+def obter_ato(id_ato: int):
+    ato = atos_repository.obter_ato_por_id(id_ato)
+    if ato is None:
+        raise HTTPException(status_code=404, detail="Ato não encontrado.")
+    return ato
+
+
+def listar_atos_por_episodio(cod_ep_urgenc: int):
+    return atos_repository.listar_atos_por_episodio(cod_ep_urgenc)
+
+
+def criar_ato(data: dict):
+    try:
+        resultado = atos_repository.criar_ato(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar o ato.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar ato: {str(e)}")
+
+
+def atualizar_ato(id_ato: int, data: dict):
+    try:
+        resultado = atos_repository.atualizar_ato(id_ato, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Ato não encontrado.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar ato: {str(e)}")
+
+
+def remover_ato(id_ato: int):
+    try:
+        resultado = atos_repository.remover_ato(id_ato)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Ato não encontrado.")
+        return {"detail": "Ato removido com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover ato: {str(e)}")

@@ -1,68 +1,50 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter
+from typing import List
+
 from backend.schemas.utenteantecedente import (
     UtenteAntecedenteCreate,
-    UtenteAntecedenteResponse,
-    UtenteAntecedenteDetalheResponse
+    UtenteAntecedenteUpdate,
+    UtenteAntecedenteOut,
 )
-from backend.services.utenteantecedente_service import (
-    get_antecedentes_utente_service,
-    adicionar_antecedente_service,
-    remover_antecedente_service
-)
-from backend.dao.logs_dao import insert_log
+from backend.services import utenteantecedente_service
+
+router = APIRouter(prefix="/utente-antecedentes", tags=["Utente Antecedentes"])
 
 
-router = APIRouter(prefix="/utentes", tags=["Utentes - Antecedentes"])
+@router.get("/", response_model=List[UtenteAntecedenteOut])
+def listar_utente_antecedentes():
+    return utenteantecedente_service.listar_utente_antecedentes()
 
 
-def get_client_ip(request: Request):
-    return request.client.host if request.client else None
+@router.get("/utente/{num_utent}", response_model=List[UtenteAntecedenteOut])
+def listar_antecedentes_por_utente(num_utent: int):
+    return utenteantecedente_service.listar_antecedentes_por_utente(num_utent)
 
 
-@router.get("/{numutent}/antecedentes", response_model=list[UtenteAntecedenteDetalheResponse])
-def get_antecedentes_utente(numutent: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_antecedentes_utente_service(numutent)
+@router.get("/antecedente/{cod_antecedente}", response_model=List[UtenteAntecedenteOut])
+def listar_utentes_por_antecedente(cod_antecedente: int):
+    return utenteantecedente_service.listar_utentes_por_antecedente(cod_antecedente)
 
-    insert_log(
-        username=username,
-        acao="LISTAR_ANTECEDENTES_UTENTE",
-        detalhe=f"Antecedentes do utente {numutent} consultados.",
-        ip=get_client_ip(request)
+
+@router.get("/{num_utent}/{cod_antecedente}", response_model=UtenteAntecedenteOut)
+def obter_utente_antecedente(num_utent: int, cod_antecedente: int):
+    return utenteantecedente_service.obter_utente_antecedente(num_utent, cod_antecedente)
+
+
+@router.post("/", response_model=UtenteAntecedenteOut, status_code=201)
+def criar_utente_antecedente(data: UtenteAntecedenteCreate):
+    return utenteantecedente_service.criar_utente_antecedente(data.model_dump())
+
+
+@router.put("/{num_utent}/{cod_antecedente}", response_model=UtenteAntecedenteOut)
+def atualizar_utente_antecedente(num_utent: int, cod_antecedente: int, data: UtenteAntecedenteUpdate):
+    return utenteantecedente_service.atualizar_utente_antecedente(
+        num_utent,
+        cod_antecedente,
+        data.model_dump(exclude_unset=True)
     )
 
-    return resultado
 
-
-@router.post("/{numutent}/antecedentes", response_model=UtenteAntecedenteResponse, status_code=status.HTTP_201_CREATED)
-def post_antecedente_utente(numutent: int, data: UtenteAntecedenteCreate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = adicionar_antecedente_service(numutent, data.codantecedente)
-
-    if not resultado:
-        raise HTTPException(status_code=400, detail="Não foi possível adicionar o antecedente")
-
-    insert_log(
-        username=username,
-        acao="ADICIONAR_ANTECEDENTE_UTENTE",
-        detalhe=f"Antecedente {data.codantecedente} adicionado ao utente {numutent}.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.delete("/{numutent}/antecedentes/{codantecedente}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_antecedente_utente(numutent: int, codantecedente: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = remover_antecedente_service(numutent, codantecedente)
-
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Antecedente não encontrado")
-
-    insert_log(
-        username=username,
-        acao="REMOVER_ANTECEDENTE_UTENTE",
-        detalhe=f"Antecedente {codantecedente} removido do utente {numutent}.",
-        ip=get_client_ip(request)
-    )
+@router.delete("/{num_utent}/{cod_antecedente}")
+def remover_utente_antecedente(num_utent: int, cod_antecedente: int):
+    return utenteantecedente_service.remover_utente_antecedente(num_utent, cod_antecedente)

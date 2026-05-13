@@ -1,76 +1,56 @@
 from fastapi import HTTPException
-
-from backend.repositories.internamentos_repository import (
-    listar_internamentos,
-    obter_internamento,
-    criar_internamento,
-    atualizar_internamento
-)
+from backend.repositories import internamentos_repository
 
 
-TIPOS_ALTA_VALIDOS = {"clinica", "voluntaria", "transferencia", "obito"}
+def listar_internamentos():
+    return internamentos_repository.listar_internamentos()
 
 
-def get_internamentos_service():
-    return listar_internamentos()
-
-
-def get_internamento_service(cod_internamento: int):
-    return obter_internamento(cod_internamento)
-
-
-def create_internamento_service(data):
-    if data.codepurgenc <= 0:
-        raise HTTPException(status_code=400, detail="Código de episódio inválido.")
-
-    if not data.motivoint or not data.motivoint.strip():
-        raise HTTPException(status_code=400, detail="Motivo de internamento é obrigatório.")
-
-    criado = criar_internamento(
-        codepurgenc=data.codepurgenc,
-        idfunc=data.idfunc,
-        datahoraint=data.datahoraint,
-        motivoint=data.motivoint.strip(),
-        numerocama=data.numerocama,
-        servico=data.servico
-    )
-
-    if not criado:
-        raise HTTPException(status_code=500, detail="Erro ao criar internamento.")
-
-    return criado
-
-
-def update_internamento_service(cod_internamento: int, data):
-    existente = obter_internamento(cod_internamento)
-    if not existente:
+def obter_internamento(cod_internamento: int):
+    internamento = internamentos_repository.obter_internamento_por_id(cod_internamento)
+    if internamento is None:
         raise HTTPException(status_code=404, detail="Internamento não encontrado.")
+    return internamento
 
-    if not data.motivoint or not data.motivoint.strip():
-        raise HTTPException(status_code=400, detail="Motivo de internamento é obrigatório.")
 
-    if (data.datahoraalta is None and data.tipoalta is not None) or (data.datahoraalta is not None and data.tipoalta is None):
-        raise HTTPException(
-            status_code=400,
-            detail="DataHoraAlta e TipoAlta devem ser ambos preenchidos ou ambos nulos."
-        )
+def obter_internamento_por_episodio(cod_ep_urgenc: int):
+    internamento = internamentos_repository.obter_internamento_por_episodio(cod_ep_urgenc)
+    if internamento is None:
+        raise HTTPException(status_code=404, detail="Internamento não encontrado para o episódio.")
+    return internamento
 
-    if data.tipoalta is not None and data.tipoalta not in TIPOS_ALTA_VALIDOS:
-        raise HTTPException(status_code=400, detail="Tipo de alta inválido.")
 
-    atualizado = atualizar_internamento(
-        cod_internamento=cod_internamento,
-        codepurgenc=data.codepurgenc,
-        idfunc=data.idfunc,
-        datahoraconsulta=data.datahoraconsulta,
-        datahoraalta=data.datahoraalta,
-        motivoint=data.motivoint.strip(),
-        numerocama=data.numerocama,
-        servico=data.servico,
-        tipoalta=data.tipoalta
-    )
+def criar_internamento(data: dict):
+    try:
+        resultado = internamentos_repository.criar_internamento(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar o internamento.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar internamento: {str(e)}")
 
-    if not atualizado:
-        raise HTTPException(status_code=500, detail="Erro ao atualizar internamento.")
 
-    return atualizado
+def atualizar_internamento(cod_internamento: int, data: dict):
+    try:
+        resultado = internamentos_repository.atualizar_internamento(cod_internamento, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Internamento não encontrado.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar internamento: {str(e)}")
+
+
+def remover_internamento(cod_internamento: int):
+    try:
+        resultado = internamentos_repository.remover_internamento(cod_internamento)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Internamento não encontrado.")
+        return {"detail": "Internamento removido com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover internamento: {str(e)}")

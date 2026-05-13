@@ -1,29 +1,31 @@
+from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, Literal
 
 
 class EpisodioBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    numutent: int
-    idhosp: int
-    datahorasaida: Optional[datetime] = None
-    estado: str = "aberto"
+    num_utent: int
+    id_hosp: int
+    data_hora_entr: Optional[datetime] = None
+    estado: Literal["aberto", "em_triagem", "em_atendimento", "internado", "terminado"] = "aberto"
 
 
-class EpisodioCreate(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    numutent: int
-    idhosp: int
-
-
-class EpisodioUpdate(EpisodioBase):
+class EpisodioCreate(EpisodioBase):
     pass
 
 
-class EpisodioResponse(EpisodioBase):
-    codepurgenc: int
-    datahoraentr: datetime
-    datahoraatendimento: Optional[datetime] = None
+class EpisodioUpdate(BaseModel):
+    id_hosp: Optional[int] = None
+    data_hora_atendimento: Optional[datetime] = None
+    data_hora_saida: Optional[datetime] = None
+    estado: Optional[Literal["aberto", "em_triagem", "em_atendimento", "internado", "terminado"]] = None
+
+
+class EpisodioOut(BaseModel):
+    cod_ep_urgenc: int
+    num_utent: int
+    id_hosp: int
+    data_hora_entr: datetime
+    data_hora_atendimento: Optional[datetime] = None
+    data_hora_saida: Optional[datetime] = None
+    estado: str

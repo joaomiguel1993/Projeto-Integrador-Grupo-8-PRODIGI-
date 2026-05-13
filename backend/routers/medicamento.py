@@ -1,92 +1,39 @@
-from fastapi import APIRouter, HTTPException, Request, status
-from backend.schemas.medicamento import (
-    MedicamentoResponse,
-    MedicamentoCreate,
-    MedicamentoUpdate
-)
-from backend.services.medicamentos_service import (
-    get_medicamentos_service,
-    get_medicamento_service,
-    create_medicamento_service,
-    update_medicamento_service
-)
-from backend.dao.logs_dao import insert_log
+from fastapi import APIRouter
+from typing import List
 
+from backend.schemas.medicamento import (
+    MedicamentoCreate,
+    MedicamentoUpdate,
+    MedicamentoOut,
+)
+from backend.services import medicamentos_service
 
 router = APIRouter(prefix="/medicamentos", tags=["Medicamentos"])
 
 
-def get_client_ip(request: Request):
-    return request.client.host if request.client else None
+@router.get("/", response_model=List[MedicamentoOut])
+def listar_medicamentos():
+    return medicamentos_service.listar_medicamentos()
 
 
-@router.get("/", response_model=list[MedicamentoResponse])
-def get_medicamentos(request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_medicamentos_service()
+@router.get("/{cod_medicamento}", response_model=MedicamentoOut)
+def obter_medicamento(cod_medicamento: int):
+    return medicamentos_service.obter_medicamento(cod_medicamento)
 
-    insert_log(
-        username=username,
-        acao="LISTAR_MEDICAMENTOS",
-        detalhe="Listagem de medicamentos consultada.",
-        ip=get_client_ip(request)
+
+@router.post("/", response_model=MedicamentoOut, status_code=201)
+def criar_medicamento(data: MedicamentoCreate):
+    return medicamentos_service.criar_medicamento(data.model_dump())
+
+
+@router.put("/{cod_medicamento}", response_model=MedicamentoOut)
+def atualizar_medicamento(cod_medicamento: int, data: MedicamentoUpdate):
+    return medicamentos_service.atualizar_medicamento(
+        cod_medicamento,
+        data.model_dump(exclude_unset=True)
     )
 
-    return resultado
 
-
-@router.get("/{cod_medicamento}", response_model=MedicamentoResponse)
-def get_medicamento(cod_medicamento: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_medicamento_service(cod_medicamento)
-
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Medicamento não encontrado")
-
-    insert_log(
-        username=username,
-        acao="CONSULTAR_MEDICAMENTO",
-        detalhe=f"Medicamento {cod_medicamento} consultado.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.post("/", response_model=MedicamentoResponse, status_code=status.HTTP_201_CREATED)
-def post_medicamento(data: MedicamentoCreate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-
-    resultado = create_medicamento_service(
-        nome=data.nome,
-        principioativo=data.principioativo
-    )
-
-    insert_log(
-        username=username,
-        acao="CRIAR_MEDICAMENTO",
-        detalhe=f"Medicamento criado: {data.nome}.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.put("/{cod_medicamento}", response_model=MedicamentoResponse)
-def put_medicamento(cod_medicamento: int, data: MedicamentoUpdate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-
-    resultado = update_medicamento_service(
-        cod_medicamento=cod_medicamento,
-        nome=data.nome,
-        principioativo=data.principioativo
-    )
-
-    insert_log(
-        username=username,
-        acao="ATUALIZAR_MEDICAMENTO",
-        detalhe=f"Medicamento {cod_medicamento} atualizado.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
+@router.delete("/{cod_medicamento}")
+def remover_medicamento(cod_medicamento: int):
+    return medicamentos_service.remover_medicamento(cod_medicamento)

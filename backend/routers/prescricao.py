@@ -1,92 +1,40 @@
-from fastapi import APIRouter, HTTPException, Request, status
-from backend.schemas.prescricao import (
-    PrescricaoResponse,
-    PrescricaoCreate,
-    PrescricaoUpdate
-)
-from backend.services.prescricoes_service import (
-    get_prescricoes_service,
-    get_prescricao_service,
-    create_prescricao_service,
-    update_prescricao_service
-)
-from backend.dao.logs_dao import insert_log
+from fastapi import APIRouter
+from typing import List
 
+from backend.schemas.prescricao import PrescricaoCreate, PrescricaoUpdate, PrescricaoOut
+from backend.services import prescricoes_service
 
 router = APIRouter(prefix="/prescricoes", tags=["Prescrições"])
 
 
-def get_client_ip(request: Request):
-    return request.client.host if request.client else None
+@router.get("/", response_model=List[PrescricaoOut])
+def listar_prescricoes():
+    return prescricoes_service.listar_prescricoes()
 
 
-@router.get("/", response_model=list[PrescricaoResponse])
-def get_prescricoes(request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_prescricoes_service()
+@router.get("/ato/{id_ato}", response_model=List[PrescricaoOut])
+def obter_prescricoes_por_ato(id_ato: int):
+    return prescricoes_service.obter_prescricoes_por_ato(id_ato)
 
-    insert_log(
-        username=username,
-        acao="LISTAR_PRESCRICOES",
-        detalhe="Listagem de prescrições consultada.",
-        ip=get_client_ip(request)
+
+@router.get("/{id_prescricao}", response_model=PrescricaoOut)
+def obter_prescricao(id_prescricao: int):
+    return prescricoes_service.obter_prescricao(id_prescricao)
+
+
+@router.post("/", response_model=PrescricaoOut, status_code=201)
+def criar_prescricao(data: PrescricaoCreate):
+    return prescricoes_service.criar_prescricao(data.model_dump())
+
+
+@router.put("/{id_prescricao}", response_model=PrescricaoOut)
+def atualizar_prescricao(id_prescricao: int, data: PrescricaoUpdate):
+    return prescricoes_service.atualizar_prescricao(
+        id_prescricao,
+        data.model_dump(exclude_unset=True)
     )
 
-    return resultado
 
-
-@router.get("/{id_prescricao}", response_model=PrescricaoResponse)
-def get_prescricao(id_prescricao: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_prescricao_service(id_prescricao)
-
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Prescrição não encontrada")
-
-    insert_log(
-        username=username,
-        acao="CONSULTAR_PRESCRICAO",
-        detalhe=f"Prescrição {id_prescricao} consultada.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.post("/", response_model=PrescricaoResponse, status_code=status.HTTP_201_CREATED)
-def post_prescricao(data: PrescricaoCreate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-
-    resultado = create_prescricao_service(
-        id_ato=data.idato,
-        descricao=data.descricao
-    )
-
-    insert_log(
-        username=username,
-        acao="CRIAR_PRESCRICAO",
-        detalhe=f"Prescrição criada para o ato {data.idato}.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.put("/{id_prescricao}", response_model=PrescricaoResponse)
-def put_prescricao(id_prescricao: int, data: PrescricaoUpdate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-
-    resultado = update_prescricao_service(
-        id_prescricao=id_prescricao,
-        id_ato=data.idato,
-        descricao=data.descricao
-    )
-
-    insert_log(
-        username=username,
-        acao="ATUALIZAR_PRESCRICAO",
-        detalhe=f"Prescrição {id_prescricao} atualizada.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
+@router.delete("/{id_prescricao}")
+def remover_prescricao(id_prescricao: int):
+    return prescricoes_service.remover_prescricao(id_prescricao)

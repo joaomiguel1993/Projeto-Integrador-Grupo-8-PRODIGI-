@@ -1,31 +1,31 @@
+from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+
 
 class AtoBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    codepurgenc: int
+    cod_ep_urgenc: int
     tipo: str
     descricao: Optional[str] = None
-    datahorafim: Optional[datetime] = None
+    data_hora_inicio: datetime
+    data_hora_fim: Optional[datetime] = None
 
-class AtoCreate(BaseModel):
-    codepurgenc: int
-    tipo: str
-    descricao: Optional[str] = None
-    datahorainicio: Optional[datetime] = None
+
+class AtoCreate(AtoBase):
+    pass
+
 
 class AtoUpdate(BaseModel):
+    tipo: Optional[str] = None
+    descricao: Optional[str] = None
+    data_hora_inicio: Optional[datetime] = None
+    data_hora_fim: Optional[datetime] = None
+
+
+class AtoOut(BaseModel):
+    id_ato: int
+    cod_ep_urgenc: int
     tipo: str
     descricao: Optional[str] = None
-    datahorafim: Optional[datetime] = None
-
-class AtoResponse(AtoBase):
-    idato: int
-    datahorainicio: datetime
-
-class FuncionarioAtoResponse(BaseModel):
-    idfunc: int; nome: str; tipofunc: str
-
-class PrescricaoAtoResponse(BaseModel):
-    idprescricao: int; idato: int; dosagem: str; observacoes: Optional[str] = None; datahorapresc: datetime
+    data_hora_inicio: datetime
+    data_hora_fim: Optional[datetime] = None

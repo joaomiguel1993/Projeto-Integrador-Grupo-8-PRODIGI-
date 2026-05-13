@@ -1,41 +1,35 @@
+from pydantic import BaseModel, model_validator
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
 
 
-class MedicacaoAtivaCreate(BaseModel):
-    numutent: int
-    codmedicamento: int
-    datainicio: date
-    datafim: Optional[date] = None
+class MedicacaoAtivaBase(BaseModel):
+    num_utent: int
+    cod_medicamento: int
+    data_inicio: date
+    data_fim: Optional[date] = None
     dosagem: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validar_datas(self):
+        if self.data_fim is not None and self.data_fim < self.data_inicio:
+            raise ValueError("data_fim não pode ser anterior a data_inicio.")
+        return self
+
+
+class MedicacaoAtivaCreate(MedicacaoAtivaBase):
+    pass
 
 
 class MedicacaoAtivaUpdate(BaseModel):
-    datafim: Optional[date] = None
+    data_fim: Optional[date] = None
     dosagem: Optional[str] = None
 
 
-class MedicacaoAtivaResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    codmedicacaoativa: int
-    numutent: int
-    codmedicamento: int
-    datainicio: date
-    datafim: Optional[date] = None
+class MedicacaoAtivaOut(BaseModel):
+    cod_medicacao_ativa: int
+    num_utent: int
+    cod_medicamento: int
+    data_inicio: date
+    data_fim: Optional[date] = None
     dosagem: Optional[str] = None
-
-
-class MedicacaoAtivaDetalheResponse(MedicacaoAtivaResponse):
-    nome: str
-    principioativo: str
-
-class MedicamentoBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    nome: str
-    principioativo: str
-    classeterapeuticaid: int
-
-class MedicamentoResponse(MedicamentoBase):
-    codmedicamento: int

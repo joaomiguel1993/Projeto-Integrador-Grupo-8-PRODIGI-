@@ -1,4 +1,5 @@
-from backend.db import run_query, get_connection
+from typing import Optional
+from backend.db import run_query
 
 
 def select_all_internamentos():
@@ -10,116 +11,115 @@ def select_all_internamentos():
     """)
 
 
-def select_internamento_by_id(cod_internamento: int):
+def select_internamento_by_id(codinternamento: int):
     return run_query("""
         SELECT codinternamento, codepurgenc, idfunc, datahoraint, datahoraconsulta,
                datahoraalta, motivoint, numerocama, servico, tipoalta
         FROM internamento
         WHERE codinternamento = %s
-    """, (cod_internamento,))
+    """, (codinternamento,))
 
 
-def insert_internamento(codepurgenc: int, idfunc: int | None, datahoraint, motivoint: str,
-                        numerocama: str | None = None, servico: str | None = None):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute("""
-            INSERT INTO internamento (
-                codepurgenc, idfunc, datahoraint, motivoint, numerocama, servico
-            )
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING codinternamento, codepurgenc, idfunc, datahoraint, datahoraconsulta,
-                      datahoraalta, motivoint, numerocama, servico, tipoalta
-        """, (codepurgenc, idfunc, datahoraint, motivoint, numerocama, servico))
-
-        created = cur.fetchone()
-
-        if not created:
-            conn.rollback()
-            return None
-
-        conn.commit()
-
-        return {
-            "codinternamento": created[0],
-            "codepurgenc": created[1],
-            "idfunc": created[2],
-            "datahoraint": created[3],
-            "datahoraconsulta": created[4],
-            "datahoraalta": created[5],
-            "motivoint": created[6],
-            "numerocama": created[7],
-            "servico": created[8],
-            "tipoalta": created[9]
-        }
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close()
-        conn.close()
-
-
-def update_internamento(cod_internamento: int, codepurgenc: int, idfunc: int | None, datahoraconsulta,
-                        datahoraalta, motivoint: str, numerocama: str | None,
-                        servico: str | None, tipoalta: str | None):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute("""
-            UPDATE internamento
-            SET codepurgenc = %s,
-                idfunc = %s,
-                datahoraconsulta = %s,
-                datahoraalta = %s,
-                motivoint = %s,
-                numerocama = %s,
-                servico = %s,
-                tipoalta = %s
-            WHERE codinternamento = %s
-            RETURNING codinternamento, codepurgenc, idfunc, datahoraint, datahoraconsulta,
-                      datahoraalta, motivoint, numerocama, servico, tipoalta
-        """, (
-            codepurgenc, idfunc, datahoraconsulta, datahoraalta,
-            motivoint, numerocama, servico, tipoalta, cod_internamento
-        ))
-
-        updated = cur.fetchone()
-
-        if not updated:
-            conn.rollback()
-            return None
-
-        conn.commit()
-
-        return {
-            "codinternamento": updated[0],
-            "codepurgenc": updated[1],
-            "idfunc": updated[2],
-            "datahoraint": updated[3],
-            "datahoraconsulta": updated[4],
-            "datahoraalta": updated[5],
-            "motivoint": updated[6],
-            "numerocama": updated[7],
-            "servico": updated[8],
-            "tipoalta": updated[9]
-        }
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cur.close()
-        conn.close()
-
-def count_internados_por_servico():
+def select_internamento_by_episodio(codepurgenc: int):
     return run_query("""
-        SELECT servico, COUNT(*) as total 
-        FROM internamento 
-        WHERE datahoraalta IS NULL 
-        GROUP BY servico
-    """)
+        SELECT codinternamento, codepurgenc, idfunc, datahoraint, datahoraconsulta,
+               datahoraalta, motivoint, numerocama, servico, tipoalta
+        FROM internamento
+        WHERE codepurgenc = %s
+    """, (codepurgenc,))
+
+
+def insert_internamento(
+    codepurgenc: int,
+    datahoraint,
+    motivoint: str,
+    idfunc: Optional[int] = None,
+    datahoraconsulta=None,
+    datahoraalta=None,
+    numerocama: Optional[str] = None,
+    servico: Optional[str] = None,
+    tipoalta: Optional[str] = None,
+):
+    return run_query("""
+        INSERT INTO internamento (
+            codepurgenc, idfunc, datahoraint, datahoraconsulta,
+            datahoraalta, motivoint, numerocama, servico, tipoalta
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING codinternamento, codepurgenc, idfunc, datahoraint, datahoraconsulta,
+                  datahoraalta, motivoint, numerocama, servico, tipoalta
+    """, (
+        codepurgenc,
+        idfunc,
+        datahoraint,
+        datahoraconsulta,
+        datahoraalta,
+        motivoint,
+        numerocama,
+        servico,
+        tipoalta,
+    ))
+
+
+def update_internamento(
+    codinternamento: int,
+    idfunc=None,
+    datahoraconsulta=None,
+    datahoraalta=None,
+    motivoint=None,
+    numerocama=None,
+    servico=None,
+    tipoalta=None,
+):
+    campos = []
+    valores = []
+
+    if idfunc is not None:
+        campos.append("idfunc = %s")
+        valores.append(idfunc)
+
+    if datahoraconsulta is not None:
+        campos.append("datahoraconsulta = %s")
+        valores.append(datahoraconsulta)
+
+    if datahoraalta is not None:
+        campos.append("datahoraalta = %s")
+        valores.append(datahoraalta)
+
+    if motivoint is not None:
+        campos.append("motivoint = %s")
+        valores.append(motivoint)
+
+    if numerocama is not None:
+        campos.append("numerocama = %s")
+        valores.append(numerocama)
+
+    if servico is not None:
+        campos.append("servico = %s")
+        valores.append(servico)
+
+    if tipoalta is not None:
+        campos.append("tipoalta = %s")
+        valores.append(tipoalta)
+
+    if len(campos) == 0:
+        return select_internamento_by_id(codinternamento)
+
+    valores.append(codinternamento)
+
+    query = f"""
+        UPDATE internamento
+        SET {', '.join(campos)}
+        WHERE codinternamento = %s
+        RETURNING codinternamento, codepurgenc, idfunc, datahoraint, datahoraconsulta,
+                  datahoraalta, motivoint, numerocama, servico, tipoalta
+    """
+    return run_query(query, tuple(valores))
+
+
+def delete_internamento(codinternamento: int):
+    return run_query("""
+        DELETE FROM internamento
+        WHERE codinternamento = %s
+        RETURNING codinternamento
+    """, (codinternamento,))

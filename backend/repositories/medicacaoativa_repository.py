@@ -1,41 +1,80 @@
-from typing import Any, cast
-from backend.dao.medicacaoativa_dao import (
-    select_all_medicacaoativa,
-    select_medicacaoativa_by_utente,
-    insert_medicacaoativa,
-    update_medicacaoativa,
-    delete_medicacaoativa
-)
+from backend.dao import medicacaoativa_dao
 
-def listar_medicacaoativa():
-    result = select_all_medicacaoativa()
-    if not result:
+
+def _first_or_none(rows):
+    if rows is None or len(rows) == 0:
+        return None
+    return rows[0]
+
+
+def _map_row(row):
+    if row is None:
+        return None
+
+    return {
+        "cod_medicacao_ativa": row[0],
+        "num_utent": row[1],
+        "cod_medicamento": row[2],
+        "data_inicio": row[3],
+        "data_fim": row[4],
+        "dosagem": row[5],
+    }
+
+
+def listar_medicacoes_ativas():
+    rows = medicacaoativa_dao.select_all_medicacoes_ativas()
+    if rows is None:
         return []
-    return result
+    return [_map_row(row) for row in rows]
 
-def listar_medicacaoativa_por_utente(numutent: int):
-    result = select_medicacaoativa_by_utente(numutent)
-    if not result:
+
+def obter_medicacao_ativa_por_id(cod_medicacao_ativa: int):
+    rows = medicacaoativa_dao.select_medicacao_ativa_by_id(cod_medicacao_ativa)
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def listar_medicacoes_ativas_por_utente(num_utent: int):
+    rows = medicacaoativa_dao.select_medicacoes_ativas_by_utente(num_utent)
+    if rows is None:
         return []
-    return result
+    return [_map_row(row) for row in rows]
 
-def criar_medicacaoativa(numutent: int, codmedicamento: int, datainicio, datafim, dosagem):
-    result = insert_medicacaoativa(numutent, codmedicamento, datainicio, datafim, dosagem)
-    if not result:
-        return None
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
 
-def atualizar_medicacaoativa(codmedicacaoativa: int, datafim, dosagem):
-    result = update_medicacaoativa(codmedicacaoativa, datafim, dosagem)
-    if not result:
-        return None
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
+def criar_medicacao_ativa(data: dict):
+    num_utent = data["num_utent"]
+    cod_medicamento = data["cod_medicamento"]
+    data_inicio = data["data_inicio"]
 
-def remover_medicacaoativa(codmedicacaoativa: int):
-    result = delete_medicacaoativa(codmedicacaoativa)
-    if not result:
+    data_fim = data.get("data_fim")
+    dosagem = data.get("dosagem")
+
+    rows = medicacaoativa_dao.insert_medicacao_ativa(
+        num_utent,
+        cod_medicamento,
+        data_inicio,
+        data_fim,
+        dosagem,
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def atualizar_medicacao_ativa(cod_medicacao_ativa: int, data: dict):
+    rows = medicacaoativa_dao.update_medicacao_ativa(
+        cod_medicacao_ativa,
+        data.get("data_fim"),
+        data.get("dosagem"),
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def remover_medicacao_ativa(cod_medicacao_ativa: int):
+    rows = medicacaoativa_dao.delete_medicacao_ativa(cod_medicacao_ativa)
+    row = _first_or_none(rows)
+
+    if row is None:
         return None
-    result_list = cast(list[dict[str, Any]], result)
-    return result_list[0]
+
+    return row[0]

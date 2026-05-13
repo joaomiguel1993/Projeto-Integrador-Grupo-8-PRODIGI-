@@ -1,53 +1,44 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from typing import List
+
 from backend.schemas.profissional import (
-    ProfissionalResponse,
     ProfissionalCreate,
-    ProfissionalUpdate
+    ProfissionalUpdate,
+    ProfissionalOut,
 )
-from backend.services.profissionais_service import (
-    get_profissionais_service,
-    get_profissional_service,
-    create_profissional_service,
-    update_profissional_service
-)
+from backend.services import profissionais_service
 
 router = APIRouter(prefix="/profissionais", tags=["Profissionais"])
 
-@router.get("/", response_model=list[ProfissionalResponse])
-def get_profissionais():
-    return get_profissionais_service()
 
-@router.get("/{id_func}", response_model=ProfissionalResponse)
-def get_profissional(id_func: int):
-    resultado = get_profissional_service(id_func)
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Profissional não encontrado")
-    return resultado
+@router.get("/", response_model=List[ProfissionalOut])
+def listar_profissionais():
+    return profissionais_service.listar_profissionais()
 
-@router.post("/", response_model=ProfissionalResponse)
-def create_profissional(data: ProfissionalCreate):
-    return create_profissional_service(
-        nome=data.nome,
-        tipofunc=data.tipofunc,
-        sexo=data.sexo,
-        email=data.email,
-        telefone=data.telefone,
-        biografia=data.biografia,
-        foto_url=data.foto_url
+
+@router.get("/tipo/{tipo_func}", response_model=List[ProfissionalOut])
+def listar_profissionais_por_tipo(tipo_func: str):
+    return profissionais_service.listar_profissionais_por_tipo(tipo_func)
+
+
+@router.get("/{id_func}", response_model=ProfissionalOut)
+def obter_profissional(id_func: int):
+    return profissionais_service.obter_profissional(id_func)
+
+
+@router.post("/", response_model=ProfissionalOut, status_code=201)
+def criar_profissional(data: ProfissionalCreate):
+    return profissionais_service.criar_profissional(data.model_dump())
+
+
+@router.put("/{id_func}", response_model=ProfissionalOut)
+def atualizar_profissional(id_func: int, data: ProfissionalUpdate):
+    return profissionais_service.atualizar_profissional(
+        id_func,
+        data.model_dump(exclude_unset=True)
     )
 
-@router.put("/{id_func}", response_model=ProfissionalResponse)
-def update_profissional(id_func: int, data: ProfissionalUpdate):
-    resultado = update_profissional_service(
-        id_func=id_func,
-        nome=data.nome,
-        tipofunc=data.tipofunc,
-        sexo=data.sexo,
-        email=data.email,
-        telefone=data.telefone,
-        biografia=data.biografia,
-        foto_url=data.foto_url
-    )
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Profissional não encontrado")
-    return resultado
+
+@router.delete("/{id_func}")
+def remover_profissional(id_func: int):
+    return profissionais_service.remover_profissional(id_func)

@@ -1,66 +1,53 @@
-from typing import Optional
 from fastapi import HTTPException
-from backend.repositories.profissionais_repository import (
-    listar_profissionais,
-    obter_profissional,
-    criar_profissional,
-    atualizar_profissional
-)
-from backend.dao.logs_dao import insert_log
+from backend.repositories import profissionais_repository
 
-def get_profissionais_service():
-    return listar_profissionais()
 
-def get_profissional_service(id_func: int):
-    return obter_profissional(id_func)
+def listar_profissionais():
+    return profissionais_repository.listar_profissionais()
 
-def create_profissional_service(nome: str, tipofunc: str, sexo: str, email: Optional[str] = None, telefone: Optional[str] = None, biografia: Optional[str] = None, foto_url: Optional[str] = None):
-    allowed_types = {"medico", "enfermeiro", "admin", "rececionista"}
-    allowed_sexos = {"M", "F"}
 
-    if tipofunc not in allowed_types:
-        raise HTTPException(status_code=400, detail="Tipo de profissional inválido.")
-
-    if sexo not in allowed_sexos:
-        raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
-
-    novo = criar_profissional(nome, tipofunc, sexo, email, telefone, biografia, foto_url)
-
-    if not novo:
-        raise HTTPException(status_code=500, detail="Erro ao criar profissional.")
-
-    insert_log(
-        "sistema",
-        "CRIAR_PROFISSIONAL",
-        f"id={novo['idfunc']}, nome={novo['nome']}",
-        None
-    )
-
-    return novo
-
-def update_profissional_service(id_func: int, nome: str, tipofunc: str, sexo: str, email: Optional[str] = None, telefone: Optional[str] = None, biografia: Optional[str] = None, foto_url: Optional[str] = None):
-    allowed_types = {"medico", "enfermeiro", "admin", "rececionista"}
-    allowed_sexos = {"M", "F"}
-
-    if tipofunc not in allowed_types:
-        raise HTTPException(status_code=400, detail="Tipo de profissional inválido.")
-
-    if sexo not in allowed_sexos:
-        raise HTTPException(status_code=400, detail="Sexo inválido. Use 'M' ou 'F'.")
-
-    profissional_existente = obter_profissional(id_func)
-    if not profissional_existente:
+def obter_profissional(id_func: int):
+    profissional = profissionais_repository.obter_profissional_por_id(id_func)
+    if profissional is None:
         raise HTTPException(status_code=404, detail="Profissional não encontrado.")
+    return profissional
 
-    atualizado = atualizar_profissional(id_func, nome, tipofunc, sexo, email, telefone, biografia, foto_url)
-    if not atualizado:
-        raise HTTPException(status_code=500, detail="Erro ao atualizar profissional.")
 
-    insert_log(
-        "sistema",
-        "ATUALIZAR_PROFISSIONAL",
-        f"id={id_func} atualizado",
-        None
-    )
+def listar_profissionais_por_tipo(tipo_func: str):
+    return profissionais_repository.listar_profissionais_por_tipo(tipo_func)
 
-    return atualizado
+
+def criar_profissional(data: dict):
+    try:
+        resultado = profissionais_repository.criar_profissional(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar o profissional.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar profissional: {str(e)}")
+
+
+def atualizar_profissional(id_func: int, data: dict):
+    try:
+        resultado = profissionais_repository.atualizar_profissional(id_func, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Profissional não encontrado.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar profissional: {str(e)}")
+
+
+def remover_profissional(id_func: int):
+    try:
+        resultado = profissionais_repository.remover_profissional(id_func)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Profissional não encontrado.")
+        return {"detail": "Profissional removido com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover profissional: {str(e)}")

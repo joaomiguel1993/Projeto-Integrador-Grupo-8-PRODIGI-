@@ -1,45 +1,56 @@
-from typing import Optional, Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional, Literal
+
 
 class TriagemBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    
-    # Manchester Protocol Colors
-    cortriagem: Literal['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
+    cod_ep_urgenc: int
+    data_hora_inicio: datetime
+    data_hora_fim: Optional[datetime] = None
+    cor_triagem: Literal["vermelho", "laranja", "amarelo", "verde", "azul"]
     sintomas: str
-    temperatura: Optional[float] = Field(None, ge=30, le=45) # ge: greater than, le: less than
-    freqcard: Optional[int] = None
-    freqresp: Optional[int] = None
-    spo2: Optional[float] = None
+    temperatura: Optional[float] = None
+    freq_card: Optional[int] = None
+    freq_resp: Optional[int] = None
+    sp_o2: Optional[float] = None
     sistolica: Optional[int] = None
     diastolica: Optional[int] = None
-    
-    # Campos que faltavam:
-    niveldor: Optional[int] = Field(None, ge=0, le=10)
-    consciencia: Optional[Literal['Acordado', 'Confuso', 'Inconsciente']] = None
-    tempoesperaprevisto: Optional[int] = None
-    
-    datahorafim: Optional[datetime] = None
+    nivel_dor: Optional[int] = Field(default=None, ge=0, le=10)
+    consciencia: Optional[Literal["Acordado", "Confuso", "Inconsciente"]] = None
+    tempo_espera_previsto: Optional[int] = None
+
 
 class TriagemCreate(TriagemBase):
-    codepurgenc: int
-    datahorainicio: datetime = Field(default_factory=datetime.now)
+    pass
 
-class TriagemResponse(TriagemBase):
-    codepurgenc: int
-    datahorainicio: datetime
 
 class TriagemUpdate(BaseModel):
-    cortriagem: Optional[Literal['vermelho', 'laranja', 'amarelo', 'verde', 'azul']] = None
+    data_hora_fim: Optional[datetime] = None
+    cor_triagem: Optional[Literal["vermelho", "laranja", "amarelo", "verde", "azul"]] = None
     sintomas: Optional[str] = None
-    temperatura: Optional[float] = Field(None, ge=30, le=45)
-    freqcard: Optional[int] = None
-    freqresp: Optional[int] = None
-    spo2: Optional[float] = None
+    temperatura: Optional[float] = None
+    freq_card: Optional[int] = None
+    freq_resp: Optional[int] = None
+    sp_o2: Optional[float] = None
     sistolica: Optional[int] = None
     diastolica: Optional[int] = None
-    niveldor: Optional[int] = Field(None, ge=0, le=10)
-    consciencia: Optional[Literal['Acordado', 'Confuso', 'Inconsciente']] = None
-    tempoesperaprevisto: Optional[int] = None
-    datahorafim: Optional[datetime] = None
+    nivel_dor: Optional[int] = Field(default=None, ge=0, le=10)
+    consciencia: Optional[Literal["Acordado", "Confuso", "Inconsciente"]] = None
+    tempo_espera_previsto: Optional[int] = None
+
+
+class TriagemOut(BaseModel):
+    cod_ep_urgenc: int
+    data_hora_inicio: datetime
+    data_hora_fim: Optional[datetime] = None
+    cor_triagem: str
+    sintomas: str
+    temperatura: Optional[float] = None
+    freq_card: Optional[int] = None
+    freq_resp: Optional[int] = None
+    sp_o2: Optional[float] = None
+    sistolica: Optional[int] = None
+    diastolica: Optional[int] = None
+    nivel_dor: Optional[int] = None
+    consciencia: Optional[str] = None
+    tempo_espera_previsto: Optional[int] = None

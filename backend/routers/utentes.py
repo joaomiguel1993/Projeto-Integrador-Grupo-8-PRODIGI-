@@ -1,102 +1,44 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter
+from typing import List
 
-from backend.schemas.utente import UtenteResponse, UtenteCreate
-from backend.services.utentes_service import (
-    get_utentes_service,
-    get_utente_service,
-    create_utente_service,
-    update_utente_service
+from backend.schemas.utente import (
+    UtenteCreate,
+    UtenteUpdate,
+    UtenteOut,
 )
-from backend.dao.logs_dao import insert_log
-
+from backend.services import utentes_service
 
 router = APIRouter(prefix="/utentes", tags=["Utentes"])
 
 
-def get_client_ip(request: Request) -> str | None:
-    return request.client.host if request.client else None
+@router.get("/", response_model=List[UtenteOut])
+def listar_utentes():
+    return utentes_service.listar_utentes()
 
 
-@router.get("/", response_model=list[UtenteResponse])
-def get_utentes(request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_utentes_service()
+@router.get("/nif/{nif}", response_model=UtenteOut)
+def obter_utente_por_nif(nif: str):
+    return utentes_service.obter_utente_por_nif(nif)
 
-    insert_log(
-        username=username,
-        acao="LISTAR_UTENTES",
-        detalhe="Listagem de utentes consultada.",
-        ip=get_client_ip(request)
+
+@router.get("/{num_utent}", response_model=UtenteOut)
+def obter_utente(num_utent: int):
+    return utentes_service.obter_utente(num_utent)
+
+
+@router.post("/", response_model=UtenteOut, status_code=201)
+def criar_utente(data: UtenteCreate):
+    return utentes_service.criar_utente(data.model_dump())
+
+
+@router.put("/{num_utent}", response_model=UtenteOut)
+def atualizar_utente(num_utent: int, data: UtenteUpdate):
+    return utentes_service.atualizar_utente(
+        num_utent,
+        data.model_dump(exclude_unset=True)
     )
 
-    return resultado
 
-
-@router.get("/{num_utente}", response_model=UtenteResponse)
-def get_utente(num_utente: int, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-    resultado = get_utente_service(num_utente)
-
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Utente não encontrado")
-
-    insert_log(
-        username=username,
-        acao="CONSULTAR_UTENTE",
-        detalhe=f"Utente {num_utente} consultado.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.post("/", response_model=UtenteResponse)
-def criar_utente(payload: UtenteCreate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-
-    resultado = create_utente_service(
-        nome=payload.nome,
-        nif=payload.nif,
-        datanasc=payload.datanasc,
-        sexo=payload.sexo,
-        localidade=payload.localidade,
-        telefone=payload.telefone,
-        email=payload.email
-    )
-
-    insert_log(
-        username=username,
-        acao="CRIAR_UTENTE",
-        detalhe=f"Utente criado: {resultado['numutent']} - {resultado['nome']}.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
-
-
-@router.put("/{num_utente}", response_model=UtenteResponse)
-def atualizar_utente(num_utente: int, payload: UtenteCreate, request: Request):
-    username = request.headers.get("X-Username", "desconhecido")
-
-    resultado = update_utente_service(
-        num_utente=num_utente,
-        nome=payload.nome,
-        nif=payload.nif,
-        datanasc=payload.datanasc,
-        sexo=payload.sexo,
-        localidade=payload.localidade,
-        telefone=payload.telefone,
-        email=payload.email
-    )
-
-    if not resultado:
-        raise HTTPException(status_code=404, detail="Utente não encontrado")
-
-    insert_log(
-        username=username,
-        acao="ATUALIZAR_UTENTE",
-        detalhe=f"Utente atualizado: {num_utente} - {payload.nome}.",
-        ip=get_client_ip(request)
-    )
-
-    return resultado
+@router.delete("/{num_utent}")
+def remover_utente(num_utent: int):
+    return utentes_service.remover_utente(num_utent)

@@ -1,73 +1,56 @@
 from fastapi import HTTPException
-from backend.repositories.utilizadores_repository import (
-    listar_utilizadores,
-    obter_utilizador,
-    criar_utilizador,
-    atualizar_utilizador
-)
+from backend.repositories import utilizadores_repository
 
 
-def get_utilizadores_service():
-    return listar_utilizadores()
+def listar_utilizadores():
+    return utilizadores_repository.listar_utilizadores()
 
 
-def get_utilizador_service(idfunc: int):
-    return obter_utilizador(idfunc)
-
-
-def create_utilizador_service(
-    idfunc: int,
-    username: str,
-    password: str,
-    hospitais: list[int] | None = None
-):
-    if not username or not username.strip():
-        raise HTTPException(status_code=400, detail="Username é obrigatório.")
-
-    if not password or not password.strip():
-        raise HTTPException(status_code=400, detail="Password é obrigatória.")
-
-    existente = obter_utilizador(idfunc)
-    if existente:
-        raise HTTPException(status_code=400, detail="Já existe um utilizador para esse funcionário.")
-
-    criado = criar_utilizador(
-        idfunc=idfunc,
-        username=username.strip(),
-        password=password,
-        hospitais=hospitais or []
-    )
-
-    if not criado:
-        raise HTTPException(status_code=500, detail="Erro ao criar utilizador.")
-
-    return criado
-
-
-def update_utilizador_service(
-    idfunc: int,
-    username: str,
-    password: str | None = None,
-    hospitais: list[int] | None = None,
-    bloqueado: bool | None = None,
-):
-    if not username or not username.strip():
-        raise HTTPException(status_code=400, detail="Username é obrigatório.")
-
-    existente = obter_utilizador(idfunc)
-    if not existente:
+def obter_utilizador(id_func: int):
+    utilizador = utilizadores_repository.obter_utilizador_por_id_func(id_func)
+    if utilizador is None:
         raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
+    return utilizador
 
-    # FIX: passa bloqueado ao repository — precisas de atualizar essa função também
-    atualizado = atualizar_utilizador(
-        idfunc=idfunc,
-        username=username.strip(),
-        password=password,
-        hospitais=hospitais or [],
-        bloqueado=bloqueado,
-    )
 
-    if not atualizado:
-        raise HTTPException(status_code=500, detail="Erro ao atualizar utilizador.")
+def obter_utilizador_por_username(username: str):
+    utilizador = utilizadores_repository.obter_utilizador_por_username(username)
+    if utilizador is None:
+        raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
+    return utilizador
 
-    return atualizado
+
+def criar_utilizador(data: dict):
+    try:
+        resultado = utilizadores_repository.criar_utilizador(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar o utilizador.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar utilizador: {str(e)}")
+
+
+def atualizar_utilizador(id_func: int, data: dict):
+    try:
+        resultado = utilizadores_repository.atualizar_utilizador(id_func, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar utilizador: {str(e)}")
+
+
+def remover_utilizador(id_func: int):
+    try:
+        resultado = utilizadores_repository.remover_utilizador(id_func)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
+        return {"detail": "Utilizador removido com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover utilizador: {str(e)}")

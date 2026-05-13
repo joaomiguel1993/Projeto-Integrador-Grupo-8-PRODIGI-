@@ -1,63 +1,35 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional
+from typing import List
 
-from backend.services.hospitais_service import (
-    get_hospitais_service,
-    get_hospital_service,
-    create_hospital_service,
-    update_hospital_service,
-    delete_hospital_service
-)
+from backend.schemas.hospital import HospitalCreate, HospitalUpdate, HospitalOut
+from backend.services import hospitais_service
 
-router = APIRouter(prefix="/api/hospitais", tags=["Hospitais"])
+router = APIRouter(prefix="/hospitais", tags=["Hospitais"])
 
 
-class HospitalCreate(BaseModel):
-    nome: str
-    localizacao: str
-    email: Optional[str] = None
-    telefone: Optional[str] = None
+@router.get("/", response_model=List[HospitalOut])
+def listar_hospitais():
+    return hospitais_service.listar_hospitais()
 
 
-class HospitalUpdate(BaseModel):
-    nome: str
-    localizacao: str
-    email: Optional[str] = None
-    telefone: Optional[str] = None
+@router.get("/{id_hosp}", response_model=HospitalOut)
+def obter_hospital(id_hosp: int):
+    return hospitais_service.obter_hospital(id_hosp)
 
 
-@router.get("/")
-def get_hospitais():
-    return get_hospitais_service()
+@router.post("/", response_model=HospitalOut, status_code=201)
+def criar_hospital(data: HospitalCreate):
+    return hospitais_service.criar_hospital(data.model_dump())
 
 
-@router.get("/{id_hosp}")
-def get_hospital(id_hosp: int):
-    return get_hospital_service(id_hosp)
-
-
-@router.post("/")
-def criar_hospital(payload: HospitalCreate):
-    return create_hospital_service(
-        payload.nome,
-        payload.localizacao,
-        payload.email,
-        payload.telefone
-    )
-
-
-@router.put("/{id_hosp}")
-def atualizar_hospital(id_hosp: int, payload: HospitalUpdate):
-    return update_hospital_service(
+@router.put("/{id_hosp}", response_model=HospitalOut)
+def atualizar_hospital(id_hosp: int, data: HospitalUpdate):
+    return hospitais_service.atualizar_hospital(
         id_hosp,
-        payload.nome,
-        payload.localizacao,
-        payload.email,
-        payload.telefone
+        data.model_dump(exclude_unset=True)
     )
 
 
 @router.delete("/{id_hosp}")
-def deletar_hospital(id_hosp: int):
-    return delete_hospital_service(id_hosp)
+def remover_hospital(id_hosp: int):
+    return hospitais_service.remover_hospital(id_hosp)

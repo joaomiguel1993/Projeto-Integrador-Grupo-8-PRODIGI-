@@ -1,57 +1,49 @@
 from fastapi import HTTPException
-
-from backend.repositories.medicamentos_repository import (
-    listar_medicamentos,
-    obter_medicamento,
-    criar_medicamento,
-    atualizar_medicamento
-)
+from backend.repositories import medicamentos_repository
 
 
-def get_medicamentos_service():
-    return listar_medicamentos()
+def listar_medicamentos():
+    return medicamentos_repository.listar_medicamentos()
 
 
-def get_medicamento_service(cod_medicamento: int):
-    return obter_medicamento(cod_medicamento)
-
-
-def create_medicamento_service(nome: str, principioativo: str):
-    if not nome or not nome.strip():
-        raise HTTPException(status_code=400, detail="Nome é obrigatório.")
-
-    if not principioativo or not principioativo.strip():
-        raise HTTPException(status_code=400, detail="Princípio ativo é obrigatório.")
-
-    criado = criar_medicamento(
-        nome=nome.strip(),
-        principioativo=principioativo.strip()
-    )
-
-    if not criado:
-        raise HTTPException(status_code=500, detail="Erro ao criar medicamento.")
-
-    return criado
-
-
-def update_medicamento_service(cod_medicamento: int, nome: str, principioativo: str):
-    existente = obter_medicamento(cod_medicamento)
-    if not existente:
+def obter_medicamento(cod_medicamento: int):
+    medicamento = medicamentos_repository.obter_medicamento_por_id(cod_medicamento)
+    if medicamento is None:
         raise HTTPException(status_code=404, detail="Medicamento não encontrado.")
+    return medicamento
 
-    if not nome or not nome.strip():
-        raise HTTPException(status_code=400, detail="Nome é obrigatório.")
 
-    if not principioativo or not principioativo.strip():
-        raise HTTPException(status_code=400, detail="Princípio ativo é obrigatório.")
+def criar_medicamento(data: dict):
+    try:
+        resultado = medicamentos_repository.criar_medicamento(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar o medicamento.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar medicamento: {str(e)}")
 
-    atualizado = atualizar_medicamento(
-        cod_medicamento=cod_medicamento,
-        nome=nome.strip(),
-        principioativo=principioativo.strip()
-    )
 
-    if not atualizado:
-        raise HTTPException(status_code=500, detail="Erro ao atualizar medicamento.")
+def atualizar_medicamento(cod_medicamento: int, data: dict):
+    try:
+        resultado = medicamentos_repository.atualizar_medicamento(cod_medicamento, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Medicamento não encontrado.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar medicamento: {str(e)}")
 
-    return atualizado
+
+def remover_medicamento(cod_medicamento: int):
+    try:
+        resultado = medicamentos_repository.remover_medicamento(cod_medicamento)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Medicamento não encontrado.")
+        return {"detail": "Medicamento removido com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover medicamento: {str(e)}")

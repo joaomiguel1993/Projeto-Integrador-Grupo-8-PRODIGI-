@@ -1,57 +1,81 @@
+from datetime import datetime
 from fastapi import HTTPException
-
-from backend.repositories.prescricoes_repository import (
-    listar_prescricoes,
-    obter_prescricao,
-    criar_prescricao,
-    atualizar_prescricao
-)
+from backend.repositories import prescricoes_repository
 
 
-def get_prescricoes_service():
-    return listar_prescricoes()
+def listar_prescricoes():
+    return prescricoes_repository.listar_prescricoes()
 
 
-def get_prescricao_service(id_prescricao: int):
-    return obter_prescricao(id_prescricao)
-
-
-def create_prescricao_service(id_ato: int, descricao: str):
-    if id_ato <= 0:
-        raise HTTPException(status_code=400, detail="ID do ato inválido.")
-
-    if not descricao or not descricao.strip():
-        raise HTTPException(status_code=400, detail="Descrição é obrigatória.")
-
-    criada = criar_prescricao(
-        id_ato=id_ato,
-        descricao=descricao.strip()
-    )
-
-    if not criada:
-        raise HTTPException(status_code=500, detail="Erro ao criar prescrição.")
-
-    return criada
-
-
-def update_prescricao_service(id_prescricao: int, id_ato: int, descricao: str):
-    existente = obter_prescricao(id_prescricao)
-    if not existente:
+def obter_prescricao(id_prescricao: int):
+    prescricao = prescricoes_repository.obter_prescricao_por_id(id_prescricao)
+    if prescricao is None:
         raise HTTPException(status_code=404, detail="Prescrição não encontrada.")
+    return prescricao
 
-    if id_ato <= 0:
-        raise HTTPException(status_code=400, detail="ID do ato inválido.")
 
-    if not descricao or not descricao.strip():
-        raise HTTPException(status_code=400, detail="Descrição é obrigatória.")
+def obter_prescricoes_por_ato(id_ato: int):
+    return prescricoes_repository.obter_prescricoes_por_ato(id_ato)
 
-    atualizada = atualizar_prescricao(
-        id_prescricao=id_prescricao,
-        id_ato=id_ato,
-        descricao=descricao.strip()
-    )
 
-    if not atualizada:
-        raise HTTPException(status_code=500, detail="Erro ao atualizar prescrição.")
+def criar_prescricao(data: dict):
+    try:
+        resultado = prescricoes_repository.criar_prescricao(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar a prescrição.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar prescrição: {str(e)}")
 
-    return atualizada
+
+def atualizar_prescricao(id_prescricao: int, data: dict):
+    try:
+        resultado = prescricoes_repository.atualizar_prescricao(id_prescricao, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Prescrição não encontrada.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar prescrição: {str(e)}")
+
+
+def atualizar_estado_ia_prescricao(
+    id_prescricao: int,
+    estado_prescricao: str,
+    score_risco_ia: float,
+    validado_por_ia: bool = True,
+    data_hora_validacao_ia=None,
+):
+    if data_hora_validacao_ia is None:
+        data_hora_validacao_ia = datetime.now()
+
+    try:
+        resultado = prescricoes_repository.atualizar_estado_ia_prescricao(
+            id_prescricao,
+            estado_prescricao,
+            score_risco_ia,
+            validado_por_ia,
+            data_hora_validacao_ia,
+        )
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Prescrição não encontrada.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar estado IA da prescrição: {str(e)}")
+
+
+def remover_prescricao(id_prescricao: int):
+    try:
+        resultado = prescricoes_repository.remover_prescricao(id_prescricao)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Prescrição não encontrada.")
+        return {"detail": "Prescrição removida com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover prescrição: {str(e)}")

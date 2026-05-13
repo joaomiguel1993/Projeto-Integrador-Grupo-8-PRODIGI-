@@ -1,22 +1,57 @@
-from backend.repositories.trabalha_repository import (
-    listar_funcionarios_do_hospital,
-    listar_hospitais_do_funcionario,
-    criar_trabalha,
-    atualizar_trabalha_ativo,
-    remover_trabalha
-)
+from fastapi import HTTPException
+from backend.repositories import trabalha_repository
 
-def get_funcionarios_hospital_service(idhosp: int):
-    return listar_funcionarios_do_hospital(idhosp)
 
-def get_hospitais_funcionario_service(idfunc: int):
-    return listar_hospitais_do_funcionario(idfunc)
+def listar_trabalhos():
+    return trabalha_repository.listar_trabalhos()
 
-def criar_trabalha_service(idfunc: int, idhosp: int):
-    return criar_trabalha(idfunc, idhosp)
 
-def atualizar_trabalha_service(idfunc: int, idhosp: int, ativo: bool):
-    return atualizar_trabalha_ativo(idfunc, idhosp, ativo)
+def obter_trabalho(id_func: int, id_hosp: int):
+    trabalho = trabalha_repository.obter_trabalho(id_func, id_hosp)
+    if trabalho is None:
+        raise HTTPException(status_code=404, detail="Ligação profissional-hospital não encontrada.")
+    return trabalho
 
-def remover_trabalha_service(idfunc: int, idhosp: int):
-    return remover_trabalha(idfunc, idhosp)
+
+def listar_trabalhos_por_funcionario(id_func: int):
+    return trabalha_repository.listar_trabalhos_por_funcionario(id_func)
+
+
+def listar_trabalhos_por_hospital(id_hosp: int):
+    return trabalha_repository.listar_trabalhos_por_hospital(id_hosp)
+
+
+def criar_trabalho(data: dict):
+    try:
+        resultado = trabalha_repository.criar_trabalho(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar a ligação profissional-hospital.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar ligação profissional-hospital: {str(e)}")
+
+
+def atualizar_trabalho(id_func: int, id_hosp: int, data: dict):
+    try:
+        resultado = trabalha_repository.atualizar_trabalho(id_func, id_hosp, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Ligação profissional-hospital não encontrada.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar ligação profissional-hospital: {str(e)}")
+
+
+def remover_trabalho(id_func: int, id_hosp: int):
+    try:
+        resultado = trabalha_repository.remover_trabalho(id_func, id_hosp)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Ligação profissional-hospital não encontrada.")
+        return {"detail": "Ligação profissional-hospital removida com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover ligação profissional-hospital: {str(e)}")

@@ -1,48 +1,104 @@
-from typing import Any, Optional, cast
-from backend.dao.atos_dao import (
-    select_all_atos,
-    select_ato_by_id,
-    select_atos_by_ep_urgencia,
-    insert_ato,
-    update_ato,
-    select_funcionarios_by_ato,
-    select_prescricoes_by_ato
-)
+from backend.dao import atos_dao
+
+
+def _first_or_none(rows):
+    if rows is None or len(rows) == 0:
+        return None
+    return rows[0]
+
+
+def _map_row(row):
+    if row is None:
+        return None
+
+    return {
+        "id_ato": row[0],
+        "cod_ep_urgenc": row[1],
+        "tipo": row[2],
+        "descricao": row[3],
+        "data_hora_inicio": row[4],
+        "data_hora_fim": row[5],
+    }
+
 
 def listar_atos():
-    # O teu db.py devolve uma lista de dicionários ou None
-    res = select_all_atos()
-    return res if isinstance(res, list) else []
+    rows = atos_dao.select_all_atos()
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]
 
-def obter_ato(id_ato: int) -> Optional[dict[str, Any]]:
-    res = select_ato_by_id(id_ato)
-    # Se res for uma lista com elementos, devolve o primeiro, senão None
-    if isinstance(res, list) and len(res) > 0:
-        return res[0]
-    return None
 
-def listar_atos_por_episodio(cod_ep: int):
-    res = select_atos_by_ep_urgencia(cod_ep)
-    return res if isinstance(res, list) else []
+def obter_ato_por_id(id_ato: int):
+    rows = atos_dao.select_ato_by_id(id_ato)
+    row = _first_or_none(rows)
+    return _map_row(row)
 
-def listar_funcionarios_do_ato(id_ato: int):
-    res = select_funcionarios_by_ato(id_ato)
-    return res if isinstance(res, list) else []
 
-def listar_prescricoes_do_ato(id_ato: int):
-    res = select_prescricoes_by_ato(id_ato)
-    return res if isinstance(res, list) else []
+def listar_atos_por_episodio(cod_ep_urgenc: int):
+    rows = atos_dao.select_atos_by_episodio(cod_ep_urgenc)
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]
 
-def criar_ato(cod, tipo, desc, data):
-    res = insert_ato(cod, tipo, desc, data)
-    # Como o insert retorna o row inserido diretamente (não via run_query),
-    # ele retorna um tuplo (baseado no código que tínhamos feito antes).
-    if res:
-        return dict(zip(["idato", "codepurgenc", "tipo", "descricao", "datahorainicio", "datahorafim"], res))
-    return None
 
-def atualizar_ato(id_ato, tipo, desc, data_fim):
-    res = update_ato(id_ato, tipo, desc, data_fim)
-    if res:
-        return dict(zip(["idato", "codepurgenc", "tipo", "descricao", "datahorainicio", "datahorafim"], res))
-    return None
+def criar_ato(data: dict):
+    cod_ep_urgenc = data["cod_ep_urgenc"]
+    tipo = data["tipo"]
+    data_hora_inicio = data["data_hora_inicio"]
+
+    descricao = None
+    if "descricao" in data:
+        descricao = data["descricao"]
+
+    data_hora_fim = None
+    if "data_hora_fim" in data:
+        data_hora_fim = data["data_hora_fim"]
+
+    rows = atos_dao.insert_ato(
+        cod_ep_urgenc,
+        tipo,
+        descricao,
+        data_hora_inicio,
+        data_hora_fim,
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def atualizar_ato(id_ato: int, data: dict):
+    tipo = None
+    descricao = None
+    data_hora_inicio = None
+    data_hora_fim = None
+
+    if "tipo" in data:
+        tipo = data["tipo"]
+
+    if "descricao" in data:
+        descricao = data["descricao"]
+
+    if "data_hora_inicio" in data:
+        data_hora_inicio = data["data_hora_inicio"]
+
+    if "data_hora_fim" in data:
+        data_hora_fim = data["data_hora_fim"]
+
+    rows = atos_dao.update_ato(
+        id_ato,
+        tipo,
+        descricao,
+        data_hora_inicio,
+        data_hora_fim,
+    )
+    row = _first_or_none(rows)
+    return _map_row(row)
+
+
+def remover_ato(id_ato: int):
+    rows = atos_dao.delete_ato(id_ato)
+    row = _first_or_none(rows)
+
+    if row is None:
+        return None
+
+    return row[0]

@@ -34,6 +34,20 @@ DROP TYPE IF EXISTS estado_ep_enum CASCADE;
 DROP TYPE IF EXISTS tipo_alta_enum CASCADE;
 
 -- ------------------------------------------------------------
+-- TIPOS EXTRA PARA IA
+-- ------------------------------------------------------------
+DROP TYPE IF EXISTS estado_prescricao_enum CASCADE;
+DROP TYPE IF EXISTS severidade_alerta_enum CASCADE;
+DROP TYPE IF EXISTS tipo_modelo_ia_enum CASCADE;
+DROP TYPE IF EXISTS entidade_ia_enum CASCADE;
+
+CREATE TYPE estado_prescricao_enum AS ENUM ('pendente', 'aprovada', 'bloqueada', 'anulada');
+CREATE TYPE severidade_alerta_enum AS ENUM ('baixo', 'moderado', 'alto', 'critico');
+CREATE TYPE tipo_modelo_ia_enum AS ENUM ('triagem', 'tempo_espera', 'risco_medicamentoso');
+CREATE TYPE entidade_ia_enum AS ENUM ('triagem', 'prescricao');
+
+
+-- ------------------------------------------------------------
 -- TIPOS
 -- ------------------------------------------------------------
 CREATE TYPE cor_triagem_enum AS ENUM ('vermelho', 'laranja', 'amarelo', 'verde', 'azul');
@@ -226,8 +240,36 @@ CREATE TABLE Prescreve (
     Dosagem VARCHAR(50) NOT NULL,
     Observacoes TEXT,
     DataHoraPresc TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    -- IA / workflow clínico
+    EstadoPrescricao estado_prescricao_enum NOT NULL DEFAULT 'pendente',
+    ScoreRiscoIA DECIMAL(6,4),
+    ValidadoPorIA BOOLEAN NOT NULL DEFAULT FALSE,
+    DataHoraValidacaoIA TIMESTAMP,
+
     FOREIGN KEY (IdAto) REFERENCES Ato(IdAto) ON DELETE CASCADE,
     FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento) ON DELETE RESTRICT
+)
+
+CREATE TABLE Alerta (
+    CodAlerta SERIAL PRIMARY KEY,
+    IdPrescricao INT NOT NULL,
+    IdFunc INT,
+    Tipo VARCHAR(50) NOT NULL,
+    DataHorAlerta TIMESTAMP NOT NULL DEFAULT NOW(),
+    Ignorado BOOLEAN NOT NULL DEFAULT FALSE,
+    Justificacao TEXT,
+
+    -- IA / gestão clínica
+    Severidade severidade_alerta_enum NOT NULL DEFAULT 'moderado',
+    ScoreRisco DECIMAL(6,4),
+    Resolvido BOOLEAN NOT NULL DEFAULT FALSE,
+    ResolvidoEm TIMESTAMP,
+    ResolvidoPor INT,
+
+    FOREIGN KEY (IdPrescricao) REFERENCES Prescreve(IdPrescricao) ON DELETE CASCADE,
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL,
+    FOREIGN KEY (ResolvidoPor) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL
 );
 
 CREATE TABLE Alerta (
@@ -240,6 +282,26 @@ CREATE TABLE Alerta (
     Justificacao TEXT,
     FOREIGN KEY (IdPrescricao) REFERENCES Prescreve(IdPrescricao) ON DELETE CASCADE,
     FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL
+);
+
+-- ------------------------------------------------------------
+-- AUDITORIA DE PREDIÇÕES IA
+-- ------------------------------------------------------------
+CREATE TABLE PredicaoIA (
+    IdPredicao BIGSERIAL PRIMARY KEY,
+    TipoModelo tipo_modelo_ia_enum NOT NULL,
+    Entidade entidade_ia_enum NOT NULL,
+    EntidadeId INT NOT NULL,
+
+    InputJson JSONB NOT NULL,
+    OutputJson JSONB NOT NULL,
+
+    Score DECIMAL(10,6),
+    ModeloVersao VARCHAR(100) NOT NULL,
+    Sucesso BOOLEAN NOT NULL DEFAULT TRUE,
+    ErroMensagem TEXT,
+
+    CriadoEm TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ------------------------------------------------------------
@@ -287,6 +349,27 @@ SELECT
 FROM Hospital h;
 
 -- ------------------------------------------------------------
+-- VIEW AUXILIAR PARA CONTEXTO DE PRESCRIÇÃO
+-- ------------------------------------------------------------
+CREATE OR REPLACE VIEW v_contexto_prescricao AS
+SELECT
+    p.IdPrescricao,
+    p.IdAto,
+    p.CodMedicamento,
+    p.Dosagem,
+    p.Observacoes,
+    p.DataHoraPresc,
+    p.EstadoPrescricao,
+    a.CodEpUrgenc,
+    e.NumUtent,
+    e.IdHosp,
+    e.DataHoraEntr
+FROM Prescreve p
+JOIN Ato a ON a.IdAto = p.IdAto
+JOIN EpUrgencia e ON e.CodEpUrgenc = a.CodEpUrgenc;
+
+
+-- ------------------------------------------------------------
 -- ÍNDICES DE PERFORMANCE
 -- ------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_log_username ON log_atividade(username);
@@ -294,3 +377,15 @@ CREATE INDEX IF NOT EXISTS idx_log_criado_em ON log_atividade(criado_em);
 CREATE INDEX IF NOT EXISTS idx_epurgencia_hosp_estado ON EpUrgencia(IdHosp, Estado);
 CREATE INDEX IF NOT EXISTS idx_trabalha_hosp_ativo ON Trabalha(IdHosp, Ativo);
 CREATE INDEX IF NOT EXISTS idx_funcionario_tipo ON Funcionario(TipoFunc);
+-- ------------------------------------------------------------
+-- ÍNDICES EXTRA PARA IA
+-- ------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_prescreve_estado ON Prescreve(EstadoPrescricao);
+CREATE INDEX IF NOT EXISTS idx_alerta_idprescricao ON Alerta(IdPrescricao);
+CREATE INDEX IF NOT EXISTS idx_alerta_resolvido ON Alerta(Resolvido);
+CREATE INDEX IF NOT EXISTS idx_predicao_tipo_entidade ON PredicaoIA(TipoModelo, Entidade, EntidadeId);
+CREATE INDEX IF NOT EXISTS idx_predicao_criado_em ON PredicaoIA(CriadoEm);
+CREATE INDEX IF NOT EXISTS idx_medicacaoativa_utente_ativa ON MedicacaoAtiva(NumUtent, DataFim);
+CREATE INDEX IF NOT EXISTS idx_alergia_utente_classe ON Alergia(NumUtent, ClasseTerapeuticaID);
+CREATE INDEX IF NOT EXISTS idx_ato_episode ON Ato(CodEpUrgenc);
+CREATE INDEX IF NOT EXISTS idx_prescreve_ato ON Prescreve(IdAto);

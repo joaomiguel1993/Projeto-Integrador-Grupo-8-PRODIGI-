@@ -1,31 +1,49 @@
 from fastapi import HTTPException
-from backend.repositories.triagens_repository import (
-    listar_triagens,
-    obter_triagem,
-    criar_triagem,
-    atualizar_triagem
-)
+from backend.repositories import triagens_repository
 
 
-def get_triagens_service():
-    return listar_triagens()
+def listar_triagens():
+    return triagens_repository.listar_triagens()
 
 
-def get_triagem_service(cod_ep_urgenc: int):
-    return obter_triagem(cod_ep_urgenc)
-
-
-def criar_triagem_service(data):
-    if not criar_triagem(data):
-        raise HTTPException(status_code=500, detail="Erro ao criar triagem.")
-    return {"message": "Triagem criada com sucesso."}
-
-
-def update_triagem_service(cod_ep_urgenc: int, data):
-    if not obter_triagem(cod_ep_urgenc):
+def obter_triagem(cod_ep_urgenc: int):
+    triagem = triagens_repository.obter_triagem_por_episodio(cod_ep_urgenc)
+    if triagem is None:
         raise HTTPException(status_code=404, detail="Triagem não encontrada.")
-    
-    if not atualizar_triagem(cod_ep_urgenc, data):
-        raise HTTPException(status_code=500, detail="Erro ao atualizar triagem.")
-    
-    return {"message": "Triagem atualizada com sucesso."}
+    return triagem
+
+
+def criar_triagem(data: dict):
+    try:
+        resultado = triagens_repository.criar_triagem(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar a triagem.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar triagem: {str(e)}")
+
+
+def atualizar_triagem(cod_ep_urgenc: int, data: dict):
+    try:
+        resultado = triagens_repository.atualizar_triagem(cod_ep_urgenc, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Triagem não encontrada.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar triagem: {str(e)}")
+
+
+def remover_triagem(cod_ep_urgenc: int):
+    try:
+        resultado = triagens_repository.remover_triagem(cod_ep_urgenc)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Triagem não encontrada.")
+        return {"detail": "Triagem removida com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover triagem: {str(e)}")

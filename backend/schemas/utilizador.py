@@ -1,33 +1,29 @@
-from pydantic import BaseModel, Field, ConfigDict
-
-
-class HospitalMiniResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    idhosp: int
-    nome: str
+from pydantic import BaseModel
+from typing import Optional
 
 
 class UtilizadorBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    username: str = Field(..., min_length=1, max_length=50)
+    id_func: int
+    username: str
+    password: str
+    bloqueado: bool = False
+    role: str = ""
 
 
 class UtilizadorCreate(UtilizadorBase):
-    idfunc: int
-    password: str = Field(..., min_length=1, max_length=255)
+    pass
 
 
-class UtilizadorResponse(UtilizadorBase):
-    idfunc: int
+class UtilizadorUpdate(BaseModel):
+    username: Optional[str] = None
+    password: Optional[str] = None
+    bloqueado: Optional[bool] = None
+    role: Optional[str] = None
 
 
-class UtilizadorDetalheResponse(UtilizadorBase):
-    idfunc: int
-    nome: str
-    tipofunc: str
-    hospitais: list[HospitalMiniResponse] = []
-    bloqueado: bool = False  # FIX: necessário para o frontend filtrar bloqueados
-    role: str = ""           # FIX: necessário para o frontend mostrar a função
-
+class UtilizadorOut(BaseModel):
+    id_func: int
+    username: str
+    password: str
+    bloqueado: bool
+    role: str

@@ -17,13 +17,15 @@ from backend.routers import (
     alerta,
     medicacaoativa,
     utenteantecedente,
-    logs
+    logs,
+    alergia,
+    ia,
 )
 
 app = FastAPI(
     title="SIAGUH – Sistema Integrado de Apoio à Gestão de Urgências Hospitalares",
-    description="API desenvolvida pelo G08 para gestão de utentes, episódios e triagem.",
-    version="0.25.0"
+    description="API desenvolvida pelo G08 para gestão de utentes, episódios, triagem e módulos de IA.",
+    version="0.69.0"
 )
 
 app.add_middleware(
@@ -45,20 +47,23 @@ def home():
     return {"msg": "API a funcionar seus sapos!"}
 
 
-app.include_router(auth.router, prefix="/api")
-app.include_router(utentes.router, prefix="/api")
-app.include_router(episodios.router, prefix="/api")
-app.include_router(triagem.router, prefix="/api")
-app.include_router(internamento.router, prefix="/api")
-app.include_router(profissionais.router, prefix="/api")
-app.include_router(ato.router, prefix="/api")
-app.include_router(prescricao.router, prefix="/api")
-app.include_router(hospital.router, prefix="/api")
-app.include_router(medicamento.router, prefix="/api")
-app.include_router(utilizadores.router, prefix="/api")
-app.include_router(trabalha.router, prefix="/api")
-app.include_router(alerta.router, prefix="/api")
-app.include_router(medicacaoativa.router, prefix="/api")
-app.include_router(utenteantecedente.router, prefix="/api")
-app.include_router(logs.router, prefix="/api")
-app.include_router(trabalha.router, prefix="/api")
+API_PREFIX = "/api"
+
+app.include_router(auth.router, prefix=API_PREFIX)
+app.include_router(utentes.router, prefix=API_PREFIX)
+app.include_router(episodios.router, prefix=API_PREFIX)
+app.include_router(triagem.router, prefix=API_PREFIX)
+app.include_router(internamento.router, prefix=API_PREFIX)
+app.include_router(profissionais.router, prefix=API_PREFIX)
+app.include_router(ato.router, prefix=API_PREFIX)
+app.include_router(prescricao.router, prefix=API_PREFIX)
+app.include_router(hospital.router, prefix=API_PREFIX)
+app.include_router(medicamento.router, prefix=API_PREFIX)
+app.include_router(utilizadores.router, prefix=API_PREFIX)
+app.include_router(trabalha.router, prefix=API_PREFIX)
+app.include_router(alerta.router, prefix=API_PREFIX)
+app.include_router(medicacaoativa.router, prefix=API_PREFIX)
+app.include_router(utenteantecedente.router, prefix=API_PREFIX)
+app.include_router(logs.router, prefix=API_PREFIX)
+app.include_router(alergia.router, prefix=API_PREFIX)
+app.include_router(ia.router, prefix=API_PREFIX)

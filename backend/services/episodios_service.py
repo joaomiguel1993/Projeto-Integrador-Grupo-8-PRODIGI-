@@ -1,62 +1,57 @@
 from fastapi import HTTPException
-
-from backend.repositories.episodios_repository import (
-    listar_episodios,
-    obter_episodio,
-    criar_episodio,
-    atualizar_episodio
-)
+from backend.repositories import episodios_repository
 
 
-ESTADOS_VALIDOS = {"aberto", "em_triagem", "em_atendimento", "internado", "terminado"}
+def listar_episodios():
+    return episodios_repository.listar_episodios()
 
 
-def get_episodios_service():
-    return listar_episodios()
-
-
-def get_episodio_service(cod_ep_urgenc: int):
-    return obter_episodio(cod_ep_urgenc)
-
-
-def criar_episodio_service(data):
-    if data.numutent <= 0:
-        raise HTTPException(status_code=400, detail="Número de utente inválido.")
-
-    if data.idhosp <= 0:
-        raise HTTPException(status_code=400, detail="Hospital inválido.")
-
-    criado = criar_episodio(data.numutent, data.idhosp)
-
-    if not criado:
-        raise HTTPException(status_code=500, detail="Erro ao criar episódio.")
-
-    return criado
-
-
-def atualizar_episodio_service(cod_ep_urgenc: int, data):
-    existente = obter_episodio(cod_ep_urgenc)
-    if not existente:
+def obter_episodio(cod_ep_urgenc: int):
+    episodio = episodios_repository.obter_episodio_por_id(cod_ep_urgenc)
+    if episodio is None:
         raise HTTPException(status_code=404, detail="Episódio não encontrado.")
+    return episodio
 
-    if data.numutent <= 0:
-        raise HTTPException(status_code=400, detail="Número de utente inválido.")
 
-    if data.idhosp <= 0:
-        raise HTTPException(status_code=400, detail="Hospital inválido.")
+def listar_episodios_por_utente(num_utent: int):
+    return episodios_repository.listar_episodios_por_utente(num_utent)
 
-    if data.estado not in ESTADOS_VALIDOS:
-        raise HTTPException(status_code=400, detail="Estado de episódio inválido.")
 
-    atualizado = atualizar_episodio(
-        cod_ep_urgenc=cod_ep_urgenc,
-        num_utente=data.numutent,
-        id_hosp=data.idhosp,
-        datahora_saida=data.datahorasaida,
-        estado=data.estado
-    )
+def listar_episodios_por_hospital(id_hosp: int):
+    return episodios_repository.listar_episodios_por_hospital(id_hosp)
 
-    if not atualizado:
-        raise HTTPException(status_code=500, detail="Erro ao atualizar episódio.")
 
-    return atualizado
+def criar_episodio(data: dict):
+    try:
+        resultado = episodios_repository.criar_episodio(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar o episódio.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar episódio: {str(e)}")
+
+
+def atualizar_episodio(cod_ep_urgenc: int, data: dict):
+    try:
+        resultado = episodios_repository.atualizar_episodio(cod_ep_urgenc, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Episódio não encontrado.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar episódio: {str(e)}")
+
+
+def remover_episodio(cod_ep_urgenc: int):
+    try:
+        resultado = episodios_repository.remover_episodio(cod_ep_urgenc)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Episódio não encontrado.")
+        return {"detail": "Episódio removido com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover episódio: {str(e)}")

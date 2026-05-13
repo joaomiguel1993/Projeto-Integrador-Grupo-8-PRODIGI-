@@ -1,37 +1,58 @@
+from pydantic import BaseModel, model_validator
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, Literal
 
 
 class InternamentoBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    codepurgenc: int
-    idfunc: Optional[int] = None
-    datahoraint: Optional[datetime] = None  # Adicionado aqui
-    datahoraconsulta: Optional[datetime] = None
-    datahoraalta: Optional[datetime] = None
-    motivoint: str
-    numerocama: Optional[str] = None
+    cod_ep_urgenc: int
+    id_func: Optional[int] = None
+    data_hora_int: datetime
+    data_hora_consulta: Optional[datetime] = None
+    data_hora_alta: Optional[datetime] = None
+    motivo_int: str
+    numero_cama: Optional[str] = None
     servico: Optional[str] = None
-    tipoalta: Optional[str] = None
+    tipo_alta: Optional[Literal["clinica", "voluntaria", "transferencia", "obito"]] = None
+
+    @model_validator(mode="after")
+    def validar_alta(self):
+        if (self.data_hora_alta is None and self.tipo_alta is not None) or (
+            self.data_hora_alta is not None and self.tipo_alta is None
+        ):
+            raise ValueError("data_hora_alta e tipo_alta devem ser preenchidos em conjunto.")
+        return self
 
 
-class InternamentoCreate(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    codepurgenc: int
-    idfunc: Optional[int] = None
-    datahoraint: datetime
-    motivoint: str
-    numerocama: Optional[str] = None
-    servico: Optional[str] = None
-
-
-class InternamentoUpdate(InternamentoBase):
+class InternamentoCreate(InternamentoBase):
     pass
 
 
-class InternamentoResponse(InternamentoBase):
-    codinternamento: int
-    datahoraint: datetime
+class InternamentoUpdate(BaseModel):
+    id_func: Optional[int] = None
+    data_hora_consulta: Optional[datetime] = None
+    data_hora_alta: Optional[datetime] = None
+    motivo_int: Optional[str] = None
+    numero_cama: Optional[str] = None
+    servico: Optional[str] = None
+    tipo_alta: Optional[Literal["clinica", "voluntaria", "transferencia", "obito"]] = None
+
+    @model_validator(mode="after")
+    def validar_alta(self):
+        if (self.data_hora_alta is None and self.tipo_alta is not None) or (
+            self.data_hora_alta is not None and self.tipo_alta is None
+        ):
+            raise ValueError("data_hora_alta e tipo_alta devem ser preenchidos em conjunto.")
+        return self
+
+
+class InternamentoOut(BaseModel):
+    cod_internamento: int
+    cod_ep_urgenc: int
+    id_func: Optional[int] = None
+    data_hora_int: datetime
+    data_hora_consulta: Optional[datetime] = None
+    data_hora_alta: Optional[datetime] = None
+    motivo_int: str
+    numero_cama: Optional[str] = None
+    servico: Optional[str] = None
+    tipo_alta: Optional[str] = None

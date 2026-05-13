@@ -1,32 +1,53 @@
-from backend.repositories.medicacaoativa_repository import (
-    listar_medicacaoativa,
-    listar_medicacaoativa_por_utente,
-    criar_medicacaoativa,
-    atualizar_medicacaoativa,
-    remover_medicacaoativa
-)
+from fastapi import HTTPException
+from backend.repositories import medicacaoativa_repository
 
-def get_medicacaoativa_service():
-    return listar_medicacaoativa()
 
-def get_medicacaoativa_por_utente_service(numutent: int):
-    return listar_medicacaoativa_por_utente(numutent)
+def listar_medicacoes_ativas():
+    return medicacaoativa_repository.listar_medicacoes_ativas()
 
-def criar_medicacaoativa_service(data):
-    return criar_medicacaoativa(
-        numutent=data.numutent,
-        codmedicamento=data.codmedicamento,
-        datainicio=data.datainicio,
-        datafim=data.datafim,
-        dosagem=data.dosagem
-    )
 
-def atualizar_medicacaoativa_service(codmedicacaoativa: int, data):
-    return atualizar_medicacaoativa(
-        codmedicacaoativa=codmedicacaoativa,
-        datafim=data.datafim,
-        dosagem=data.dosagem
-    )
+def obter_medicacao_ativa(cod_medicacao_ativa: int):
+    medicacao = medicacaoativa_repository.obter_medicacao_ativa_por_id(cod_medicacao_ativa)
+    if medicacao is None:
+        raise HTTPException(status_code=404, detail="Medicação ativa não encontrada.")
+    return medicacao
 
-def remover_medicacaoativa_service(codmedicacaoativa: int):
-    return remover_medicacaoativa(codmedicacaoativa)
+
+def listar_medicacoes_ativas_por_utente(num_utent: int):
+    return medicacaoativa_repository.listar_medicacoes_ativas_por_utente(num_utent)
+
+
+def criar_medicacao_ativa(data: dict):
+    try:
+        resultado = medicacaoativa_repository.criar_medicacao_ativa(data)
+        if resultado is None:
+            raise HTTPException(status_code=400, detail="Não foi possível criar a medicação ativa.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar medicação ativa: {str(e)}")
+
+
+def atualizar_medicacao_ativa(cod_medicacao_ativa: int, data: dict):
+    try:
+        resultado = medicacaoativa_repository.atualizar_medicacao_ativa(cod_medicacao_ativa, data)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Medicação ativa não encontrada.")
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao atualizar medicação ativa: {str(e)}")
+
+
+def remover_medicacao_ativa(cod_medicacao_ativa: int):
+    try:
+        resultado = medicacaoativa_repository.remover_medicacao_ativa(cod_medicacao_ativa)
+        if resultado is None:
+            raise HTTPException(status_code=404, detail="Medicação ativa não encontrada.")
+        return {"detail": "Medicação ativa removida com sucesso."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao remover medicação ativa: {str(e)}")
