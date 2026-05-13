@@ -1,6 +1,5 @@
 from fastapi import HTTPException
 from backend.repositories import profissionais_repository
-from backend.dao.logs_dao import insert_log
 
 
 def listar_profissionais():
@@ -18,23 +17,16 @@ def listar_profissionais_por_tipo(tipo_func: str):
     return profissionais_repository.listar_profissionais_por_tipo(tipo_func)
 
 
-def criar_profissional(data: dict, current_username: str, ip: str):
+def criar_profissional(data: dict):
     try:
         resultado = profissionais_repository.criar_profissional(data)
         if resultado is None:
             raise HTTPException(status_code=400, detail="Não foi possível criar o profissional.")
-
-        insert_log(
-            username=current_username,
-            acao="CRIAR_FUNCIONARIO",
-            detalhe=f"Funcionário ID {data.get('idfunc')} criado.",
-            ip=ip,
-        )
-
         return resultado
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao criar profissional: {str(e)}")
-
 
 
 def atualizar_profissional(id_func: int, data: dict):
