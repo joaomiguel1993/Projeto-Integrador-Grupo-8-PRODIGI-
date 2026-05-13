@@ -26,26 +26,33 @@ const gerarUsername = (nome) => {
 
 const extrairHospitais = (entidade) => {
   if (!entidade) return [];
-  let ids = [];
 
-  let raw = entidade.hospitais || entidade.hospital_id || entidade.id_hosp || entidade.idhosp;
+  let ids = [];
+  let raw =
+    entidade?.hospitais ??
+    entidade?.hospitalid ??
+    entidade?.id_hosp ??
+    entidade?.idhosp;
+
   if (typeof raw === 'string') {
     try {
       raw = JSON.parse(raw);
     } catch {
-      raw = [];
+      // ignorar
     }
   }
 
   if (Array.isArray(raw)) {
     ids = raw.map((h) =>
-      typeof h === 'object' && h !== null ? (h.idhosp ?? h.id_hosp ?? h.id ?? h.idHospital) : h
+      typeof h === 'object' && h !== null
+        ? h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id
+        : h
     );
   } else {
-    if (entidade.id_hosp) ids.push(entidade.id_hosp);
-    if (entidade.idhosp) ids.push(entidade.idhosp);
-    if (entidade.hospital_id) ids.push(entidade.hospital_id);
-    if (entidade.idHospital) ids.push(entidade.idHospital);
+    if (entidade?.id_hosp) ids.push(entidade.id_hosp);
+    if (entidade?.idhosp) ids.push(entidade.idhosp);
+    if (entidade?.hospitalid) ids.push(entidade.hospitalid);
+    if (entidade?.idHospital) ids.push(entidade.idHospital);
   }
 
   return [...new Set(
@@ -58,12 +65,79 @@ const extrairHospitais = (entidade) => {
 
 const mapHospitalFromApi = (hospital) => ({
   ...hospital,
-  idhosp: Number(hospital?.idhosp ?? hospital?.id_hosp ?? hospital?.id ?? 0),
+  idhosp: Number(
+    hospital?.id_hosp ??
+    hospital?.idhosp ??
+    hospital?.idHosp ??
+    hospital?.id ??
+    0
+  ),
   nome: hospital?.nome ?? '',
   email: hospital?.email ?? '',
   localidade: hospital?.localizacao ?? hospital?.localidade ?? '',
   contacto: hospital?.telefone ?? hospital?.contacto ?? '',
 });
+
+const obterIdFunc = (item) =>
+  item?.id_func ??
+  item?.idfunc ??
+  item?.idFunc ??
+  item?.IdFunc ??
+  item?.funcionario?.id_func ??
+  item?.funcionario?.idfunc ??
+  item?.funcionario?.idFunc ??
+  null;
+
+
+const valorTexto = (...candidatos) => {
+  for (const candidato of candidatos) {
+    const texto = String(candidato ?? '').trim();
+    if (texto) return texto;
+  }
+  return '—';
+};
+
+const obterNome = (item) =>
+  item?.nome ??
+  item?.Nome ??
+  item?.funcionario?.nome ??
+  item?.funcionario?.Nome ??
+  '—';
+
+const obterTipoFuncRaw = (item) =>
+  valorTexto(
+    item?.role,
+    item?.tipofunc,
+    item?.tipo_func,
+    item?.TipoFunc,
+    item?.funcionario?.role,
+    item?.funcionario?.tipofunc,
+    item?.funcionario?.tipo_func,
+    item?.funcionario?.TipoFunc
+  );
+
+const obterFuncaoTraduzida = (item, textos) => {
+  const valor =
+    item?.tipo_func ??
+    item?.tipofunc ??
+    item?.TipoFunc ??
+    item?.role ??
+    item?.funcionario?.tipo_func ??
+    item?.funcionario?.tipofunc ??
+    item?.funcionario?.TipoFunc ??
+    '';
+
+  const v = String(valor).toLowerCase();
+
+  if (v === 'admin') return textos.admin.roleAdmin;
+  if (v === 'medico') return textos.admin.roleMedico;
+  if (v === 'enfermeiro') return textos.admin.roleEnfermeiro;
+  if (v === 'rececionista') return textos.admin.roleRececionista;
+
+  return valor || '—';
+};
+
+const obterNumFunc = (item) => obterIdFunc(item);
 
 const getText = (path, fallback, textos) => {
   const parts = path.split('.');
@@ -80,8 +154,12 @@ const SelectorHospitais = ({
   hospitaisDisponiveisTotais = [],
   valoresSelecionados = [],
   onChange,
-  textosAdmin = {},
 }) => {
+  const [pesquisaDisponiveis, setPesquisaDisponiveis] = useState('');
+  const [pesquisaSelecionados, setPesquisaSelecionados] = useState('');
+  const [limiteDisponiveis, setLimiteDisponiveis] = useState(20);
+  const [limiteSelecionados, setLimiteSelecionados] = useState(20);
+
   const idsSelecionados = (valoresSelecionados || [])
     .map((id) => Number(id))
     .filter((id) => !Number.isNaN(id));
@@ -90,9 +168,26 @@ const SelectorHospitais = ({
     (h) => !idsSelecionados.includes(Number(h?.idhosp))
   );
 
-  const selecionados = hospitaisDisponiveisTotais.filter(
-    (h) => idsSelecionados.includes(Number(h?.idhosp))
+  const selecionados = hospitaisDisponiveisTotais.filter((h) =>
+    idsSelecionados.includes(Number(h?.idhosp))
   );
+
+  const filtrarHospitais = (lista, termo) => {
+    const query = normalizar(termo || '');
+    if (!query) return lista;
+
+    return lista.filter((h) => {
+      const nome = normalizar(h?.nome || '');
+      const localidade = normalizar(h?.localidade || h?.localizacao || '');
+      return nome.includes(query) || localidade.includes(query);
+    });
+  };
+
+  const disponiveisFiltrados = filtrarHospitais(disponiveis, pesquisaDisponiveis);
+  const selecionadosFiltrados = filtrarHospitais(selecionados, pesquisaSelecionados);
+
+  const disponiveisVisiveis = disponiveisFiltrados.slice(0, limiteDisponiveis);
+  const selecionadosVisiveis = selecionadosFiltrados.slice(0, limiteSelecionados);
 
   const adicionarHospital = (idHosp) => {
     const id = Number(idHosp);
@@ -106,58 +201,108 @@ const SelectorHospitais = ({
     onChange(novos);
   };
 
-  const t = (key, fallback) => textosAdmin?.[key] ?? fallback;
-
   return (
     <div className="selector-hospitais">
       <div className="selector-hospitais-coluna">
-        <h4 className="selector-hospitais-titulo">{t('hospitaisDisponiveis', 'Hospitais disponíveis')}</h4>
+        <div className="selector-hospitais-head">
+          <h4 className="selector-hospitais-titulo">Hospitais disponíveis</h4>
+          <input
+            type="text"
+            className="selector-hospitais-pesquisa"
+            placeholder="Pesquisar hospital por nome ou localidade..."
+            value={pesquisaDisponiveis}
+            onChange={(e) => {
+              setPesquisaDisponiveis(e.target.value);
+              setLimiteDisponiveis(20);
+            }}
+          />
+        </div>
+
         <div className="selector-hospitais-lista">
-          {disponiveis.length === 0 ? (
-            <p className="selector-hospitais-vazio">{t('semHospitaisDisponiveis', 'Sem hospitais disponíveis.')}</p>
+          {disponiveisVisiveis.length === 0 ? (
+            <p className="selector-hospitais-vazio">Sem hospitais disponíveis.</p>
           ) : (
-            disponiveis.map((h) => (
+            disponiveisVisiveis.map((h) => (
               <div key={h.idhosp} className="selector-hospitais-item">
                 <div className="selector-hospitais-info">
-                  <span className="selector-hospitais-nome">{h.nome || '—'}</span>
-                  <span className="selector-hospitais-meta">{h.localidade || t('semLocalizacao', 'Sem localização')}</span>
+                  <span className="selector-hospitais-nome">{h.nome}</span>
+                  <span className="selector-hospitais-meta">
+                    {h.localidade || h.localizacao || 'Sem localização'}
+                  </span>
                 </div>
+
                 <button
                   type="button"
                   className="selector-hospitais-acao selector-hospitais-acao--add"
                   onClick={() => adicionarHospital(h.idhosp)}
                 >
-                  {t('adicionar', 'Adicionar')}
+                  Adicionar
                 </button>
               </div>
             ))
           )}
         </div>
+
+        {disponiveisFiltrados.length > limiteDisponiveis && (
+          <button
+            type="button"
+            className="selector-hospitais-more"
+            onClick={() => setLimiteDisponiveis((prev) => prev + 20)}
+          >
+            Mostrar mais
+          </button>
+        )}
       </div>
 
       <div className="selector-hospitais-coluna">
-        <h4 className="selector-hospitais-titulo">{t('hospitaisSelecionados', 'Hospitais selecionados')}</h4>
+        <div className="selector-hospitais-head">
+          <h4 className="selector-hospitais-titulo">Hospitais selecionados</h4>
+          <input
+            type="text"
+            className="selector-hospitais-pesquisa"
+            placeholder="Pesquisar selecionados..."
+            value={pesquisaSelecionados}
+            onChange={(e) => {
+              setPesquisaSelecionados(e.target.value);
+              setLimiteSelecionados(20);
+            }}
+          />
+        </div>
+
         <div className="selector-hospitais-lista">
-          {selecionados.length === 0 ? (
-            <p className="selector-hospitais-vazio">{t('nenhumHospitalSelecionado', 'Nenhum hospital selecionado.')}</p>
+          {selecionadosVisiveis.length === 0 ? (
+            <p className="selector-hospitais-vazio">Nenhum hospital selecionado.</p>
           ) : (
-            selecionados.map((h) => (
+            selecionadosVisiveis.map((h) => (
               <div key={h.idhosp} className="selector-hospitais-item">
                 <div className="selector-hospitais-info">
-                  <span className="selector-hospitais-nome">{h.nome || '—'}</span>
-                  <span className="selector-hospitais-meta">{h.localidade || t('semLocalizacao', 'Sem localização')}</span>
+                  <span className="selector-hospitais-nome">{h.nome}</span>
+                  <span className="selector-hospitais-meta">
+                    {h.localidade || h.localizacao || 'Sem localização'}
+                  </span>
                 </div>
+
                 <button
                   type="button"
                   className="selector-hospitais-acao selector-hospitais-acao--remove"
                   onClick={() => removerHospital(h.idhosp)}
                 >
-                  {t('remover', 'Remover')}
+                  Remover
                 </button>
               </div>
             ))
           )}
         </div>
+
+        {selecionadosFiltrados.length > limiteSelecionados && (
+          <button
+            type="button"
+            className="selector-hospitais-more selector-hospitais-more--secondary"
+            onClick={() => setLimiteSelecionados((prev) => prev + 20)}
+          >
+            Mostrar mais
+          </button>
+        )}
       </div>
     </div>
   );
@@ -172,6 +317,7 @@ export default function AdminDashboard() {
 
   const tt = (key, fallback) => tGeral?.[key] ?? fallback;
   const ta = (key, fallback) => tAdmin?.[key] ?? fallback;
+
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mainMenu, setMainMenu] = useState('utilizadores');
@@ -368,6 +514,11 @@ export default function AdminDashboard() {
     await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais()]);
   };
 
+
+  useEffect(() => {
+    console.log('PROFISSIONAIS', profissionais);
+  }, [profissionais]);
+
   useEffect(() => { carregarTudo(); iniciarHistoricoBase(); }, []);
   useEffect(() => { resolverUtilizadorAutenticado(); }, [profissionais, utilizadores, tAdmin.tituloPainel]);
   useEffect(() => {
@@ -380,6 +531,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (mainMenu === 'relatorios') carregarLogs();
   }, [mainMenu]);
+
+  useEffect(() => {
+    if (profissionais.length > 0) {
+      carregarHospitaisPorFuncionario();
+    }
+  }, [profissionais]);
 
   function iniciarHistoricoBase() {
     setHistorico([
@@ -394,67 +551,112 @@ export default function AdminDashboard() {
   }
 
   const idsComConta = useMemo(
-    () => new Set(utilizadores.map((u) => u.idfunc).filter((id) => id !== null && id !== undefined)),
+    () => new Set(utilizadores.map((u) => Number(obterIdFunc(u))).filter(Boolean)),
     [utilizadores]
   );
+
   const utilizadoresComConta = utilizadores.filter((u) => u.bloqueado !== true);
   const utilizadoresBloqueados = utilizadores.filter((u) => u.bloqueado === true);
-  const funcionariosSemConta = profissionais.filter((p) => !idsComConta.has(p.idfunc));
+
+  const funcionariosSemConta = profissionais.filter(
+    (p) => !idsComConta.has(Number(obterIdFunc(p)))
+  );
+
+
 
   const utilizadoresComContaFiltrados = utilizadoresComConta.filter((u) => {
-    const prof = profissionais.find((p) => p.idfunc === u.idfunc);
-    return normalizar(u.username).includes(normalizar(filtroUserUsername))
-      && normalizar(prof?.nome || '').includes(normalizar(filtroUserNome))
-      && String(u.idfunc || '').includes(filtroUserNumero);
-  });
+    const prof = profissionais.find((p) => obterIdFunc(p) === obterIdFunc(u));
+    const nome = obterNome(prof || u);
+    const funcao = obterFuncaoTraduzida(prof || u, textos);
+    const numero = obterNumFunc(u);
 
-  const funcionariosSemContaFiltrados = funcionariosSemConta.filter((p) =>
-    normalizar(p.nome).includes(normalizar(filtroUserNome)) && String(p.idfunc || '').includes(filtroUserNumero)
-  );
+    return (
+      normalizar(u?.username || '').includes(normalizar(filtroUserUsername)) &&
+      normalizar(nome).includes(normalizar(filtroUserNome)) &&
+      String(numero).includes(filtroUserNumero)
+    );
+  });
 
   const utilizadoresBloqueadosFiltrados = utilizadoresBloqueados.filter((u) => {
-    const prof = profissionais.find((p) => p.idfunc === u.idfunc);
-    return normalizar(u.username).includes(normalizar(filtroUserUsername))
-      && normalizar(prof?.nome || '').includes(normalizar(filtroUserNome))
-      && String(u.idfunc || '').includes(filtroUserNumero);
+    const prof = profissionais.find((p) => obterIdFunc(p) === obterIdFunc(u));
+    const nome = obterNome(prof || u);
+    const funcao = obterFuncaoTraduzida(prof || u, textos);
+    const numero = obterNumFunc(u);
+
+    return (
+      normalizar(u?.username || '').includes(normalizar(filtroUserUsername)) &&
+      normalizar(nome).includes(normalizar(filtroUserNome)) &&
+      String(numero).includes(filtroUserNumero)
+    );
   });
 
-  const funcionariosFiltrados = profissionais.filter((p) =>
-    normalizar(p.nome).includes(normalizar(filtroFuncNome))
-    && String(p.idfunc || '').includes(filtroFuncNumero)
-    && (filtroFuncTipo === '' || normalizar(p.tipofunc) === normalizar(filtroFuncTipo))
-  );
+  const funcionariosSemContaFiltrados = funcionariosSemConta.filter((p) => {
+    const nome = obterNome(p);
+    const numero = obterNumFunc(p);
 
-  const funcionariosPesquisaNovoUser = funcionariosSemConta.filter((p) =>
-    normalizar(p.nome).includes(normalizar(pesquisaFuncionarioNovoUser)) || String(p.idfunc).includes(pesquisaFuncionarioNovoUser)
-  );
+    return (
+      normalizar(nome).includes(normalizar(filtroUserNome)) &&
+      String(numero).includes(filtroUserNumero)
+    );
+  });
 
-  const hospitaisFiltrados = hospitais.filter((h) =>
-    normalizar(h.nome).includes(normalizar(filtroHospitalNome))
-    && normalizar(h.localidade || '').includes(normalizar(filtroHospitalLocalidade))
+  const funcionariosFiltrados = profissionais.filter((p) => {
+    const nome = obterNome(p);
+    const numero = obterNumFunc(p);
+    const funcao = String(obterTipoFuncRaw(p) || '').toLowerCase();
+
+    return (
+      normalizar(nome).includes(normalizar(filtroFuncNome)) &&
+      String(numero).includes(filtroFuncNumero) &&
+      (!filtroFuncTipo || funcao === normalizar(filtroFuncTipo))
+    );
+  });
+
+  const funcionariosPesquisaNovoUser = funcionariosSemConta.filter((p) => {
+    const nome = obterNome(p);
+    const numero = obterNumFunc(p);
+
+    return (
+      normalizar(nome).includes(normalizar(pesquisaFuncionarioNovoUser)) ||
+      String(numero).includes(pesquisaFuncionarioNovoUser)
+    );
+  });
+
+  const hospitaisFiltrados = hospitais.filter(
+    (h) =>
+      normalizar(h.nome).includes(normalizar(filtroHospitalNome)) &&
+      normalizar(h.localidade || '').includes(normalizar(filtroHospitalLocalidade))
   );
 
   const logsFiltrados = logs.filter((log) => {
     const termo = normalizar(filtroLogTermo);
     const matchTermo =
-      termo === '' ||
-      normalizar(log.acao || '').includes(termo) ||
-      normalizar(log.detalhe || '').includes(termo) ||
-      normalizar(log.username || '').includes(termo);
+      !termo ||
+      normalizar(log?.acao || '').includes(termo) ||
+      normalizar(log?.detalhe || '').includes(termo) ||
+      normalizar(log?.username || '').includes(termo);
+
     let matchData = true;
-    if (filtroLogData) matchData = (log.criado_em ? new Date(log.criado_em).toISOString().split('T')[0] : '') === filtroLogData;
+    if (filtroLogData) {
+      const dataLog = log?.criado_em || log?.criadoem || log?.data;
+      if (dataLog) {
+        matchData = new Date(dataLog).toISOString().split('T')[0] === filtroLogData;
+      }
+    }
+
     return matchTermo && matchData;
   });
 
   const selecionarFuncionarioNovoUser = (funcionario) => {
     setNovoUtilizador((prev) => ({
       ...prev,
-      idfunc: funcionario.idfunc,
-      username: gerarUsername(funcionario.nome),
-      role: funcionario.tipofunc || ROLES.ADMIN,
+      idfunc: obterIdFunc(funcionario),
+      username: gerarUsername(obterNome(funcionario)),
+      role: obterTipoFuncRaw(funcionario) || ROLES.ADMIN,
       hospitais: extrairHospitais(funcionario),
     }));
-    setPesquisaFuncionarioNovoUser(funcionario.nome);
+
+    setPesquisaFuncionarioNovoUser(obterNome(funcionario));
     setDropdownAberto(false);
   };
 
@@ -470,34 +672,38 @@ export default function AdminDashboard() {
   const abrirEditarUtilizador = async (utilizador) => {
     resetMensagens();
 
-    const idfunc = Number(utilizador?.idfunc);
-    if (!idfunc || Number.isNaN(idfunc)) {
-      setErroUser('ID do utilizador inválido.');
-      return;
-    }
-
     try {
-      const [utilizadorData, hospitaisData] = await Promise.all([
-        apiFetch(`/api/utilizadores/${idfunc}`),
-        apiFetch(`/api/trabalha/funcionario/${idfunc}`),
+      const idFunc = Number(obterIdFunc(utilizador));
+
+      const [utilizadorData, hospitaisData, profissionalData] = await Promise.all([
+        apiFetch(`/api/utilizadores/${idFunc}`),
+        apiFetch(`/api/trabalha/funcionario/${idFunc}`),
+        apiFetch(`/api/profissionais/${idFunc}`),
       ]);
 
       const hospitaisIds = Array.isArray(hospitaisData)
         ? hospitaisData
-          .map((item) => Number(item?.idhosp ?? item?.idHosp ?? item?.id))
+          .map((item) => Number(item?.id_hosp ?? item?.idhosp ?? item?.idHosp ?? item?.id))
           .filter((id) => !Number.isNaN(id) && id > 0)
         : [];
 
-      const profissional = profissionais.find((p) => Number(p.idfunc) === idfunc);
+      const prof = profissionalData || profissionais.find(
+        (p) => Number(obterIdFunc(p)) === idFunc
+      );
 
       setUtilizadorEditando({
-        idfunc,
-        username: utilizadorData?.username ?? utilizador.username ?? '',
+        idfunc: idFunc,
+        username: utilizadorData?.username ?? utilizador?.username ?? '',
         password: '',
-        role: utilizadorData?.role ?? profissional?.tipofunc ?? ROLES.ADMIN,
-        nome: profissional?.nome ?? utilizador.nome ?? '',
-        sexo: profissional?.sexo ?? 'M',
-        bloqueado: utilizadorData?.bloqueado ?? utilizador.bloqueado ?? false,
+        role:
+          utilizadorData?.role ??
+          prof?.tipo_func ??
+          prof?.tipofunc ??
+          utilizador?.role ??
+          'admin',
+        nome: prof?.nome ?? utilizador?.nome ?? '',
+        sexo: prof?.sexo ?? utilizador?.sexo ?? 'M',
+        bloqueado: utilizadorData?.bloqueado ?? utilizador?.bloqueado ?? false,
         hospitais: hospitaisIds,
       });
 
@@ -510,17 +716,19 @@ export default function AdminDashboard() {
 
   const abrirCriarAPartirFuncionario = (funcionario) => {
     resetMensagens();
+
     setUtilizadorEditando({
-      idfunc: funcionario.idfunc,
-      nome: funcionario.nome,
-      tipofunc: funcionario.tipofunc,
-      sexo: funcionario.sexo,
-      username: gerarUsername(funcionario.nome),
+      idfunc: obterIdFunc(funcionario),
+      nome: obterNome(funcionario),
+      tipofunc: obterTipoFuncRaw(funcionario),
+      sexo: funcionario?.sexo ?? funcionario?.Sexo ?? 'M',
+      username: gerarUsername(obterNome(funcionario)),
       password: '',
-      role: funcionario.tipofunc || ROLES.ADMIN,
+      role: obterTipoFuncRaw(funcionario) || ROLES.ADMIN,
       hospitais: extrairHospitais(funcionario),
       isNovo: true,
     });
+
     setUserView('editar');
   };
 
@@ -533,17 +741,46 @@ export default function AdminDashboard() {
 
   const abrirEditarFuncionario = async (funcionario) => {
     resetMensagens();
-    setFuncionarioEditando({ ...funcionario, hospitais: [] });
+
+    const idfunc = Number(obterIdFunc(funcionario));
+    console.log('FUNCIONARIO CLICADO', funcionario);
+    console.log('IDFUNC', idfunc);
+
+    setFuncionarioEditando({
+      idfunc,
+      nome: funcionario?.nome ?? '',
+      tipofunc: funcionario?.tipo_func ?? funcionario?.tipofunc ?? ROLES.ADMIN,
+      sexo: funcionario?.sexo ?? 'M',
+      email: funcionario?.email ?? '',
+      telefone: funcionario?.telefone ?? '',
+      biografia: funcionario?.biografia ?? '',
+      foto_url: funcionario?.foto_url ?? '',
+      hospitais: [],
+    });
+
     setEmployeeView('editar');
+
     try {
       setLoadingProfissionais(true);
-      const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${funcionario.idfunc}`);
+
+      const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+      console.log('HOSPITAIS DO FUNCIONARIO', hospitaisData);
+
       const idsHospitais = Array.isArray(hospitaisData)
-        ? hospitaisData.map((h) => Number(h.idhosp || h.idHosp || h.id)).filter((id) => !Number.isNaN(id) && id > 0)
+        ? hospitaisData
+          .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
+          .filter((id) => !Number.isNaN(id) && id > 0)
         : [];
-      setFuncionarioEditando((prev) => ({ ...prev, hospitais: idsHospitais }));
+
+      console.log('IDS HOSPITAIS EXTRAIDOS', idsHospitais);
+
+      setFuncionarioEditando((prev) => ({
+        ...prev,
+        hospitais: idsHospitais,
+      }));
     } catch (err) {
-      setErroFunc('Aviso: Não foi possível carregar os hospitais atuais deste funcionário.');
+      console.error('ERRO HOSPITAIS FUNCIONARIO', err);
+      setErroFunc('Aviso: não foi possível carregar os hospitais atuais deste funcionário.');
     } finally {
       setLoadingProfissionais(false);
     }
@@ -588,6 +825,11 @@ export default function AdminDashboard() {
     } finally {
       setSubmittingUser(false);
     }
+  };
+
+  const getHospitaisCount = (funcionario) => {
+    const idfunc = Number(obterIdFunc(funcionario));
+    return hospitaisPorFuncionario[idfunc] ?? 0;
   };
 
   const criarFuncionario = async (e) => {
@@ -646,15 +888,20 @@ export default function AdminDashboard() {
     e.preventDefault();
     setMensagemUser('');
     setErroUser('');
+
     try {
       setSubmittingUser(true);
-      const idfunc = utilizadorEditando.idfunc;
+
+      const idfunc = Number(utilizadorEditando.idfunc);
+
       const payloadUser = {
         username: utilizadorEditando.username,
-        hospitais: (utilizadorEditando.hospitais || []).map(Number),
-        bloqueado: utilizadorEditando.bloqueado ?? null,
+        bloqueado: utilizadorEditando.bloqueado ?? false,
       };
-      if (utilizadorEditando.password?.trim()) payloadUser.password = utilizadorEditando.password.trim();
+
+      if (utilizadorEditando.password?.trim()) {
+        payloadUser.password = utilizadorEditando.password.trim();
+      }
 
       await apiFetch(`/api/utilizadores/${idfunc}`, {
         method: 'PUT',
@@ -670,54 +917,39 @@ export default function AdminDashboard() {
         }),
       });
 
-      setMensagemUser(ta('sucessoEditarUser', 'User updated successfully.'));
-      adicionarHistorico('Editar utilizador', `Foram atualizados os dados de ${utilizadorEditando.username}.`);
-      await carregarUtilizadores();
-      await carregarProfissionais();
-      setUtilizadorEditando(null);
-      setUserView('lista');
-    } catch (err) {
-      setErroUser(err.message);
-    } finally {
-      setSubmittingUser(false);
-    }
-  };
-
-  const guardarFuncionarioEditado = async (e) => {
-    e.preventDefault();
-    setMensagemFunc('');
-    setErroFunc('');
-    try {
-      setSubmittingFunc(true);
-      const idfunc = funcionarioEditando.idfunc;
-
-      await apiFetch(`/api/profissionais/${idfunc}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          nome: funcionarioEditando.nome,
-          tipofunc: funcionarioEditando.tipofunc,
-          sexo: funcionarioEditando.sexo,
-        }),
-      });
-
       let hospitaisAntigos = [];
       try {
         const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
-        if (Array.isArray(resAntigos)) {
-          hospitaisAntigos = resAntigos.map((h) => Number(h.idhosp || h.idHosp || h.id)).filter((id) => !Number.isNaN(id));
-        }
-      } catch {
-        hospitaisAntigos = [];
+        hospitaisAntigos = Array.isArray(resAntigos)
+          ? resAntigos
+            .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
+            .filter((id) => !Number.isNaN(id) && id > 0)
+          : [];
+      } catch (err) {
+        console.warn('Erro ao carregar hospitais antigos do utilizador:', err);
       }
 
-      const hospitaisSelecionados = (funcionarioEditando.hospitais || []).map(Number);
+      const hospitaisSelecionados = Array.isArray(utilizadorEditando.hospitais)
+        ? utilizadorEditando.hospitais
+          .map((id) => Number(id))
+          .filter((id) => !Number.isNaN(id) && id > 0)
+        : [];
+
       const adicionar = hospitaisSelecionados.filter((h) => !hospitaisAntigos.includes(h));
       const remover = hospitaisAntigos.filter((h) => !hospitaisSelecionados.includes(h));
 
       for (const idhosp of adicionar) {
+        console.log('A adicionar hospital', {
+          id_func: idfunc,
+          id_hosp: idhosp,
+        });
+
         await apiFetch('/api/trabalha/', {
           method: 'POST',
-          body: JSON.stringify({ idfunc, idhosp }),
+          body: JSON.stringify({
+            id_func: idfunc,
+            id_hosp: idhosp,
+          }),
         });
       }
 
@@ -727,43 +959,118 @@ export default function AdminDashboard() {
         });
       }
 
-      setMensagemFunc(ta('sucessoEditarFunc', 'Employee updated successfully.'));
-      adicionarHistorico('Editar funcionário', `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`);
-      await carregarProfissionais();
-      setFuncionarioEditando(null);
-      setEmployeeView('lista');
-    } catch (err) {
-      setErroFunc(err.message);
-    } finally {
-      setSubmittingFunc(false);
-    }
-  };
+      setMensagemUser(textos.admin.sucessoEditarUser);
+      adicionarHistorico(
+        'Editar utilizador',
+        `Foram atualizados os dados de ${utilizadorEditando.username}.`
+      );
 
-  const criarUtilizadorAPartirFuncionario = async (e) => {
-    e.preventDefault();
-    setMensagemUser('');
-    setErroUser('');
-    try {
-      setSubmittingUser(true);
-      const payload = {
-        idfunc: Number(utilizadorEditando.idfunc),
-        username: utilizadorEditando.username,
-        password: utilizadorEditando.password,
-        role: utilizadorEditando.role,
-      };
-      const data = await apiFetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      setMensagemUser(ta('sucessoCriarUser', 'User created successfully.'));
-      adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username}.`);
       await carregarUtilizadores();
+      await carregarProfissionais();
+
       setUtilizadorEditando(null);
       setUserView('lista');
     } catch (err) {
-      setErroUser(err.message);
+      console.error('Erro ao guardar utilizador:', err);
+
+      const mensagem =
+        err?.message ||
+        err?.detail ||
+        err?.erro ||
+        (Array.isArray(err) ? JSON.stringify(err) : null) ||
+        (typeof err === 'object' ? JSON.stringify(err) : String(err));
+
+      setErroUser(mensagem);
     } finally {
       setSubmittingUser(false);
+    }
+  };
+
+  const guardarFuncionarioEditado = async (e) => {
+    e.preventDefault();
+    setMensagemFunc('');
+    setErroFunc('');
+
+    try {
+      setSubmittingFunc(true);
+
+      const idfunc = Number(funcionarioEditando.idfunc);
+
+      const payloadFunc = {
+        nome: funcionarioEditando.nome,
+        tipofunc: funcionarioEditando.tipofunc,
+        sexo: funcionarioEditando.sexo,
+        email: funcionarioEditando.email || null,
+        telefone: funcionarioEditando.telefone || null,
+        biografia: funcionarioEditando.biografia || null,
+        foto_url: funcionarioEditando.foto_url || null,
+      };
+
+      await apiFetch(`/api/profissionais/${idfunc}`, {
+        method: 'PUT',
+        body: JSON.stringify(payloadFunc),
+      });
+
+      let hospitaisAntigos = [];
+      try {
+        const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+        hospitaisAntigos = Array.isArray(resAntigos)
+          ? resAntigos
+            .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
+            .filter((id) => !Number.isNaN(id) && id > 0)
+          : [];
+      } catch (e) {
+        console.warn('Sem hospitais anteriores ou erro ao consultar.', e);
+      }
+
+      const hospitaisSelecionados = Array.isArray(funcionarioEditando.hospitais)
+        ? funcionarioEditando.hospitais
+          .map((id) => Number(id))
+          .filter((id) => !Number.isNaN(id) && id > 0)
+        : [];
+
+      const adicionar = hospitaisSelecionados.filter((h) => !hospitaisAntigos.includes(h));
+      const remover = hospitaisAntigos.filter((h) => !hospitaisSelecionados.includes(h));
+
+      for (const idhosp of adicionar) {
+        await apiFetch('/api/trabalha/', {
+          method: 'POST',
+          body: JSON.stringify({
+            id_func: idfunc,
+            id_hosp: idhosp,
+          }),
+        });
+      }
+
+      for (const idhosp of remover) {
+        await apiFetch(`/api/trabalha/${idfunc}/${idhosp}`, {
+          method: 'DELETE',
+        });
+      }
+
+      setMensagemFunc(textos.admin.sucessoEditarFunc);
+      adicionarHistorico(
+        'Editar funcionário',
+        `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`
+      );
+
+      await carregarProfissionais();
+
+      setFuncionarioEditando(null);
+      setEmployeeView('lista');
+    } catch (err) {
+      console.error('Erro ao guardar funcionário:', err);
+
+      const mensagem =
+        err?.message ||
+        err?.detail ||
+        err?.erro ||
+        (Array.isArray(err) ? JSON.stringify(err) : null) ||
+        (typeof err === 'object' ? JSON.stringify(err) : String(err));
+
+      setErroFunc(mensagem);
+    } finally {
+      setSubmittingFunc(false);
     }
   };
 
@@ -853,6 +1160,38 @@ export default function AdminDashboard() {
     return `${arrHosp.length} Hospitais`;
   };
 
+  const getHospitalCountFuncionario = (funcionario) => {
+    const arrHosp = extrairHospitais(funcionario);
+    return arrHosp.length;
+  };
+
+  const [hospitaisPorFuncionario, setHospitaisPorFuncionario] = useState({});
+
+  const carregarHospitaisPorFuncionario = async () => {
+    try {
+      const resultado = {};
+
+      for (const f of profissionais) {
+        const idfunc = Number(obterIdFunc(f));
+        if (!idfunc) continue;
+
+        try {
+          const data = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+          console.log('CONTAGEM HOSPITAIS - IDFUNC', idfunc, data);
+          resultado[idfunc] = Array.isArray(data) ? data.length : 0;
+        } catch (err) {
+          console.error(`Erro ao carregar hospitais do funcionário ${idfunc}:`, err);
+          resultado[idfunc] = 0;
+        }
+      }
+
+      console.log('MAPA FINAL HOSPITAIS POR FUNCIONARIO', resultado);
+      setHospitaisPorFuncionario(resultado);
+    } catch (err) {
+      console.error('Erro ao carregar contagem de hospitais por funcionário:', err);
+    }
+  };
+
   const renderUserCenter = () => {
     if (userView === 'novo') {
       const funcSelecionado = profissionais.find((p) => p.idfunc === Number(novoUtilizador.idfunc));
@@ -921,8 +1260,9 @@ export default function AdminDashboard() {
                 <SelectorHospitais
                   hospitaisDisponiveisTotais={hospitais}
                   valoresSelecionados={novoUtilizador.hospitais}
-                  onChange={(novosIds) => setNovoUtilizador((prev) => ({ ...prev, hospitais: novosIds }))}
-                  textosAdmin={ta}
+                  onChange={(novosIds) =>
+                    setNovoUtilizador((prev) => ({ ...prev, hospitais: novosIds }))
+                  }
                 />
               </div>
             </div>
@@ -1079,21 +1419,44 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {loadingUtilizadores || loadingProfissionais ? (
-                    <tr><td colSpan="5">{tt('aCarregar', 'A carregar')}</td></tr>
+                    <tr>
+                      <td colSpan="5">{textos.geral.aCarregar}</td>
+                    </tr>
                   ) : utilizadoresComContaFiltrados.length === 0 ? (
-                    <tr><td colSpan="5">{tt('semResultados', 'Sem resultados')}</td></tr>
+                    <tr>
+                      <td colSpan="5">{textos.geral.semResultados}</td>
+                    </tr>
                   ) : (
-                    utilizadoresComContaFiltrados.map((u) => {
-                      const prof = profissionais.find((p) => p.idfunc === u.idfunc);
+                    utilizadoresComContaFiltrados.map((u, index) => {
+                      const prof = profissionais.find(
+                        (p) => Number(p?.idfunc ?? p?.id_func ?? p?.IdFunc) === Number(u?.idfunc ?? u?.id_func ?? u?.IdFunc)
+                      );
+
+                      const nome = obterNome(prof || u);
+                      const funcao = obterFuncaoTraduzida(prof || u, textos);
+
                       return (
-                        <tr key={u.idfunc || u.username}>
-                          <td>{u.idfunc}</td>
-                          <td>{prof?.nome || '—'}</td>
-                          <td>{u.username}</td>
-                          <td>{u.role || prof?.tipofunc || '—'}</td>
-                          <td className="admin-table__actions">
-                            <button type="button" className="admin-secondary-button" onClick={() => abrirEditarUtilizador(u)}>{tt('editar', 'Editar')}</button>
-                            <button type="button" className="admin-button--danger admin-secondary-button" onClick={() => bloquearUtilizador(u)}>{ta('btnBloquear', 'Bloquear')}</button>
+                        <tr key={`user-${u?.idfunc ?? u?.id_func ?? u?.username ?? index}`}>
+                          <td>{u?.idfunc ?? '—'}</td>
+                          <td>{nome}</td>
+                          <td>{u?.username ?? '—'}</td>
+                          <td>{funcao}</td>
+                          <td style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              type="button"
+                              className="admin-secondary-button"
+                              onClick={() => abrirEditarUtilizador(u)}
+                            >
+                              {textos.geral.editar}
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-secondary-button"
+                              style={{ background: '#c0392b', color: '#fff' }}
+                              onClick={() => bloquearUtilizador(u)}
+                            >
+                              {textos.admin.btnBloquear}
+                            </button>
                           </td>
                         </tr>
                       );
@@ -1118,18 +1481,36 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {loadingProfissionais ? (
-                    <tr><td colSpan="4">{tt('aCarregar', 'A carregar')}</td></tr>
+                    <tr>
+                      <td colSpan="4">{textos.geral.aCarregar}</td>
+                    </tr>
                   ) : funcionariosSemContaFiltrados.length === 0 ? (
-                    <tr><td colSpan="4">{tt('semResultados', 'Sem resultados')}</td></tr>
+                    <tr>
+                      <td colSpan="4">{textos.geral.semResultados}</td>
+                    </tr>
                   ) : (
-                    funcionariosSemContaFiltrados.map((p) => (
-                      <tr key={p.idfunc}>
-                        <td>{p.idfunc}</td>
-                        <td>{p.nome}</td>
-                        <td>{p.tipofunc}</td>
-                        <td><button type="button" className="admin-secondary-button" onClick={() => abrirCriarAPartirFuncionario(p)}>{ta('btnNovoUtilizador', 'New user')}</button></td>
-                      </tr>
-                    ))
+                    funcionariosSemContaFiltrados.map((p, index) => {
+                      const numero = obterNumFunc(p);
+                      const nome = obterNome(p);
+                      const funcao = obterFuncaoTraduzida(p, textos);
+
+                      return (
+                        <tr key={`func-sem-conta-${obterIdFunc(p) || index}`}>
+                          <td>{numero}</td>
+                          <td>{nome}</td>
+                          <td>{funcao}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="admin-secondary-button"
+                              onClick={() => abrirCriarAPartirFuncionario(p)}
+                            >
+                              {textos.admin.btnNovoUtilizador}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -1157,7 +1538,9 @@ export default function AdminDashboard() {
                   <tr><td colSpan="5">{ta('semBloqueados', 'No blocked users.')}</td></tr>
                 ) : (
                   utilizadoresBloqueadosFiltrados.map((u) => {
-                    const prof = profissionais.find((p) => p.idfunc === u.idfunc);
+                    const prof = profissionais.find(
+                      (p) => Number(p?.idfunc ?? p?.id_func ?? p?.IdFunc) === Number(u?.idfunc ?? u?.id_func ?? u?.IdFunc)
+                    );
                     return (
                       <tr key={u.idfunc || u.username}>
                         <td>{u.idfunc}</td>
@@ -1241,54 +1624,101 @@ export default function AdminDashboard() {
     if (employeeView === 'editar' && funcionarioEditando) {
       return (
         <section className="admin-panel-section">
-          <div className="admin-panel-section__header"><h2>{tt('editar', 'Editar')}</h2></div>
+          <div className="admin-panel-sectionheader">
+            <h2>{textos.geral.editar}</h2>
+            <p>{funcionarioEditando.nome}</p>
+          </div>
+
           <form className="admin-form" onSubmit={guardarFuncionarioEditado}>
-            <div className="admin-form__grid">
-              <div className="admin-form__group">
-                <label htmlFor="efunc-nome">{ta('lblNome', 'Name')}</label>
-                <input id="efunc-nome" name="nome" type="text" value={funcionarioEditando.nome || ''} onChange={handleEditarFuncChange} />
+            <div className="admin-formgrid">
+              <div className="admin-formgroup">
+                <label htmlFor="efunc-id">{textos.admin.lblNumFuncionario}</label>
+                <input
+                  id="efunc-id"
+                  type="text"
+                  value={funcionarioEditando.idfunc || ''}
+                  readOnly
+                  disabled
+                />
               </div>
 
-              <div className="admin-form__group">
-                <label htmlFor="efunc-role">{ta('lblFuncao', 'Role')}</label>
-                <select id="efunc-role" name="tipofunc" value={funcionarioEditando.tipofunc || ROLES.ADMIN} onChange={handleEditarFuncChange}>
-                  <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
-                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médico')}</option>
-                  <option value={ROLES.ENFERMEIRO}>{ta('roleEnfermeiro', 'Enfermeiro')}</option>
-                  <option value={ROLES.RECECIONISTA}>{ta('roleRececionista', 'Rececionista')}</option>
+              <div className="admin-formgroup">
+                <label htmlFor="efunc-nome">{textos.admin.lblNome}</label>
+                <input
+                  id="efunc-nome"
+                  name="nome"
+                  type="text"
+                  value={funcionarioEditando.nome || ''}
+                  onChange={handleEditarFuncChange}
+                />
+              </div>
+
+              <div className="admin-formgroup">
+                <label htmlFor="efunc-role">{textos.admin.lblFuncao}</label>
+                <select
+                  id="efunc-role"
+                  name="tipofunc"
+                  value={funcionarioEditando.tipofunc || ROLES.ADMIN}
+                  onChange={handleEditarFuncChange}
+                >
+                  <option value={ROLES.ADMIN}>Admin</option>
+                  <option value={ROLES.MEDICO}>Médico</option>
+                  <option value={ROLES.ENFERMEIRO}>Enfermeiro</option>
+                  <option value={ROLES.RECECIONISTA}>Rececionista</option>
                 </select>
               </div>
 
-              <div className="admin-form__group">
-                <label htmlFor="efunc-sexo">{ta('lblSexo', 'Gender')}</label>
-                <select id="efunc-sexo" name="sexo" value={funcionarioEditando.sexo || 'M'} onChange={handleEditarFuncChange}>
-                  <option value="M">{ta('sexoMasculino', 'Masculino')}</option>
-                  <option value="F">{ta('sexoFeminino', 'Feminino')}</option>
+              <div className="admin-formgroup">
+                <label htmlFor="efunc-sexo">{textos.admin.lblSexo}</label>
+                <select
+                  id="efunc-sexo"
+                  name="sexo"
+                  value={funcionarioEditando.sexo || 'M'}
+                  onChange={handleEditarFuncChange}
+                >
+                  <option value="M">Masculino</option>
+                  <option value="F">Feminino</option>
                 </select>
               </div>
 
-              <div className="admin-form__group admin-form__group--full">
-                <label>{ta('lblGerirHospitaisAssociados', 'Gerir hospitais associados')}</label>
+              <div className="admin-formgroup" style={{ gridColumn: '1 / -1' }}>
+                <label>Gerir Hospitais Associados</label>
                 <SelectorHospitais
                   hospitaisDisponiveisTotais={hospitais}
-                  valoresSelecionados={funcionarioEditando.hospitais}
-                  onChange={(novosIds) => setFuncionarioEditando((prev) => ({ ...prev, hospitais: novosIds }))}
-                  textosAdmin={ta}
+                  valoresSelecionados={funcionarioEditando.hospitais || []}
+                  onChange={(novosIds) =>
+                    setFuncionarioEditando((prev) => ({
+                      ...prev,
+                      hospitais: novosIds,
+                    }))
+                  }
                 />
               </div>
             </div>
 
             <div aria-live="polite">
-              {mensagemFunc && <p className="admin-form__success">{mensagemFunc}</p>}
-              {erroFunc && <p className="admin-form__error">{erroFunc}</p>}
+              {mensagemFunc && <p className="admin-formsuccess">{mensagemFunc}</p>}
+              {erroFunc && <p className="admin-formerror">{erroFunc}</p>}
             </div>
 
             <div className="admin-actions-row">
-              <button type="submit" className="admin-form__submit" disabled={submittingFunc}>
-                {tt('guardar', 'Guardar')}
+              <button
+                type="submit"
+                className="admin-formsubmit"
+                disabled={submittingFunc}
+              >
+                {submittingFunc ? textos.geral.aCarregar : textos.geral.guardar}
               </button>
-              <button type="button" className="admin-secondary-button" onClick={() => { setFuncionarioEditando(null); setEmployeeView('lista'); }}>
-                {tt('cancelar', 'Cancelar')}
+
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() => {
+                  setFuncionarioEditando(null);
+                  setEmployeeView('lista');
+                }}
+              >
+                {textos.geral.cancelar}
               </button>
             </div>
           </form>
@@ -1333,41 +1763,61 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-table-card admin-table-card--full">
-          <div className="admin-table-card__header"><h3>{ta('menuFuncionarios', 'Employees')}</h3><span>{funcionariosFiltrados.length}</span></div>
+          <div className="admin-table-card__header">
+            <h3>{ta('menuFuncionarios', 'Employees')}</h3>
+            <span>{funcionariosFiltrados.length}</span>
+          </div>
+
           <div className="admin-table-scroll admin-table-scroll--employees">
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>{ta('lblNumFuncionario', 'Employee No.')}</th>
-                  <th>{ta('lblNome', 'Name')}</th>
-                  <th>{ta('lblFuncao', 'Role')}</th>
-                  <th>{ta('lblHospitais', 'Hospitals')}</th>
-                  <th>{ta('lblAcoes', 'Ações')}</th>
+                  <th>{textos.admin.lblNumFuncionario}</th>
+                  <th>{textos.admin.lblNome}</th>
+                  <th>{textos.admin.lblFuncao}</th>
+                  <th>{textos.admin.lblHospitais}</th>
+                  <th>{textos.geral.editar}</th>
                 </tr>
               </thead>
+
               <tbody>
                 {loadingProfissionais ? (
-                  <tr><td colSpan="5">{tt('aCarregar', 'A carregar')}</td></tr>
+                  <tr>
+                    <td colSpan="5">{textos.geral.aCarregar}</td>
+                  </tr>
                 ) : funcionariosFiltrados.length === 0 ? (
-                  <tr><td colSpan="5">{tt('semResultados', 'Sem resultados')}</td></tr>
+                  <tr>
+                    <td colSpan="5">{textos.geral.semResultados}</td>
+                  </tr>
                 ) : (
-                  funcionariosFiltrados.map((f) => (
-                    <tr key={f.idfunc}>
-                      <td>{f.idfunc}</td>
-                      <td>{f.nome}</td>
-                      <td>{f.tipofunc}</td>
-                      <td>{getHospitalNomeFuncionario(f)}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="admin-secondary-button"
-                          onClick={() => u?.idfunc ? abrirEditarUtilizador(u) : setErroUser('Utilizador inválido.')}
-                        >
-                          {tt('editar', 'Editar')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  funcionariosFiltrados.map((f, index) => {
+                    const numero = obterNumFunc(f);
+                    const nome = obterNome(f);
+                    const funcao = obterFuncaoTraduzida(f, textos);
+                    const hospitaisCount = getHospitaisCount(f);
+
+                    return (
+                      <tr key={`func-${obterIdFunc(f) || index}`}>
+                        <td>{numero}</td>
+                        <td>{nome}</td>
+                        <td>{funcao}</td>
+                        <td>
+                          <span className={`hospitais-badge count-${hospitaisCount}`}>
+                            {hospitaisCount}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="admin-secondary-button"
+                            onClick={() => abrirEditarFuncionario(f)}
+                          >
+                            {textos.geral.editar}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
