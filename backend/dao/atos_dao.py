@@ -35,4 +35,8 @@ def select_funcionarios_by_ato(id_ato: int):
     return run_query("SELECT f.idfunc, f.nome, f.tipofunc FROM realiza r JOIN funcionario f ON r.idfunc = f.idfunc WHERE r.idato = %s", (id_ato,))
 
 def select_prescricoes_by_ato(id_ato: int):
-    return run_query("SELECT idprescricao, idato, descricao, datahorapresc FROM prescreve WHERE idato = %s", (id_ato,))
+    return run_query("""
+        SELECT idprescricao, idato, codmedicamento, dosagem, observacoes, datahorapresc 
+        FROM prescreve 
+        WHERE idato = %s
+    """, (id_ato,))

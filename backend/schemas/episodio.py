@@ -26,3 +26,4 @@ class EpisodioUpdate(EpisodioBase):
 class EpisodioResponse(EpisodioBase):
     codepurgenc: int
     datahoraentr: datetime
+    datahoraatendimento: Optional[datetime] = None

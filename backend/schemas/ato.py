@@ -28,4 +28,4 @@ class FuncionarioAtoResponse(BaseModel):
     idfunc: int; nome: str; tipofunc: str
 
 class PrescricaoAtoResponse(BaseModel):
-    idprescricao: int; idato: int; descricao: str; datahorapresc: datetime
+    idprescricao: int; idato: int; dosagem: str; observacoes: Optional[str] = None; datahorapresc: datetime

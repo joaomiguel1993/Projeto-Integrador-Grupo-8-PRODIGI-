@@ -30,3 +30,12 @@ class MedicacaoAtivaResponse(BaseModel):
 class MedicacaoAtivaDetalheResponse(MedicacaoAtivaResponse):
     nome: str
     principioativo: str
+
+class MedicamentoBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    nome: str
+    principioativo: str
+    classeterapeuticaid: int
+
+class MedicamentoResponse(MedicamentoBase):
+    codmedicamento: int

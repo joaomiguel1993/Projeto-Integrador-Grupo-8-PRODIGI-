@@ -63,3 +63,17 @@ def update_episodio(cod_ep_urgenc: int, num_utente: int, id_hosp: int, datahora_
     finally:
         cur.close()
         conn.close()
+
+def update_estado_episodio(cod_ep_urgenc: int, novo_estado: str):
+    """
+    Função utilitária rápida para mudar o estado e refletir na IA imediatamente.
+    """
+    return run_query("""
+        UPDATE epurgencia
+        SET estado = %s,
+            datahorasaida = CASE WHEN %s = 'terminado' THEN NOW() ELSE datahorasaida END,
+            datahoraatendimento = CASE WHEN %s = 'em_atendimento' AND datahoraatendimento IS NULL 
+                                       THEN NOW() ELSE datahoraatendimento END
+        WHERE codepurgenc = %s
+        RETURNING codepurgenc, estado
+    """, (novo_estado, novo_estado, novo_estado, cod_ep_urgenc))

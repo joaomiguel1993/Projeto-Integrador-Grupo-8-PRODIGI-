@@ -39,3 +39,11 @@ def delete_trabalha(idfunc: int, idhosp: int):
         WHERE idfunc = %s AND idhosp = %s
         RETURNING idfunc, idhosp
     """, (idfunc, idhosp))
+
+def insert_trabalha_safe(idfunc: int, idhosp: int):
+    return run_query("""
+        INSERT INTO trabalha (idfunc, idhosp)
+        VALUES (%s, %s)
+        ON CONFLICT (idfunc, idhosp) DO UPDATE SET ativo = TRUE
+        RETURNING idfunc, idhosp, ativo
+    """, (idfunc, idhosp))

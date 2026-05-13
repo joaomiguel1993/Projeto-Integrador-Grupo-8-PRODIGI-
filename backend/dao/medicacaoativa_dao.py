@@ -10,7 +10,8 @@ def select_all_medicacaoativa():
 def select_medicacaoativa_by_utente(numutent: int):
     return run_query("""
         SELECT ma.codmedicacaoativa, ma.numutent, ma.codmedicamento,
-               ma.datainicio, ma.datafim, ma.dosagem, m.nome, m.principioativo
+               ma.datainicio, ma.datafim, ma.dosagem, 
+               m.nome, m.principioativo, m.classeterapeuticaid  -- Adicionado aqui
         FROM medicacaoativa ma
         JOIN medicamento m ON ma.codmedicamento = m.codmedicamento
         WHERE ma.numutent = %s

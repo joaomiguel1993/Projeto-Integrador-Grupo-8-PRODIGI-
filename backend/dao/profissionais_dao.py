@@ -94,3 +94,14 @@ def update_profissional_by_id(id_func: int, nome: str, tipofunc: str, sexo: str,
     finally:
         cur.close()
         conn.close()
+
+def select_profissional_detalhado(id_func: int):
+    """
+    Retorna os dados base e a especialidade se for médico.
+    """
+    return run_query("""
+        SELECT f.idfunc, f.nome, f.tipofunc, m.especialidade
+        FROM funcionario f
+        LEFT JOIN medico m ON f.idfunc = m.idfunc
+        WHERE f.idfunc = %s
+    """, (id_func,))

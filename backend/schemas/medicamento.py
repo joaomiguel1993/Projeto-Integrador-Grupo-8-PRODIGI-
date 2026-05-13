@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -6,7 +8,7 @@ class MedicamentoBase(BaseModel):
 
     nome: str = Field(..., min_length=1, max_length=100)
     principioativo: str = Field(..., min_length=1, max_length=100)
-
+    classeterapeuticaid: int = Field(...) # Adicionado campo obrigatório
 
 class MedicamentoCreate(MedicamentoBase):
     pass
@@ -18,3 +20,8 @@ class MedicamentoUpdate(MedicamentoBase):
 
 class MedicamentoResponse(MedicamentoBase):
     codmedicamento: int
+
+class MedicamentoUpdate(BaseModel):
+    nome: Optional[str] = Field(None, max_length=100)
+    principioativo: Optional[str] = Field(None, max_length=100)
+    classeterapeuticaid: Optional[int] = None

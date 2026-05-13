@@ -1,48 +1,47 @@
 from backend.db import run_query, get_connection
 
-
 def select_all_hospitais():
+    """
+    Lê da VIEW v_estatisticas_ia para garantir que o Frontend recebe
+    as contagens necessárias para a predição da IA.
+    """
     return run_query("""
-        SELECT idhosp, nome, localizacao, email, telefone
-        FROM hospital
-        ORDER BY nome
+        SELECT idhosp, hospitalnome as nome, localizacao, facility_size_beds, 
+               contagem_enfermeiros, contagem_medicos, pacientes_ativos
+        FROM v_estatisticas_ia
+        ORDER BY hospitalnome
     """)
 
-
 def select_hospital_by_id(id_hosp: int):
+    """
+    Lê os detalhes e métricas de IA de um hospital específico via VIEW.
+    """
     return run_query("""
-        SELECT idhosp, nome, localizacao, email, telefone
-        FROM hospital
+        SELECT idhosp, hospitalnome as nome, localizacao, facility_size_beds, 
+               contagem_enfermeiros, contagem_medicos, pacientes_ativos
+        FROM v_estatisticas_ia
         WHERE idhosp = %s
     """, (id_hosp,))
 
-
-def insert_hospital(nome: str, localizacao: str, email: str | None = None, telefone: str | None = None):
+def insert_hospital(nome: str, localizacao: str, email: str | None = None, telefone: str | None = None, totalcamas: int = 100):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
         cur.execute("""
-            INSERT INTO hospital (nome, localizacao, email, telefone)
-            VALUES (%s, %s, %s, %s)
-            RETURNING idhosp, nome, localizacao, email, telefone
-        """, (nome, localizacao, email, telefone))
-
+            INSERT INTO hospital (nome, localizacao, email, telefone, totalcamas)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING idhosp, nome, localizacao, email, telefone, totalcamas
+        """, (nome, localizacao, email, telefone, totalcamas))
         novo = cur.fetchone()
-
-        if not novo:
-            raise Exception("Não foi possível obter o hospital criado.")
-
         conn.commit()
-
         return {
             "idhosp": novo[0],
             "nome": novo[1],
-            "localidade": novo[2],
+            "localizacao": novo[2],
             "email": novo[3],
-            "telefone": novo[4]
+            "telefone": novo[4],
+            "totalcamas": novo[5]
         }
-
     except Exception:
         conn.rollback()
         raise
@@ -50,38 +49,33 @@ def insert_hospital(nome: str, localizacao: str, email: str | None = None, telef
         cur.close()
         conn.close()
 
-
-def update_hospital_by_id(id_hosp: int, nome: str, localizacao: str, email: str | None = None, telefone: str | None = None):
+def update_hospital_by_id(id_hosp: int, nome: str, localizacao: str, email: str | None = None, telefone: str | None = None, totalcamas: int = 100):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
         cur.execute("""
             UPDATE hospital
             SET nome = %s,
                 localizacao = %s,
                 email = %s,
-                telefone = %s
+                telefone = %s,
+                totalcamas = %s
             WHERE idhosp = %s
-            RETURNING idhosp, nome, localizacao, email, telefone
-        """, (nome, localizacao, email, telefone, id_hosp))
-
+            RETURNING idhosp, nome, localizacao, email, telefone, totalcamas
+        """, (nome, localizacao, email, telefone, totalcamas, id_hosp))
         atualizado = cur.fetchone()
-
         if not atualizado:
             conn.rollback()
             return None
-
         conn.commit()
-
         return {
             "idhosp": atualizado[0],
             "nome": atualizado[1],
-            "localidade": atualizado[2],
+            "localizacao": atualizado[2],
             "email": atualizado[3],
-            "telefone": atualizado[4]
+            "telefone": atualizado[4],
+            "totalcamas": atualizado[5]
         }
-
     except Exception:
         conn.rollback()
         raise
@@ -89,22 +83,14 @@ def update_hospital_by_id(id_hosp: int, nome: str, localizacao: str, email: str 
         cur.close()
         conn.close()
 
-
 def delete_hospital_by_id(id_hosp: int):
     conn = get_connection()
     cur = conn.cursor()
-
     try:
-        cur.execute("""
-            DELETE FROM hospital
-            WHERE idhosp = %s
-            RETURNING idhosp
-        """, (id_hosp,))
-
+        cur.execute("DELETE FROM hospital WHERE idhosp = %s RETURNING idhosp", (id_hosp,))
         apagado = cur.fetchone()
         conn.commit()
         return apagado is not None
-
     except Exception:
         conn.rollback()
         raise

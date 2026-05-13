@@ -30,3 +30,4 @@ class UtilizadorDetalheResponse(UtilizadorBase):
     hospitais: list[HospitalMiniResponse] = []
     bloqueado: bool = False  # FIX: necessário para o frontend filtrar bloqueados
     role: str = ""           # FIX: necessário para o frontend mostrar a função
+

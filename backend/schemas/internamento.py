@@ -8,6 +8,7 @@ class InternamentoBase(BaseModel):
 
     codepurgenc: int
     idfunc: Optional[int] = None
+    datahoraint: Optional[datetime] = None  # Adicionado aqui
     datahoraconsulta: Optional[datetime] = None
     datahoraalta: Optional[datetime] = None
     motivoint: str

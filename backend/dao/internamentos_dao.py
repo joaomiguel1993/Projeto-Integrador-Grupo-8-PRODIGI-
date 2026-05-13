@@ -115,3 +115,11 @@ def update_internamento(cod_internamento: int, codepurgenc: int, idfunc: int | N
     finally:
         cur.close()
         conn.close()
+
+def count_internados_por_servico():
+    return run_query("""
+        SELECT servico, COUNT(*) as total 
+        FROM internamento 
+        WHERE datahoraalta IS NULL 
+        GROUP BY servico
+    """)

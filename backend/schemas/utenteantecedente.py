@@ -18,3 +18,9 @@ class UtenteAntecedenteResponse(BaseModel):
 class UtenteAntecedenteDetalheResponse(UtenteAntecedenteResponse):
     nome: str
     tipo: Optional[str] = None
+
+from typing import List
+
+class ListaAntecedentesUtente(BaseModel):
+    numutent: int
+    antecedentes: List[UtenteAntecedenteDetalheResponse]

@@ -31,9 +31,9 @@ class FuncionarioHospitalResponse(BaseModel):
 
 class HospitalFuncionarioResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
+    
     idfunc: int
     idhosp: int
     ativo: bool
-    nome: str
+    nome_hospital: str # Mais claro que apenas 'nome'
     localizacao: str
