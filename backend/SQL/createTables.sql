@@ -249,7 +249,7 @@ CREATE TABLE Prescreve (
 
     FOREIGN KEY (IdAto) REFERENCES Ato(IdAto) ON DELETE CASCADE,
     FOREIGN KEY (CodMedicamento) REFERENCES Medicamento(CodMedicamento) ON DELETE RESTRICT
-)
+);
 
 CREATE TABLE Alerta (
     CodAlerta SERIAL PRIMARY KEY,
@@ -259,8 +259,6 @@ CREATE TABLE Alerta (
     DataHorAlerta TIMESTAMP NOT NULL DEFAULT NOW(),
     Ignorado BOOLEAN NOT NULL DEFAULT FALSE,
     Justificacao TEXT,
-
-    -- IA / gestão clínica
     Severidade severidade_alerta_enum NOT NULL DEFAULT 'moderado',
     ScoreRisco DECIMAL(6,4),
     Resolvido BOOLEAN NOT NULL DEFAULT FALSE,
@@ -272,17 +270,6 @@ CREATE TABLE Alerta (
     FOREIGN KEY (ResolvidoPor) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL
 );
 
-CREATE TABLE Alerta (
-    CodAlerta SERIAL PRIMARY KEY,
-    IdPrescricao INT NOT NULL,
-    IdFunc INT,
-    Tipo VARCHAR(50) NOT NULL,
-    DataHorAlerta TIMESTAMP NOT NULL DEFAULT NOW(),
-    Ignorado BOOLEAN NOT NULL DEFAULT FALSE,
-    Justificacao TEXT,
-    FOREIGN KEY (IdPrescricao) REFERENCES Prescreve(IdPrescricao) ON DELETE CASCADE,
-    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL
-);
 
 -- ------------------------------------------------------------
 -- AUDITORIA DE PREDIÇÕES IA

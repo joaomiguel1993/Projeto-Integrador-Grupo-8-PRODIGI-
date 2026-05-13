@@ -368,29 +368,37 @@ export default function AdminDashboard() {
   const abrirNovoUtilizador = () => { resetMensagens(); setNovoUtilizador({ idfunc: '', username: '', password: '', role: ROLES.ADMIN, hospitais: [] }); setPesquisaFuncionarioNovoUser(''); setDropdownAberto(false); setUtilizadorEditando(null); setUserView('novo'); };
 
   const abrirEditarUtilizador = async (utilizador) => {
-    try {
-      setErro("");
-      setMensagem("");
+    resetMensagens();
 
+    try {
       const [utilizadorData, hospitaisData] = await Promise.all([
-        apiFetch(`/api/utilizadores/${utilizador.idutilizador}`),
+        apiFetch(`/api/utilizadores/${utilizador.idfunc}`),
         apiFetch(`/api/trabalha/funcionario/${utilizador.idfunc}`)
       ]);
 
-      setUtilizadorEmEdicao(utilizadorData);
+      const hospitaisIds = Array.isArray(hospitaisData)
+        ? hospitaisData
+          .map((item) => Number(item?.idhosp ?? item?.idHosp ?? item?.id))
+          .filter((id) => !Number.isNaN(id) && id > 0)
+        : [];
 
-      setHospitaisSelecionados(
-        Array.isArray(hospitaisData)
-          ? hospitaisData
-            .map((item) => String(item?.idhosp ?? item?.idHosp ?? item?.id))
-            .filter(Boolean)
-          : []
-      );
+      const profissional = profissionais.find((p) => Number(p.idfunc) === Number(utilizador.idfunc));
 
-      setModalEditarAberto(true);
-    } catch (e) {
-      console.error("Erro ao abrir edição do utilizador:", e);
-      setErro("Não foi possível carregar os dados do funcionário.");
+      setUtilizadorEditando({
+        idfunc: utilizadorData?.idfunc ?? utilizador.idfunc,
+        username: utilizadorData?.username ?? utilizador.username ?? '',
+        password: '',
+        role: utilizadorData?.role ?? profissional?.tipofunc ?? ROLES.ADMIN,
+        nome: profissional?.nome ?? utilizador.nome ?? '',
+        sexo: profissional?.sexo ?? 'M',
+        bloqueado: utilizadorData?.bloqueado ?? utilizador.bloqueado ?? false,
+        hospitais: hospitaisIds,
+      });
+
+      setUserView('editar');
+    } catch (err) {
+      console.error('Erro ao abrir edição do utilizador:', err);
+      setErroUser('Não foi possível carregar os dados do utilizador.');
     }
   };
 
@@ -619,7 +627,7 @@ export default function AdminDashboard() {
         role: utilizadorEditando.role,
       };
 
-      const data = await apiFetch('api/auth/register', {
+      const data = await apiFetch('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

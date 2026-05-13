@@ -1,42 +1,52 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { login as loginRequest, me as meRequest, logout as logoutRequest } from '../services/auth';
+import { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { STORAGE_KEYS } from '../constants/roles';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    try {
+      const rawUser = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+      const rawRole = sessionStorage.getItem(STORAGE_KEYS.USER_ROLE);
+      const authFlag = sessionStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
-    meRequest()
-      .then((data) => setUser(data))
-      .catch(() => {
-        sessionStorage.removeItem('token');
+      if (authFlag && rawUser) {
+        setUser(JSON.parse(rawUser));
+        setRole(rawRole || '');
+      } else {
         setUser(null);
-      })
-      .finally(() => setLoading(false));
+        setRole('');
+      }
+    } catch {
+      setUser(null);
+      setRole('');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const login = async (username, password) => {
-    const data = await loginRequest({ username, password });
-    if (data?.access_token) sessionStorage.setItem('token', data.access_token);
-    setUser(data?.user || data);
-    return data;
-  };
-
-  const logout = async () => {
-    try { await logoutRequest(); } catch {}
-    sessionStorage.removeItem('token');
+  const logout = () => {
+    Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
     setUser(null);
+    setRole('');
   };
 
-  const value = useMemo(() => ({ user, loading, login, logout, setUser }), [user, loading]);
+  const value = useMemo(
+    () => ({
+      user,
+      role,
+      loading,
+      isAuthenticated: sessionStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) === 'true' && !!user,
+      setUser,
+      setRole,
+      logout,
+    }),
+    [user, role, loading]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

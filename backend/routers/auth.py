@@ -159,3 +159,4 @@ def login(data: LoginRequest, request: Request):
     finally:
         cur.close()
         conn.close()
+

@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { STORAGE_KEYS } from '../../constants/roles';
 
 const normalizarRole = (role) =>
   String(role || '')
@@ -19,8 +20,12 @@ const mapearRole = (rawRole) => {
 };
 
 export default function RoleRoute({ allowedRoles = [], children }) {
-  const role = mapearRole(sessionStorage.getItem('user_role'));
+  const role = mapearRole(sessionStorage.getItem(STORAGE_KEYS.USER_ROLE));
   const allowed = allowedRoles.map(mapearRole);
+
+  if (!role) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (!allowed.includes(role)) {
     return <Navigate to="/sem-permissao" replace />;
