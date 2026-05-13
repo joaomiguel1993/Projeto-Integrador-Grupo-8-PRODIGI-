@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from backend.services.ai_client import ai_client, DadosTriagem
+from backend.services.ai_client import ai_client
 from backend.repositories import triagens_repository
 
 
@@ -27,14 +27,14 @@ def criar_triagem(data: dict):
         cod_ep_urgenc = data["cod_ep_urgenc"]
 
         # Entrada para a IA
-        dados_ia = DadosTriagem(
-            Age=idade,
-            Heart_Rate_BPM=freq_card,
-            SpO2_Percent=spo2,
-            Temperature_C=temperatura,
-            Pain_Level=nivel_dor,
-            Consciousness=consciencia,
-        )
+        dados_ia = {
+            "Age": idade,
+            "Heart_Rate_BPM": freq_card,
+            "SpO2_Percent": spo2,
+            "Temperature_C": temperatura,
+            "Pain_Level": nivel_dor,
+            "Consciousness": consciencia,
+        }
 
         # Chama o serviço IA e obtém a pulseira
         resultado_ia = ai_client.triage(dados_ia)
