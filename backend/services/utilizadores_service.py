@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from backend.repositories import utilizadores_repository
-
+from backend.dao.logs_dao import insert_log
 
 def listar_utilizadores():
     return utilizadores_repository.listar_utilizadores()

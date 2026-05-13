@@ -1,14 +1,24 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
+from typing import Dict
 from pydantic import BaseModel, Field
 from backend.auth.security import hash_password, verify_password
 from backend.db import get_connection
 from backend.dao.logs_dao import insert_log
 
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-def get_client_ip(request: Request):
-    return request.client.host if request.client else None
+def get_client_ip(request: Request) -> str:
+    if hasattr(request, "client") and request.client is not None:
+        return request.client.host
+    return "127.0.0.1"  # fallback
+
+
+def get_current_user(request: Request) -> Dict[str, str]:
+    # Para o teu projeto de aula, vamos usar um mock simples
+    # Em prod com JWT, substitui por Depends(oauth2_scheme)
+    return {"username": "admin.teste"}
 
 
 class RegisterRequest(BaseModel):
@@ -62,14 +72,14 @@ def register(data: RegisterRequest, request: Request):
             username=data.username,
             acao="REGISTER",
             detalhe=f"Utilizador {data.username} registado com role {data.role}.",
-            ip=get_client_ip(request)
+            ip=get_client_ip(request),
         )
 
         return {
             "message": "Utilizador registado com sucesso.",
             "username": data.username,
             "role": data.role,
-            "idfunc": data.idfunc
+            "idfunc": data.idfunc,
         }
 
     except HTTPException:
@@ -89,7 +99,6 @@ def login(data: LoginRequest, request: Request):
     cur = conn.cursor()
 
     try:
-        # FIX: inclui bloqueado no SELECT
         cur.execute("""
             SELECT username, password, idfunc, bloqueado
             FROM utilizador
@@ -102,7 +111,6 @@ def login(data: LoginRequest, request: Request):
 
         username, password_hash, idfunc, bloqueado = user
 
-        # FIX: bloqueia o login se utilizador estiver bloqueado
         if bloqueado:
             raise HTTPException(status_code=403, detail="Utilizador bloqueado. Contacte o administrador.")
 
@@ -133,14 +141,14 @@ def login(data: LoginRequest, request: Request):
                 hospitais.append({
                     "idhosp": row[0],
                     "nome": row[1],
-                    "localizacao": row[2]
+                    "localizacao": row[2],
                 })
 
         insert_log(
             username=username,
             acao="LOGIN",
             detalhe="Login efetuado com sucesso.",
-            ip=get_client_ip(request)
+            ip=get_client_ip(request),
         )
 
         return {
@@ -149,7 +157,7 @@ def login(data: LoginRequest, request: Request):
             "nome": nome,
             "role": role,
             "idfunc": idfunc,
-            "hospitais": hospitais
+            "hospitais": hospitais,
         }
 
     except HTTPException:
@@ -159,4 +167,3 @@ def login(data: LoginRequest, request: Request):
     finally:
         cur.close()
         conn.close()
-
