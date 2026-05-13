@@ -2,18 +2,17 @@ import { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { obterHospitalPorId } from '../../services/hospitais';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 
 export default function HospitalView() {
     const { id } = useParams();
     const location = useLocation();
 
-    // Estados para o Hospital e para as Predições da IA
     const [hospital, setHospital] = useState(location.state?.hospitalData || null);
     const [previsoes, setPrevisoes] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 1. Função para calcular o contexto temporal (Obrigatório para a API da imagem image_827dbc.png)
     const obterContextoIA = () => {
         const agora = new Date();
         const meses = ["Winter", "Winter", "Spring", "Spring", "Spring", "Summer", "Summer", "Summer", "Autumn", "Autumn", "Autumn", "Winter"];
@@ -25,15 +24,22 @@ export default function HospitalView() {
         };
     };
 
-    // 2. Função que liga para a IA e atualiza o estado
     const buscarDadosIA = async (h) => {
         try {
             const ctx = obterContextoIA();
+            
+            // MAPEAMENTO COM A VISTA SQL v_estatisticas_ia
+            const enfermeiros = h.contagem_enfermeiros || 1;
+            const pacientes = h.pacientes_ativos || 1;
+            
             const body = {
                 "Urgency_Level": "Medium",
-                "Nurse_to_Patient_Ratio": parseFloat(((h.contagem_enfermeiros || 1) / (h.pacientes_ativos || 1)).toFixed(2)),
+                // Cálculo do rácio baseado na vista SQL
+                "Nurse_to_Patient_Ratio": parseFloat((enfermeiros / pacientes).toFixed(2)),
+                // Especialistas ativos vindos da vista SQL
                 "Specialist_Availability": h.contagem_medicos || 1,
-                "Facility_Size_Beds": h.total_camas || 100,
+                // Tamanho da unidade vindo da vista SQL (TotalCamas)
+                "Facility_Size_Beds": h.facility_size_beds || 100,
                 ...ctx
             };
 
@@ -44,7 +50,7 @@ export default function HospitalView() {
             });
 
             const data = await response.json();
-            setPrevisoes(data); // Guarda Critical, High, Medium, Low, Not Urgent
+            setPrevisoes(data);
         } catch (err) {
             console.error("Erro ao carregar tempos de espera:", err);
         }
@@ -55,8 +61,8 @@ export default function HospitalView() {
             setLoading(true);
             let dadosHospital = hospital;
 
-            // Se não veio da Home, carrega do SQL
-            if (!dadosHospital) {
+            // Se não veio da Home ou se os dados da Home não têm as contagens da IA
+            if (!dadosHospital || !dadosHospital.pacientes_ativos) {
                 dadosHospital = await obterHospitalPorId(id);
                 setHospital(dadosHospital);
             }
@@ -71,16 +77,14 @@ export default function HospitalView() {
 
     if (loading || !hospital) return <div className="p-10">A carregar hospital...</div>;
 
-    // Tempo Médio para o cabeçalho (usamos o Medium/Amarelo como referência)
-    const tempoMedioHeader = previsoes?.Medium || previsoes?.medium || "--";
+    const tempoMedioHeader = previsoes?.Medium || "--";
 
     return (
         <div className="hospital-detail-page">
-            {/* CABEÇALHO (Onde aparece o tempo na image_819d52.png) */}
             <header className="hospital-header">
                 <div className="header-info">
                     <h1>{hospital.nome}</h1>
-                    <p>{hospital.morada || hospital.localizacao}</p>
+                    <p>{hospital.localizacao}</p>
                 </div>
                 
                 <div className="header-wait-time-box">
@@ -89,7 +93,6 @@ export default function HospitalView() {
                 </div>
             </header>
 
-            {/* SECÇÃO DOS CARTÕES COLORIDOS (image_81ac1d.png) */}
             <section className="triage-section">
                 <h3>Tempos de espera por triagem</h3>
                 <div className="triage-grid">
@@ -111,7 +114,7 @@ export default function HospitalView() {
                     </div>
                     <div className="card blue">
                         <span>AZUL</span>
-                        <strong>{previsoes?.["Not Urgent"] || previsoes?.not_urgent || '--'} min</strong>
+                        <strong>{previsoes?.["Not Urgent"] ?? '--'} min</strong>
                     </div>
                 </div>
             </section>
