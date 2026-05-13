@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from backend.repositories import hospitais_repository
+from backend.dao.logs_dao import insert_log
 
 
 def listar_hospitais():
@@ -13,14 +14,20 @@ def obter_hospital(id_hosp: int):
     return hospital
 
 
-def criar_hospital(data: dict):
+def criar_hospital(data: dict, current_username: str, ip: str):
     try:
         resultado = hospitais_repository.criar_hospital(data)
         if resultado is None:
             raise HTTPException(status_code=400, detail="Não foi possível criar o hospital.")
+
+        insert_log(
+            username=current_username,
+            acao="CRIAR_HOSPITAL",
+            detalhe=f"Hospital {data.get('nome')} criado.",
+            ip=ip,
+        )
+
         return resultado
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao criar hospital: {str(e)}")
 
