@@ -12,12 +12,12 @@ def _map_row(row):
         return None
 
     return {
-        "id_hosp": row[0],
-        "nome": row[1],
-        "localizacao": row[2],
-        "email": row[3],
-        "telefone": row[4],
-        "total_camas": row[5],
+        "id_hosp": row["idhosp"],
+        "nome": row["nome"],
+        "localizacao": row["localizacao"],
+        "email": row["email"],
+        "telefone": row["telefone"],
+        "total_camas": row["totalcamas"],
     }
 
 
@@ -102,4 +102,4 @@ def remover_hospital(id_hosp: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["idhosp"]

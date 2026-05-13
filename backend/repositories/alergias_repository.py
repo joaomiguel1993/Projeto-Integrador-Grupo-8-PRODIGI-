@@ -12,12 +12,12 @@ def _map_row(row):
         return None
 
     return {
-        "cod_alergia": row[0],
-        "num_utent": row[1],
-        "substancia": row[2],
-        "classe_terapeutica_id": row[3],
-        "nivel_gravidade": row[4],
-        "data_registo": row[5],
+        "cod_alergia": row["codalergia"],
+        "num_utent": row["numutent"],
+        "substancia": row["substancia"],
+        "classe_terapeutica_id": row["classeterapeuticaid"],
+        "nivel_gravidade": row["nivelgravidade"],
+        "data_registo": row["dataregisto"],
     }
 
 
@@ -42,10 +42,10 @@ def get_estatisticas_ia():
     resultado = []
     for row in rows:
         resultado.append({
-            "classe_terapeutica_id": row[0],
-            "nivel_gravidade": row[1],
-            "total": row[2],
-            "utentes_afetados": row[3],
+            "classe_terapeutica_id": row["classeterapeuticaid"],
+            "nivel_gravidade": row["nivelgravidade"],
+            "total": row["total"],
+            "utentes_afetados": row["utentes_afetados"],
         })
     return resultado
 
@@ -99,4 +99,4 @@ def delete(cod_alergia: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codalergia"]

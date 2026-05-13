@@ -12,12 +12,12 @@ def _map_row(row):
         return None
 
     return {
-        "id_ato": row[0],
-        "cod_ep_urgenc": row[1],
-        "tipo": row[2],
-        "descricao": row[3],
-        "data_hora_inicio": row[4],
-        "data_hora_fim": row[5],
+        "id_ato": row["idato"],
+        "cod_ep_urgenc": row["codepurgenc"],
+        "tipo": row["tipo"],
+        "descricao": row["descricao"],
+        "data_hora_inicio": row["datahorainicio"],
+        "data_hora_fim": row["datahorafim"],
     }
 
 
@@ -101,4 +101,4 @@ def remover_ato(id_ato: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["idato"]

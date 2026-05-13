@@ -3,7 +3,10 @@ from backend.db import run_query
 
 def select_all_utente_antecedentes():
     return run_query("""
-        SELECT numutent, codantecedente, dataregisto
+        SELECT
+            numutent AS num_utent,
+            codantecedente AS cod_antecedente,
+            dataregisto AS data_registo
         FROM utenteantecedente
         ORDER BY numutent ASC, codantecedente ASC
     """)

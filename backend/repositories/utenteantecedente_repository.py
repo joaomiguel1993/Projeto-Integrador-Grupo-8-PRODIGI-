@@ -12,9 +12,9 @@ def _map_row(row):
         return None
 
     return {
-        "num_utent": row[0],
-        "cod_antecedente": row[1],
-        "data_registo": row[2],
+        "num_utent": row["num_utent"],
+        "cod_antecedente": row["cod_antecedente"],
+        "data_registo": row["data_registo"],
     }
 
 
@@ -73,6 +73,7 @@ def remover_utente_antecedente(num_utent: int, cod_antecedente: int):
         return None
 
     return {
-        "num_utent": row[0],
-        "cod_antecedente": row[1],
+        "num_utent": row["num_utent"],
+        "cod_antecedente": row["cod_antecedente"],
+        "data_registo": row["data_registo"],
     }

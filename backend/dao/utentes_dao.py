@@ -3,7 +3,15 @@ from backend.db import run_query
 
 def select_all_utentes():
     return run_query("""
-        SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        SELECT
+            numutent AS num_utent,
+            nome,
+            nif,
+            datanasc AS data_nasc,
+            sexo,
+            localidade,
+            telefone,
+            email
         FROM utente
         ORDER BY nome ASC
     """)
@@ -11,7 +19,7 @@ def select_all_utentes():
 
 def select_utente_by_id(numutent: int):
     return run_query("""
-        SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        SELECT numutent AS num_utent, nome, nif, datanasc AS data_nasc, sexo, localidade, telefone, email
         FROM utente
         WHERE numutent = %s
     """, (numutent,))

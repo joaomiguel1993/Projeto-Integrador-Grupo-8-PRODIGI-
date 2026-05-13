@@ -12,11 +12,11 @@ def _map_row(row):
         return None
 
     return {
-        "id_func": row[0],
-        "username": row[1],
-        "password": row[2],
-        "bloqueado": row[3],
-        "role": row[4],
+        "id_func": row["id_func"],
+        "username": row["username"],
+        "password": row["password"],
+        "bloqueado": row["bloqueado"],
+        "role": row["role"],
     }
 
 
@@ -70,4 +70,4 @@ def remover_utilizador(id_func: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["id_func"]

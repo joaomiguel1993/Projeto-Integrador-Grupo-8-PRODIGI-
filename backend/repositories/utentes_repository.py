@@ -12,14 +12,14 @@ def _map_row(row):
         return None
 
     return {
-        "num_utent": row[0],
-        "nome": row[1],
-        "nif": row[2],
-        "data_nasc": row[3],
-        "sexo": row[4],
-        "localidade": row[5],
-        "telefone": row[6],
-        "email": row[7],
+        "num_utent": row["num_utent"],
+        "nome": row["nome"],
+        "nif": row["nif"],
+        "data_nasc": row["data_nasc"],
+        "sexo": row["sexo"],
+        "localidade": row["localidade"],
+        "telefone": row["telefone"],
+        "email": row["email"],
     }
 
 
@@ -78,4 +78,4 @@ def remover_utente(num_utent: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["num_utent"]

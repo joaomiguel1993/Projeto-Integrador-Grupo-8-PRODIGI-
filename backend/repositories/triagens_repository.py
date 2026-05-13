@@ -12,20 +12,20 @@ def _map_row(row):
         return None
 
     return {
-        "cod_ep_urgenc": row[0],
-        "data_hora_inicio": row[1],
-        "data_hora_fim": row[2],
-        "cor_triagem": row[3],
-        "sintomas": row[4],
-        "temperatura": row[5],
-        "freq_card": row[6],
-        "freq_resp": row[7],
-        "sp_o2": row[8],
-        "sistolica": row[9],
-        "diastolica": row[10],
-        "nivel_dor": row[11],
-        "consciencia": row[12],
-        "tempo_espera_previsto": row[13],
+        "cod_ep_urgenc": row["codepurgenc"],
+        "data_hora_inicio": row["datahorainicio"],
+        "data_hora_fim": row["datahorafim"],
+        "cor_triagem": row["cortriagem"],
+        "sintomas": row["sintomas"],
+        "temperatura": row["temperatura"],
+        "freq_card": row["freqcard"],
+        "freq_resp": row["freqresp"],
+        "spo2": row["spo2"],
+        "sistolica": row["sistolica"],
+        "diastolica": row["diastolica"],
+        "nivel_dor": row["niveldor"],
+        "consciencia": row["consciencia"],
+        "tempo_espera_previsto": row["tempoesperaprevisto"],
     }
 
 
@@ -52,7 +52,7 @@ def criar_triagem(data: dict):
         data.get("temperatura"),
         data.get("freq_card"),
         data.get("freq_resp"),
-        data.get("sp_o2"),
+        data.get("spo2"),
         data.get("sistolica"),
         data.get("diastolica"),
         data.get("nivel_dor"),
@@ -72,7 +72,7 @@ def atualizar_triagem(cod_ep_urgenc: int, data: dict):
         data.get("temperatura"),
         data.get("freq_card"),
         data.get("freq_resp"),
-        data.get("sp_o2"),
+        data.get("spo2"),
         data.get("sistolica"),
         data.get("diastolica"),
         data.get("nivel_dor"),
@@ -90,4 +90,4 @@ def remover_triagem(cod_ep_urgenc: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codepurgenc"]

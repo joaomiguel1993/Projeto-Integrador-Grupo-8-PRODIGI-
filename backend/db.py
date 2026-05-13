@@ -39,16 +39,16 @@ def run_query(query: str, params: Optional[tuple[Any, ...]] = None):
             dados = cur.fetchall()
             result = [dict(zip(colunas, row)) for row in dados]
 
-        con.commit()  # commit sempre
+        con.commit()
 
         if result is not None:
             return result
-        return {"msg": "Operação realizada com sucesso"}
+        return []
 
     except Exception as e:
         if con:
             con.rollback()
-        return {"erro": str(e)}
+        raise e
 
     finally:
         if cur:

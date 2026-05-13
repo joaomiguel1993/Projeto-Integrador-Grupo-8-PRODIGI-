@@ -29,17 +29,17 @@ def _map_row(row):
         return None
 
     return {
-        "id_predicao": row[0],
-        "tipo_modelo": row[1],
-        "entidade": row[2],
-        "entidade_id": row[3],
-        "input_json": _parse_json_field(row[4]),
-        "output_json": _parse_json_field(row[5]),
-        "score": row[6],
-        "modelo_versao": row[7],
-        "sucesso": row[8],
-        "erro_mensagem": row[9],
-        "criado_em": row[10],
+        "id_predicao": row["idpredicao"],
+        "tipo_modelo": row["tipomodelo"],
+        "entidade": row["entidade"],
+        "entidade_id": row["entidadeid"],
+        "input_json": json.loads(row["inputjson"]) if row["inputjson"] else None,
+        "output_json": json.loads(row["outputjson"]) if row["outputjson"] else None,
+        "score": row["score"],
+        "modelo_versao": row["modeloversao"],
+        "sucesso": row["sucesso"],
+        "erro_mensagem": row["erromensagem"],
+        "criado_em": row["criadoem"],
     }
 
 

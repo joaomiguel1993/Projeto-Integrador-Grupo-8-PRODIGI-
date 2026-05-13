@@ -12,18 +12,18 @@ def _map_row(row):
         return None
 
     return {
-        "cod_alerta": row[0],
-        "id_prescricao": row[1],
-        "id_func": row[2],
-        "tipo": row[3],
-        "data_hor_alerta": row[4],
-        "ignorado": row[5],
-        "justificacao": row[6],
-        "severidade": row[7],
-        "score_risco": row[8],
-        "resolvido": row[9],
-        "resolvido_em": row[10],
-        "resolvido_por": row[11],
+        "cod_alerta": row["codalerta"],
+        "id_prescricao": row["idprescricao"],
+        "id_func": row["idfunc"],
+        "tipo": row["tipo"],
+        "data_hor_alerta": row["datahoralerta"],
+        "ignorado": row["ignorado"],
+        "justificacao": row["justificacao"],
+        "severidade": row["severidade"],
+        "score_risco": row["scorerisco"],
+        "resolvido": row["resolvido"],
+        "resolvido_em": row["resolvidoem"],
+        "resolvido_por": row["resolvidopor"],
     }
 
 
@@ -90,4 +90,4 @@ def remover_alerta(cod_alerta: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codalerta"]

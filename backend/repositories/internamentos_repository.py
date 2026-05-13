@@ -12,16 +12,16 @@ def _map_row(row):
         return None
 
     return {
-        "cod_internamento": row[0],
-        "cod_ep_urgenc": row[1],
-        "id_func": row[2],
-        "data_hora_int": row[3],
-        "data_hora_consulta": row[4],
-        "data_hora_alta": row[5],
-        "motivo_int": row[6],
-        "numero_cama": row[7],
-        "servico": row[8],
-        "tipo_alta": row[9],
+        "cod_internamento": row["codinternamento"],
+        "cod_ep_urgenc": row["codepurgenc"],
+        "id_func": row["idfunc"],
+        "data_hora_int": row["datahoraint"],
+        "data_hora_consulta": row["datahoraconsulta"],
+        "data_hora_alta": row["datahoraalta"],
+        "motivo_int": row["motivoint"],
+        "numero_cama": row["numerocama"],
+        "servico": row["servico"],
+        "tipo_alta": row["tipoalta"],
     }
 
 
@@ -93,4 +93,4 @@ def remover_internamento(cod_internamento: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codinternamento"]

@@ -12,9 +12,9 @@ def _map_row(row):
         return None
 
     return {
-        "id_func": row[0],
-        "id_hosp": row[1],
-        "ativo": row[2],
+        "id_func": row.get("id_func", row.get("idfunc")),
+        "id_hosp": row.get("id_hosp", row.get("idhosp")),
+        "ativo": row.get("ativo"),
     }
 
 
@@ -73,6 +73,6 @@ def remover_trabalho(id_func: int, id_hosp: int):
         return None
 
     return {
-        "id_func": row[0],
-        "id_hosp": row[1],
+        "id_func": row["id_func"],
+        "id_hosp": row["id_hosp"],
     }

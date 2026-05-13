@@ -12,10 +12,10 @@ def _map_row(row):
         return None
 
     return {
-        "cod_medicamento": row[0],
-        "nome": row[1],
-        "principio_ativo": row[2],
-        "classe_terapeutica_id": row[3],
+        "cod_medicamento": row["codmedicamento"],
+        "nome": row["nome"],
+        "principio_ativo": row["principioativo"],
+        "classe_terapeutica_id": row["classeterapeuticaid"],
     }
 
 
@@ -64,4 +64,4 @@ def remover_medicamento(cod_medicamento: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codmedicamento"]

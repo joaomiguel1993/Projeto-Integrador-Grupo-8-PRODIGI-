@@ -12,15 +12,25 @@ def _map_row(row):
         return None
 
     return {
-        "id_func": row[0],
-        "nome": row[1],
-        "tipo_func": row[2],
-        "sexo": row[3],
-        "email": row[4],
-        "telefone": row[5],
-        "biografia": row[6],
-        "foto_url": row[7],
+        "id_func": row["idfunc"],
+        "nome": row["nome"],
+        "tipo_func": row["tipofunc"],
+        "sexo": row["sexo"],
+        "email": row["email"],
+        "telefone": row["telefone"],
+        "biografia": row["biografia"],
+        "foto_url": row["foto_url"],
     }
+
+
+def remover_profissional(id_func: int):
+    rows = profissionais_dao.delete_profissional(id_func)
+    row = _first_or_none(rows)
+
+    if row is None:
+        return None
+
+    return row["idfunc"]
 
 
 def listar_profissionais():
@@ -72,11 +82,3 @@ def atualizar_profissional(id_func: int, data: dict):
     return _map_row(row)
 
 
-def remover_profissional(id_func: int):
-    rows = profissionais_dao.delete_profissional(id_func)
-    row = _first_or_none(rows)
-
-    if row is None:
-        return None
-
-    return row[0]

@@ -12,9 +12,9 @@ def _map_row(row):
         return None
 
     return {
-        "cod_antecedente": row[0],
-        "nome": row[1],
-        "tipo": row[2],
+        "cod_antecedente": row["codantecedente"],
+        "nome": row["nome"],
+        "tipo": row["tipo"],
     }
 
 
@@ -65,4 +65,4 @@ def remover_antecedente(cod_antecedente: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codantecedente"]

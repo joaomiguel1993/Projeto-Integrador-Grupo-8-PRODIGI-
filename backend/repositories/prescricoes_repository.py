@@ -12,16 +12,16 @@ def _map_row(row):
         return None
 
     return {
-        "id_prescricao": row[0],
-        "id_ato": row[1],
-        "cod_medicamento": row[2],
-        "dosagem": row[3],
-        "observacoes": row[4],
-        "data_hora_presc": row[5],
-        "estado_prescricao": row[6],
-        "score_risco_ia": row[7],
-        "validado_por_ia": row[8],
-        "data_hora_validacao_ia": row[9],
+        "id_prescricao": row["idprescricao"],
+        "id_ato": row["idato"],
+        "cod_medicamento": row["codmedicamento"],
+        "dosagem": row["dosagem"],
+        "observacoes": row["observacoes"],
+        "data_hora_presc": row["datahorapresc"],
+        "estado_prescricao": row["estadoprescricao"],
+        "score_risco_ia": row["scoreriscoia"],
+        "validado_por_ia": row["validadoporia"],
+        "data_hora_validacao_ia": row["datahoravalidacaoia"],
     }
 
 
@@ -97,4 +97,4 @@ def remover_prescricao(id_prescricao: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["idprescricao"]

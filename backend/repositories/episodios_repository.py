@@ -12,13 +12,13 @@ def _map_row(row):
         return None
 
     return {
-        "cod_ep_urgenc": row[0],
-        "num_utent": row[1],
-        "id_hosp": row[2],
-        "data_hora_entr": row[3],
-        "data_hora_atendimento": row[4],
-        "data_hora_saida": row[5],
-        "estado": row[6],
+        "cod_ep_urgenc": row["codepurgenc"],
+        "num_utent": row["numutent"],
+        "id_hosp": row["idhosp"],
+        "data_hora_entr": row["datahoraentr"],
+        "data_hora_atendimento": row["datahoraatendimento"],
+        "data_hora_saida": row["datahorasaida"],
+        "estado": row["estado"],
     }
 
 
@@ -107,4 +107,4 @@ def remover_episodio(cod_ep_urgenc: int):
     if row is None:
         return None
 
-    return row[0]
+    return row["codepurgenc"]
