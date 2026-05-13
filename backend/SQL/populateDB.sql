@@ -3,17 +3,17 @@ BEGIN;
 -- ------------------------------------------------------------
 -- HOSPITAL (10 registos)
 -- ------------------------------------------------------------
-INSERT INTO Hospital (IdHosp, Nome, Localizacao) VALUES
-(1, 'Hospital de Santa Maria', 'Lisboa'),
-(2, 'Hospital de Sao Jose', 'Porto'),
-(3, 'Hospital de Sao Joao', 'Coimbra'),
-(4, 'Hospital de Santo Antonio', 'Braga'),
-(5, 'Hospital da Universidade de Coimbra', 'Faro'),
-(6, 'Hospital de Braga', 'Setubal'),
-(7, 'Hospital de Faro', 'Aveiro'),
-(8, 'Hospital Garcia de Orta', 'Leiria'),
-(9, 'Hospital de Aveiro', 'Evora'),
-(10, 'Hospital de Evora', 'Viseu');
+INSERT INTO Hospital (IdHosp, Nome, Localizacao, Email, Telefone) VALUES
+(1, 'Hospital de Santa Maria', 'Av. Prof. Egas Moniz MB, 1649-028 Lisboa', 'contactcenter@ulssm.min-saude.pt', '217805000'),
+(2, 'Hospital de Sao Jose', 'R. José António Serrano, 1150-199 Lisboa', 'sec.ca@chlc.min-saude.pt', '218841000'),
+(3, 'Hospital de Sao Joao', 'Alameda Prof. Hernâni Monteiro, 4200-319 Porto', 'geral@ulssjoao.min-saude.pt', '225512100'),
+(4, 'Hospital de Santo Antonio', 'Largo Prof. Abel Salazar 4099-001 Porto', 'secretaria.geral@chporto.min-saude.pt', '222077500'),
+(5, 'Hospital da Universidade de Coimbra', 'Av. Bissaya Barreto 52 3000-075 Coimbra', 'correio@chuc.min-saude.pt.', '239483656'),
+(6, 'Hospital de Braga', 'R. das Sete Fontes, 4710-243 Braga', 'hbraga@ulsb.min-saude.pt', '253027000'),
+(7, 'Hospital de Faro', 'R. Leão Penedo, 8000-386 Faro', 'administracao@ulsalg.min-saude.pt', '289891100'),
+(8, 'Hospital Garcia de Orta', 'Av. Torrado da Silva, 2805-267 Almada', 'geral@hgo.min-saude.pt', '212940294'),
+(9, 'Hospital de Aveiro', 'Av. Artur Ravara 35, 3810-164 Aveiro', 'sec-geral@ulsra.min-saude.pt', '234378300'),
+(10, 'Hospital de Evora', 'Largo Senhor da Pobreza, 7000-811 Évora', 'geral@hevora.min-saude.pt', '266740100');
 
 -- ------------------------------------------------------------
 -- FUNCIONARIO (200 registos)
