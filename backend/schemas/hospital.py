@@ -1,6 +1,6 @@
 from typing import Optional
-
 from pydantic import BaseModel, Field, ConfigDict
+
 
 class HospitalBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -9,7 +9,8 @@ class HospitalBase(BaseModel):
     localizacao: str = Field(..., min_length=1, max_length=200)
     email: Optional[str] = Field(None, max_length=150)
     telefone: Optional[str] = Field(None, max_length=30)
-    totalcamas: int = Field(default=100, ge=0) # 'ge=0' garante que não haja camas negativas
+    totalcamas: int = Field(default=100, ge=0)
+
 
 class HospitalCreate(HospitalBase):
     pass
@@ -22,6 +23,7 @@ class HospitalResponse(HospitalBase):
 class HospitalDeleteResponse(BaseModel):
     message: str
     idhosp: int
+
 
 class HospitalIAResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

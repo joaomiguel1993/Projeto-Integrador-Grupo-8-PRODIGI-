@@ -29,3 +29,17 @@ class TriagemCreate(TriagemBase):
 class TriagemResponse(TriagemBase):
     codepurgenc: int
     datahorainicio: datetime
+
+class TriagemUpdate(BaseModel):
+    cortriagem: Optional[Literal['vermelho', 'laranja', 'amarelo', 'verde', 'azul']] = None
+    sintomas: Optional[str] = None
+    temperatura: Optional[float] = Field(None, ge=30, le=45)
+    freqcard: Optional[int] = None
+    freqresp: Optional[int] = None
+    spo2: Optional[float] = None
+    sistolica: Optional[int] = None
+    diastolica: Optional[int] = None
+    niveldor: Optional[int] = Field(None, ge=0, le=10)
+    consciencia: Optional[Literal['Acordado', 'Confuso', 'Inconsciente']] = None
+    tempoesperaprevisto: Optional[int] = None
+    datahorafim: Optional[datetime] = None

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 from backend.schemas.trabalha import (
     TrabalhaCreate,
     TrabalhaUpdate,
@@ -91,3 +91,5 @@ def delete_trabalha(idfunc: int, idhosp: int, request: Request):
         detalhe=f"Associação funcionário {idfunc} / hospital {idhosp} removida.",
         ip=get_client_ip(request)
     )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    

@@ -8,17 +8,10 @@ class UtenteBase(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100)
     nif: str = Field(..., min_length=9, max_length=9)
     datanasc: date
-<<<<<<< Updated upstream
-    sexo: str
-    localidade: Optional[str] = None
-    telefone: Optional[str] = None
-    email: Optional[str] = None
-=======
     sexo: Literal['M', 'F'] # Restrição rigorosa
     localidade: Optional[str] = Field(None, max_length=100)
     telefone: Optional[str] = Field(None, max_length=20) # Adicionado
     email: Optional[str] = Field(None, max_length=255)   # Adicionado
->>>>>>> Stashed changes
 
 
 class UtenteCreate(UtenteBase):
@@ -26,9 +19,6 @@ class UtenteCreate(UtenteBase):
 
 
 class UtenteResponse(UtenteBase):
-<<<<<<< Updated upstream
-    numutent: int
-=======
     numutent: int
 
 
@@ -132,4 +122,3 @@ def atualizar_utente(num_utente: int, payload: UtenteCreate, request: Request):
     )
 
     return resultado
->>>>>>> Stashed changes

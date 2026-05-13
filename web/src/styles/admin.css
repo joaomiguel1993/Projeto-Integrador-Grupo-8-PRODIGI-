@@ -1276,3 +1276,128 @@ html {
   width: 24px;
   height: 24px;
 }
+
+.selector-hospitais {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.selector-hospitais-coluna {
+  flex: 1 1 320px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.selector-hospitais-titulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.selector-hospitais-lista {
+  background: #fff;
+  border: 1px solid var(--color-border, #dbe7e1);
+  border-radius: 14px;
+  padding: 0.75rem;
+  min-height: 220px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.selector-hospitais-vazio {
+  margin: auto 0;
+  text-align: center;
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.92rem;
+}
+
+.selector-hospitais-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #edf2ef;
+  border-radius: 12px;
+  background: #f9fcfa;
+}
+
+.selector-hospitais-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.selector-hospitais-nome {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+  line-height: 1.25;
+}
+
+.selector-hospitais-meta {
+  font-size: 0.82rem;
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.3;
+}
+
+.selector-hospitais-acao {
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.selector-hospitais-acao--add {
+  background: #eaf7f1;
+  color: #2f8b6b;
+}
+
+.selector-hospitais-acao--add:hover {
+  background: #d8f0e5;
+}
+
+.selector-hospitais-acao--remove {
+  background: #fdecec;
+  color: #b42318;
+}
+
+.selector-hospitais-acao--remove:hover {
+  background: #fbd5d5;
+}
+
+@media (max-width: 768px) {
+  .selector-hospitais {
+    flex-direction: column;
+  }
+
+  .selector-hospitais-coluna {
+    min-width: 100%;
+  }
+
+  .selector-hospitais-lista {
+    min-height: 180px;
+  }
+
+  .selector-hospitais-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .selector-hospitais-acao {
+    width: 100%;
+  }
+}

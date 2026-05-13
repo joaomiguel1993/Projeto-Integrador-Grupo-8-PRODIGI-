@@ -15,10 +15,21 @@ def get_client_ip(request: Request) -> str | None:
 
 @router.get("/", response_model=list[TriagemResponse])
 def get_triagens(request: Request):
-    return get_triagens_service()
+    username = request.headers.get("X-Username", "desconhecido")
+    resultado = get_triagens_service()
+
+    insert_log(
+        username=username,
+        acao="LISTAR_TRIAGENS",
+        detalhe="Listagem de triagens consultada.",
+        ip=get_client_ip(request)
+    )
+
+    return resultado
 
 @router.get("/{cod_ep_urgenc}", response_model=TriagemResponse)
 def get_triagem(cod_ep_urgenc: int, request: Request):
+    username = request.headers.get("X-Username", "desconhecido")
     res = get_triagem_service(cod_ep_urgenc)
     if not res:
         raise HTTPException(status_code=404, detail="Triagem não encontrada")

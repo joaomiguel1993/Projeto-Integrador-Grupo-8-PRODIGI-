@@ -62,48 +62,86 @@ const mapHospitalFromApi = (hospital) => ({
 // ==========================================
 // COMPONENTE: LISTA DE TRANSFERÊNCIA (UI)
 // ==========================================
-const SelectorHospitais = ({ hospitaisDisponiveisTotais, valoresSelecionados, onChange }) => {
-  const idsSelecionados = (valoresSelecionados || []).map(Number);
-  const disponiveis = hospitaisDisponiveisTotais.filter(h => !idsSelecionados.includes(Number(h.idhosp)));
-  const selecionados = hospitaisDisponiveisTotais.filter(h => idsSelecionados.includes(Number(h.idhosp)));
+const SelectorHospitais = ({ hospitaisDisponiveisTotais = [], valoresSelecionados = [], onChange }) => {
+  const idsSelecionados = (valoresSelecionados || [])
+    .map((id) => Number(id))
+    .filter((id) => !Number.isNaN(id));
+
+  const disponiveis = hospitaisDisponiveisTotais.filter(
+    (h) => !idsSelecionados.includes(Number(h?.idhosp))
+  );
+
+  const selecionados = hospitaisDisponiveisTotais.filter(
+    (h) => idsSelecionados.includes(Number(h?.idhosp))
+  );
+
+  const adicionarHospital = (idHosp) => {
+    const id = Number(idHosp);
+    const novos = [...idsSelecionados, id].filter((v, i, arr) => arr.indexOf(v) === i);
+    onChange(novos);
+  };
+
+  const removerHospital = (idHosp) => {
+    const id = Number(idHosp);
+    const novos = idsSelecionados.filter((item) => item !== id);
+    onChange(novos);
+  };
 
   return (
-    <div style={{ display: 'flex', gap: '1rem', width: '100%', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+    <div className="selector-hospitais">
+      <div className="selector-hospitais-coluna">
+        <h4 className="selector-hospitais-titulo">Hospitais disponíveis</h4>
 
-      {/* Lado Esquerdo: Disponíveis */}
-      <div style={{ flex: '1 1 250px', border: '1px solid #ccc', borderRadius: '6px', padding: '0.8rem', background: '#fff' }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#666', fontSize: '0.9rem', borderBottom: '1px solid #eee', paddingBottom: '0.4rem' }}>
-          Hospitais Disponíveis ({disponiveis.length})
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.2rem' }}>
-          {disponiveis.length === 0 && <div style={{ fontSize: '0.85rem', color: '#999', fontStyle: 'italic' }}>Nenhum hospital disponível.</div>}
-          {disponiveis.map(h => (
-            <button key={h.idhosp} type="button" onClick={() => onChange([...idsSelecionados, Number(h.idhosp)])}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', border: '1px solid #eee', background: '#f9f9f9', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem' }}>
-              <span style={{ textAlign: 'left' }}>{h.nome}</span>
-              <span style={{ color: '#3498db', fontWeight: 'bold', fontSize: '1.2rem', lineHeight: '1' }}>&rarr;</span>
-            </button>
-          ))}
+        <div className="selector-hospitais-lista">
+          {disponiveis.length === 0 ? (
+            <p className="selector-hospitais-vazio">Sem hospitais disponíveis.</p>
+          ) : (
+            disponiveis.map((h) => (
+              <div key={h.idhosp} className="selector-hospitais-item">
+                <div className="selector-hospitais-info">
+                  <span className="selector-hospitais-nome">{h.nome}</span>
+                  <span className="selector-hospitais-meta">{h.localizacao || "Sem localização"}</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="selector-hospitais-acao selector-hospitais-acao--add"
+                  onClick={() => adicionarHospital(h.idhosp)}
+                >
+                  Adicionar
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {/* Lado Direito: Selecionados */}
-      <div style={{ flex: '1 1 250px', border: '2px solid #3eb489', borderRadius: '6px', padding: '0.8rem', background: '#f0fbf7' }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#27ae60', fontSize: '0.9rem', borderBottom: '1px solid #c8e6c9', paddingBottom: '0.4rem' }}>
-          Hospitais Atribuídos ({selecionados.length})
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '0.2rem' }}>
-          {selecionados.length === 0 && <div style={{ fontSize: '0.85rem', color: '#27ae60', fontStyle: 'italic' }}>Nenhum hospital atribuído.</div>}
-          {selecionados.map(h => (
-            <button key={h.idhosp} type="button" onClick={() => onChange(idsSelecionados.filter(id => id !== Number(h.idhosp)))}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', border: '1px solid #b2e2cd', background: '#d5f5e3', borderRadius: '4px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem' }}>
-              <span style={{ color: '#e74c3c', fontWeight: 'bold', fontSize: '1.2rem', lineHeight: '1' }}>&larr;</span>
-              <span style={{ textAlign: 'right', color: '#1e8449', fontWeight: 'bold' }}>{h.nome}</span>
-            </button>
-          ))}
+      <div className="selector-hospitais-coluna">
+        <h4 className="selector-hospitais-titulo">Hospitais selecionados</h4>
+
+        <div className="selector-hospitais-lista">
+          {selecionados.length === 0 ? (
+            <p className="selector-hospitais-vazio">Nenhum hospital selecionado.</p>
+          ) : (
+            selecionados.map((h) => (
+              <div key={h.idhosp} className="selector-hospitais-item">
+                <div className="selector-hospitais-info">
+                  <span className="selector-hospitais-nome">{h.nome}</span>
+                  <span className="selector-hospitais-meta">{h.localizacao || "Sem localização"}</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="selector-hospitais-acao selector-hospitais-acao--remove"
+                  onClick={() => removerHospital(h.idhosp)}
+                >
+                  Remover
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </div>
-
     </div>
   );
 };
@@ -330,41 +368,29 @@ export default function AdminDashboard() {
   const abrirNovoUtilizador = () => { resetMensagens(); setNovoUtilizador({ idfunc: '', username: '', password: '', role: ROLES.ADMIN, hospitais: [] }); setPesquisaFuncionarioNovoUser(''); setDropdownAberto(false); setUtilizadorEditando(null); setUserView('novo'); };
 
   const abrirEditarUtilizador = async (utilizador) => {
-    resetMensagens();
-
-    // Carrega o professor da lista em memória, se existir
-    const prof = profissionais.find((p) => p.idfunc === utilizador.idfunc);
-
-    // Mostra a UI de imediato, mas com hospitais vazios até a chamada terminar
-    setUtilizadorEditando({
-      ...utilizador,
-      nome: prof?.nome || "",
-      tipofunc: prof?.tipofunc || "",
-      sexo: prof?.sexo || "",
-      password: "",
-      hospitais: [],
-      role: prof?.tipofunc || utilizador.tipofunc || ROLES.ADMIN,
-    });
-    setUserView("editar");
-
     try {
-      setLoadingUtilizadores(true);
-      // Aqui vamos buscar a VERDADEIRA lista de hospitais deste utilizador/funcionário!
-      const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${utilizador.idfunc}`);
+      setErro("");
+      setMensagem("");
 
-      const idsHospitais = Array.isArray(hospitaisData)
-        ? hospitaisData.map(h => Number(h.idhosp || h.idHosp || h.id))
-        : [];
+      const [utilizadorData, hospitaisData] = await Promise.all([
+        apiFetch(`/api/utilizadores/${utilizador.idutilizador}`),
+        apiFetch(`/api/trabalha/funcionario/${utilizador.idfunc}`)
+      ]);
 
-      // Atualiza os hospitais visíveis no Dual Listbox (Lado Direito)
-      setUtilizadorEditando(prev => ({
-        ...prev,
-        hospitais: idsHospitais
-      }));
-    } catch (err) {
-      setErroUser("Aviso: Não foi possível carregar os hospitais associados: " + err.message);
-    } finally {
-      setLoadingUtilizadores(false);
+      setUtilizadorEmEdicao(utilizadorData);
+
+      setHospitaisSelecionados(
+        Array.isArray(hospitaisData)
+          ? hospitaisData
+            .map((item) => String(item?.idhosp ?? item?.idHosp ?? item?.id))
+            .filter(Boolean)
+          : []
+      );
+
+      setModalEditarAberto(true);
+    } catch (e) {
+      console.error("Erro ao abrir edição do utilizador:", e);
+      setErro("Não foi possível carregar os dados do funcionário.");
     }
   };
 
@@ -715,8 +741,8 @@ export default function AdminDashboard() {
                 <label>Associar Hospitais</label>
                 <SelectorHospitais
                   hospitaisDisponiveisTotais={hospitais}
-                  valoresSelecionados={novoUtilizador.hospitais}
-                  onChange={(novosIds) => setNovoUtilizador(prev => ({ ...prev, hospitais: novosIds }))}
+                  valoresSelecionados={hospitaisSelecionados}
+                  onChange={setHospitaisSelecionados}
                 />
               </div>
 

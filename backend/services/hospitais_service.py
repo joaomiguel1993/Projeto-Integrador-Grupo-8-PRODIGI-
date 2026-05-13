@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+
 from backend.repositories.hospitais_repository import (
     listar_hospitais,
     obter_hospital,
@@ -20,7 +21,12 @@ def get_hospital_service(id_hosp: int):
     return hospital
 
 
-def create_hospital_service(nome: str, localizacao: str, email: str | None = None, telefone: str | None = None):
+def create_hospital_service(
+    nome: str,
+    localizacao: str,
+    email: str | None = None,
+    telefone: str | None = None
+):
     if not nome.strip():
         raise HTTPException(status_code=400, detail="Nome do hospital é obrigatório.")
 
@@ -28,6 +34,9 @@ def create_hospital_service(nome: str, localizacao: str, email: str | None = Non
         raise HTTPException(status_code=400, detail="Localização do hospital é obrigatória.")
 
     novo = criar_hospital(nome, localizacao, email, telefone)
+
+    if not novo:
+        raise HTTPException(status_code=500, detail="Erro ao criar hospital.")
 
     insert_log(
         "sistema",
@@ -39,7 +48,13 @@ def create_hospital_service(nome: str, localizacao: str, email: str | None = Non
     return novo
 
 
-def update_hospital_service(id_hosp: int, nome: str, localizacao: str, email: str | None = None, telefone: str | None = None):
+def update_hospital_service(
+    id_hosp: int,
+    nome: str,
+    localizacao: str,
+    email: str | None = None,
+    telefone: str | None = None
+):
     if not nome.strip():
         raise HTTPException(status_code=400, detail="Nome do hospital é obrigatório.")
 

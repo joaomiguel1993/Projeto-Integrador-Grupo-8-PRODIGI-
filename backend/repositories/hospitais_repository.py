@@ -25,11 +25,22 @@ def obter_hospital(id_hosp: int):
     return result_list[0]
 
 
-def criar_hospital(nome: str, localizacao: str, email: str | None = None, telefone: str | None = None):
+def criar_hospital(
+    nome: str,
+    localizacao: str,
+    email: str | None = None,
+    telefone: str | None = None
+):
     return insert_hospital(nome, localizacao, email, telefone)
 
 
-def atualizar_hospital(id_hosp: int, nome: str, localizacao: str, email: str | None = None, telefone: str | None = None):
+def atualizar_hospital(
+    id_hosp: int,
+    nome: str,
+    localizacao: str,
+    email: str | None = None,
+    telefone: str | None = None
+):
     return update_hospital_by_id(id_hosp, nome, localizacao, email, telefone)
 
 
