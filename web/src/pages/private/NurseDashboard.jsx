@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/Logo.png';
-import '../../styles/admin.css';
-import '../../styles/nurse-dashboard.css';
+import '../../styles/main.css';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -127,7 +126,7 @@ export default function NurseDashboard() {
     setLoading(true);
     setErro('');
     try {
-      const res = await fetch(`${API_URL}/api/episodios`);
+      const res = await fetch(`${API_URL}/api/v1/episodios`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar fila.');
       setEpisodios(Array.isArray(data) ? data : []);
@@ -156,8 +155,8 @@ export default function NurseDashboard() {
     try {
       const utenteId = ep.num_utente || ep.numutente;
       const [uRes, mRes] = await Promise.all([
-        fetch(`${API_URL}/api/utentes/${num_utente}`),
-        fetch(`${API_URL}/api/medicacaoativa/utente/${num_utente}`),
+        fetch(`${API_URL}/api/v1/utentes/${num_utente}`),
+        fetch(`${API_URL}/api/v1/medicacaoativa/utente/${num_utente}`),
       ]);
 
       const uData = await uRes.json();
@@ -183,7 +182,7 @@ export default function NurseDashboard() {
       setMensagem('');
       setErro('');
 
-      const res = await fetch(`${API_IA}/api/predict/triagem`, {
+      const res = await fetch(`${API_URL}/api/v1/predict/tempos-espera/{id_hosp}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ utente, triagem }),
@@ -207,7 +206,7 @@ export default function NurseDashboard() {
       setMensagem('');
       setErro('');
 
-      const res = await fetch(`${API_URL}/api/triagem`, {
+      const res = await fetch(`${API_URL}/api/v1/triagem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

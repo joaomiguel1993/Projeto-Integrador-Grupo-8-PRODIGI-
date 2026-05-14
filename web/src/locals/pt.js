@@ -158,7 +158,12 @@ export const TEXTOS_PT = {
     sucessoCriarFunc: 'Funcionário criado com sucesso.',
     sucessoEditarFunc: 'Funcionário atualizado com sucesso.',
     sucessoCriarHosp: 'Hospital criado com sucesso.',
-    sucessoEditarHosp: 'Hospital atualizado com sucesso.'
+    sucessoEditarHosp: 'Hospital atualizado com sucesso.',
+
+    pesquisarHospital: "Search hospital",
+    filtrarHospitais: "Filter hospitals",
+    hospitaisDisponiveis: "Available hospitals",
+    hospitaisSelecionados: "Selected hospitals"
   },
 
   // ==========================================

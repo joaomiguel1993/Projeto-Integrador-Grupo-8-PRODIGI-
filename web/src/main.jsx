@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import router from './app/router';
-import './styles/index.css';
+import './styles/main.css';
 
 // 1. Importa o LanguageProvider que criaste na pasta context
 import { LanguageProvider } from "./contexts/LanguageContext";

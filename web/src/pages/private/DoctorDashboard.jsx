@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/Logo.png';
-import '../../styles/admin.css';
-import '../../styles/doctor-dashboard.css';
+import '../../styles/main.css';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -134,7 +133,7 @@ export default function DoctorDashboard() {
   const carregarEpisodios = async () => {
     try {
       setErro('');
-      const res = await fetch(`${API_URL}/api/triagens`);
+      const res = await fetch(`${API_URL}/api/v1/triagens`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
       setEpisodios(Array.isArray(data) ? data : []);
@@ -166,9 +165,9 @@ export default function DoctorDashboard() {
     try {
       const utenteId = ep.id_utente || ep.idutente;
       const [uRes, aRes, mRes] = await Promise.all([
-        fetch(`${API_URL}/api/utentes/${utenteId}`),
-        fetch(`${API_URL}/api/alertas/${utenteId}`),
-        fetch(`${API_URL}/api/medicacaoativa/${utenteId}`),
+        fetch(`${API_URL}/api/v1/utentes/${utenteId}`),
+        fetch(`${API_URL}/api/v1/alertas/${utenteId}`),
+        fetch(`${API_URL}/api/v1/medicacaoativa/${utenteId}`),
       ]);
 
       const uData = await uRes.json();
@@ -203,7 +202,7 @@ export default function DoctorDashboard() {
       setMensagem('');
       setErro('');
 
-      const res = await fetch(`${API_URL}/api/prescricoes`, {
+      const res = await fetch(`${API_URL}/api/v1/prescricoes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,7 +229,7 @@ export default function DoctorDashboard() {
       setErro('');
 
       const episodioId = episodioSelecionado?.id_epurgencia || episodioSelecionado?.id;
-      const res = await fetch(`${API_URL}/api/episodios/${episodioId}/alta`, {
+      const res = await fetch(`${API_URL}/api/v1/episodios/${episodioId}/alta`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(alta),

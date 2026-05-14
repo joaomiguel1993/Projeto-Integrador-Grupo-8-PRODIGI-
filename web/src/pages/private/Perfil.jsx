@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { apiFetch } from '../../services/api';
 import { STORAGE_KEYS } from '../../constants/roles';
+import '../../styles/main.css';
 
 export default function Perfil() {
   const { textos } = useLanguage();
@@ -70,8 +71,8 @@ export default function Perfil() {
       setLoading(true);
       setErro('');
 
-      const user = await apiFetch(`/api/utilizadores/${myId}`);
-      const prof = await apiFetch(`/api/profissionais/${myId}`);
+      const user = await apiFetch(`/api/v1/utilizadores/${myId}`);
+      const prof = await apiFetch(`/api/v1/profissionais/${myId}`);
 
       const dados = { ...prof, ...user };
       setDadosAtuais(dados);
@@ -125,7 +126,7 @@ export default function Perfil() {
         bloqueado: dadosIniciais.bloqueado,
       };
 
-      await apiFetch(`/api/utilizadores/${idfunc}`, {
+      await apiFetch(`/api/v1/utilizadores/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify(payloadUser),
       });
@@ -140,7 +141,7 @@ export default function Perfil() {
         foto_url: fotoUrl || null,
       };
 
-      await apiFetch(`/api/profissionais/${idfunc}`, {
+      await apiFetch(`/api/v1/profissionais/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify(payloadProf),
       });

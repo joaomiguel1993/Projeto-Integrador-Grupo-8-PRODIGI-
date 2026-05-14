@@ -2,6 +2,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listarHospitais } from '../../services/hospitais';
 import { useLanguage } from '../../contexts/LanguageContext';
+import '../../styles/main.css';
+
 
 import info1 from '../../imagens/Info1.png';
 import info2 from '../../imagens/Info2.png';

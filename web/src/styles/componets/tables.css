@@ -1,0 +1,122 @@
+/* =========================================
+   TABELAS
+   ========================================= */
+
+.admin-table-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-xl);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.admin-table-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  background: var(--admin-bg-soft);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-table-card__header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--admin-text);
+}
+
+.admin-table-card__header span {
+  background: var(--admin-primary);
+  color: white;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.admin-table-card--full {
+  width: 100%;
+}
+
+.admin-table-card--bottom {
+  margin-top: 1.25rem;
+}
+
+.admin-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.admin-table-scroll--wide {
+  min-width: 800px;
+}
+
+.admin-table-scroll--employees {
+  min-width: 700px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.9rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-table th {
+  background: var(--admin-bg-soft);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--admin-text);
+  white-space: nowrap;
+}
+
+.admin-table tbody tr {
+  transition: background var(--admin-transition);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--admin-bg-soft);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.hospitais-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.6rem;
+  background: var(--admin-primary);
+  color: white;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.hospitais-badge.count-1 {
+  background: var(--admin-primary);
+}
+
+.hospitais-badge.count-2 {
+  background: var(--admin-primary-hover);
+}
+
+.hospitais-badge.count-3,
+.hospitais-badge.count-4,
+.hospitais-badge.count-5 {
+  background: #27ae60;
+}
+
+.hospitais-badge.count-6 {
+  background: #e74c3c;
+}

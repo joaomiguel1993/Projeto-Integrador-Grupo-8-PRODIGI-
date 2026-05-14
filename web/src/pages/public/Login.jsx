@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { login as loginRequest } from '../../services/auth';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ROLES, STORAGE_KEYS } from '../../constants/roles';
+import '../../styles/main.css';
 
 const normalizarRole = (role) =>
   String(role || '')

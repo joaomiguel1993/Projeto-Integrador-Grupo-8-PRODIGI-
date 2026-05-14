@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import '../../styles/main.css';
 
 function getWaitLabel(value) {
   if (value == null) return '-- min';
