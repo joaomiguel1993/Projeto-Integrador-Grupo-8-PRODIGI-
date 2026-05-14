@@ -2,7 +2,6 @@ pandas
 scikit-learn
 xgboost
 joblib
-groq
 fastapi
 uvicorn
 numpy
