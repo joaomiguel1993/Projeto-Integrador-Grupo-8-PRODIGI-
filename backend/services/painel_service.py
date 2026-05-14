@@ -82,7 +82,7 @@ def obter_tempos_espera(id_hosp: int) -> dict:
                 "Time_of_Day":            estado_hospital["time_of_day"],
                 "Season":                 estado_hospital["season"],
             }
-            resp = httpx.post(f"{IA_URL}/predict/wait-time", json=body, timeout=5.0)
+            resp = httpx.post(f"{IA_URL}/predict/v1/wait-time", json=body, timeout=5.0)
             resp.raise_for_status()
             data = resp.json()
             urgency_key = _COR_TO_URGENCY[cor]

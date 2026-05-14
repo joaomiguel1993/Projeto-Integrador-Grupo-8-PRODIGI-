@@ -42,7 +42,7 @@ const obterContextoIA = () => {
 async function consultarIACompleta(hospital) {
     try {
         const id = hospital.id_hosp ?? hospital.id;
-        const response = await fetch(`http://localhost:8000/api/painel/tempos-espera/${id}`);
+        const response = await fetch(`http://localhost:8000/api/v1/predict/tempos-espera/${id}`);
         if (!response.ok) return null;
         const data = await response.json();
 

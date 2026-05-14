@@ -1,6 +1,6 @@
 import { apiFetch } from './api';
 
-export const listarHospitais = () => apiFetch('/api/hospitais/');
+export const listarHospitais = () => apiFetch('/api/v1/hospitais/');
 
 export const criarHospital = (payload) =>
   apiFetch('/api/hospitais/', {

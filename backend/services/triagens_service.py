@@ -2,6 +2,7 @@ from fastapi import HTTPException
 
 from backend.repositories import triagens_repository
 from backend.services import ai_espera_service
+from backend.services import ai_triagem_service
 
 
 def listar_triagens():
@@ -23,12 +24,16 @@ def criar_triagem(data: dict):
 
         # Chamar IA para prever tempo de espera (não bloqueia se falhar)
         try:
-            print(f"[DEBUG] resultado criar_triagem = {resultado}")
             ai_espera_service.prever_tempo_espera(resultado["cod_ep_urgenc"])
-            # Recarregar para devolver o tempoesperaprevisto já atualizado
             resultado = triagens_repository.obter_triagem_por_episodio(resultado["cod_ep_urgenc"]) or resultado
         except Exception as e:
             print(f"[IA] Aviso: predição de tempo de espera falhou — {e}")
+
+        # Chamar IA para prever cor da pulseira e comparar com enfermeiro
+        try:
+            ai_triagem_service.prever_triagem(resultado["cod_ep_urgenc"])
+        except Exception as e:
+            print(f"[IA] Aviso: predição de triagem falhou — {e}")
 
         return resultado
 
