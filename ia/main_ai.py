@@ -158,30 +158,13 @@ def predict_wait(d: DadosEspera):
 # --- ROTA 3: Processar Texto e Extrair Sinais Vitais via Groq ---
 @app.post("/predict/voz")
 def predict_voz(d: DadosVoz):
-    """
-    Endpoint de NLP para extração de dados clínicos a partir de texto.
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return {"erro": "GROQ_API_KEY não definida"}
 
-    Submete o texto (ditado por voz ou escrito livremente) à API do Groq (LLM Llama 3)
-    com um prompt rígido, forçando o modelo a estruturar a informação num JSON 
-    limpo e formatado, ideal para alimentar a rota de triagem preditiva.
+    cliente = Groq(api_key=api_key)
 
-    Retorno:
-        dict: Um dicionário com os sinais vitais estruturados ou uma mensagem de erro.
-    """
-    prompt = f"""És um assistente clínico. Extrai os sinais vitais do seguinte texto falado por um enfermeiro em português.
-Devolve APENAS um objeto JSON válido, sem explicações nem markdown, com exatamente estas chaves:
-- "Age": número inteiro (anos) ou null
-- "Heart_Rate_BPM": número inteiro ou null
-- "SpO2_Percent": número inteiro (percentagem de saturação) ou null
-- "Temperature_C": número decimal (graus Celsius) ou null
-- "Pain_Level": número inteiro de 0 a 10 ou null
-- "Consciousness": uma de ["Acordado", "Confuso", "Inconsciente"] ou null
-
-Regras:
-- Se um valor não for mencionado, usa null.
-- Interpreta linguagem natural: "quase noventa de saturação" → 89, "febre de 39 e meio" → 39.5, "está desorientado" → "Confuso".
-- Devolve APENAS o JSON, sem mais nada.
-
+    prompt = f"""És um assistente clínico...
 Texto: "{d.texto}"
 
 JSON:"""
@@ -192,7 +175,15 @@ JSON:"""
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
         )
-        conteudo = resposta.choices[0].message.content.strip()
+
+        if not resposta or not getattr(resposta, "choices", None):
+            return {"erro": "Resposta vazia ou inválida do Groq"}
+
+        conteudo = resposta.choices[0].message.content
+        if not conteudo:
+            return {"erro": "Conteúdo vazio do Groq"}
+
+        conteudo = conteudo.strip()
 
         match = re.search(r'\{.*\}', conteudo, re.DOTALL)
         if not match:
