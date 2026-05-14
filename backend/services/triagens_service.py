@@ -23,6 +23,7 @@ def criar_triagem(data: dict):
 
         # Chamar IA para prever tempo de espera (não bloqueia se falhar)
         try:
+            print(f"[DEBUG] resultado criar_triagem = {resultado}")
             ai_espera_service.prever_tempo_espera(resultado["cod_ep_urgenc"])
             # Recarregar para devolver o tempoesperaprevisto já atualizado
             resultado = triagens_repository.obter_triagem_por_episodio(resultado["cod_ep_urgenc"]) or resultado

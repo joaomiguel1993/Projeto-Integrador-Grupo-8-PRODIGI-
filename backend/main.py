@@ -42,7 +42,7 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/v1", tags=["Home"])
 def home():
     return {"msg": "API a funcionar seus sapos!"}
 

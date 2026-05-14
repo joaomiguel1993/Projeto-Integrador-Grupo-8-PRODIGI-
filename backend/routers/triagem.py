@@ -8,7 +8,7 @@ from backend.schemas.triagem import (
 )
 from backend.services import triagens_service
 
-router = APIRouter(prefix="/triagens", tags=["Triagens"])
+router = APIRouter(prefix="/v1/triagens", tags=["Triagens"])
 
 
 @router.get("/", response_model=List[TriagemOut])

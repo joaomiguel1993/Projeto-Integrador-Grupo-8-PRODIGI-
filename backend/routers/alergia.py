@@ -8,9 +8,9 @@ from backend.schemas.alergia import (
 from backend.services import alergias_service
 from typing import List
 
-router = APIRouter(prefix="/alergias", tags=["Alergias"])
+router = APIRouter(prefix="/v1/alergias", tags=["Alergias"])
 
-@router.get("/estatisticas/ia", response_model=List[AlergiaEstatisticasOut])
+@router.get("/estatisticas/predict", response_model=List[AlergiaEstatisticasOut])
 def estatisticas_para_ia():
     """Endpoint para a IA ler parâmetros e fazer médias/estimativas"""
     return alergias_service.obter_dados_treino_ia()

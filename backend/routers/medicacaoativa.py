@@ -8,7 +8,7 @@ from backend.schemas.medicacaoativa import (
 )
 from backend.services import medicacaoativa_service
 
-router = APIRouter(prefix="/medicacao-ativa", tags=["Medicação Ativa"])
+router = APIRouter(prefix="/v1/medicacao-ativa", tags=["Medicação Ativa"])
 
 
 @router.get("/", response_model=List[MedicacaoAtivaOut])

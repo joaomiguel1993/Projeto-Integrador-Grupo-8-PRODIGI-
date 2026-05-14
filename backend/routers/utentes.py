@@ -8,7 +8,7 @@ from backend.schemas.utente import (
 )
 from backend.services import utentes_service
 
-router = APIRouter(prefix="/utentes", tags=["Utentes"])
+router = APIRouter(prefix="/v1/utentes", tags=["Utentes"])
 
 
 @router.get("/", response_model=List[UtenteOut])

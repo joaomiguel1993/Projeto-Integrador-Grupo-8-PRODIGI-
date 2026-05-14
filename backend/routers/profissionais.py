@@ -11,7 +11,7 @@ from backend.routers.auth import get_current_user
 from backend.dao.logs_dao import insert_log
 
 
-router = APIRouter(prefix="/profissionais", tags=["Profissionais"])
+router = APIRouter(prefix="/v1/profissionais", tags=["Profissionais"])
 
 
 def get_client_ip(request: Request) -> str:

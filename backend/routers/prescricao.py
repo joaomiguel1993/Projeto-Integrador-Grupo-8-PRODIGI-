@@ -4,7 +4,7 @@ from typing import List
 from backend.schemas.prescricao import PrescricaoCreate, PrescricaoUpdate, PrescricaoOut
 from backend.services import prescricoes_service
 
-router = APIRouter(prefix="/prescricoes", tags=["Prescrições"])
+router = APIRouter(prefix="/v1/prescricoes", tags=["Prescrições"])
 
 
 @router.get("/", response_model=List[PrescricaoOut])

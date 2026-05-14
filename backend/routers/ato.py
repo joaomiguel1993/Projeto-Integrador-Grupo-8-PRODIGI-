@@ -4,7 +4,7 @@ from typing import List
 from backend.schemas.ato import AtoCreate, AtoUpdate, AtoOut
 from backend.services import atos_service
 
-router = APIRouter(prefix="/atos", tags=["Atos"])
+router = APIRouter(prefix="/v1/atos", tags=["Atos"])
 
 
 @router.get("/", response_model=List[AtoOut])

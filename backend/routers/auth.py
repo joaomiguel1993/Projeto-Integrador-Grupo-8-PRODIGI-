@@ -6,7 +6,7 @@ from backend.db import get_connection
 from backend.dao.logs_dao import insert_log
 
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/v1/auth", tags=["Auth"])
 
 
 def get_client_ip(request: Request) -> str:

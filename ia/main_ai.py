@@ -63,7 +63,7 @@ class DadosTriagem(BaseModel):
 class DadosEspera(BaseModel):
     """Esquema de dados operacionais esperados para o cálculo de tempos de espera."""
     Urgency_Level: str          # 'Critical', 'High', 'Medium', 'Low'
-    Nurse_to_Patient_Ratio: int # ex: 7
+    Nurse_to_Patient_Ratio: float 
     Specialist_Availability: int # ex: 2
     Facility_Size_Beds: int     # ex: 92
     Day_of_Week: str            # 'Monday', 'Tuesday', ...
@@ -86,7 +86,7 @@ class DadosRiscoMed(BaseModel):
 tradutor_cons = {'Acordado': 1, 'Confuso': 2, 'Inconsciente': 3}
 
 # --- ROTA 1: Prever Cor da Pulseira ---
-@app.post("/predict/triage")
+@app.post("/predict/v1/triage")
 def predict_triage(d: DadosTriagem):
     """
     Endpoint para classificar o nível de urgência de um utente.
@@ -108,7 +108,7 @@ def predict_triage(d: DadosTriagem):
     return {"pulseira": str(previsao)}
 
 # --- ROTA 2: Prever Tempo de Espera por Nível de Urgência ---
-@app.post("/predict/wait-time")
+@app.post("/predict/v1/wait-time")
 def predict_wait(d: DadosEspera):
     """
     Endpoint para estimar o tempo de espera no painel da urgência.
@@ -123,7 +123,7 @@ def predict_wait(d: DadosEspera):
     """
     resultados = {}
 
-    pulseiras = ['Critical', 'High', 'Medium', 'Low']
+    pulseiras = ['Critical', 'High', 'Medium', 'Low', 'Very Low']
 
     for nivel in pulseiras:
         df = pd.DataFrame([{
@@ -153,10 +153,11 @@ def predict_wait(d: DadosEspera):
         "High":     resultados['High'],
         "Medium":   resultados['Medium'],
         "Low":      resultados['Low'],
+        "Very Low":  resultados['Very Low'],
     }
 
 # --- ROTA 3: Processar Texto e Extrair Sinais Vitais via Groq ---
-@app.post("/predict/voz")
+@app.post("/predict/v1/voz")
 def predict_voz(d: DadosVoz):
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
@@ -202,7 +203,7 @@ JSON:"""
         return {"erro": f"Erro ao chamar o Groq: {str(e)}"}
 
 # --- ROTA 4: Prever Risco de Medicação ---
-@app.post("/predict/medicine-risk")
+@app.post("/predict/v1/medicine-risk")
 def predict_medicine_risk(d: DadosRiscoMed):
     """
     Endpoint para validação de segurança clínica de prescrições.

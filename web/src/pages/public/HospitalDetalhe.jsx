@@ -52,11 +52,24 @@ export default function HospitalDetalhe() {
         setLoading(true);
         setErro('');
 
-        const response = await fetch(`http://localhost:8000/api/api/hospitais/${id}`);
-        if (!response.ok) throw new Error('Erro ao carregar hospital');
+        const [respHosp, respPainel] = await Promise.all([
+          fetch(`http://localhost:8000/api/hospitais/${id}`),
+          fetch(`http://localhost:8000/api/painel/tempos-espera/${id}`)
+        ]);
 
-        const data = await response.json();
-        setHospital(data);
+        if (!respHosp.ok) throw new Error('Erro ao carregar hospital');
+
+        const dataHosp = await respHosp.json();
+        const dataPainel = respPainel.ok ? await respPainel.json() : null;
+
+        setHospital({
+          ...dataHosp,
+          espera_vermelho: dataPainel?.tempos_espera?.vermelho?.minutos ?? null,
+          espera_laranja:  dataPainel?.tempos_espera?.laranja?.minutos  ?? null,
+          espera_amarelo:  dataPainel?.tempos_espera?.amarelo?.minutos  ?? null,
+          espera_verde:    dataPainel?.tempos_espera?.verde?.minutos    ?? null,
+          espera_azul:     dataPainel?.tempos_espera?.azul?.minutos     ?? null,
+        });
       } catch {
         setErro('Não foi possível carregar os dados do hospital.');
       } finally {
@@ -109,7 +122,7 @@ export default function HospitalDetalhe() {
 
             <div className="hospital-detail-kpi">
               <span>{textos.home?.labelEspera || 'Tempo de espera'}</span>
-              <strong>{getWaitLabel(hospital.tempo_espera ?? hospital.tempoEspera)}</strong>
+              <strong>{getWaitLabel(hospital.espera_amarelo)}</strong>
             </div>
           </div>
         </div>
@@ -148,11 +161,11 @@ export default function HospitalDetalhe() {
               </div>
 
               <div className="hospital-triage-grid">
-                <TriageCard label="Vermelho" value={hospital.espera_vermelho ?? 0} tone="red" />
-                <TriageCard label="Laranja" value={hospital.espera_laranja ?? 10} tone="orange" />
-                <TriageCard label="Amarelo" value={hospital.espera_amarelo ?? 25} tone="yellow" />
-                <TriageCard label="Verde" value={hospital.espera_verde ?? 40} tone="green" />
-                <TriageCard label="Azul" value={hospital.espera_azul ?? 60} tone="blue" />
+                <TriageCard label="Vermelho" value={hospital.espera_vermelho} tone="red" />
+                <TriageCard label="Laranja" value={hospital.espera_laranja} tone="orange" />
+                <TriageCard label="Amarelo" value={hospital.espera_amarelo} tone="yellow" />
+                <TriageCard label="Verde" value={hospital.espera_verde} tone="green" />
+                <TriageCard label="Azul" value={hospital.espera_azul} tone="blue" />
               </div>
             </section>
           </div>
