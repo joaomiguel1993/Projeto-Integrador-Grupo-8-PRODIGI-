@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import HTTPException
 from backend.repositories import prescricoes_repository
+from backend.services import ai_prescricao_service
 
 
 def listar_prescricoes():
@@ -23,6 +24,13 @@ def criar_prescricao(data: dict):
         resultado = prescricoes_repository.criar_prescricao(data)
         if resultado is None:
             raise HTTPException(status_code=400, detail="Não foi possível criar a prescrição.")
+
+        # Chamar IA para avaliar risco medicamentoso (não bloqueia se falhar)
+        try:
+            ai_prescricao_service.avaliar_risco_prescricao(resultado["id_prescricao"])
+        except Exception as e:
+            print(f"[IA] Aviso: avaliação de risco medicamentoso falhou — {e}")
+
         return resultado
     except HTTPException:
         raise

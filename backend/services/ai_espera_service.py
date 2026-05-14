@@ -1,12 +1,13 @@
+import os
 from datetime import datetime
+
+import httpx
 from fastapi import HTTPException
 
 from backend.db import run_query
 from backend.services import predicao_ia_service
-from ia.src.predict_wait_time import prever
 
-
-# ── Mapeamentos BD → strings que os encoders conhecem ──────────────────────────
+IA_URL = os.getenv("IA_URL", "http://prodigi_ia:8001")
 
 _COR_TO_URGENCY = {
     "vermelho": "Critical",
@@ -16,12 +17,14 @@ _COR_TO_URGENCY = {
     "azul":     "Very Low",
 }
 
+
 def _hour_to_time_of_day(h: int) -> str:
     if 5  <= h < 9:  return "Morning"
     if 9  <= h < 12: return "Late Morning"
     if 12 <= h < 18: return "Afternoon"
     if 18 <= h < 22: return "Evening"
     return "Night"
+
 
 def _month_to_season(m: int) -> str:
     if m in (12, 1, 2): return "Winter"
@@ -30,9 +33,15 @@ def _month_to_season(m: int) -> str:
     return "Autumn"
 
 
-# ── Ponto de entrada público ────────────────────────────────────────────────────
-
 def prever_tempo_espera(cod_ep_urgenc: int) -> None:
+    """
+    Chamado pelo triagens_service após gravar a triagem.
+    1. Consulta a BD (episódio + v_estatisticas_ia)
+    2. Prepara as 7 features
+    3. Chama o serviço IA via HTTP (POST /predict/v1/wait-time)
+    4. Atualiza Triagem.TempoEsperaPrevisto
+    5. Grava auditoria em PredicaoIA
+    """
     # 1. Buscar episódio + cor de triagem
     ep = run_query("""
         SELECT e.idhosp, e.datahoraentr, t.cortriagem
@@ -58,18 +67,38 @@ def prever_tempo_espera(cod_ep_urgenc: int) -> None:
     # 3. Preparar as 7 features
     dt  = ep["datahoraentr"] if isinstance(ep["datahoraentr"], datetime) else datetime.now()
     pac = max(int(estat["pacientes_ativos"] or 1), 1)
+    enf = max(int(estat["contagem_enfermeiros"] or 1), 1)
+    med = max(int(estat["contagem_medicos"] or 1), 1)
+
     features = {
         "urgency_level":      _COR_TO_URGENCY.get(ep["cortriagem"] or "verde", "Medium"),
-        "nurse_ratio":        round(int(estat["contagem_enfermeiros"] or 0) / pac, 4),
-        "specialist_avail":   int(estat["contagem_medicos"] or 0),
-        "facility_size_beds": int(estat["facility_size_beds"] or 0),
+        "nurse_ratio":        round(enf / pac, 4),
+        "specialist_avail":   med,
+        "facility_size_beds": int(estat["facility_size_beds"] or 100),
         "day_of_week":        dt.strftime("%A"),
         "time_of_day":        _hour_to_time_of_day(dt.hour),
         "season":             _month_to_season(dt.month),
-    }   
+    }
 
-    # 4. Chamar o módulo IA
-    tempo_previsto = prever(features)
+    # 4. Chamar o serviço IA via HTTP
+    body = {
+        "Urgency_Level":          features["urgency_level"],
+        "Nurse_to_Patient_Ratio": features["nurse_ratio"],
+        "Specialist_Availability": features["specialist_avail"],
+        "Facility_Size_Beds":     features["facility_size_beds"],
+        "Day_of_Week":            features["day_of_week"],
+        "Time_of_Day":            features["time_of_day"],
+        "Season":                 features["season"],
+    }
+
+    try:
+        resp = httpx.post(f"{IA_URL}/predict/v1/wait-time", json=body, timeout=5.0)
+        resp.raise_for_status()
+        data = resp.json()
+        urgency_key = features["urgency_level"]
+        tempo_previsto = float(data.get(urgency_key, 0))
+    except Exception as e:
+        raise Exception(f"Serviço IA indisponível: {e}")
 
     # 5. Atualizar Triagem.TempoEsperaPrevisto na BD
     run_query("""
