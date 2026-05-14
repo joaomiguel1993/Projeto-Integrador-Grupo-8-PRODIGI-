@@ -1,0 +1,112 @@
+.home-info {
+  padding: clamp(3rem, 6vw, 5rem) 0;
+  background: var(--siaguh-surface);
+  border-top: 1px solid var(--siaguh-border);
+}
+
+.home-info__grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.home-info__desc {
+  font-size: var(--text-base);
+  color: var(--siaguh-muted);
+  line-height: 1.75;
+  max-width: 52ch;
+  margin: 0 0 1.5rem;
+}
+
+.home-triage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.home-triage-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-size: var(--text-sm);
+}
+
+.home-triage-item__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.home-triage-item__desc {
+  color: var(--siaguh-text);
+  opacity: 0.75;
+}
+
+.home-info__card {
+  background: var(--siaguh-bg);
+  border: 1px solid var(--siaguh-border);
+  border-radius: var(--r-xl);
+  padding: 1.5rem;
+  box-shadow: var(--siaguh-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.home-info__mock-patient {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid var(--siaguh-border);
+  border-radius: var(--r-md);
+  padding: 0.75rem;
+}
+
+.home-info__mock-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--siaguh-green-soft);
+  border-radius: var(--r-md);
+  display: grid;
+  place-items: center;
+  color: var(--siaguh-green);
+  flex-shrink: 0;
+}
+
+.home-info__mock-lines {
+  flex: 1;
+}
+
+.home-info__mock-badge {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--r-xl);
+  white-space: nowrap;
+}
+
+.home-info__mock-bar {
+  display: flex;
+  height: 24px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  gap: 2px;
+}
+
+.home-info__mock-caption {
+  font-size: var(--text-xs);
+  color: var(--siaguh-muted);
+  text-align: center;
+  margin: 0;
+}

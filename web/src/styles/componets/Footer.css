@@ -1,271 +1,43 @@
-/* =========================================
-FOOTER SIAGUH - ESTILOS COMPLETOS
-========================================= */
-
-.siaguh-footer {
-  position: static;
-  left: auto;
-  bottom: auto;
-  width: 100%;
-  z-index: auto;
-  margin-top: 2rem;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+.home-footer {
+  background: var(--siaguh-text);
+  color: white;
+  padding: 2rem 0;
 }
 
-/* --------------------------------- */
-/* SUBFOOTER (Fundo Claro) */
-/* --------------------------------- */
-.siaguh-subfooter {
-  background-color: #f8f9fa;
-  padding: 2rem 4rem;
+.home-footer__inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #e2e8f0;
-  color: #4a5568;
-}
-
-.siaguh-subfooter-links {
-  display: flex;
-  gap: 2rem;
+  justify-content: space-between;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
-.siaguh-subfooter-links a {
-  color: #4a5568;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.siaguh-subfooter-links a:hover {
-  color: #2f8b6b;
-}
-
-.siaguh-subfooter-contacts {
-  display: flex;
-  gap: 3rem;
-  align-items: center;
-}
-
-.siaguh-contact-item {
+.home-footer__brand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  text-decoration: none;
-  color: #007456;
 }
 
-.siaguh-contact-item svg {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
+.home-footer__logo {
+  width: 36px;
+  height: 36px;
 }
 
-.siaguh-contact-item:hover {
-  opacity: 0.8;
-  cursor: pointer;
-}
-
-.siaguh-contact-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.siaguh-contact-label {
-  font-size: 0.75rem;
-  color: #718096;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.siaguh-contact-value {
-  font-size: 1.125rem;
-  font-weight: bold;
-  line-height: 1.2;
-}
-
-.siaguh-contact-item.faq-link .siaguh-contact-value {
-  color: #007456;
-}
-
-.siaguh-contact-item.phone-link .siaguh-contact-value {
-  color: #1a202c;
-}
-
-/* --------------------------------- */
-/* FOOTER PRINCIPAL (Fundo Verde) */
-/* --------------------------------- */
-.siaguh-main-footer {
-  background-color: #007456;
-  padding: 1.5rem 4rem;
-  color: #ffffff;
-  position: relative;
-}
-
-.siaguh-footer-content-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding-right: 3rem;
-  gap: 2rem;
-}
-
-.siaguh-footer-text {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-.siaguh-footer-text p {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 300;
-  line-height: 1.5;
-}
-
-.siaguh-logos-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-left: auto;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  flex: 1 1 auto;
-}
-
-.siaguh-logos-container img {
-  max-height: 32px;
-  width: auto;
-  object-fit: contain;
-  flex-shrink: 0;
+.home-footer__brand strong {
   display: block;
+  font-size: var(--text-sm);
+  font-weight: 700;
 }
 
-.siaguh-btn-top {
-  position: absolute;
-  right: 1.5rem;
-  top: 1rem;
-  background-color: #ffffff;
-  color: #007456;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  z-index: 2;
+.home-footer__brand span {
+  display: block;
+  font-size: var(--text-xs);
+  opacity: 0.6;
+  max-width: 36ch;
 }
 
-.siaguh-btn-top svg {
-  width: 20px;
-  height: 20px;
-}
-
-.siaguh-btn-top:hover {
-  background-color: #f0f0f0;
-  transform: translateY(-3px);
-}
-
-/* --------------------------------- */
-/* RESPONSIVIDADE */
-/* --------------------------------- */
-
-@media (max-width: 1280px) {
-  .siaguh-footer-content-wrapper {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-right: 0;
-    gap: 1.5rem;
-  }
-
-  .siaguh-footer-text {
-    white-space: normal;
-  }
-
-  .siaguh-logos-container {
-    justify-content: flex-start;
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .siaguh-subfooter {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 2rem;
-    gap: 2.5rem;
-  }
-
-  .siaguh-subfooter-links {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .siaguh-subfooter-contacts {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .siaguh-main-footer {
-    padding: 2rem 1.5rem;
-  }
-
-  .siaguh-footer-content-wrapper {
-    align-items: flex-start;
-  }
-
-  .siaguh-btn-top {
-    right: 1.5rem;
-  }
-}
-.siaguh-footer {
-  margin-top: auto;
-  flex-shrink: 0;
-}
-
-html, body, #root {
-  min-height: 100%;
-}
-
-.site-shell {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.site-main {
-  flex: 1 0 auto;
-}
-html, body, #root {
-  min-height: 100%;
-}
-
-body {
+.home-footer__copy {
+  font-size: var(--text-xs);
+  opacity: 0.5;
   margin: 0;
-}
-
-.site-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-
-.site-main {
-  flex: 1 0 auto;
-  min-height: 0;
-}
-
-.siaguh-footer {
-  margin-top: auto;
-  flex-shrink: 0;
 }

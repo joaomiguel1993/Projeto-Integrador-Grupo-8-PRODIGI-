@@ -1,0 +1,87 @@
+.btn {
+  min-height: 48px;
+  padding: 0.8rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  transition: transform var(--color-transition), box-shadow var(--color-transition), background var(--color-transition), border-color var(--color-transition), filter var(--color-transition);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--primary {
+  min-width: 220px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: #ffffff;
+  box-shadow: var(--color-shadow-sm);
+}
+
+.btn--primary:hover {
+  box-shadow: var(--color-shadow-md);
+}
+
+.btn--secondary {
+  background: var(--color-surface-3);
+  border-color: var(--color-border);
+  color: var(--color-primary-dark);
+}
+
+.btn--secondary:hover {
+  background: var(--color-bg-soft);
+  border-color: var(--color-border-strong);
+}
+
+.btn--danger {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
+
+.btn--danger:hover {
+  background: #a93226;
+  border-color: #a93226;
+}
+
+.btn--success {
+  background: var(--admin-success);
+  border-color: var(--admin-success);
+  color: #fff;
+}
+
+.btn--success:hover {
+  background: var(--admin-primary-hover);
+  border-color: var(--admin-primary-hover);
+}
+
+.btn svg,
+.btn-icon svg,
+.sidebar__link svg,
+.logout-button svg,
+.sidebar__toggle svg {
+  color: currentColor;
+  display: block;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}

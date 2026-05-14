@@ -1,43 +1,33 @@
-/* =========================================
-   PÁGINA SOBRE NÓS - LAYOUT BASE
-   ========================================= */
-
-.sobre-nos-container {
-  background-color: #f4f7f6; /* Fundo cinza claro de toda a página */
+.sobre-nos-page {
+  background-color: #f4f7f6;
   min-height: 100vh;
   padding-bottom: 5rem;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* =========================================
-   CABEÇALHO VERDE (HERO) & BREADCRUMBS
-   ========================================= */
-
 .hero-background {
-  background-color: #007456; /* Verde SIAGUH principal */
+  background-color: #007456;
   padding-top: 1.5rem;
-  padding-bottom: 8rem; /* Espaço extra para o cartão branco subir por cima */
+  padding-bottom: 8rem;
 }
 
-/* FIX: Transforma as Migalhas de Pão na versão "Dark Mode" (fundo transparente, texto branco) */
 .hero-breadcrumbs .breadcrumbs-nav {
-  background-color: transparent !important; 
-  padding: 0 !important;
+  background-color: transparent;
+  padding: 0;
   margin-bottom: 1.5rem;
 }
 
-.hero-breadcrumbs .breadcrumbs-link, 
+.hero-breadcrumbs .breadcrumbs-link,
 .hero-breadcrumbs .breadcrumbs-separator,
 .hero-breadcrumbs .breadcrumbs-current {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .hero-breadcrumbs .breadcrumbs-link:hover {
-  color: #ffffff !important;
+  color: #ffffff;
   text-decoration: underline;
 }
 
-/* Títulos do Cabeçalho */
 .sobre-nos-hero {
   text-align: center;
   color: #ffffff;
@@ -47,11 +37,11 @@
 .sobre-nos-hero h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.5rem;
 }
 
 .sobre-nos-hero .highlight-title {
-  color: #a3e6cd; /* Verde clarinho para realçar "Integrador" */
+  color: #a3e6cd;
   font-weight: 400;
 }
 
@@ -61,12 +51,8 @@
   opacity: 0.9;
 }
 
-/* =========================================
-   CARTÃO BRANCO (CONTEÚDO PRINCIPAL)
-   ========================================= */
-
 .sobre-nos-content {
-  margin-top: -5.5rem; /* Puxa o cartão para cima do fundo verde */
+  margin-top: -5.5rem;
   position: relative;
   z-index: 10;
 }
@@ -75,24 +61,22 @@
   background-color: #ffffff;
   border-radius: 12px;
   padding: 3.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra elegante */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Textos base */
 .text-box p.normal-text {
   color: #4a5568;
   line-height: 1.8;
   font-size: 1.05rem;
   margin-bottom: 1.5rem;
-  padding: 0.5rem; /* Padding subtil para quando o fundo ficar verde durante a leitura */
+  padding: 0.5rem;
   border-radius: 6px;
   transition: background-color 0.4s ease;
 }
 
-/* O Famoso 3º Parágrafo (Caixa verde com barra lateral) */
 .text-box p.highlight-text {
-  background-color: #f2fbf7; /* Verde clarinho de fundo */
-  border-left: 4px solid #007456; /* Barra lateral verde escuro */
+  background-color: #f2fbf7;
+  border-left: 4px solid #007456;
   padding: 1.5rem;
   margin-top: 2rem;
   margin-bottom: 0;
@@ -105,12 +89,8 @@
 }
 
 .sapo-emoji {
-  font-style: normal; /* Para o emoji não ficar itálico */
+  font-style: normal;
 }
-
-/* =========================================
-   SECÇÃO DA EQUIPA (IMAGEM E NOMES)
-   ========================================= */
 
 .equipa-section {
   text-align: center;
@@ -123,11 +103,10 @@
   margin-bottom: 2rem;
 }
 
-/* Container redondo da imagem */
 .grupo-imagem-container {
   background: #ffffff;
   padding: 1.5rem;
-  border-radius: 20px; /* Bordas bem arredondadas como na imagem */
+  border-radius: 20px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
   max-width: 600px;
   margin: 0 auto;
@@ -140,11 +119,10 @@
   display: block;
 }
 
-/* Pílula com os Nomes */
 .membros-lista-container {
   display: flex;
   justify-content: center;
-  margin-top: -1.5rem; /* Sobe um pouco para se aproximar da imagem */
+  margin-top: -1.5rem;
   position: relative;
   z-index: 5;
 }
@@ -156,7 +134,7 @@
   flex-wrap: wrap;
   gap: 1.5rem;
   padding: 1rem 2.5rem;
-  border-radius: 50px; /* Formato de pílula redonda */
+  border-radius: 50px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
@@ -171,27 +149,25 @@
   font-size: 1.2rem;
 }
 
-/* =========================================
-   LEITOR DE VOZ & ACESSIBILIDADE
-   ========================================= */
-
-/* Classe invisível para leitores de ecrã nativos */
 .sr-only {
   position: absolute;
-  width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
-/* Controlos do topo direito do texto */
 .read-aloud-header {
   display: flex;
   justify-content: flex-end;
-  align-items: center; /* Alinha o texto do tempo na mesma linha do botão */
+  align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-/* Tempo de Leitura */
 .reading-time {
   display: flex;
   align-items: center;
@@ -207,7 +183,6 @@
   color: #94a3b8;
 }
 
-/* Botão Ouvir Texto */
 .btn-read-aloud {
   display: inline-flex;
   align-items: center;
@@ -224,7 +199,10 @@
   font-family: inherit;
 }
 
-.btn-read-aloud svg { width: 18px; height: 18px; }
+.btn-read-aloud svg {
+  width: 18px;
+  height: 18px;
+}
 
 .btn-read-aloud:hover {
   background-color: #f2fbf7;
@@ -235,53 +213,21 @@
   color: #ffffff;
 }
 
-/* =========================================
-   EFEITOS VISUAIS DURANTE A LEITURA
-   ========================================= */
-
-/* O Fundo verde suave do parágrafo inteiro */
 .text-box p.reading-highlight {
-  background-color: rgba(0, 116, 86, 0.03); 
+  background-color: rgba(0, 116, 86, 0.03);
 }
 
-/* O Fundo do 3º parágrafo (fica um bocadinho mais escuro) */
 .text-box p.reading-highlight-special {
-  background-color: #d7efe5; 
+  background-color: #d7efe5;
 }
 
-/* A MÁGICA: O Cursor / Destaque Palavra a Palavra */
 .word-highlight {
-  background-color: #a3e6cd; /* Verde vibrante mas legível */
-  color: #004d39; /* Escurecemos o texto para garantir bom contraste/leitura */
+  background-color: #a3e6cd;
+  color: #004d39;
   border-radius: 3px;
   padding: 0 2px;
   margin: 0 1px;
-  font-weight: 600; /* Dá um leve negrito à palavra a ser lida */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transition: background-color 0.1s ease; /* Transição super rápida entre palavras */
-}
-
-/* =========================================
-   RESPONSIVIDADE (MOBILE E TABLETS)
-   ========================================= */
-
-@media (max-width: 768px) {
-  .text-box { padding: 1.5rem; }
-  
-  .sobre-nos-content { margin-top: -3rem; }
-  
-  .sobre-nos-hero h1 { font-size: 2rem; }
-  
-  .read-aloud-header {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
-  
-  .membros-lista {
-    padding: 1rem;
-    border-radius: 12px;
-    gap: 0.8rem;
-    justify-content: center;
-  }
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.1s ease;
 }

@@ -1,8 +1,4 @@
-/* =========================================
-   PÁGINA DE ACESSIBILIDADE - ESTILOS BASE
-   ========================================= */
-
-.accessibility-page-wrapper {
+.accessibility-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -10,7 +6,6 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* O container mantém tudo alinhado ao centro */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -20,7 +15,7 @@
 }
 
 .accessibility-main-content {
-  flex: 1; 
+  flex: 1;
   padding-top: 2rem;
   padding-bottom: 4rem;
   display: flex;
@@ -28,7 +23,6 @@
   align-items: center;
 }
 
-/* O "Documento" branco ao centro */
 .accessibility-document {
   background-color: #ffffff;
   max-width: 850px;
@@ -67,14 +61,14 @@
 .sub-section {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
-  background-color: #f8fcfb; 
+  background-color: #f8fcfb;
   padding: 1.5rem;
   border-left: 4px solid #007456;
   border-radius: 0 8px 8px 0;
 }
 
 .accessibility-document h3 {
-  color: #2b6cb0; 
+  color: #2b6cb0;
   font-size: 1.15rem;
   margin-top: 0;
   margin-bottom: 0.75rem;
@@ -112,12 +106,11 @@
   color: #005a43;
 }
 
-/* Divisória final */
 .accessibility-divider {
   border: 0;
   height: 1px;
   background-color: #e2e8f0;
-  margin: 3rem 0 1.5rem 0;
+  margin: 3rem 0 1.5rem;
 }
 
 .accessibility-footer-note {
@@ -126,117 +119,4 @@
   text-align: center;
   font-style: italic;
   margin: 0;
-}
-
-/* =========================================
-   LEITOR DE VOZ E TELEPONTO
-   ========================================= */
-
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
-}
-
-.read-aloud-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center; 
-  gap: 1rem; 
-  margin-top: -1rem; /* Aproxima do título principal */
-  margin-bottom: 2rem;
-}
-
-/* Tempo de Leitura */
-.reading-time {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.reading-time svg {
-  width: 16px; height: 16px; color: #94a3b8;
-}
-
-/* Botão Ouvir Texto */
-.btn-read-aloud {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  color: #007456;
-  border: 1px solid #007456;
-  border-radius: 50px;
-  padding: 0.5rem 1.2rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: inherit;
-}
-
-.btn-read-aloud svg { width: 18px; height: 18px; }
-
-.btn-read-aloud:hover { background-color: #f2fbf7; }
-
-.btn-read-aloud.is-reading {
-  background-color: #007456;
-  color: #ffffff;
-}
-
-/* 
-  EFEITO "TELEPONTO": Quando a leitura passa numa secção que tem 
-  listas complexas (ul, li), mostramos o texto num formato legível.
-*/
-.section-wrapper {
-  transition: all 0.3s ease;
-}
-
-.reading-teleprompter {
-  background-color: #f8fcfb;
-  border-left: 4px solid #007456;
-  padding: 1.5rem;
-  border-radius: 0 8px 8px 0;
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #2d3748;
-  margin-bottom: 1.5rem;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.word-highlight {
-  background-color: #a3e6cd; 
-  color: #004d39; 
-  border-radius: 3px;
-  padding: 0 2px;
-  margin: 0 1px;
-  font-weight: 600; 
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  transition: background-color 0.1s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* =========================================
-   RESPONSIVIDADE (MOBILE)
-   ========================================= */
-
-@media (max-width: 768px) {
-  .container { padding-left: 1rem; padding-right: 1rem; }
-  
-  .accessibility-document { padding: 2rem 1.5rem; }
-  
-  .accessibility-document h1 { font-size: 1.75rem; }
-  
-  .read-aloud-header {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
 }

@@ -1,27 +1,40 @@
 /* BASE */
 @import './base/variables.css';
-@import './base/base.css';
-@import './base/index.css';
+@import './base/reset.css';
+@import './base/global.css';
+@import './base/animations.css';
 
 /* LAYOUT */
 @import './layout/layout.css';
 @import './layout/sidebar.css';
-@import './layout/headerprivate.css';
+@import './layout/header-private.css';
+@import './layout/header-public.css';
+@import './layout/footer.css';
+@import './layout/responsive.css';
 
 /* COMPONENTS */
-@import './components/forms.css';
 @import './components/buttons.css';
+@import './components/forms.css';
 @import './components/dropdown.css';
 @import './components/tables.css';
-@import './components/breadcrumbs.css';
-@import './components/footer.css';
 @import './components/toolbar.css';
-@import './components/panels.css';
+@import './components/panel.css';
 @import './components/edit-header.css';
+@import './components/breadcrumbs.css';
+@import './components/hero.css';
+@import './components/summary-bar.css';
+@import './components/controls.css';
+@import './components/hospital-card.css';
+@import './components/info-section.css';
+@import './components/footer.css';
 
 /* PAGES */
-@import './pages/home.css';
 @import './pages/admin.css';
-
-/* RESPONSIVE */
-@import './layout/responsive.css';
+@import './pages/home.css';
+@import './pages/about.css';
+@import './pages/faq.css';
+@import './pages/accessibility.css';
+@import './pages/privacypolicy.css';
+@import './pages/doctor-dashboard.css';
+@import './pages/nurse-dashboard.css';
+@import './pages/receptionist-dashboard.css';
