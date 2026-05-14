@@ -6,4 +6,4 @@ fastapi
 uvicorn
 numpy
 groq
-xlsx
+
