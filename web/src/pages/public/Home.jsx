@@ -41,7 +41,7 @@ const obterContextoIA = () => {
 
 async function consultarIACompleta(hospital) {
     try {
-        const id = hospital.idhosp ?? hospital.id;
+        const id = hospital.id_hosp ?? hospital.id;
         const response = await fetch(`http://localhost:8000/api/painel/tempos-espera/${id}`);
         if (!response.ok) return null;
         const data = await response.json();
@@ -160,7 +160,7 @@ export default function Home() {
     }, []);
 
     const handleCardClick = useCallback((hospital) => {
-        const id = hospital?.idhosp ?? hospital?.id;
+        const id = hospital?.id_hosp ?? hospital?.id;
         if (!id) return;
         // Passamos o hospital com as predições já carregadas para a view de detalhes
         navigate(`/hospital/${id}`, { state: { hospitalData: hospital } });

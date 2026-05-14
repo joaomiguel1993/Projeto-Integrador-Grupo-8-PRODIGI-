@@ -41,10 +41,12 @@ def obter_tempos_espera(id_hosp: int) -> dict:
 
     now = datetime.now()
     pac = max(int(estat["pacientes_ativos"] or 1), 1)
+    enf = max(int(estat["contagem_enfermeiros"] or 1), 1)
+    med = max(int(estat["contagem_medicos"] or 1), 1)
 
     estado_hospital = {
-        "nurse_ratio":        round(int(estat["contagem_enfermeiros"] or 0) / pac, 4),
-        "specialist_avail":   int(estat["contagem_medicos"] or 0),
+        "nurse_ratio": round(enf / pac, 4),
+        "specialist_avail": med,
         "facility_size_beds": int(estat["facility_size_beds"] or 0),
         "day_of_week":        now.strftime("%A"),
         "time_of_day":        _hour_to_time_of_day(now.hour),
