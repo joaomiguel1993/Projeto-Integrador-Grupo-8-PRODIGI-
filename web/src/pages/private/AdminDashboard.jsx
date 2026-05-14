@@ -477,7 +477,7 @@ export default function AdminDashboard() {
     try {
       setLoadingProfissionais(true);
       setErroProfissionais('');
-      const data = await apiFetch('/api/profissionais/');
+      const data = await apiFetch('/api/v1/profissionais/');
       setProfissionais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroProfissionais(err.message);
@@ -491,7 +491,7 @@ export default function AdminDashboard() {
     try {
       setLoadingUtilizadores(true);
       setErroUtilizadores('');
-      const data = await apiFetch('/api/utilizadores/');
+      const data = await apiFetch('/api/v1/utilizadores/');
       const normalizados = Array.isArray(data)
         ? data.map((u) => ({
           ...u,
@@ -511,7 +511,7 @@ export default function AdminDashboard() {
     try {
       setLoadingHospitais(true);
       setErroHospitais('');
-      const data = await apiFetch('/api/hospitais/');
+      const data = await apiFetch('/api/v1/hospitais/');
       setHospitais(Array.isArray(data) ? data.map(mapHospitalFromApi) : []);
     } catch (err) {
       setErroHospitais(err.message);
@@ -525,7 +525,7 @@ export default function AdminDashboard() {
     try {
       setLoadingLogs(true);
       setErroLogs('');
-      const data = await apiFetch('/api/logs/');
+      const data = await apiFetch('/api/v1/logs/');
       setLogs(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroLogs(err.message);
@@ -729,9 +729,9 @@ export default function AdminDashboard() {
       const idFunc = Number(obterIdFunc(utilizador));
 
       const [utilizadorData, hospitaisData, profissionalData] = await Promise.all([
-        apiFetch(`/api/utilizadores/${idFunc}`),
-        apiFetch(`/api/trabalha/funcionario/${idFunc}`),
-        apiFetch(`/api/profissionais/${idFunc}`),
+        apiFetch(`/api/v1/utilizadores/${idFunc}`),
+        apiFetch(`/api/v1/trabalha/funcionario/${idFunc}`),
+        apiFetch(`/api/v1/profissionais/${idFunc}`),
       ]);
 
       const hospitaisIds = Array.isArray(hospitaisData)
@@ -816,7 +816,7 @@ export default function AdminDashboard() {
     try {
       setLoadingProfissionais(true);
 
-      const hospitaisData = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+      const hospitaisData = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
       console.log('HOSPITAIS DO FUNCIONARIO', hospitaisData);
 
       const idsHospitais = Array.isArray(hospitaisData)
@@ -866,7 +866,7 @@ export default function AdminDashboard() {
     try {
       setSubmittingUser(true);
       const payload = { ...novoUtilizador, idfunc: Number(novoUtilizador.idfunc), hospitais: novoUtilizador.hospitais || [] };
-      const data = await apiFetch('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) });
+      const data = await apiFetch('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(payload) });
       setMensagemUser(ta('sucessoCriarUser', 'User created successfully.'));
       adicionarHistorico('Criar utilizador', `Foi criado o utilizador ${data.username || novoUtilizador.username}.`);
       setNovoUtilizador({ idfunc: '', username: '', password: '', role: ROLES.ADMIN, hospitais: [] });
@@ -892,9 +892,9 @@ export default function AdminDashboard() {
     try {
       setSubmittingFunc(true);
       const payload = { nome: novoProfissional.nome, tipofunc: novoProfissional.tipofunc, sexo: novoProfissional.sexo };
-      const data = await apiFetch('/api/profissionais/', { method: 'POST', body: JSON.stringify(payload) });
+      const data = await apiFetch('/api/v1/profissionais/', { method: 'POST', body: JSON.stringify(payload) });
       for (const idhosp of novoProfissional.hospitais || []) {
-        await apiFetch('/api/trabalha/', {
+        await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
           body: JSON.stringify({ idfunc: data.idfunc, idhosp: Number(idhosp) }),
         });
@@ -924,7 +924,7 @@ export default function AdminDashboard() {
         email: novoHospital.email.trim() || null,
         telefone: novoHospital.contacto.trim() || null,
       };
-      await apiFetch('/api/hospitais/', { method: 'POST', body: JSON.stringify(payload) });
+      await apiFetch('/api/v1/hospitais/', { method: 'POST', body: JSON.stringify(payload) });
       setMensagemHospital(ta('sucessoCriarHosp', 'Hospital created successfully.'));
       adicionarHistorico('Criar hospital', `Foi criado o hospital ${novoHospital.nome}.`);
       setNovoHospital({ nome: '', email: '', localidade: '', contacto: '' });
@@ -956,12 +956,12 @@ export default function AdminDashboard() {
         payloadUser.password = utilizadorEditando.password.trim();
       }
 
-      await apiFetch(`/api/utilizadores/${idfunc}`, {
+      await apiFetch(`/api/v1/utilizadores/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify(payloadUser),
       });
 
-      await apiFetch(`/api/profissionais/${idfunc}`, {
+      await apiFetch(`/api/v1/profissionais/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify({
           nome: utilizadorEditando.nome,
@@ -972,7 +972,7 @@ export default function AdminDashboard() {
 
       let hospitaisAntigos = [];
       try {
-        const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+        const resAntigos = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
         hospitaisAntigos = Array.isArray(resAntigos)
           ? resAntigos
             .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
@@ -997,7 +997,7 @@ export default function AdminDashboard() {
           id_hosp: idhosp,
         });
 
-        await apiFetch('/api/trabalha/', {
+        await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
           body: JSON.stringify({
             id_func: idfunc,
@@ -1007,7 +1007,7 @@ export default function AdminDashboard() {
       }
 
       for (const idhosp of remover) {
-        await apiFetch(`/api/trabalha/${idfunc}/${idhosp}`, {
+        await apiFetch(`/api/v1/trabalha/${idfunc}/${idhosp}`, {
           method: 'DELETE',
         });
       }
@@ -1059,14 +1059,14 @@ export default function AdminDashboard() {
         foto_url: funcionarioEditando.foto_url || null,
       };
 
-      await apiFetch(`/api/profissionais/${idfunc}`, {
+      await apiFetch(`/api/v1/profissionais/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify(payloadFunc),
       });
 
       let hospitaisAntigos = [];
       try {
-        const resAntigos = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+        const resAntigos = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
         hospitaisAntigos = Array.isArray(resAntigos)
           ? resAntigos
             .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
@@ -1086,7 +1086,7 @@ export default function AdminDashboard() {
       const remover = hospitaisAntigos.filter((h) => !hospitaisSelecionados.includes(h));
 
       for (const idhosp of adicionar) {
-        await apiFetch('/api/trabalha/', {
+        await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
           body: JSON.stringify({
             id_func: idfunc,
@@ -1096,7 +1096,7 @@ export default function AdminDashboard() {
       }
 
       for (const idhosp of remover) {
-        await apiFetch(`/api/trabalha/${idfunc}/${idhosp}`, {
+        await apiFetch(`/api/v1/trabalha/${idfunc}/${idhosp}`, {
           method: 'DELETE',
         });
       }
@@ -1139,7 +1139,7 @@ export default function AdminDashboard() {
         email: hospitalEditando.email || null,
         telefone: hospitalEditando.contacto || null,
       };
-      await apiFetch(`/api/hospitais/${hospitalEditando.idhosp || hospitalEditando.id_hosp}`, {
+      await apiFetch(`/api/v1/hospitais/${hospitalEditando.idhosp || hospitalEditando.id_hosp}`, {
         method: 'PUT',
         body: JSON.stringify(payload),
       });
@@ -1158,7 +1158,7 @@ export default function AdminDashboard() {
   const bloquearUtilizador = async (utilizador) => {
     if (!window.confirm(`Tens a certeza que pretendes bloquear "${utilizador.username}"?`)) return;
     try {
-      await apiFetch(`/api/utilizadores/${utilizador.idfunc}`, {
+      await apiFetch(`/api/v1/utilizadores/${utilizador.idfunc}`, {
         method: 'PUT',
         body: JSON.stringify({ username: utilizador.username, password: null, hospitais: extrairHospitais(utilizador), bloqueado: true }),
       });
@@ -1172,7 +1172,7 @@ export default function AdminDashboard() {
   const desbloquearUtilizador = async (utilizador) => {
     if (!window.confirm(`Tens a certeza que pretendes desbloquear "${utilizador.username}"?`)) return;
     try {
-      await apiFetch(`/api/utilizadores/${utilizador.idfunc}`, {
+      await apiFetch(`/api/v1/utilizadores/${utilizador.idfunc}`, {
         method: 'PUT',
         body: JSON.stringify({ username: utilizador.username, password: null, hospitais: extrairHospitais(utilizador), bloqueado: false }),
       });
@@ -1229,7 +1229,7 @@ export default function AdminDashboard() {
         if (!idfunc) continue;
 
         try {
-          const data = await apiFetch(`/api/trabalha/funcionario/${idfunc}`);
+          const data = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
           console.log('CONTAGEM HOSPITAIS - IDFUNC', idfunc, data);
           resultado[idfunc] = Array.isArray(data) ? data.length : 0;
         } catch (err) {
