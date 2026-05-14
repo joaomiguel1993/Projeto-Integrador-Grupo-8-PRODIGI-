@@ -158,8 +158,8 @@ export default function ReceptionistDashboard() {
 
     try {
       const [uRes, eRes] = await Promise.all([
-        fetch(`${API_URL}/api/utentes/`),
-        fetch(`${API_URL}/api/episodios/`),
+        fetch(`${API_URL}/api/v1/utentes/`),
+        fetch(`${API_URL}/api/v1/episodios/`),
       ]);
 
       const uData = await uRes.json().catch(() => []);
@@ -284,8 +284,8 @@ export default function ReceptionistDashboard() {
     const isEditing = !!numUtente;
 
     const url = isEditing
-      ? `${API_URL}/api/utentes/${numUtente}`
-      : `${API_URL}/api/utentes/`;
+      ? `${API_URL}/api/v1/utentes/${numUtente}`
+      : `${API_URL}/api/v1/utentes/`;
 
     const payloadUtente = {
       nome: novoUtente.nome ?? '',
@@ -349,7 +349,7 @@ export default function ReceptionistDashboard() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/episodios/`, {
+      const res = await fetch(`${API_URL}/api/v1/episodios/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
