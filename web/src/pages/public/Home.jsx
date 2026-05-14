@@ -9,7 +9,7 @@ import info3 from '../../imagens/Info3.png';
 import info4 from '../../imagens/Info4.png';
 import info5 from '../../imagens/Info5.png';
 
-const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
+
 const CAROUSEL_IMAGES = [info1, info2, info3, info4, info5];
 
 // --- FUNÇÕES DE APOIO (IA E UI) ---
@@ -41,31 +41,19 @@ const obterContextoIA = () => {
 
 async function consultarIACompleta(hospital) {
     try {
-        const contexto = obterContextoIA();
-        // Dados operacionais vindos do SQL (Trabalha/EpUrgencia)
-        const enfermeiros = hospital.contagem_enfermeiros || 1;
-        const pacientes = hospital.pacientes_ativos || 1;
-        const medicos = hospital.contagem_medicos || 1;
+        const id = hospital.idhosp ?? hospital.id;
+        const response = await fetch(`http://localhost:8000/api/painel/tempos-espera/${id}`);
+        if (!response.ok) return null;
+        const data = await response.json();
 
-        const body = {
-            "Urgency_Level": "Medium", 
-            "Nurse_to_Patient_Ratio": parseFloat((enfermeiros / pacientes).toFixed(2)),
-            "Specialist_Availability": medicos,
-            "Facility_Size_Beds": hospital.total_camas || 100,
-            "Day_of_Week": contexto.Day_of_Week,
-            "Time_of_Day": contexto.Time_of_Day,
-            "Season": contexto.Season
+        const t = data.tempos_espera;
+        return {
+            Critical:     t.vermelho?.minutos,
+            High:         t.laranja?.minutos,
+            Medium:       t.amarelo?.minutos,
+            Low:          t.verde?.minutos,
+            "Not Urgent": t.azul?.minutos,
         };
-
-        const response = await fetch(`${API_IA}/predict/wait-time`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        const data = await response.json(); 
-        // Retorna o mapeamento total: { Critical, High, Medium, Low, "Not Urgent" }
-        return data; 
     } catch (err) {
         console.error("Erro na predição IA:", err);
         return null;
