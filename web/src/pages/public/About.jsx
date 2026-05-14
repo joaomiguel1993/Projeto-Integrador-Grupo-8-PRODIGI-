@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
-import '../../styles/About.css'; 
+import '../../styles/main.css'; 
 import logo from '../../imagens/logo.png';
 import { useLanguage } from '../../contexts/LanguageContext';
 

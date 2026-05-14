@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import { useLanguage } from '../../contexts/LanguageContext'; // Importação do Contexto
-import '../../styles/PrivacyPolicy.css';
+import '../../styles/main.css';
 
 /**
  * @file PrivacyPolicy.jsx

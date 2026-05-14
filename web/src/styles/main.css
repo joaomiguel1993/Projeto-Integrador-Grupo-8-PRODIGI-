@@ -1,0 +1,27 @@
+/* BASE */
+@import './base/variables.css';
+@import './base/base.css';
+@import './base/index.css';
+
+/* LAYOUT */
+@import './layout/layout.css';
+@import './layout/sidebar.css';
+@import './layout/headerprivate.css';
+
+/* COMPONENTS */
+@import './components/forms.css';
+@import './components/buttons.css';
+@import './components/dropdown.css';
+@import './components/tables.css';
+@import './components/breadcrumbs.css';
+@import './components/footer.css';
+@import './components/toolbar.css';
+@import './components/panels.css';
+@import './components/edit-header.css';
+
+/* PAGES */
+@import './pages/home.css';
+@import './pages/admin.css';
+
+/* RESPONSIVE */
+@import './layout/responsive.css';

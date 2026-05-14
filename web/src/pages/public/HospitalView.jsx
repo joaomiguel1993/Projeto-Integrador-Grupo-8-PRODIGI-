@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { obterHospitalPorId } from '../../services/hospitais';
+import '../../styles/main.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';

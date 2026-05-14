@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
 import { useLanguage } from '../../contexts/LanguageContext'; // Importação do Contexto
-import '../../styles/Accessibility.css';
+import '../../styles/main.css';
 
 /**
  * @file Accessibility.jsx

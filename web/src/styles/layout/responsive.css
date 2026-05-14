@@ -1,0 +1,223 @@
+/* =========================================
+   RESPONSIVIDADE
+   ========================================= */
+
+@media (max-width: 1024px) {
+
+  .admin-sidebar {
+    position: fixed;
+
+    top: 0;
+    left: -300px;
+    bottom: 0;
+
+    width: 300px;
+    height: 100vh;
+
+    z-index: 1000;
+
+    transition:
+      left 0.3s ease,
+      width 0.3s ease;
+
+    box-shadow: 8px 0 32px rgba(36, 107, 82, 0.22);
+  }
+
+  .admin-layout.is-collapsed .admin-sidebar {
+    left: -300px;
+    width: 300px;
+  }
+
+  .admin-layout:not(.is-collapsed) .admin-sidebar {
+    left: 0;
+  }
+
+  .admin-content-wrapper {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  .admin-content-inner {
+    padding: 1.5rem 1.5rem;
+  }
+
+  .admin-form__grid,
+  .admin-filters,
+  .selector-hospitais {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-panel-section,
+  .admin-table-card,
+  .employee-edit-normal {
+    border-radius: 18px;
+  }
+
+  .admin-panel-section {
+    padding: 1.4rem 1.5rem;
+  }
+
+  .admin-edit-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 1.2rem 1.3rem;
+  }
+
+  .admin-edit-header__badge {
+    align-self: flex-start;
+  }
+
+  .admin-actions-row {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .admin-form__submit,
+  .admin-secondary-button,
+  .admin-primary-big-button {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .admin-table-scroll {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    min-width: 720px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .admin-sidebar__logo {
+    width: 150px;
+    height: 150px;
+  }
+
+  .admin-content-inner {
+    padding: 1rem;
+  }
+
+  .admin-content__body {
+    padding: 0;
+  }
+
+  .admin-panel-section,
+  .employee-edit-normal {
+    padding: 1.2rem 1.3rem;
+  }
+
+  .admin-panel-section__header h2 {
+    font-size: 1.25rem;
+  }
+
+  .admin-edit-header__title {
+    font-size: 1.35rem;
+  }
+
+  .admin-edit-header__subtitle {
+    font-size: 0.9rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem 0.55rem;
+    font-size: 0.85rem;
+  }
+
+  .admin-primary-big-button {
+    justify-content: center;
+  }
+
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 0.8rem;
+  }
+
+  .admin-toolbar--left {
+    justify-content: flex-start;
+  }
+
+  .admin-filters {
+    gap: 1rem;
+    padding: 0.9rem;
+  }
+
+  .admin-filters .admin-form__group {
+    width: 100%;
+  }
+
+  .admin-filters .admin-form__group input,
+  .admin-filters .admin-form__group select {
+    width: 100%;
+  }
+
+  .admin-sidebar__link {
+    padding: 0.95rem 1rem;
+  }
+
+  .admin-sidebar__profile {
+    padding: 0.8rem 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .admin-sidebar {
+    width: 80px;
+    padding: 0.6rem 0.5rem;
+  }
+
+  .admin-layout:not(.is-collapsed) .admin-sidebar {
+    width: 260px;
+  }
+
+  .admin-page-breadcrumbs {
+    font-size: 0.85rem;
+  }
+
+  .admin-table-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 0.5rem;
+  }
+
+  .admin-edit-header {
+    padding: 1rem;
+  }
+
+  .admin-edit-header__title {
+    font-size: 1.2rem;
+  }
+
+  .admin-edit-header__eyebrow {
+    font-size: 0.7rem;
+  }
+
+  .admin-panel-section,
+  .employee-edit-normal,
+  .admin-table-card {
+    border-radius: 16px;
+  }
+
+  .admin-form__submit,
+  .admin-secondary-button,
+  .admin-primary-big-button,
+  .admin-logout-button {
+    min-width: 100%;
+  }
+
+  .admin-actions-row {
+    flex-direction: column;
+  }
+
+  .admin-sidebar__logo {
+    width: 120px;
+    height: 120px;
+  }
+}

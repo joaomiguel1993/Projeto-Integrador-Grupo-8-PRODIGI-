@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { apiFetch } from '../../services/api';
 import { STORAGE_KEYS } from '../../constants/roles';
+import '../../styles/main.css';
 
 export default function Perfil() {
   const { textos } = useLanguage();
