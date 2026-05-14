@@ -63,7 +63,7 @@ class DadosTriagem(BaseModel):
 class DadosEspera(BaseModel):
     """Esquema de dados operacionais esperados para o cálculo de tempos de espera."""
     Urgency_Level: str          # 'Critical', 'High', 'Medium', 'Low'
-    Nurse_to_Patient_Ratio: int # ex: 7
+    Nurse_to_Patient_Ratio: float 
     Specialist_Availability: int # ex: 2
     Facility_Size_Beds: int     # ex: 92
     Day_of_Week: str            # 'Monday', 'Tuesday', ...
@@ -123,7 +123,7 @@ def predict_wait(d: DadosEspera):
     """
     resultados = {}
 
-    pulseiras = ['Critical', 'High', 'Medium', 'Low']
+    pulseiras = ['Critical', 'High', 'Medium', 'Low', 'Very Low']
 
     for nivel in pulseiras:
         df = pd.DataFrame([{
@@ -153,6 +153,7 @@ def predict_wait(d: DadosEspera):
         "High":     resultados['High'],
         "Medium":   resultados['Medium'],
         "Low":      resultados['Low'],
+        "Very Low":  resultados['Very Low'],
     }
 
 # --- ROTA 3: Processar Texto e Extrair Sinais Vitais via Groq ---
