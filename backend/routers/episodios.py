@@ -4,7 +4,7 @@ from typing import List
 from backend.schemas.episodio import EpisodioCreate, EpisodioUpdate, EpisodioOut
 from backend.services import episodios_service
 
-router = APIRouter(prefix="/episodios", tags=["Episódios"])
+router = APIRouter(prefix="/v1/episodios", tags=["Episódios"])
 
 
 @router.get("/", response_model=List[EpisodioOut])

@@ -8,7 +8,7 @@ from backend.schemas.internamento import (
 )
 from backend.services import internamentos_service
 
-router = APIRouter(prefix="/internamentos", tags=["Internamentos"])
+router = APIRouter(prefix="/v1/internamentos", tags=["Internamentos"])
 
 
 @router.get("/", response_model=List[InternamentoOut])

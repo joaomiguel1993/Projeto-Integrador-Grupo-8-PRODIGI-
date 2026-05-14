@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from backend.dao.logs_dao import select_all_logs
 import io
 
-router = APIRouter(prefix="/logs", tags=["Logs"])
+router = APIRouter(prefix="/v1/logs", tags=["Logs"])
 
 
 @router.get("/")

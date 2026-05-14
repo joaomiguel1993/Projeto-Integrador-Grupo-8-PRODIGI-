@@ -8,7 +8,7 @@ from backend.schemas.trabalha import (
 )
 from backend.services import trabalha_service
 
-router = APIRouter(prefix="/trabalha", tags=["Trabalha"])
+router = APIRouter(prefix="/v1/trabalha", tags=["Trabalha"])
 
 
 @router.get("/", response_model=List[TrabalhaOut])

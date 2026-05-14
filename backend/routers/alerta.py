@@ -4,7 +4,7 @@ from typing import List
 from backend.schemas.alerta import AlertaCreate, AlertaUpdate, AlertaOut
 from backend.services import alerta_service
 
-router = APIRouter(prefix="/alertas", tags=["Alertas"])
+router = APIRouter(prefix="/v1/alertas", tags=["Alertas"])
 
 
 @router.get("/", response_model=List[AlertaOut])

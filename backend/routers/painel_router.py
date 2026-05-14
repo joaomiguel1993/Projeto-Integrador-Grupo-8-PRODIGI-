@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from backend.services import painel_service
 
-router = APIRouter(prefix="/painel", tags=["Painel"])
+router = APIRouter(prefix="/v1/predict", tags=["Predict"])
 
 
 @router.get("/tempos-espera/{id_hosp}")
