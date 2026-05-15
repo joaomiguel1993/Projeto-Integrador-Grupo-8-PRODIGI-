@@ -1,5 +1,4 @@
-// src/pages/public/Home.jsx
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listarHospitais } from '../../services/hospitais';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -29,9 +28,9 @@ async function consultarIACompleta(hospital) {
     const t = data.tempos_espera;
     return {
       Critical: t.vermelho?.minutos,
-      High:     t.laranja?.minutos,
-      Medium:   t.amarelo?.minutos,
-      Low:      t.verde?.minutos,
+      High: t.laranja?.minutos,
+      Medium: t.amarelo?.minutos,
+      Low: t.verde?.minutos,
       'Not Urgent': t.azul?.minutos,
     };
   } catch (err) {
@@ -40,115 +39,93 @@ async function consultarIACompleta(hospital) {
   }
 }
 
-// ── TRIAGE BAR ──────────────────────────────────────────
-const TRIAGE_LEVELS = [
-  { key: 'Critical',   color: '#dc2626', label: 'C' },
-  { key: 'High',       color: '#ea580c', label: 'H' },
-  { key: 'Medium',     color: '#ca8a04', label: 'M' },
-  { key: 'Low',        color: '#16a34a', label: 'L' },
-  { key: 'Not Urgent', color: '#3b82f6', label: 'N' },
-];
-
-function TriageBar({ previsoes }) {
-  if (!previsoes) return <div className="triage-bar triage-bar--empty" />;
+function StatCard({ label, value, note }) {
   return (
-    <div className="triage-bar">
-      {TRIAGE_LEVELS.map(({ key, color, label }) => {
-        const mins = previsoes[key];
-        return (
-          <div
-            key={key}
-            className="triage-bar__segment"
-            style={{ background: color }}
-            title={`${key}: ${mins != null ? mins + ' min' : '—'}`}
-          >
-            <span className="triage-bar__label">{label}</span>
-            <span className="triage-bar__value">
-              {mins != null ? `${mins}m` : '—'}
-            </span>
-          </div>
-        );
-      })}
+    <div className="home-stat">
+      <span className="home-stat__label">{label}</span>
+      <strong className="home-stat__value">{value}</strong>
+      <p className="home-stat__note">{note}</p>
     </div>
   );
 }
 
-// ── HOSPITAL CARD ────────────────────────────────────────
+function TrustCard({ icon, title, text }) {
+  return (
+    <article className="home-trustcard">
+      <span className="home-trustcard__icon">{icon}</span>
+      <div className="home-trustcard__content">
+        <strong>{title}</strong>
+        <p>{text}</p>
+      </div>
+    </article>
+  );
+}
+
 function HospitalCard({ hospital, onClick, textos }) {
   const espera = hospital.previsoes_ia?.Medium ?? hospital.previsoes_ia?.medium;
-  const ativo  = hospital.ativo !== false;
+  const ativo = hospital.ativo !== false;
 
   return (
-    <div className={`hcard ${!ativo ? 'hcard--offline' : ''}`}>
-      <div className="hcard__header">
-        <div className="hcard__title-row">
+    <article className={`hcard ${!ativo ? 'hcard--offline' : ''}`}>
+      <div className="hcard__top">
+        <div className="hcard__namewrap">
+          <span className="hcard__badge">{ativo ? 'Ativo' : 'Indisponível'}</span>
           <h3 className="hcard__name">{hospital.nome}</h3>
-          <span className={`hcard__status-dot ${ativo ? 'hcard__status-dot--on' : 'hcard__status-dot--off'}`} />
         </div>
-        <p className="hcard__address">
-          {hospital.morada || hospital.localizacao || '—'}
-        </p>
+        <button
+          className="btn btn--secondary btn--icon hcard__arrow"
+          onClick={() => onClick(hospital)}
+          type="button"
+          aria-label="Ver detalhes"
+        >
+          →
+        </button>
       </div>
 
-      <TriageBar previsoes={hospital.previsoes_ia} />
-
-      <div className="hcard__footer">
-        <div className="hcard__wait-block">
-          <span className="hcard__wait-label">
-            {textos.home?.labelEspera || 'Média (Urgente)'}
-          </span>
-          <strong
-            className="hcard__wait-value"
-            style={{ color: waitColor(espera) }}
-          >
+      <div className="hcard__bottom">
+        <div className="hcard__wait">
+          <span className="hcard__wait-label">{textos.home?.labelEspera || 'Tempo de espera'}</span>
+          <strong className="hcard__wait-value" style={{ color: waitColor(espera) }}>
             {ativo && espera != null ? `${espera} min` : '-- min'}
           </strong>
         </div>
-        <button
-          className="btn btn--primary hcard__cta"
-          onClick={() => onClick(hospital)}
-        >
-          Ver Detalhes →
+
+        <button className="btn btn--primary hcard__cta" onClick={() => onClick(hospital)} type="button">
+          Ver Detalhes
         </button>
       </div>
-    </div>
+    </article>
   );
 }
 
-// ── SKELETON ─────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="hcard hcard--skeleton" aria-hidden="true">
-      <div className="skeleton" style={{ height: '1rem',   width: '60%', marginBottom: '0.5rem' }} />
-      <div className="skeleton" style={{ height: '0.8rem', width: '80%', marginBottom: '1.2rem' }} />
-      <div className="skeleton" style={{ height: '32px',              marginBottom: '1.2rem' }} />
-      <div className="skeleton" style={{ height: '1.8rem', width: '40%' }} />
-    </div>
+    <article className="hcard hcard--skeleton" aria-hidden="true">
+      <div className="skeleton skeleton--line" />
+      <div className="skeleton skeleton--title" />
+      <div className="skeleton skeleton--wait" />
+      <div className="skeleton skeleton--button" />
+    </article>
   );
 }
 
-// ── PAGE ─────────────────────────────────────────────────
 export default function Home() {
   const navigate = useNavigate();
   const { textos } = useLanguage();
-
-  const [hospitais,    setHospitais]    = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState(null);
-  const [query,        setQuery]        = useState('');
+  const [hospitais, setHospitais] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [query, setQuery] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
-
   const scrollRef = useRef(null);
 
-  // load hospitals + IA
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
         setError(null);
-        const data      = await listarHospitais();
+        const data = await listarHospitais();
         const listaBase = Array.isArray(data) ? data : data?.data ?? [];
-
         const listaComIA = await Promise.all(
           listaBase.map(async (h) => ({
             ...h,
@@ -165,7 +142,6 @@ export default function Home() {
     loadData();
   }, []);
 
-  // carousel auto-play
   useEffect(() => {
     const timer = setInterval(
       () => setCurrentSlide((p) => (p === CAROUSEL_IMAGES.length - 1 ? 0 : p + 1)),
@@ -183,91 +159,149 @@ export default function Home() {
     [navigate]
   );
 
-  const filteredHospitais = hospitais.filter((h) => {
-    const s = query.toLowerCase();
-    return (
-      (h.nome     || '').toLowerCase().includes(s) ||
-      (h.morada   || h.localizacao || '').toLowerCase().includes(s)
-    );
-  });
+  const filteredHospitais = useMemo(() => {
+    const s = query.toLowerCase().trim();
+    if (!s) return hospitais;
+    return hospitais.filter((h) => {
+      const nome = (h.nome || '').toLowerCase();
+      const local = (h.morada || h.localizacao || '').toLowerCase();
+      return nome.includes(s) || local.includes(s);
+    });
+  }, [hospitais, query]);
 
-  const scrollLeft  = () => scrollRef.current?.scrollBy({ left: -340, behavior: 'smooth' });
-  const scrollRight = () => scrollRef.current?.scrollBy({ left:  340, behavior: 'smooth' });
+  const totalHospitais = hospitais.length;
+  const ativos = hospitais.filter((h) => h.ativo !== false).length;
+  const mediaEspera =
+    hospitais.length > 0
+      ? Math.round(
+          hospitais
+            .map((h) => h.previsoes_ia?.Medium ?? h.previsoes_ia?.medium)
+            .filter((v) => typeof v === 'number')
+            .reduce((a, b) => a + b, 0) /
+            Math.max(
+              1,
+              hospitais.map((h) => h.previsoes_ia?.Medium ?? h.previsoes_ia?.medium).filter((v) => typeof v === 'number').length
+            )
+        )
+      : null;
+
+  const scrollLeft = () => scrollRef.current?.scrollBy({ left: -900, behavior: 'smooth' });
+  const scrollRight = () => scrollRef.current?.scrollBy({ left: 900, behavior: 'smooth' });
 
   return (
-    <>
-      {/* ── HERO ── */}
+    <div className="home-page">
       <section className="home-hero">
+        <div className="home-hero__topbar" />
         <div className="container">
-          <div className="home-hero__panel">
+          <div className="home-hero__content">
+            <div className="home-hero__main">
+              <p className="home-hero__eyebrow">Portal de saúde</p>
+              <h1 className="home-hero__title">
+                Tempos de espera e informação de saúde num único lugar.
+              </h1>
+              <p className="home-hero__description">
+                Acompanhe hospitais, consulte previsões em tempo real e encontre rapidamente a informação
+                mais relevante, com uma experiência clara, moderna e profissional.
+              </p>
 
-            <div className="home-hero__top">
-              <span className="home-hero__eyebrow">{textos.home?.labelIntro}</span>
-              <span className="home-hero__divider" />
-              <span className="home-hero__meta">{textos.home?.valorProjeto}</span>
+              <div className="home-hero__actions">
+                <a href="#hospitais" className="btn btn--primary">
+                  Consultar hospitais
+                </a>
+                <a href="#informacoes" className="btn btn--secondary">
+                  Ver informações
+                </a>
+              </div>
             </div>
 
-            <div className="home-hero__content">
-              <div className="home-hero__main">
-                <h1 className="home-hero__title">{textos.home?.tituloPrincipal}</h1>
-                <p  className="home-hero__description">{textos.home?.subtituloPrincipal}</p>
+            <aside className="home-hero__panel">
+              <div className="home-hero__live">
+                <span className="home-hero__live-dot" />
+                <strong>Tempo real</strong>
+                <span>Atualizado automaticamente</span>
               </div>
 
-              <aside className="home-hero__stats">
-                {[
-                  { label: 'Projeto',     value: 'Prodigi'    },
-                  { label: 'Área',        value: 'Saúde'      },
-                  { label: 'Tecnologia',  value: 'XGBoost IA' },
-                ].map(({ label, value }) => (
-                  <div key={label} className="home-hero__stat">
-                    <span>{label}</span>
-                    <strong>{value}</strong>
-                  </div>
-                ))}
-              </aside>
-            </div>
-
+              <div className="home-hero__statsgrid">
+                <StatCard
+                  label="Projeto"
+                  value="SIAGUH"
+                  note="Sistema integrado de gestão e apoio ao utente."
+                />
+                <StatCard
+                  label="Área"
+                  value="Saúde"
+                  note="Informação útil para decisões rápidas e seguras."
+                />
+                <StatCard
+                  label="Tecnologia"
+                  value="IA + Dados"
+                  note="Previsões de espera e visualização em tempo real."
+                />
+                <StatCard
+                  label="Atualização"
+                  value="Automática"
+                  note={mediaEspera != null ? `Média estimada atual: ${mediaEspera} min.` : 'A carregar dados.'}
+                />
+              </div>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* ── HOSPITALS ── */}
-      <section className="home-hospitals">
+      <section className="home-trust">
         <div className="container">
+          <div className="home-trust__grid">
+            <TrustCard icon="⏱️" title="Tempo real" text="Consulta rápida com atualização contínua." />
+            <TrustCard icon="🧠" title="IA preditiva" text="Estimativas orientadas por dados." />
+            <TrustCard icon="🏥" title="Cobertura" text={`Hospitais ativos: ${ativos}/${totalHospitais || 0}.`} />
+            <TrustCard icon="🔒" title="Confiança" text="Layout limpo, claro e centrado no utente." />
+          </div>
+        </div>
+      </section>
 
+      <section className="home-hospitals" id="hospitais">
+        <div className="container">
           <div className="home-hospitals__header">
             <div>
-              <h2 className="home-hospitals__title">
-                {textos.home?.tituloHospitais}
-              </h2>
+              <h2 className="home-hospitals__title">Hospitais</h2>
               <p className="home-hospitals__subtitle">
-                Tempos reais calculados por Inteligência Artificial
+                Resultados organizados para leitura rápida, com acesso imediato aos detalhes.
               </p>
             </div>
 
             <div className="home-controls">
-              <input
-                type="search"
-                className="home-search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={textos.home?.pesquisar || 'Pesquisar hospital...'}
-              />
+              <div className="home-search">
+                <span className="home-search__icon">⌕</span>
+                <input
+                  type="search"
+                  className="home-search__input"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Pesquisar hospital..."
+                />
+              </div>
+
               <div className="home-scroll-btns">
-                <button className="btn btn--secondary" onClick={scrollLeft}  aria-label="Anterior">←</button>
-                <button className="btn btn--secondary" onClick={scrollRight} aria-label="Próximo" >→</button>
+                <button className="btn btn--secondary btn--icon" onClick={scrollLeft} type="button" aria-label="Anterior">
+                  ‹
+                </button>
+                <button className="btn btn--secondary btn--icon" onClick={scrollRight} type="button" aria-label="Próximo">
+                  ›
+                </button>
               </div>
             </div>
           </div>
 
           {error ? (
-            <div className="home-empty">
+            <div className="home-empty home-empty--error">
               <span className="home-empty__icon">⚠️</span>
               <p>{error}</p>
             </div>
           ) : loading ? (
             <div className="hgrid" ref={scrollRef}>
-              {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <SkeletonCard key={i} />
+              ))}
             </div>
           ) : filteredHospitais.length === 0 ? (
             <div className="home-empty">
@@ -286,14 +320,17 @@ export default function Home() {
               ))}
             </div>
           )}
-
         </div>
       </section>
 
-      {/* ── INFO CAROUSEL ── */}
-      <section className="home-info">
+      <section className="home-info" id="informacoes">
         <div className="container">
-          <h2 className="info-carousel__title">Informações Adicionais</h2>
+          <div className="home-info__header">
+            <h2 className="home-hospitals__title">Informações adicionais</h2>
+            <p className="home-info__subtitle">
+              Conteúdo de apoio com linguagem clara, simples e coerente com o tema de saúde.
+            </p>
+          </div>
 
           <div className="info-carousel__wrapper">
             {CAROUSEL_IMAGES.map((img, idx) => (
@@ -306,19 +343,19 @@ export default function Home() {
             ))}
           </div>
 
-          {/* dots */}
           <div className="info-carousel__dots">
             {CAROUSEL_IMAGES.map((_, idx) => (
               <button
                 key={idx}
                 className={`info-carousel__dot ${idx === currentSlide ? 'active' : ''}`}
                 onClick={() => setCurrentSlide(idx)}
+                type="button"
                 aria-label={`Slide ${idx + 1}`}
               />
             ))}
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

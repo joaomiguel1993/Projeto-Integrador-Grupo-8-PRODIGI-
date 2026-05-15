@@ -1,115 +1,171 @@
-/* =========================================
-   HOSPITAL DETALHE
-   ========================================= */
+.hosp-detail {
+  min-height: 100vh;
+  background: #f5f8f7;
+  padding-bottom: 3rem;
+}
 
-.hosp-detail { min-height: 100vh; background: #f8fafc; }
-
-.hosp-detail--state { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
-
-.hosp-detail__state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.85rem;
-  color: #64748b;
-  font-size: 0.95rem;
-  text-align: center;
+.hosp-detail--state {
+  display: grid;
+  place-items: center;
   padding: 3rem 0;
 }
 
-.hosp-detail__state--error       { color: #dc2626; }
-.hosp-detail__state--error span  { font-size: 2rem; }
+.hosp-detail__state {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  padding: 2rem;
+}
 
-/* ── HERO ── */
+.hosp-detail__state--error {
+  color: #b42318;
+}
+
 .hosp-detail__hero {
-  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
-  padding: 2.5rem 0 3rem;
-  position: relative;
-  overflow: hidden;
+  padding: 2.5rem 0 1.5rem;
 }
 
-.hosp-detail__hero::before {
-  content: '';
-  position: absolute;
-  top: -80px; right: -80px;
-  width: 280px; height: 280px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
-  pointer-events: none;
+.hosp-detail__hero-inner {
+  display: grid;
+  gap: 1rem;
 }
 
-.hosp-detail__hero-inner  { display: flex; flex-direction: column; gap: 1.5rem; }
+.btn-back {
+  align-self: flex-start;
+  border: 1px solid #d7e8de;
+  background: #ffffff;
+  color: #1f5f4e;
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, border-color 0.2s;
+}
+
+.btn-back:hover {
+  background: #eef6f2;
+  border-color: #c7ddd2;
+  transform: translateY(-1px);
+}
 
 .hosp-detail__hero-body {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 1rem;
+  align-items: stretch;
 }
 
-.hosp-detail__hero-text { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.hosp-detail__hero-text {
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
 
 .hosp-detail__eyebrow {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #6ee7b7;
+  color: #1f5f4e;
 }
 
 .hosp-detail__title {
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  font-weight: 800;
-  color: #ffffff;
   margin: 0;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #14362f;
+  font-weight: 800;
 }
 
-.hosp-detail__subtitle { font-size: 0.9rem; color: rgba(255,255,255,0.65); margin: 0; max-width: 520px; line-height: 1.6; }
+.hosp-detail__subtitle {
+  margin: 0.85rem 0 0;
+  color: #52625d;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 60ch;
+}
 
 .hosp-detail__kpi {
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
-  padding: 1.1rem 1.75rem;
-  backdrop-filter: blur(4px);
-  flex-shrink: 0;
-  min-width: 130px;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 100%;
 }
 
-.hosp-detail__kpi-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); margin-bottom: 0.35rem; }
-.hosp-detail__kpi-value { font-size: 1.75rem; font-weight: 800; line-height: 1; color: #ffffff; }
+.hosp-detail__kpi-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a8a84;
+}
 
-.hosp-detail__kpi--green   .hosp-detail__kpi-value { color: #86efac; }
-.hosp-detail__kpi--yellow  .hosp-detail__kpi-value { color: #fde047; }
-.hosp-detail__kpi--red     .hosp-detail__kpi-value { color: #fca5a5; }
-.hosp-detail__kpi--neutral .hosp-detail__kpi-value { color: rgba(255,255,255,0.5); }
+.hosp-detail__kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
 
-/* ── CONTEÚDO ── */
-.hosp-detail__content { padding-block: 2.5rem; }
+.hosp-detail__kpi--green .hosp-detail__kpi-value {
+  color: #15803d;
+}
+
+.hosp-detail__kpi--yellow .hosp-detail__kpi-value {
+  color: #b45309;
+}
+
+.hosp-detail__kpi--red .hosp-detail__kpi-value {
+  color: #b42318;
+}
+
+.hosp-detail__kpi--neutral .hosp-detail__kpi-value {
+  color: #334155;
+}
+
+.hosp-detail__content {
+  padding-top: 0.5rem;
+}
 
 .hosp-detail__grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr);
   gap: 1.5rem;
   align-items: start;
 }
 
-.hosp-detail__main { display: flex; flex-direction: column; gap: 1.5rem; }
+.hosp-detail__main {
+  display: grid;
+  gap: 1rem;
+}
 
-/* ── CARDS ── */
+.hosp-detail__side {
+  display: grid;
+  gap: 1rem;
+}
+
 .hosp-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
 .hosp-card__header {
@@ -117,99 +173,176 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.1rem 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
-.hosp-card__title { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0; }
+.hosp-card__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #14362f;
+}
 
-.hosp-card__link { font-size: 0.8rem; font-weight: 600; color: var(--siaguh-green, #3eb489); text-decoration: none; transition: color 0.2s; white-space: nowrap; }
-.hosp-card__link:hover { color: #059669; }
+.hosp-card__link,
+.hosp-map-open {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1f5f4e;
+  text-decoration: none;
+}
 
-/* Info grid */
+.hosp-card__link:hover,
+.hosp-map-open:hover {
+  text-decoration: underline;
+}
+
 .hosp-info-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 .hosp-info-item {
-  padding: 1rem 1.5rem;
-  border-right: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  background: #f8fbfa;
+  border: 1px solid #dfe9e4;
+  border-radius: 18px;
 }
 
-.hosp-info-item:nth-child(even) { border-right: none; }
-.hosp-info-item--full { grid-column: 1 / -1; border-right: none; border-bottom: none; }
+.hosp-info-item--full {
+  grid-column: 1 / -1;
+}
 
-.hosp-info-item__label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #94a3b8; }
-.hosp-info-item__value { font-size: 0.9rem; font-weight: 600; color: #0f172a; }
+.hosp-info-item__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a8a84;
+}
 
-/* Triagem */
-.triage-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
+.hosp-info-item__value {
+  color: #14362f;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.triage-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+}
 
 .triage-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 1.25rem 0.75rem;
-  text-align: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-  transition: filter 0.2s;
+  border-radius: 18px;
+  padding: 1rem;
+  border: 1px solid #dfe9e4;
+  background: #f8fbfa;
+  display: grid;
+  gap: 0.45rem;
+  min-height: 96px;
 }
 
-.triage-card:last-child { border-right: none; }
-.triage-card:hover      { filter: brightness(1.07); }
+.triage-card__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a8a84;
+}
 
-.triage-card__label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.75); }
-.triage-card__value { font-size: 1.2rem; font-weight: 800; color: #ffffff; line-height: 1; }
+.triage-card__value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #14362f;
+}
 
-.triage-card--red    { background: #dc2626; }
-.triage-card--orange { background: #ea580c; }
-.triage-card--yellow { background: #ca8a04; }
-.triage-card--green  { background: #16a34a; }
-.triage-card--blue   { background: #2563eb; }
-.triage-card--neutral{ background: #94a3b8; }
+.triage-card--green {
+  background: rgba(21, 128, 61, 0.08);
+  border-color: rgba(21, 128, 61, 0.16);
+}
 
-/* Mapa */
-.hosp-card--map { display: flex; flex-direction: column; }
-.hosp-map-embed { width: 100%; height: 280px; background: #f1f5f9; }
-.hosp-map-embed__iframe { border: none; display: block; width: 100%; height: 100%; }
+.triage-card--yellow {
+  background: rgba(180, 83, 9, 0.08);
+  border-color: rgba(180, 83, 9, 0.16);
+}
+
+.triage-card--orange {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.16);
+}
+
+.triage-card--red {
+  background: rgba(180, 35, 24, 0.08);
+  border-color: rgba(180, 35, 24, 0.16);
+}
+
+.triage-card--blue {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.hosp-card--map {
+  padding-bottom: 1rem;
+}
+
+.hosp-map-embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #dfe9e4;
+  background: #edf5f1;
+}
+
+.hosp-map-embed__iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
 
 .hosp-map-open {
-  display: block;
-  text-align: center;
-  padding: 0.85rem 1rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--siaguh-green, #3eb489);
-  text-decoration: none;
-  border-top: 1px solid #f1f5f9;
-  transition: background 0.15s, color 0.15s;
+  display: inline-flex;
+  margin-top: 1rem;
 }
 
-.hosp-map-open:hover { background: #f0fdf4; color: #059669; }
+@media (max-width: 1100px) {
+  .hosp-detail__grid {
+    grid-template-columns: 1fr;
+  }
 
-@media (max-width: 900px) {
-  .hosp-detail__grid  { grid-template-columns: 1fr; }
-  .hosp-detail__side  { order: -1; }
-  .triage-grid        { grid-template-columns: repeat(3, 1fr); }
-  .triage-card:nth-child(3) { border-right: none; }
+  .hosp-detail__hero-body {
+    grid-template-columns: 1fr;
+  }
+
+  .triage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-@media (max-width: 600px) {
-  .hosp-detail__hero       { padding: 2rem 0 2.5rem; }
-  .hosp-detail__hero-body  { flex-direction: column; gap: 1.25rem; }
-  .hosp-detail__kpi        { width: 100%; flex-direction: row; justify-content: space-between; text-align: left; padding: 0.85rem 1.25rem; }
-  .hosp-info-grid          { grid-template-columns: 1fr; }
-  .hosp-info-item          { border-right: none; }
-  .triage-grid             { grid-template-columns: repeat(2, 1fr); }
-  .triage-card:nth-child(odd)  { border-right: 1px solid rgba(255,255,255,0.15); }
-  .triage-card:nth-child(even) { border-right: none; }
+@media (max-width: 640px) {
+  .hosp-detail__hero-text,
+  .hosp-detail__kpi,
+  .hosp-card {
+    padding: 1.25rem;
+    border-radius: 20px;
+  }
+
+  .hosp-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .triage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hosp-detail__kpi-value {
+    font-size: 1.8rem;
+  }
 }

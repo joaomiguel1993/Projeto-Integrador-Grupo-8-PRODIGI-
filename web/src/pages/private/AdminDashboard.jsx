@@ -2379,55 +2379,38 @@ export default function AdminDashboard() {
   const renderReportsCenter = () => (
     <section className="admin-panel-section">
       <div className="admin-edit-header">
-        <div className="admin-edit-header__title-wrap">
-          <span className="admin-edit-header__eyebrow">Relatórios</span>
-          <h2 className="admin-edit-header__title">{ta('menuRelatorios', 'Reports')}</h2>
-          <p className="admin-edit-header__subtitle">{ta('descRelatorios', 'View logs, statistics and export data.')}</p>
+        <div className="admin-edit-headertitle-wrap">
+          <span className="admin-edit-headereyebrow">Relatórios</span>
+          <h2 className="admin-edit-headertitle">{ta('menuRelatorios', 'Reports')}</h2>
+          <p className="admin-edit-headersubtitle">{ta('descRelatorios', 'View logs, statistics and export data.')}</p>
         </div>
       </div>
 
-      {/* Cards de estatísticas (mantém os que já tens) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '14px', padding: '1.2rem' }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--admin-text-soft)', marginBottom: '0.4rem' }}>
-            {ta('lblTotalUtilizadores', 'Total Users')}
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--admin-primary)' }}>
-            {utilizadoresComContaFiltrados.length}
-          </div>
+      <div className="admin-reports-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-card__label">{ta('lblTotalUtilizadores', 'Total Users')}</div>
+          <div className="admin-stat-card__value">{utilizadoresComContaFiltrados.length}</div>
         </div>
 
-        <div style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '14px', padding: '1.2rem' }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--admin-text-soft)', marginBottom: '0.4rem' }}>
-            {ta('lblTotalFuncionarios', 'Total Employees')}
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--admin-primary)' }}>
-            {funcionariosFiltrados.length}
-          </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-card__label">{ta('lblTotalFuncionarios', 'Total Employees')}</div>
+          <div className="admin-stat-card__value">{funcionariosFiltrados.length}</div>
         </div>
 
-        <div style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '14px', padding: '1.2rem' }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--admin-text-soft)', marginBottom: '0.4rem' }}>
-            {ta('lblTotalHospitais', 'Total Hospitals')}
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--admin-primary)' }}>
-            {hospitaisFiltrados.length}
-          </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-card__label">{ta('lblTotalHospitais', 'Total Hospitals')}</div>
+          <div className="admin-stat-card__value">{hospitaisFiltrados.length}</div>
         </div>
 
-        <div style={{ background: 'var(--admin-surface)', border: '1px solid var(--admin-border)', borderRadius: '14px', padding: '1.2rem' }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--admin-text-soft)', marginBottom: '0.4rem' }}>
-            {ta('lblTotalLogs', 'Total Logs')}
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--admin-primary)' }}>
-            {logsFiltrados.length}
-          </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-card__label">{ta('lblTotalLogs', 'Total Logs')}</div>
+          <div className="admin-stat-card__value">{logsFiltrados.length}</div>
         </div>
       </div>
 
-      {erroLogs && <p className="admin-form__error" style={{ marginBottom: '1rem' }}>{erroLogs}</p>}
+      {erroLogs && <p className="admin-form__error">{erroLogs}</p>}
 
-      <div className="admin-filters" style={{ marginTop: '1.5rem' }}>
+      <div className="admin-filters">
         <div className="admin-form__group">
           <label>{ta('lblPesquisarLogs', 'Pesquisar (Ação, Detalhe, Utilizador)')}</label>
           <input
@@ -2449,10 +2432,7 @@ export default function AdminDashboard() {
 
         <div className="admin-form__group">
           <label>{ta('lblTipoAcao', 'Tipo de ação')}</label>
-          <select
-            value={tipoAcao}
-            onChange={(e) => setTipoAcao(e.target.value)}
-          >
+          <select value={tipoAcao} onChange={(e) => setTipoAcao(e.target.value)}>
             <option value="">{ta('todasAcoes', 'Todas')}</option>
             <option value="login">Login</option>
             <option value="criar-utilizador">{ta('criarUtilizador', 'Criar utilizador')}</option>
@@ -2463,7 +2443,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="admin-table-card admin-table-card--bottom" style={{ marginTop: '1.25rem' }}>
+      <div className="admin-table-card admin-table-card--bottom">
         <div className="admin-table-card__header">
           <h3>{ta('tblLogs', 'Activity Logs')}</h3>
           <span>{logsFiltrados.length}</span>
@@ -2473,7 +2453,7 @@ export default function AdminDashboard() {
           <button
             type="button"
             className="admin-primary-big-button"
-            onClick={() => exportarRelatorioExcel(logs)}
+            onClick={() => exportarRelatorioExcel(logsFiltrados)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
@@ -2496,11 +2476,11 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {loadingLogs ? (
-                <tr>
+                <tr className="is-loading">
                   <td colSpan="4">{tt('aCarregar', 'A carregar')}</td>
                 </tr>
               ) : logsFiltrados.length === 0 ? (
-                <tr>
+                <tr className="is-empty">
                   <td colSpan="4">{ta('semHistorico', 'No history.')}</td>
                 </tr>
               ) : (

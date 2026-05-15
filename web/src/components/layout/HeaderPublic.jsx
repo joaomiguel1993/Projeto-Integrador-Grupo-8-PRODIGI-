@@ -9,7 +9,11 @@ export default function HeaderPublic() {
   return (
     <header className="header-public header-public--hero" role="banner">
       <div className="container header-public__inner header-public__inner--hero">
-        <Link to="/" className="brand-mark brand-mark--hero brand-mark--hero-plain" aria-label={textos.headerPublic.linkInicio}>
+        <Link
+          to="/"
+          className="brand-mark brand-mark--hero brand-mark--hero-plain"
+          aria-label={textos.headerPublic.linkInicio}
+        >
           <img
             src={logo}
             alt={textos.headerPublic.altLogo}
@@ -50,7 +54,18 @@ export default function HeaderPublic() {
           </div>
 
           <Link to="/login" className="header-login header-login--hero">
-            {textos.headerPublic.botaoLogin}
+            <svg
+              className="header-login__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H3m0 0l4-4m-4 4l4 4" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 5h6a2 2 0 012 2v10a2 2 0 01-2 2h-6" />
+            </svg>
+            <span>{textos.headerPublic.botaoLogin}</span>
           </Link>
         </div>
       </div>

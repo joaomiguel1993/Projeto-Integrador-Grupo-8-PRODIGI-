@@ -9,7 +9,6 @@
 @import './layout/header-private.css';
 @import './layout/header-public.css';
 @import './layout/footer.css';
-@import './layout/responsive.css';
 
 /* COMPONENTS */
 @import './components/a11y.css';
@@ -18,7 +17,6 @@
 @import './components/buttons.css';
 @import './components/controls.css';
 @import './components/dropdown.css';
-@import './components/edit-header.css';
 @import './components/forms.css';
 @import './components/hero.css';
 @import './components/hospital-card.css';
@@ -41,3 +39,6 @@
 @import './pages/login.css';
 @import './pages/perfil.css';
 @import './pages/hospital-detalhe.css';
+
+/* RESPONSIVE */
+@import './layout/responsive.css';
