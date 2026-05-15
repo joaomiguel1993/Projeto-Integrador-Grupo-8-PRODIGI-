@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from typing import List
+from typing import List, Optional
 
 from backend.schemas.episodio import EpisodioCreate, EpisodioUpdate, EpisodioOut
 from backend.services import episodios_service
@@ -20,6 +20,11 @@ def listar_episodios_por_utente(num_utent: int):
 @router.get("/hospital/{id_hosp}", response_model=List[EpisodioOut])
 def listar_episodios_por_hospital(id_hosp: int):
     return episodios_service.listar_episodios_por_hospital(id_hosp)
+
+
+@router.get("/sem-triagem", response_model=List[EpisodioOut])
+def listar_episodios_sem_triagem(id_hosp: Optional[int] = None):
+    return episodios_service.listar_episodios_sem_triagem(id_hosp)
 
 
 @router.get("/{cod_ep_urgenc}", response_model=EpisodioOut)
