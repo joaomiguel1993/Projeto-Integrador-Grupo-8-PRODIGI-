@@ -903,9 +903,9 @@ O sistema possui uma área pública sem autenticação.
 
 ![Screenshot Web Rececionista](./docs/screenshots/web-rececionista.png)
 
-#### Público
+#### Login
 
-![Screenshot Web Público](./docs/screenshots/web-publico.png)
+![Screenshot Web Login](./docs/screenshots/web-login.png)
 
 ### ▶️ Como Instalar e Executar o Frontend
 
