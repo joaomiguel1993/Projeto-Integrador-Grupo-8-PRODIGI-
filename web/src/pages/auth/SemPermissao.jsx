@@ -1,53 +1,40 @@
+// src/pages/errors/SemPermissao.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TEXTOS_PT } from '../../locals/pt'; 
+import { useLanguage } from '../../contexts/LanguageContext';
 
-/**
- * @file SemPermissao.jsx
- * @description Página de Erro 403 (Acesso Negado).
- * Exibida quando um utilizador tenta aceder a uma rota protegida 
- * para a qual não tem o nível de privilégio (Role) adequado.
- * 
- * @component
- * @returns {JSX.Element} A página de aviso de falta de permissões com botão de retorno.
- */
 export default function SemPermissao() {
+  const { textos } = useLanguage();
+
   return (
     <main className="auth-page" role="main">
-      
-      {/* 
-        role="alert" informa imediatamente os leitores de ecrã de que se trata de uma mensagem de erro/aviso.
-        aria-labelledby liga a caixa ao título principal para dar contexto.
-      */}
-      <section 
-        className="auth-page__card" 
-        role="alert" 
+
+      <section
+        className="auth-page__card"
+        role="alert"
         aria-labelledby="titulo-sem-permissao"
       >
-        {/* aria-hidden="true" porque a label "Acesso" é apenas visual, o título principal já diz o que se passa */}
         <p className="section-label" aria-hidden="true">
-          {TEXTOS_PT.acessoNegado.label}
-        </p>
-        
-        <h1 id="titulo-sem-permissao">
-          {TEXTOS_PT.acessoNegado.titulo}
-        </h1>
-        
-        <p>
-          {TEXTOS_PT.acessoNegado.mensagem}
+          {textos.acessoNegado.label}
         </p>
 
-        <div style={{ marginTop: '1rem' }}>
-          <Link 
-            to="/" 
+        <h1 id="titulo-sem-permissao">
+          {textos.acessoNegado.titulo}
+        </h1>
+
+        <p>{textos.acessoNegado.mensagem}</p>
+
+        <div className="auth-page__actions">
+          <Link
+            to="/"
             className="login-form__submit"
-            aria-label={TEXTOS_PT.acessoNegado.ariaVoltar}
+            aria-label={textos.acessoNegado.ariaVoltar}
           >
-            {TEXTOS_PT.acessoNegado.voltar}
+            {textos.acessoNegado.voltar}
           </Link>
         </div>
       </section>
-      
+
     </main>
   );
 }

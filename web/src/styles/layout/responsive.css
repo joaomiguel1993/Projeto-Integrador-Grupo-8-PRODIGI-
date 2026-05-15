@@ -106,3 +106,19 @@
     padding: 0.85rem 1rem 1rem;
   }
 }
+
+/* =========================================
+   RESPONSIVE (header privado)
+   ========================================= */
+
+@media (max-width: 640px) {
+  .header-private__inner    { height: 60px; padding-inline: 1rem; }
+  .header-private__logo     { width: 36px; height: 36px; }
+  .header-private__title    { font-size: 0.85rem; }
+  .header-private__user-name{ max-width: 100px; }
+}
+
+@media (max-width: 400px) {
+  .header-private__breadcrumbs-wrap { display: none; }
+  .header-private__user-name        { display: none; }
+}
