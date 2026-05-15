@@ -6,7 +6,6 @@ import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -29,13 +28,6 @@ const IconChart = () => (
   </svg>
 );
 
-const IconClock = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7v5l3 2" />
-  </svg>
-);
-
 const IconQueue = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="4" y="4" width="16" height="4" rx="1" />
@@ -44,23 +36,10 @@ const IconQueue = () => (
   </svg>
 );
 
-const IconFolder = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
-  </svg>
-);
-
 const IconClipboard = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="9" y="3" width="6" height="4" rx="1" />
     <path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-  </svg>
-);
-
-const IconPill = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7z" />
-    <path d="M8 8l8 8" />
   </svg>
 );
 
@@ -77,7 +56,7 @@ export default function DoctorDashboard() {
   const { textos, idioma, mudarIdioma } = useLanguage();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [mainMenu, setMainMenu] = useState('kpis');
+  const [mainMenu, setMainMenu] = useState('informacao_geral');
   const [episodios, setEpisodios] = useState([]);
   const [episodioSelecionado, setEpisodioSelecionado] = useState(null);
   const [utente, setUtente] = useState(null);
@@ -86,12 +65,14 @@ export default function DoctorDashboard() {
   const [filtro, setFiltro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
+  
   const [prescricao, setPrescricao] = useState({
     medicamento: '',
     dosagem: '',
     duracao: '',
     via: '',
   });
+  
   const [alta, setAlta] = useState({
     destino: 'alta',
     observacoes: '',
@@ -119,23 +100,14 @@ export default function DoctorDashboard() {
       {
         title: textos?.doctor?.menuGrupoGeral || 'Visão geral',
         items: [
-          { key: 'kpis', icon: <IconChart />, label: textos?.doctor?.menuKpis || 'KPIs' },
-          { key: 'medias', icon: <IconClock />, label: textos?.doctor?.menuMedias || 'Tempos médios' },
+          { key: 'informacao_geral', icon: <IconChart />, label: textos?.doctor?.menuInfoGeral || 'Informação Geral' },
         ],
       },
       {
         title: textos?.doctor?.menuGrupoTriagem || 'Triagem',
         items: [
           { key: 'fila', icon: <IconQueue />, label: textos?.doctor?.menuFila || 'Fila por prioridade' },
-          { key: 'episodios', icon: <IconFolder />, label: textos?.doctor?.menuEpisodios || 'Episódios triados' },
-          { key: 'detalhe', icon: <IconClipboard />, label: textos?.doctor?.menuDetalhe || 'Detalhe completo' },
-        ],
-      },
-      {
-        title: textos?.doctor?.menuGrupoAcao || 'Decisão clínica',
-        items: [
-          { key: 'prescricao', icon: <IconPill />, label: textos?.doctor?.menuPrescricao || 'Prescrição' },
-          { key: 'alta', icon: <IconExit />, label: textos?.doctor?.menuAlta || 'Alta / internamento' },
+          { key: 'atendimento', icon: <IconClipboard />, label: textos?.doctor?.menuAtendimento || 'Atendimento' },
         ],
       },
     ],
@@ -179,9 +151,9 @@ export default function DoctorDashboard() {
     );
   }, [episodios, filtro]);
 
-  const abrirEpisodio = async (ep) => {
+  const abrirEpisodio = async (ep, focarNaAlta = false) => {
     setEpisodioSelecionado(ep);
-    setMainMenu('detalhe');
+    setMainMenu('atendimento');
     setErro('');
     setMensagem('');
 
@@ -204,6 +176,12 @@ export default function DoctorDashboard() {
       setUtente(uData || null);
       setAlertas(Array.isArray(aData) ? aData : []);
       setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
+
+      if (focarNaAlta) {
+        setTimeout(() => {
+          document.getElementById('seccao-alta-form')?.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      }
     } catch (e) {
       setErro(e.message);
     }
@@ -275,56 +253,58 @@ export default function DoctorDashboard() {
     navigate('/login', { replace: true });
   };
 
-  const renderKpis = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>{textos?.doctor?.kpisTitulo || 'Resumo clínico'}</h2>
-        <p>{textos?.doctor?.kpisDesc || 'Visão rápida dos episódios triados e estado atual.'}</p>
-      </div>
+  const renderInformacaoGeral = () => (
+    <div className="admin-general-info-group">
+      {/* KPIs Section */}
+      <section className="admin-panel-section">
+        <div className="admin-panel-section__header">
+          <h2>{textos?.doctor?.kpisTitulo || 'Resumo clínico'}</h2>
+          <p>{textos?.doctor?.kpisDesc || 'Visão rápida dos episódios triados e estado atual.'}</p>
+        </div>
 
-      <div className="admin-report-grid">
-        <div className="admin-report-card">
-          <h3>{textos?.doctor?.episodiosTriados || 'Episódios triados'}</h3>
-          <strong>{episodios.length}</strong>
+        <div className="admin-report-grid">
+          <div className="admin-report-card">
+            <h3>{textos?.doctor?.episodiosTriados || 'Episódios triados'}</h3>
+            <strong>{episodios.length}</strong>
+          </div>
+          <div className="admin-report-card">
+            <h3>{textos?.doctor?.emEspera || 'Em espera'}</h3>
+            <strong>{episodios.filter((ep) => !ep.atendido).length}</strong>
+          </div>
+          <div className="admin-report-card">
+            <h3>{textos?.doctor?.altasHoje || 'Altas hoje'}</h3>
+            <strong>{episodios.filter((ep) => ep.alta).length}</strong>
+          </div>
+          <div className="admin-report-card">
+            <h3>{textos?.doctor?.internamentos || 'Internamentos'}</h3>
+            <strong>{episodios.filter((ep) => ep.internamento).length}</strong>
+          </div>
         </div>
-        <div className="admin-report-card">
-          <h3>{textos?.doctor?.emEspera || 'Em espera'}</h3>
-          <strong>{episodios.filter((ep) => !ep.atendido).length}</strong>
-        </div>
-        <div className="admin-report-card">
-          <h3>{textos?.doctor?.altasHoje || 'Altas hoje'}</h3>
-          <strong>{episodios.filter((ep) => ep.alta).length}</strong>
-        </div>
-        <div className="admin-report-card">
-          <h3>{textos?.doctor?.internamentos || 'Internamentos'}</h3>
-          <strong>{episodios.filter((ep) => ep.internamento).length}</strong>
-        </div>
-      </div>
-    </section>
-  );
+      </section>
 
-  const renderMedias = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>{textos?.doctor?.temposMedios || 'Tempos médios por cor'}</h2>
-      </div>
+      {/* Médias Section */}
+      <section className="admin-panel-section" style={{ marginTop: '2rem' }}>
+        <div className="admin-panel-section__header">
+          <h2>{textos?.doctor?.temposMedios || 'Tempos médios por cor'}</h2>
+        </div>
 
-      <div className="admin-table-card admin-table-card--full">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>{textos?.doctor?.cor || 'Cor'}</th>
-              <th>{textos?.doctor?.tempoMedio || 'Tempo médio'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Vermelho</td><td>—</td></tr>
-            <tr><td>Amarelo</td><td>—</td></tr>
-            <tr><td>Verde</td><td>—</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+        <div className="admin-table-card admin-table-card--full">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>{textos?.doctor?.cor || 'Cor'}</th>
+                <th>{textos?.doctor?.tempoMedio || 'Tempo médio'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Vermelho</td><td>—</td></tr>
+              <tr><td>Amarelo</td><td>—</td></tr>
+              <tr><td>Verde</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   );
 
   const renderFila = () => (
@@ -354,7 +334,7 @@ export default function DoctorDashboard() {
                 <th>{textos?.doctor?.utente || 'Utente'}</th>
                 <th>{textos?.doctor?.cor || 'Cor'}</th>
                 <th>{textos?.doctor?.espera || 'Espera'}</th>
-                <th>{textos?.doctor?.acao || 'Ação'}</th>
+                <th>{textos?.doctor?.acao || 'Ações'}</th>
               </tr>
             </thead>
             <tbody>
@@ -369,9 +349,19 @@ export default function DoctorDashboard() {
                     <td>{ep.cor_triagem || '—'}</td>
                     <td>{ep.tempo_espera || '—'}</td>
                     <td>
-                      <button type="button" className="admin-secondary-button" onClick={() => abrirEpisodio(ep)}>
-                        {textos?.doctor?.atender || 'Atender'}
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button type="button" className="admin-secondary-button" onClick={() => abrirEpisodio(ep, false)}>
+                          {textos?.doctor?.atender || 'Atender'}
+                        </button>
+                        <button 
+                          type="button" 
+                          className="admin-secondary-button" 
+                          style={{ backgroundColor: '#dc3545', color: '#fff', borderColor: '#dc3545' }} 
+                          onClick={() => abrirEpisodio(ep, true)}
+                        >
+                          {textos?.doctor?.alta || 'Alta'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -383,188 +373,134 @@ export default function DoctorDashboard() {
     </section>
   );
 
-  const renderEpisodios = () => (
+  const renderAtendimentoCompleto = () => (
     <section className="admin-panel-section">
       <div className="admin-panel-section__header">
-        <h2>{textos?.doctor?.episodiosTriadosLista || 'Episódios triados'}</h2>
-      </div>
-
-      <div className="admin-table-card admin-table-card--full">
-        <div className="admin-table-card__header">
-          <h3>{textos?.doctor?.listaCompleta || 'Lista completa'}</h3>
-          <span>{episodios.length}</span>
-        </div>
-        <div className="admin-table-scroll admin-table-scroll--employees">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>{textos?.doctor?.episodio || 'Episódio'}</th>
-                <th>{textos?.doctor?.utente || 'Utente'}</th>
-                <th>{textos?.doctor?.gravidade || 'Gravidade'}</th>
-                <th>{textos?.doctor?.espera || 'Espera'}</th>
-                <th>{textos?.geral?.acoes || 'Ações'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {episodios.length === 0 ? (
-                <tr>
-                  <td colSpan="5">{textos?.geral?.semResultados || 'Sem resultados'}</td>
-                </tr>
-              ) : (
-                episodios.map((ep) => (
-                  <tr key={ep.id_epurgencia || ep.id}>
-                    <td>{ep.id_epurgencia || ep.id}</td>
-                    <td>{ep.nome_utente || '—'}</td>
-                    <td>{ep.cor_triagem || '—'}</td>
-                    <td>{ep.tempo_espera || '—'}</td>
-                    <td>
-                      <button type="button" className="admin-secondary-button" onClick={() => abrirEpisodio(ep)}>
-                        {textos?.doctor?.abrirDetalhe || 'Abrir detalhe'}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  );
-
-  const renderDetalhe = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>{textos?.doctor?.detalheCompleto || 'Detalhe completo do episódio'}</h2>
+        <h2>{textos?.doctor?.atendimentoPainel || 'Zona de Atendimento Clínico'}</h2>
       </div>
 
       {episodioSelecionado ? (
-        <>
-          <div className="admin-table-card">
-            <p><strong>Utente:</strong> {utente?.nome || episodioSelecionado.nome_utente || '—'}</p>
-            <p><strong>{textos?.doctor?.cor || 'Cor'}:</strong> {episodioSelecionado.cor_triagem || '—'}</p>
-            <p><strong>{textos?.doctor?.espera || 'Espera'}:</strong> {episodioSelecionado.tempo_espera || '—'}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          
+          {/* 1. DETALHE DO EPISÓDIO */}
+          <div className="admin-atendimento-block">
+            <h3 style={{ borderBottom: '2px solid var(--border-color, #eee)', paddingBottom: '0.5rem' }}>
+              {textos?.doctor?.detalheCompleto || '1. Detalhe completo do episódio'}
+            </h3>
+            <div className="admin-table-card" style={{ marginTop: '1rem' }}>
+              <p><strong>Utente:</strong> {utente?.nome || episodioSelecionado.nome_utente || '—'}</p>
+              <p><strong>{textos?.doctor?.cor || 'Cor'}:</strong> {episodioSelecionado.cor_triagem || '—'}</p>
+              <p><strong>{textos?.doctor?.espera || 'Espera'}:</strong> {episodioSelecionado.tempo_espera || '—'}</p>
+            </div>
+
+            <div className="admin-table-card" style={{ marginTop: '1rem' }}>
+              <h3>{textos?.doctor?.alertas || 'Alertas'}</h3>
+              {alertas.length > 0 ? (
+                alertas.map((a, i) => <p key={i} style={{ color: '#dc3545', fontWeight: 'bold' }}>{a.descricao || a.mensagem || '—'}</p>)
+              ) : (
+                <p>{textos?.doctor?.semAlertas || 'Sem alertas registados.'}</p>
+              )}
+            </div>
+
+            <div className="admin-table-card" style={{ marginTop: '1rem' }}>
+              <h3>{textos?.doctor?.medicacaoAtiva || 'Medicação ativa'}</h3>
+              {medicacaoAtiva.length > 0 ? (
+                <ul>
+                  {medicacaoAtiva.map((m, i) => (
+                    <li key={i}>
+                      {m.nome || '—'} — {m.dosagem || '—'}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>{textos?.doctor?.semMedicacao || 'Sem medicação ativa.'}</p>
+              )}
+            </div>
           </div>
 
-          <div className="admin-table-card">
-            <h3>{textos?.doctor?.alertas || 'Alertas'}</h3>
-            {alertas.length > 0 ? (
-              alertas.map((a, i) => <p key={i}>{a.descricao || a.mensagem || '—'}</p>)
-            ) : (
-              <p>{textos?.doctor?.semAlertas || 'Sem alertas registados.'}</p>
-            )}
+          {/* 2. PRESCRIÇÃO */}
+          <div className="admin-atendimento-block">
+            <h3 style={{ borderBottom: '2px solid var(--border-color, #eee)', paddingBottom: '0.5rem' }}>
+              {textos?.doctor?.prescricao || '2. Prescrição'}
+            </h3>
+            <form className="admin-form" onSubmit={adicionarPrescricao} style={{ marginTop: '1rem' }}>
+              <div className="admin-form__grid">
+                <div className="admin-form__group">
+                  <label>{textos?.doctor?.medicamento || 'Medicamento'}</label>
+                  <input name="medicamento" value={prescricao.medicamento} onChange={handlePrescricaoChange} />
+                </div>
+                <div className="admin-form__group">
+                  <label>{textos?.doctor?.dosagem || 'Dosagem'}</label>
+                  <input name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} />
+                </div>
+                <div className="admin-form__group">
+                  <label>{textos?.doctor?.duracao || 'Duração'}</label>
+                  <input name="duracao" value={prescricao.duracao} onChange={handlePrescricaoChange} />
+                </div>
+                <div className="admin-form__group">
+                  <label>{textos?.doctor?.via || 'Via'}</label>
+                  <input name="via" value={prescricao.via} onChange={handlePrescricaoChange} />
+                </div>
+              </div>
+              <div className="admin-actions-row">
+                <button className="admin-form__submit" type="submit">
+                  {textos?.doctor?.fazerPrescricao || 'Fazer prescrição'}
+                </button>
+              </div>
+            </form>
           </div>
 
-          <div className="admin-table-card">
-            <h3>{textos?.doctor?.medicacaoAtiva || 'Medicação ativa'}</h3>
-            {medicacaoAtiva.length > 0 ? (
-              <ul>
-                {medicacaoAtiva.map((m, i) => (
-                  <li key={i}>
-                    {m.nome || '—'} — {m.dosagem || '—'}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>{textos?.doctor?.semMedicacao || 'Sem medicação ativa.'}</p>
-            )}
+          {/* 3. ALTA / INTERNAMENTO */}
+          <div className="admin-atendimento-block" id="seccao-alta-form">
+            <h3 style={{ borderBottom: '2px solid var(--border-color, #eee)', paddingBottom: '0.5rem' }}>
+              {textos?.doctor?.altaInternamento || '3. Alta ou internamento'}
+            </h3>
+            <form className="admin-form" onSubmit={registarAlta} style={{ marginTop: '1rem' }}>
+              <div className="admin-form__grid">
+                <div className="admin-form__group">
+                  <label>{textos?.doctor?.destino || 'Destino'}</label>
+                  <select name="destino" value={alta.destino} onChange={handleAltaChange}>
+                    <option value="alta">{textos?.doctor?.alta || 'Alta'}</option>
+                    <option value="internamento">{textos?.doctor?.internamento || 'Internamento'}</option>
+                  </select>
+                </div>
+
+                <div className="admin-form__group">
+                  <label>{textos?.doctor?.destinoInternamento || 'Destino internamento'}</label>
+                  <input name="internamento_destino" value={alta.internamento_destino} onChange={handleAltaChange} />
+                </div>
+
+                <div className="admin-form__group admin-form__group--full">
+                  <label>{textos?.doctor?.observacoes || 'Observações'}</label>
+                  <textarea name="observacoes" value={alta.observacoes} onChange={handleAltaChange} />
+                </div>
+              </div>
+
+              <div className="admin-actions-row">
+                <button className="admin-form__submit" type="submit" style={{ backgroundColor: '#28a745' }}>
+                  {textos?.doctor?.confirmar || 'Confirmar Decisão Final'}
+                </button>
+              </div>
+            </form>
           </div>
-        </>
+
+        </div>
       ) : (
-        <p>{textos?.doctor?.selecionaTriado || 'Seleciona um episódio triado.'}</p>
+        <p>{textos?.doctor?.selecionaTriado || 'Seleciona um episódio na fila de prioridade para iniciar o atendimento.'}</p>
       )}
-    </section>
-  );
-
-  const renderPrescricao = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>{textos?.doctor?.prescricao || 'Prescrição'}</h2>
-      </div>
-
-      <form className="admin-form" onSubmit={adicionarPrescricao}>
-        <div className="admin-form__grid">
-          <div className="admin-form__group">
-            <label>{textos?.doctor?.medicamento || 'Medicamento'}</label>
-            <input name="medicamento" value={prescricao.medicamento} onChange={handlePrescricaoChange} />
-          </div>
-          <div className="admin-form__group">
-            <label>{textos?.doctor?.dosagem || 'Dosagem'}</label>
-            <input name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} />
-          </div>
-          <div className="admin-form__group">
-            <label>{textos?.doctor?.duracao || 'Duração'}</label>
-            <input name="duracao" value={prescricao.duracao} onChange={handlePrescricaoChange} />
-          </div>
-          <div className="admin-form__group">
-            <label>{textos?.doctor?.via || 'Via'}</label>
-            <input name="via" value={prescricao.via} onChange={handlePrescricaoChange} />
-          </div>
-        </div>
-
-        <div className="admin-actions-row">
-          <button className="admin-form__submit" type="submit">
-            {textos?.doctor?.fazerPrescricao || 'Fazer prescrição'}
-          </button>
-        </div>
-      </form>
-    </section>
-  );
-
-  const renderAlta = () => (
-    <section className="admin-panel-section">
-      <div className="admin-panel-section__header">
-        <h2>{textos?.doctor?.altaInternamento || 'Alta ou internamento'}</h2>
-      </div>
-
-      <form className="admin-form" onSubmit={registarAlta}>
-        <div className="admin-form__grid">
-          <div className="admin-form__group">
-            <label>{textos?.doctor?.destino || 'Destino'}</label>
-            <select name="destino" value={alta.destino} onChange={handleAltaChange}>
-              <option value="alta">{textos?.doctor?.alta || 'Alta'}</option>
-              <option value="internamento">{textos?.doctor?.internamento || 'Internamento'}</option>
-            </select>
-          </div>
-
-          <div className="admin-form__group">
-            <label>{textos?.doctor?.destinoInternamento || 'Destino internamento'}</label>
-            <input name="internamento_destino" value={alta.internamento_destino} onChange={handleAltaChange} />
-          </div>
-
-          <div className="admin-form__group admin-form__group--full">
-            <label>{textos?.doctor?.observacoes || 'Observações'}</label>
-            <textarea name="observacoes" value={alta.observacoes} onChange={handleAltaChange} />
-          </div>
-        </div>
-
-        <div className="admin-actions-row">
-          <button className="admin-form__submit" type="submit">
-            {textos?.doctor?.confirmar || 'Confirmar'}
-          </button>
-        </div>
-      </form>
     </section>
   );
 
   const renderCenter = () => {
     switch (mainMenu) {
-      case 'kpis':
-        return renderKpis();
-      case 'medias':
-        return renderMedias();
+      case 'informacao_geral':
+        return renderInformacaoGeral();
       case 'fila':
         return renderFila();
-      case 'episodios':
-        return renderEpisodios();
-      case 'detalhe':
-        return renderDetalhe();
-      case 'prescricao':
-        return renderPrescricao();
-      case 'alta':
-        return renderAlta();
+      case 'atendimento':
+        return renderAtendimentoCompleto();
       default:
-        return renderKpis();
+        return renderInformacaoGeral();
     }
   };
 
