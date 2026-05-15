@@ -1,38 +1,32 @@
+// src/pages/public/Accessibility.jsx
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Breadcrumbs from '../../components/layout/Breadcrumbs';
-import { useLanguage } from '../../contexts/LanguageContext'; // Importação do Contexto
+import { useLanguage } from '../../contexts/LanguageContext';
 import '../../styles/main.css';
 
-/**
- * @file Accessibility.jsx
- * @description Página de Declaração de Acessibilidade integrada com sistema multi-idioma.
- * Fornece informações sobre a conformidade legal e suporte de leitura assistida.
- * 
- * @component
- * @returns {JSX.Element} A interface da Declaração de Acessibilidade.
- */
 export default function Accessibility() {
-  const { textos, idioma } = useLanguage(); // Aceder ao idioma e textos dinâmicos
-  const [isReading, setIsReading] = useState(false);
+  const { textos, idioma } = useLanguage();
+  const [isReading,       setIsReading]       = useState(false);
   const [activeParagraph, setActiveParagraph] = useState(-1);
-  const [charIndex, setCharIndex] = useState(0);
-  const [charLength, setCharLength] = useState(0);
+  const [charIndex,       setCharIndex]       = useState(0);
+  const [charLength,      setCharLength]      = useState(0);
 
-  /**
-   * Dados estruturados da declaração.
-   */
   const documentData = [
     {
       plainText: textos.acessibilidadePagina.seccaoIntro,
       normalJsx: (
         <>
-          <h1>{textos.acessibilidadePagina.tituloPrincipal}</h1>
-          <p className="intro-text">
-            {textos.acessibilidadePagina.introTexto1} <strong>{textos.acessibilidadePagina.grupo8}</strong> {textos.acessibilidadePagina.introTexto2} <strong>{textos.acessibilidadePagina.prodigi}</strong>, {textos.acessibilidadePagina.introTexto3}
+          <h1 className="a11y-doc__title">{textos.acessibilidadePagina.tituloPrincipal}</h1>
+          <p className="a11y-doc__intro">
+            {textos.acessibilidadePagina.introTexto1}{' '}
+            <strong>{textos.acessibilidadePagina.grupo8}</strong>{' '}
+            {textos.acessibilidadePagina.introTexto2}{' '}
+            <strong>{textos.acessibilidadePagina.prodigi}</strong>,{' '}
+            {textos.acessibilidadePagina.introTexto3}
           </p>
         </>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccao1Voz,
@@ -41,7 +35,7 @@ export default function Accessibility() {
           <h2 id="status-conformidade">{textos.acessibilidadePagina.statusTitulo}</h2>
           <p>{textos.acessibilidadePagina.statusTexto}</p>
         </section>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccao2Voz,
@@ -50,47 +44,47 @@ export default function Accessibility() {
           <h2 id="elaboracao-decl">{textos.acessibilidadePagina.elaboracaoTitulo}</h2>
           <p>{textos.acessibilidadePagina.elaboracaoTexto}</p>
         </section>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccaoA_Voz,
       normalJsx: (
-        <div className="sub-section">
+        <div className="a11y-sub-section">
           <h3>{textos.acessibilidadePagina.avalAutoTitulo}</h3>
-          <ul>
+          <ul className="a11y-list">
             <li><strong>{textos.acessibilidadePagina.lblFerramenta}</strong> AccessMonitor.</li>
             <li><strong>{textos.acessibilidadePagina.lblAmostra}</strong> {textos.acessibilidadePagina.amostraWeb}</li>
             <li><strong>{textos.acessibilidadePagina.lblResultados}</strong> {textos.acessibilidadePagina.resAuto}</li>
           </ul>
         </div>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccaoB_Voz,
       normalJsx: (
-        <div className="sub-section">
+        <div className="a11y-sub-section">
           <h3>{textos.acessibilidadePagina.avalManualTitulo}</h3>
-          <p className="date-report">{textos.acessibilidadePagina.relManual}</p>
-          <ul>
+          <p className="a11y-date-report">{textos.acessibilidadePagina.relManual}</p>
+          <ul className="a11y-list">
             <li><strong>{textos.acessibilidadePagina.lblAmostra}</strong> {textos.acessibilidadePagina.amostraModulos}</li>
             <li><strong>{textos.acessibilidadePagina.lblResultados}</strong> {textos.acessibilidadePagina.resManual}</li>
           </ul>
         </div>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccaoC_Voz,
       normalJsx: (
-        <div className="sub-section">
+        <div className="a11y-sub-section">
           <h3>{textos.acessibilidadePagina.testesUsaTitulo}</h3>
-          <p className="date-report">{textos.acessibilidadePagina.relUsa}</p>
-          <ul>
+          <p className="a11y-date-report">{textos.acessibilidadePagina.relUsa}</p>
+          <ul className="a11y-list">
             <li><strong>{textos.acessibilidadePagina.lblParticipantes}</strong> {textos.acessibilidadePagina.participantesDesc}</li>
             <li><strong>{textos.acessibilidadePagina.lblTarefas}</strong> {textos.acessibilidadePagina.tarefasDesc}</li>
             <li><strong>{textos.acessibilidadePagina.lblResultados}</strong> {textos.acessibilidadePagina.resUsa}</li>
           </ul>
         </div>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccao3Voz,
@@ -98,12 +92,17 @@ export default function Accessibility() {
         <section aria-labelledby="contacto-info">
           <h2 id="contacto-info">{textos.acessibilidadePagina.contactoTitulo}</h2>
           <p>{textos.acessibilidadePagina.contactoTexto}</p>
-          <ul className="contact-list">
+          <ul className="a11y-contact-list">
             <li><strong>{textos.acessibilidadePagina.lblResponsaveis}</strong> {textos.acessibilidadePagina.responsaveisNomes}</li>
-            <li><strong>{textos.acessibilidadePagina.lblEmail}</strong> <a href="mailto:grupo8_prodigi@exemplo.pt">grupo8_prodigi@exemplo.pt</a></li>
+            <li>
+              <strong>{textos.acessibilidadePagina.lblEmail}</strong>{' '}
+              <a href="mailto:grupo8_prodigi@exemplo.pt" className="a11y-link">
+                grupo8_prodigi@exemplo.pt
+              </a>
+            </li>
           </ul>
         </section>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccao4Voz,
@@ -112,7 +111,7 @@ export default function Accessibility() {
           <h2 id="outras-evidencias">{textos.acessibilidadePagina.evidenciasTitulo}</h2>
           <p>{textos.acessibilidadePagina.evidenciasTexto}</p>
         </section>
-      )
+      ),
     },
     {
       plainText: textos.acessibilidadePagina.seccao5Voz,
@@ -121,37 +120,16 @@ export default function Accessibility() {
           <h2 id="denuncia-discrim">{textos.acessibilidadePagina.denunciaTitulo}</h2>
           <p>{textos.acessibilidadePagina.denunciaTexto}</p>
         </section>
-      )
-    }
+      ),
+    },
   ];
 
-  const totalWords = documentData.reduce((acc, p) => acc + p.plainText.split(/\s+/).length, 0);
+  const totalWords  = documentData.reduce((acc, p) => acc + p.plainText.split(/\s+/).length, 0);
   const readingTime = Math.ceil(totalWords / 200);
 
   useEffect(() => {
-    return () => {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
+    return () => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); };
   }, []);
-
-  const toggleReading = () => {
-    if (!('speechSynthesis' in window)) {
-      alert(textos.sobreNos.alertaSemSuporte);
-      return;
-    }
-
-    const synth = window.speechSynthesis;
-
-    if (isReading) {
-      synth.cancel();
-      resetReadingState();
-    } else {
-      setIsReading(true);
-      speakParagraph(0, synth);
-    }
-  };
 
   const resetReadingState = () => {
     setIsReading(false);
@@ -161,113 +139,119 @@ export default function Accessibility() {
   };
 
   const speakParagraph = (index, synth) => {
-    if (index >= documentData.length) {
-      resetReadingState();
-      return;
-    }
-
+    if (index >= documentData.length) { resetReadingState(); return; }
     setActiveParagraph(index);
     setCharIndex(0);
     setCharLength(0);
-
     const utterance = new SpeechSynthesisUtterance(documentData[index].plainText);
-    
-    // Ajustar o idioma da síntese de voz dinamicamente
-    utterance.lang = idioma === 'pt' ? 'pt-PT' : 'en-US';
-    utterance.rate = 0.95;
-
+    utterance.lang  = idioma === 'pt' ? 'pt-PT' : 'en-US';
+    utterance.rate  = 0.95;
     utterance.onboundary = (event) => {
       if (event.name === 'word') {
         setCharIndex(event.charIndex);
-        let length = event.charLength || (event.target.text.substring(event.charIndex).match(/^\S+/) || [" "])[0].length;
+        const length = event.charLength ||
+          (event.target.text.substring(event.charIndex).match(/^\S+/) || [' '])[0].length;
         setCharLength(length);
       }
     };
-
-    utterance.onend = () => speakParagraph(index + 1, synth);
+    utterance.onend  = () => speakParagraph(index + 1, synth);
     utterance.onerror = () => resetReadingState();
-
     synth.speak(utterance);
+  };
+
+  const toggleReading = () => {
+    if (!('speechSynthesis' in window)) {
+      alert(textos.sobreNos.alertaSemSuporte);
+      return;
+    }
+    const synth = window.speechSynthesis;
+    if (isReading) { synth.cancel(); resetReadingState(); }
+    else { setIsReading(true); speakParagraph(0, synth); }
   };
 
   const renderContent = (index) => {
     const data = documentData[index];
-
-    if (!isReading || activeParagraph !== index) {
-      return data.normalJsx;
-    }
-
-    const before = data.plainText.substring(0, charIndex);
-    const highlightedWord = data.plainText.substring(charIndex, charIndex + charLength);
-    const after = data.plainText.substring(charIndex + charLength);
-
+    if (!isReading || activeParagraph !== index) return data.normalJsx;
     return (
       <div className="reading-teleprompter" aria-live="off">
-        {before}
-        <span className="word-highlight" aria-hidden="true">{highlightedWord}</span>
-        {after}
+        {data.plainText.substring(0, charIndex)}
+        <span className="word-highlight" aria-hidden="true">
+          {data.plainText.substring(charIndex, charIndex + charLength)}
+        </span>
+        {data.plainText.substring(charIndex + charLength)}
       </div>
     );
   };
 
-  const breadcrumbsLinks = [
-    { name: textos.geral.inicio, path: '/' },
-    { name: textos.acessibilidadePagina.breadcrumb, path: '/acessibilidade' }
-  ];
-
   return (
-    <div className="accessibility-page-wrapper">
-      
-      <div className="container" style={{ paddingTop: '1.5rem', marginBottom: '-1.5rem' }}>
-        <Breadcrumbs items={breadcrumbsLinks} />
+    <div className="a11y-page">
+
+      {/* Breadcrumbs */}
+      <div className="a11y-page__breadcrumbs container">
+        <Breadcrumbs items={[
+          { name: textos.geral.inicio,                        path: '/'              },
+          { name: textos.acessibilidadePagina.breadcrumb,     path: '/acessibilidade'},
+        ]} />
       </div>
 
+      {/* Live region acessibilidade */}
       <div aria-live="polite" className="sr-only">
         {isReading ? textos.acessibilidade.leituraIniciadaPerguntas : textos.acessibilidade.pararLeitura}
       </div>
 
-      <main className="accessibility-main-content container" id="conteudo-principal" role="main">
-        <div className="accessibility-document">
-          
+      {/* Conteúdo principal */}
+      <main className="a11y-page__main container" id="conteudo-principal" role="main">
+        <div className="a11y-document">
+
+          {/* Cabeçalho de leitura */}
           <div className="read-aloud-header">
             <span className="reading-time" aria-label={`${textos.acessibilidade.tempoLeitura}: ${readingTime}`}>
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               ~{readingTime} {textos.acessibilidade.tempoLeitura}
             </span>
-            
-            <button 
+
+            <button
               type="button"
               className={`btn-read-aloud ${isReading ? 'is-reading' : ''}`}
               onClick={toggleReading}
               aria-pressed={isReading}
               aria-label={isReading ? textos.acessibilidade.botaoParar : textos.acessibilidade.botaoOuvir}
             >
-              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isReading ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                 )}
               </svg>
               {isReading ? textos.acessibilidade.botaoParar : textos.acessibilidade.botaoOuvir}
             </button>
           </div>
 
-          <article className="document-sections">
+          {/* Secções do documento */}
+          <article className="a11y-sections">
             {documentData.map((section, index) => (
-              <div key={index} className={`section-wrapper ${activeParagraph === index ? 'is-active-reading' : ''}`}>
+              <div
+                key={index}
+                className={`a11y-section ${activeParagraph === index ? 'a11y-section--active' : ''}`}
+              >
                 {renderContent(index)}
               </div>
             ))}
           </article>
 
-          <hr className="accessibility-divider" aria-hidden="true" />
-          
-          <p className="accessibility-footer-note">
+          <hr className="a11y-divider" aria-hidden="true" />
+
+          <p className="a11y-footer-note">
             {textos.acessibilidadePagina.notaRodape}
           </p>
-        </div>
 
+        </div>
         <Outlet />
       </main>
     </div>

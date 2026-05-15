@@ -1,454 +1,108 @@
-@media (max-width: 1024px) {
-  .admin-sidebar {
-    position: fixed;
-    top: 0;
-    left: -300px;
-    bottom: 0;
-    width: 300px;
-    height: 100vh;
-    z-index: 1000;
-    transition: left 0.3s ease, width 0.3s ease;
-    box-shadow: 8px 0 32px rgba(36, 107, 82, 0.22);
-  }
-
-  .admin-layout.is-collapsed .admin-sidebar {
-    left: -300px;
-    width: 300px;
-  }
-
-  .admin-layout:not(.is-collapsed) .admin-sidebar {
-    left: 0;
-  }
-
-  .admin-content-wrapper {
-    margin-left: 0 !important;
-    width: 100%;
-  }
-
-  .admin-content-inner {
-    padding: 1.5rem;
-  }
-
-  .admin-form__grid,
-  .admin-filters,
-  .selector-hospitais,
-  .form-grid,
-  .selector-list {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-panel-section,
-  .admin-table-card,
-  .employee-edit-normal,
-  .form-card,
-  .table-card {
-    border-radius: 18px;
-  }
-
-  .admin-panel-section {
-    padding: 1.4rem 1.5rem;
-  }
-
-  .admin-edit-header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.2rem 1.3rem;
-  }
-
-  .admin-edit-header__badge {
-    align-self: flex-start;
-  }
-
-  .admin-actions-row,
-  .form-actions {
-    flex-direction: column;
-    gap: 0.9rem;
-  }
-
-  .admin-form__submit,
-  .admin-secondary-button,
-  .admin-primary-big-button,
-  .form-card__save-button,
-  .form-card__secondary-button,
-  .btn {
-    min-width: 100%;
-    width: 100%;
-  }
-
-  .admin-table-scroll,
-  .table-scroll {
-    overflow-x: auto;
-  }
-
-  .admin-table,
-  .table {
-    min-width: 720px;
-  }
-}
+/* =========================================
+   RESPONSIVE – HERO (páginas públicas)
+   ========================================= */
 
 @media (max-width: 768px) {
-  .admin-sidebar__logo,
-  .sidebar__logo {
-    width: 150px;
-    height: 150px;
+  .hero-background {
+    padding: 2rem 0 2.5rem;
   }
 
-  .admin-content-inner,
-  .content-inner {
-    padding: 1rem;
-  }
-
-  .admin-content__body {
-    padding: 0;
-  }
-
-  .admin-panel-section,
-  .employee-edit-normal,
-  .panel-section,
-  .form-card__body {
-    padding: 1.2rem 1.3rem;
-  }
-
-  .admin-panel-section__header h2,
-  .panel-section__header h2 {
-    font-size: 1.25rem;
-  }
-
-  .admin-edit-header__title,
-  .form-card__title {
-    font-size: 1.35rem;
-  }
-
-  .admin-edit-header__subtitle {
-    font-size: 0.9rem;
-  }
-
-  .admin-table th,
-  .admin-table td,
-  .table th,
-  .table td {
-    padding: 0.75rem 0.55rem;
-    font-size: 0.85rem;
-  }
-
-  .admin-primary-big-button {
-    justify-content: center;
-  }
-
-  .admin-toolbar,
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.8rem;
-  }
-
-  .admin-filters {
-    gap: 1rem;
-    padding: 0.9rem;
-  }
-
-  .admin-filters .admin-form__group,
-  .admin-filters .form-group {
-    width: 100%;
-  }
-
-  .admin-filters .admin-form__group input,
-  .admin-filters .admin-form__group select,
-  .admin-filters .form-group input,
-  .admin-filters .form-group select {
-    width: 100%;
-  }
-
-  .admin-sidebar__link {
-    padding: 0.95rem 1rem;
-  }
-
-  .admin-sidebar__profile {
-    padding: 0.8rem 0.7rem;
-  }
-
-  .siaguh-subfooter {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 2rem;
-    gap: 2.5rem;
-  }
-
-  .siaguh-subfooter-links {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .siaguh-subfooter-contacts {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .siaguh-main-footer {
-    padding: 2rem 1.5rem;
-  }
-
-  .siaguh-footer-content-wrapper {
-    align-items: flex-start;
-  }
-
-  .siaguh-btn-top {
-    right: 1.5rem;
+  .page-hero__title {
+    font-size: 1.6rem;
   }
 }
 
 @media (max-width: 480px) {
-  .admin-sidebar {
-    width: 80px;
-    padding: 0.6rem 0.5rem;
+  .page-hero__title {
+    font-size: 1.35rem;
   }
 
-  .admin-layout:not(.is-collapsed) .admin-sidebar {
-    width: 260px;
-  }
-
-  .admin-page-breadcrumbs {
-    font-size: 0.85rem;
-  }
-
-  .admin-table-card__header,
-  .table-card__header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .admin-edit-header {
-    padding: 1rem;
-  }
-
-  .admin-edit-header__title {
-    font-size: 1.2rem;
-  }
-
-  .admin-edit-header__eyebrow {
-    font-size: 0.7rem;
-  }
-
-  .admin-panel-section,
-  .employee-edit-normal,
-  .admin-table-card,
-  .form-card,
-  .table-card {
-    border-radius: 16px;
-  }
-
-  .admin-form__submit,
-  .admin-secondary-button,
-  .admin-primary-big-button,
-  .admin-logout-button,
-  .form-card__save-button,
-  .form-card__secondary-button,
-  .btn {
-    min-width: 100%;
-  }
-
-  .admin-actions-row,
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .admin-sidebar__logo,
-  .sidebar__logo {
-    width: 120px;
-    height: 120px;
+  .page-hero__subtitle {
+    font-size: 0.9rem;
   }
 }
+
+/* =========================================
+   RESPONSIVE – SOBRE NÓS
+   ========================================= */
 
 @media (max-width: 768px) {
   .text-box {
-    padding: 1.5rem;
-  }
-
-  .sobre-nos-content {
-    margin-top: -3rem;
-  }
-
-  .sobre-nos-hero h1 {
-    font-size: 2rem;
+    padding: 1.75rem 1.25rem;
   }
 
   .read-aloud-header {
     flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
-
-  .membros-lista {
-    padding: 1rem;
-    border-radius: 12px;
-    gap: 0.8rem;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
-  .accessibility-document {
-    padding: 2rem 1.5rem;
-  }
-
-  .accessibility-document h1 {
-    font-size: 1.75rem;
-  }
-
-  .read-aloud-header {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .faqs-header h1 {
-    font-size: 2rem;
-  }
-
-  .accordion-header h3 {
-    font-size: 1rem;
-  }
-
-  .faqs-main {
-    padding: 2rem 1rem;
-  }
-
-  .faqs-controls-wrapper {
-    flex-direction: column;
-    align-items: flex-end;
-  }
-}
-
-@media (max-width: 900px) {
-  .episode-search-topbar {
-    flex-direction: column;
-  }
-
-  .episode-search-topbar__meta {
-    width: 100%;
-    min-width: auto;
-  }
-
-  .episode-horizontal-grid {
-    grid-template-rows: repeat(2, minmax(150px, 1fr));
-    grid-auto-columns: minmax(220px, 1fr);
-  }
-
-  .receptionist-dashboard .admin-panel-section {
-    gap: 0.85rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .patient-card {
-    padding: 18px;
-    gap: 18px;
-  }
-
-  .patient-card__header {
     align-items: flex-start;
-    flex-direction: column;
+    gap: 0.75rem;
   }
 
-  .patient-card__avatar {
-    width: 56px;
-    height: 56px;
-  }
-
-  .patient-card__name {
-    font-size: 1.25rem;
-  }
-
-  .patient-card__actions {
-    flex-direction: column;
-  }
-
-  .patient-btn {
-    width: 100%;
-  }
-
-  .episode-search-box {
-    padding: 10px 12px;
-  }
-
-  .episode-results-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .episode-horizontal-grid {
-    grid-template-rows: repeat(1, minmax(150px, 1fr));
-    grid-auto-columns: minmax(240px, 85%);
-  }
-
-  .episode-patient-card__actions {
-    flex-direction: column;
-  }
-
-  .episode-btn {
-    width: 100%;
-  }
-
-  .admin-table thead th,
-  .admin-table tbody td {
-    padding: 12px 10px;
-  }
-
-  .recent-entry-patient__avatar {
-    width: 36px;
-    height: 36px;
-    font-size: 0.85rem;
-  }
-
-  .recent-entry-patient__name {
-    font-size: 0.92rem;
-  }
-
-  .recent-entry-patient__meta,
-  .episode-date-time__time {
-    font-size: 0.78rem;
-  }
-
-  .recent-entry-status {
-    min-width: auto;
-    padding: 7px 10px;
-    font-size: 0.76rem;
-  }
-
-  .episode-date-time {
-    min-width: 95px;
+  .reading-highlight {
+    margin-left: 0;
   }
 }
 
+@media (max-width: 480px) {
+  .membros-lista-container {
+    padding: 0.85rem 1rem;
+  }
+
+  .membro-nome {
+    font-size: 0.82rem;
+  }
+}
+
+/* =========================================
+   RESPONSIVE (accessibility document)
+   ========================================= */
+
 @media (max-width: 768px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .a11y-document {
+    padding: 1.75rem 1.25rem;
   }
 
-  .privacy-document {
-    padding: 2rem 1.5rem;
+  .a11y-section {
+    padding: 1rem 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .a11y-doc__title {
+    font-size: 1.3rem;
   }
 
-  .privacy-document h1 {
-    font-size: 1.75rem;
+  .a11y-sub-section {
+    padding: 0.85rem 1rem;
   }
+}
 
-  .privacy-document h2 {
-    font-size: 1.2rem;
-  }
+/* =========================================
+   RESPONSIVE (faqs)
+   ========================================= */
 
-  .read-aloud-header {
+@media (max-width: 768px) {
+  .faqs-toolbar {
     flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .faqs-toggle-all {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .faqs-header__title {
+    font-size: 1.35rem;
+  }
+
+  .accordion-header {
+    padding: 0.9rem 1rem;
+  }
+
+  .accordion-body {
+    padding: 0.85rem 1rem 1rem;
   }
 }

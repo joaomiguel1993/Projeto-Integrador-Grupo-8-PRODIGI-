@@ -1,17 +1,17 @@
+// src/pages/public/HospitalDetalhe.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import '../../styles/main.css';
 
 function getWaitLabel(value) {
-  if (value == null) return '-- min';
-  return `${value} min`;
+  return value == null ? '-- min' : `${value} min`;
 }
 
 function getWaitTone(value) {
   if (value == null) return 'neutral';
-  if (value <= 20) return 'green';
-  if (value <= 45) return 'yellow';
+  if (value <= 20)   return 'green';
+  if (value <= 45)   return 'yellow';
   return 'red';
 }
 
@@ -31,20 +31,21 @@ function buildEmbedUrl(hospital) {
 
 function TriageCard({ label, value, tone }) {
   return (
-    <article className={`hospital-triage-card hospital-triage-card--${tone}`}>
-      <span className="hospital-triage-card__label">{label}</span>
-      <strong className="hospital-triage-card__value">{getWaitLabel(value)}</strong>
+    <article className={`triage-card triage-card--${tone}`}>
+      <span className="triage-card__label">{label}</span>
+      <strong className="triage-card__value">{getWaitLabel(value)}</strong>
     </article>
   );
 }
 
 export default function HospitalDetalhe() {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const { textos } = useLanguage();
+  const navigate    = useNavigate();
+  const { id }      = useParams();
+  const { textos }  = useLanguage();
+
   const [hospital, setHospital] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState('');
+  const [loading,  setLoading]  = useState(true);
+  const [erro,     setErro]     = useState('');
 
   useEffect(() => {
     async function loadHospital() {
@@ -54,12 +55,12 @@ export default function HospitalDetalhe() {
 
         const [respHosp, respPainel] = await Promise.all([
           fetch(`http://localhost:8000/api/v1/hospitais/${id}`),
-          fetch(`http://localhost:8000/api/v1/predict/tempos-espera/${id}`)
+          fetch(`http://localhost:8000/api/v1/predict/tempos-espera/${id}`),
         ]);
 
         if (!respHosp.ok) throw new Error('Erro ao carregar hospital');
 
-        const dataHosp = await respHosp.json();
+        const dataHosp   = await respHosp.json();
         const dataPainel = respPainel.ok ? await respPainel.json() : null;
 
         setHospital({
@@ -76,18 +77,20 @@ export default function HospitalDetalhe() {
         setLoading(false);
       }
     }
-
     loadHospital();
   }, [id]);
 
-  const mapUrl = useMemo(() => (hospital ? buildGoogleMapsUrl(hospital) : '#'), [hospital]);
-  const embedUrl = useMemo(() => (hospital ? buildEmbedUrl(hospital) : ''), [hospital]);
+  const mapUrl   = useMemo(() => hospital ? buildGoogleMapsUrl(hospital) : '#', [hospital]);
+  const embedUrl = useMemo(() => hospital ? buildEmbedUrl(hospital)       : '',  [hospital]);
 
   if (loading) {
     return (
-      <main className="hospital-detail-pro hospital-detail-pro--state">
+      <main className="hosp-detail hosp-detail--state">
         <div className="container">
-          <div className="hospital-detail-state">{textos.geral?.aCarregar || 'A carregar...'}</div>
+          <div className="hosp-detail__state">
+            <div className="perfil-loading__spinner" />
+            <p>{textos.geral?.aCarregar || 'A carregar...'}</p>
+          </div>
         </div>
       </main>
     );
@@ -95,107 +98,153 @@ export default function HospitalDetalhe() {
 
   if (erro || !hospital) {
     return (
-      <main className="hospital-detail-pro hospital-detail-pro--state">
+      <main className="hosp-detail hosp-detail--state">
         <div className="container">
-          <div className="hospital-detail-state hospital-detail-state--error">{erro || 'Hospital não encontrado.'}</div>
+          <div className="hosp-detail__state hosp-detail__state--error">
+            <span>⚠️</span>
+            <p>{erro || 'Hospital não encontrado.'}</p>
+            <button className="btn btn--secondary" onClick={() => navigate('/')}>
+              {textos.geral?.voltar || 'Voltar'}
+            </button>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="hospital-detail-pro" role="main">
-      <section className="hospital-detail-hero">
-        <div className="container hospital-detail-hero__inner">
-          <button type="button" className="hospital-detail-back" onClick={() => navigate('/')}>
-            {textos.geral?.voltar || 'Voltar'}
+    <main className="hosp-detail" role="main">
+
+      {/* ── HERO ── */}
+      <section className="hosp-detail__hero">
+        <div className="container hosp-detail__hero-inner">
+
+          <button
+            type="button"
+            className="btn-back"
+            onClick={() => navigate('/')}
+          >
+            ← {textos.geral?.voltar || 'Voltar'}
           </button>
 
-          <div className="hospital-detail-hero__top">
-            <div>
-              <span className="hospital-detail-eyebrow">{textos.home?.labelHospitais || 'Hospitais'}</span>
-              <h1 className="hospital-detail-title">{hospital.nome}</h1>
-              <p className="hospital-detail-subtitle">
+          <div className="hosp-detail__hero-body">
+            <div className="hosp-detail__hero-text">
+              <span className="hosp-detail__eyebrow">
+                {textos.home?.labelHospitais || 'Hospital'}
+              </span>
+              <h1 className="hosp-detail__title">{hospital.nome}</h1>
+              <p className="hosp-detail__subtitle">
                 {hospital.localizacao || hospital.morada || 'Informação de localização disponível na ficha do hospital.'}
               </p>
             </div>
 
-            <div className="hospital-detail-kpi">
-              <span>{textos.home?.labelEspera || 'Tempo de espera'}</span>
-              <strong>{getWaitLabel(hospital.espera_amarelo)}</strong>
+            <div className={`hosp-detail__kpi hosp-detail__kpi--${getWaitTone(hospital.espera_amarelo)}`}>
+              <span className="hosp-detail__kpi-label">
+                {textos.home?.labelEspera || 'Tempo de espera'}
+              </span>
+              <strong className="hosp-detail__kpi-value">
+                {getWaitLabel(hospital.espera_amarelo)}
+              </strong>
             </div>
           </div>
+
         </div>
       </section>
 
-      <section className="hospital-detail-content">
-        <div className="container hospital-detail-grid">
-          <div className="hospital-detail-main">
-            <section className="hospital-detail-card">
-              <div className="hospital-detail-card__header">
-                <h2>Informação geral</h2>
-                <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="hospital-detail-link">
-                  Abrir no Google Maps
+      {/* ── CONTEÚDO ── */}
+      <section className="hosp-detail__content">
+        <div className="container hosp-detail__grid">
+
+          {/* Coluna principal */}
+          <div className="hosp-detail__main">
+
+            {/* Informação geral */}
+            <div className="hosp-card">
+              <div className="hosp-card__header">
+                <h2 className="hosp-card__title">Informação geral</h2>
+                <a
+                  href={mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hosp-card__link"
+                >
+                  Abrir no Google Maps ↗
                 </a>
               </div>
 
-              <div className="hospital-detail-info-grid">
-                <div className="hospital-detail-info-item">
-                  <span>Email</span>
-                  <strong>{hospital.email || 'Não disponível'}</strong>
+              <div className="hosp-info-grid">
+                <div className="hosp-info-item">
+                  <span className="hosp-info-item__label">Email</span>
+                  <strong className="hosp-info-item__value">
+                    {hospital.email || 'Não disponível'}
+                  </strong>
                 </div>
-                <div className="hospital-detail-info-item">
-                  <span>Telefone</span>
-                  <strong>{hospital.telefone || 'Não disponível'}</strong>
+                <div className="hosp-info-item">
+                  <span className="hosp-info-item__label">Telefone</span>
+                  <strong className="hosp-info-item__value">
+                    {hospital.telefone || 'Não disponível'}
+                  </strong>
                 </div>
-                <div className="hospital-detail-info-item hospital-detail-info-item--full">
-                  <span>Morada</span>
-                  <strong>{hospital.morada || hospital.localizacao || 'Não disponível'}</strong>
+                <div className="hosp-info-item hosp-info-item--full">
+                  <span className="hosp-info-item__label">Morada</span>
+                  <strong className="hosp-info-item__value">
+                    {hospital.morada || hospital.localizacao || 'Não disponível'}
+                  </strong>
                 </div>
               </div>
-            </section>
+            </div>
 
-            <section className="hospital-detail-card">
-              <div className="hospital-detail-card__header">
-                <h2>Tempos de espera por triagem</h2>
+            {/* Triagem */}
+            <div className="hosp-card">
+              <div className="hosp-card__header">
+                <h2 className="hosp-card__title">Tempos de espera por triagem</h2>
               </div>
 
-              <div className="hospital-triage-grid">
-                <TriageCard label="Vermelho" value={hospital.espera_vermelho} tone="red" />
-                <TriageCard label="Laranja" value={hospital.espera_laranja} tone="orange" />
-                <TriageCard label="Amarelo" value={hospital.espera_amarelo} tone="yellow" />
-                <TriageCard label="Verde" value={hospital.espera_verde} tone="green" />
-                <TriageCard label="Azul" value={hospital.espera_azul} tone="blue" />
+              <div className="triage-grid">
+                <TriageCard label="Vermelho" value={hospital.espera_vermelho} tone="red"    />
+                <TriageCard label="Laranja"  value={hospital.espera_laranja}  tone="orange" />
+                <TriageCard label="Amarelo"  value={hospital.espera_amarelo}  tone="yellow" />
+                <TriageCard label="Verde"    value={hospital.espera_verde}    tone="green"  />
+                <TriageCard label="Azul"     value={hospital.espera_azul}     tone="blue"   />
               </div>
-            </section>
+            </div>
+
           </div>
 
-          <aside className="hospital-detail-side">
-            <section className="hospital-detail-card hospital-detail-card--map">
-              <div className="hospital-detail-card__header">
-                <h2>Localização</h2>
+          {/* Sidebar: mapa */}
+          <aside className="hosp-detail__side">
+            <div className="hosp-card hosp-card--map">
+              <div className="hosp-card__header">
+                <h2 className="hosp-card__title">Localização</h2>
               </div>
 
-              <div className="hospital-map-embed">
+              <div className="hosp-map-embed">
                 <iframe
                   title={`Mapa de ${hospital.nome}`}
                   src={embedUrl}
                   width="100%"
                   height="100%"
-                  style={{ border: 0 }}
+                  className="hosp-map-embed__iframe"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   allowFullScreen
                 />
               </div>
 
-              <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="hospital-map-open">
-                Ver rota no Google Maps
+              <a
+                href={mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hosp-map-open"
+              >
+                Ver rota no Google Maps →
               </a>
-            </section>
+            </div>
           </aside>
+
         </div>
       </section>
+
     </main>
   );
 }

@@ -1,217 +1,90 @@
-.faqs-page {
+/* =========================================
+   FAQ
+   ========================================= */
+
+.faqs-page { min-height: 100vh; background: #f8fafc; }
+.faqs-page__breadcrumbs { padding-top: 1.5rem; padding-bottom: 0.5rem; }
+.faqs-page__main        { padding-block: 2.5rem; }
+
+.faqs-container { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.75rem; }
+
+.faqs-header            { display: flex; flex-direction: column; gap: 0.4rem; }
+.faqs-header__title     { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2; }
+.faqs-header__subtitle  { font-size: 0.95rem; color: #64748b; margin: 0; line-height: 1.6; }
+
+.faqs-toolbar {
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #f4f7f6;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.faqs-main {
-  flex: 1;
-  padding: 3rem 1.5rem 5rem;
-  display: flex;
-  justify-content: center;
-}
-
-.faqs-container {
-  max-width: 800px;
-  width: 100%;
-}
-
-.faqs-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.faqs-header h1 {
-  color: #007456;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.faqs-header p {
-  color: #4a5568;
-  font-size: 1.1rem;
-}
-
-.faqs-controls-wrapper {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   flex-wrap: wrap;
-  gap: 1rem;
 }
 
-.read-aloud-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+.faqs-toggle-all { white-space: nowrap; font-size: 0.82rem; }
 
-.reading-time {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.reading-time svg {
-  width: 16px;
-  height: 16px;
-  color: #94a3b8;
-}
-
-.btn-read-aloud {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: transparent;
-  color: #007456;
-  border: 1px solid #007456;
-  border-radius: 50px;
-  padding: 0.5rem 1.2rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: inherit;
-}
-
-.btn-read-aloud svg {
-  width: 18px;
-  height: 18px;
-}
-
-.btn-read-aloud:hover {
-  background-color: #f2fbf7;
-}
-
-.btn-read-aloud.is-reading {
-  background-color: #007456;
-  color: #ffffff;
-}
-
-.btn-toggle-all {
-  background: none;
-  border: none;
-  color: #007456;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  text-decoration: underline;
-  padding: 0.5rem;
-  transition: color 0.2s;
-}
-
-.btn-toggle-all:hover {
-  color: #004d39;
-}
-
-.accordion-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
+.accordion-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
 .accordion-item {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.accordion-item:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.accordion-item.open {
-  border-color: #007456;
-}
-
-.accordion-item.is-reading-active {
-  border-color: #007456;
-  background-color: #f8fcfb;
-  box-shadow: 0 4px 12px rgba(0, 116, 86, 0.1);
-}
+.accordion-item:hover              { border-color: #a7f3d0; }
+.accordion-item--open              { border-color: var(--siaguh-green, #3eb489); box-shadow: 0 4px 16px rgba(62, 180, 137, 0.1); }
+.accordion-item--reading           { border-color: #6ee7b7; background: #f0fdf4; box-shadow: 0 4px 16px rgba(62, 180, 137, 0.15); }
 
 .accordion-header {
   width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  background-color: transparent;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  background: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
-  color: #1a202c;
+  transition: background 0.15s;
 }
 
-.accordion-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  padding-right: 1.5rem;
-  line-height: 1.5;
-}
+.accordion-header:hover               { background: #f8fafc; }
+.accordion-item--open .accordion-header { background: #f0fdf4; }
+
+.accordion-header__question { font-size: 0.95rem; font-weight: 600; color: #0f172a; margin: 0; line-height: 1.4; flex: 1; }
+.accordion-item--open .accordion-header__question { color: #064e3b; }
 
 .accordion-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px; height: 20px;
   flex-shrink: 0;
-  color: #007456;
-  transition: transform 0.3s ease;
+  color: #94a3b8;
+  transition: transform 0.25s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.accordion-item.open .accordion-icon {
-  transform: rotate(180deg);
+.accordion-icon svg { width: 18px; height: 18px; }
+.accordion-item--open .accordion-icon { transform: rotate(180deg); color: var(--siaguh-green, #3eb489); }
+
+.accordion-collapse { border-top: 1px solid #f1f5f9; }
+
+.accordion-body { padding: 1rem 1.25rem 1.25rem; }
+.accordion-body p { font-size: 0.92rem; color: #475569; line-height: 1.75; margin: 0; }
+
+@media (max-width: 768px) {
+  .faqs-toolbar    { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .faqs-toggle-all { width: 100%; text-align: center; }
 }
 
-.accordion-collapse {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.3s ease-in-out;
-}
-
-.accordion-item.open .accordion-collapse {
-  grid-template-rows: 1fr;
-}
-
-.accordion-body {
-  overflow: hidden;
-}
-
-.accordion-body p {
-  margin: 0;
-  padding: 0 1.5rem 1.5rem;
-  color: #4a5568;
-  line-height: 1.6;
-}
-
-.word-highlight {
-  background-color: #a3e6cd;
-  color: #004d39;
-  border-radius: 3px;
-  padding: 0 2px;
-  margin: 0 1px;
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.1s ease;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+@media (max-width: 480px) {
+  .faqs-header__title { font-size: 1.35rem; }
+  .accordion-header   { padding: 0.9rem 1rem; }
+  .accordion-body     { padding: 0.85rem 1rem 1rem; }
 }
