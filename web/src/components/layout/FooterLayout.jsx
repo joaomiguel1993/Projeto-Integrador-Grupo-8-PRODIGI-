@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
-import '../../styles/Footer.css';
+import "../../styles/layout/footer.css";
 
 import fculLogo from '../../imagens/FCUL-Branco.png';
 import iselLogo from '../../imagens/ISEL-Branco.png';
