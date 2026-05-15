@@ -343,72 +343,234 @@ uvicorn main:app --reload
 
 ### 🔌 Rotas e Endpoints do Backend FastAPI
 
-#### Utentes
+---
+
+#### 🏥 Utentes
 
 ```http
 GET    /api/v1/utentes/
 POST   /api/v1/utentes/
+GET    /api/v1/utentes/nif/{nif}
 GET    /api/v1/utentes/{num_utente}
 PUT    /api/v1/utentes/{num_utente}
 DELETE /api/v1/utentes/{num_utente}
 ```
 
-#### Episódios
+---
+
+#### 🚑 Episódios
 
 ```http
 GET    /api/v1/episodios/
 POST   /api/v1/episodios/
+GET    /api/v1/episodios/utente/{num_utente}
+GET    /api/v1/episodios/hospital/{id_hosp}
 GET    /api/v1/episodios/{cod_ep_urgenc}
 PUT    /api/v1/episodios/{cod_ep_urgenc}
 DELETE /api/v1/episodios/{cod_ep_urgenc}
 ```
 
-#### Triagens
+---
+
+#### 🩺 Triagens
 
 ```http
 GET    /api/v1/triagens/
 POST   /api/v1/triagens/
+GET    /api/v1/triagens/{cod_ep_urgenc}
 PUT    /api/v1/triagens/{cod_ep_urgenc}
 DELETE /api/v1/triagens/{cod_ep_urgenc}
 ```
 
-#### Internamentos
+---
+
+#### 🛏️ Internamentos
 
 ```http
 GET    /api/v1/internamentos/
 POST   /api/v1/internamentos/
+GET    /api/v1/internamentos/episodio/{cod_ep_urgenc}
+GET    /api/v1/internamentos/{cod_internamento}
 PUT    /api/v1/internamentos/{cod_internamento}
 DELETE /api/v1/internamentos/{cod_internamento}
 ```
 
-#### Profissionais
+---
+
+#### 👨‍⚕️ Profissionais
 
 ```http
 GET    /api/v1/profissionais/
 POST   /api/v1/profissionais/
+GET    /api/v1/profissionais/{id_func}
 PUT    /api/v1/profissionais/{id_func}
 DELETE /api/v1/profissionais/{id_func}
 ```
 
-#### Prescrições
+---
+
+#### 🧾 Atos Médicos
+
+```http
+GET    /api/v1/atos/
+POST   /api/v1/atos/
+GET    /api/v1/atos/episodio/{cod_ep_urgenc}
+GET    /api/v1/atos/{id_ato}
+PUT    /api/v1/atos/{id_ato}
+DELETE /api/v1/atos/{id_ato}
+```
+
+---
+
+#### 💊 Prescrições
 
 ```http
 GET    /api/v1/prescricoes/
 POST   /api/v1/prescricoes/
+GET    /api/v1/prescricoes/ato/{id_ato}
+GET    /api/v1/prescricoes/{id_prescricao}
 PUT    /api/v1/prescricoes/{id_prescricao}
 DELETE /api/v1/prescricoes/{id_prescricao}
 ```
 
-#### Alertas
+---
+
+#### 🏥 Hospitais
+
+```http
+GET    /api/v1/hospitais/
+POST   /api/v1/hospitais/
+GET    /api/v1/hospitais/{id_hosp}
+PUT    /api/v1/hospitais/{id_hosp}
+DELETE /api/v1/hospitais/{id_hosp}
+```
+
+---
+
+#### 💉 Medicamentos
+
+```http
+GET    /api/v1/medicamentos/
+POST   /api/v1/medicamentos/
+GET    /api/v1/medicamentos/{cod_medicamento}
+PUT    /api/v1/medicamentos/{cod_medicamento}
+DELETE /api/v1/medicamentos/{cod_medicamento}
+```
+
+---
+
+#### 👤 Utilizadores
+
+```http
+GET    /api/v1/utilizadores/
+POST   /api/v1/utilizadores/
+GET    /api/v1/utilizadores/username/{username}
+GET    /api/v1/utilizadores/{id_func}
+PUT    /api/v1/utilizadores/{id_func}
+DELETE /api/v1/utilizadores/{id_func}
+```
+
+---
+
+#### 🏢 Trabalha
+
+```http
+GET    /api/v1/trabalha/
+POST   /api/v1/trabalha/
+GET    /api/v1/trabalha/funcionario/{id_func}
+GET    /api/v1/trabalha/hospital/{id_hosp}
+GET    /api/v1/trabalha/{id_func}/{id_hosp}
+PUT    /api/v1/trabalha/{id_func}/{id_hosp}
+DELETE /api/v1/trabalha/{id_func}/{id_hosp}
+```
+
+---
+
+#### 🚨 Alertas
 
 ```http
 GET    /api/v1/alertas/
 POST   /api/v1/alertas/
+GET    /api/v1/alertas/prescricao/{id_prescricao}
+GET    /api/v1/alertas/{cod_alerta}
 PUT    /api/v1/alertas/{cod_alerta}
 DELETE /api/v1/alertas/{cod_alerta}
+PUT    /api/v1/alertas/{cod_alerta}/resolver/{id_func}
 ```
 
-## 🤖 Inteligência Artificial
+---
+
+#### 💊 Medicação Ativa
+
+```http
+GET    /api/v1/medicacao-ativa/
+POST   /api/v1/medicacao-ativa/
+GET    /api/v1/medicacao-ativa/utente/{num_utente}
+GET    /api/v1/medicacao-ativa/{cod_medicacao_ativa}
+PUT    /api/v1/medicacao-ativa/{cod_medicacao_ativa}
+DELETE /api/v1/medicacao-ativa/{cod_medicacao_ativa}
+```
+
+---
+
+#### 🧬 Utente Antecedentes
+
+```http
+GET    /api/v1/utente-antecedentes/
+POST   /api/v1/utente-antecedentes/
+GET    /api/v1/utente-antecedentes/utente/{num_utente}
+GET    /api/v1/utente-antecedentes/antecedente/{cod_antecedente}
+GET    /api/v1/utente-antecedentes/{num_utente}/{cod_antecedente}
+PUT    /api/v1/utente-antecedentes/{num_utente}/{cod_antecedente}
+DELETE /api/v1/utente-antecedentes/{num_utente}/{cod_antecedente}
+```
+
+---
+
+#### ⚠️ Alergias
+
+```http
+GET    /api/v1/alergias/
+POST   /api/v1/alergias/
+GET    /api/v1/alergias/utente/{num_utente}
+GET    /api/v1/alergias/{cod_alergia}
+PUT    /api/v1/alergias/{cod_alergia}
+DELETE /api/v1/alergias/{cod_alergia}
+GET    /api/v1/alergias/estatisticas/predict
+```
+
+---
+
+#### 📜 Logs
+
+```http
+GET /api/v1/logs/
+GET /api/v1/logs/export/excel
+```
+
+---
+
+#### 🤖 IA / Predict
+
+```http
+GET  /api/v1/predict/tempos-espera/{id_hosp}
+POST /predict/triage
+POST /predict/wait-time
+POST /predict/voz
+POST /predict/medicine-risk
+```
+
+---
+
+#### 🔐 Autenticação
+
+```http
+POST /api/v1/auth/login
+POST /api/v1/auth/register
+POST /api/v1/auth/refresh
+```
+
+#### 🤖 Inteligência Artificial
 
 O módulo de Inteligência Artificial do SIAGUH foi desenvolvido para apoiar decisões clínicas e operacionais através de modelos preditivos treinados com datasets hospitalares.
 
