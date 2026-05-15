@@ -55,3 +55,7 @@ def remover_episodio(cod_ep_urgenc: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao remover episódio: {str(e)}")
+
+
+def listar_episodios_sem_triagem(id_hosp: int = None):
+    return episodios_repository.listar_episodios_sem_triagem(id_hosp)
