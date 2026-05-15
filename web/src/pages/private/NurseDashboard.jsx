@@ -4,6 +4,8 @@ import logo from '../../imagens/Logo.png';
 import '../../styles/main.css';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.jsx';
+import { STORAGE_KEYS } from '../../constants/roles';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_IA  = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
@@ -91,6 +93,65 @@ const IconSpinner = () => (
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
+const SvgSearch = () => (
+  <svg {...iconProps}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </svg>
+);
+
+const SvgCheck = () => (
+  <svg {...iconProps}>
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+
+const SvgInfo = () => (
+  <svg {...iconProps}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4" />
+    <path d="M12 8h.01" />
+  </svg>
+);
+
+const SvgX = () => (
+  <svg {...iconProps}>
+    <path d="M18 6L6 18" />
+    <path d="M6 6l12 12" />
+  </svg>
+);
+
+const SvgChevronLeft = () => (
+  <svg {...iconProps}>
+    <path d="M15 18l-6-6 6-6" />
+  </svg>
+);
+
+const SvgChevronRight = () => (
+  <svg {...iconProps}>
+    <path d="M9 18l6-6-6-6" />
+  </svg>
+);
+
+const SvgFileText = () => (
+  <svg {...iconProps}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <path d="M8 13h8" />
+    <path d="M8 17h8" />
+    <path d="M8 9h2" />
+  </svg>
+);
+
+function IconButton({ icon, children, className = '', ...props }) {
+  return (
+    <button className={`admin-secondary-button ${className}`.trim()} {...props}>
+      <span className="btn-icon">{icon}</span>
+      <span className="btn-text">{children}</span>
+    </button>
+  );
+}
+
 export default function NurseDashboard() {
   const navigate = useNavigate();
   const { textos, idioma, mudarIdioma } = useLanguage();
@@ -115,12 +176,7 @@ export default function NurseDashboard() {
     catch { return {}; }
   }, []);
 
-  const nomeUtilizador =
-    utilizadorLogado?.nome ||
-    utilizadorLogado?.name ||
-    utilizadorLogado?.username ||
-    'Utilizador';
-
+  const nomeUtilizador = utilizadorLogado?.nome || utilizadorLogado?.name || utilizadorLogado?.username || 'Utilizador';
   const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
 
   useEffect(() => { carregarFila(); }, []);
@@ -161,7 +217,7 @@ export default function NurseDashboard() {
 
       const res  = await fetch(url);
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar fila.');
+      if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
       setEpisodios(Array.isArray(data) ? data : []);
     } catch (e) {
       setErro(e.message);
@@ -199,6 +255,25 @@ export default function NurseDashboard() {
 
       setUtente(uData || null);
       setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
+      await carregarHistorico(num_utente);
+
+      const codEp = ep.id_epurgencia || ep.id || ep.CodEpUrgenc || ep.cod_epurgenc;
+      if (codEp) {
+        const tRes = await fetch(`${API_URL}/api/v1/triagens/${codEp}`);
+        if (tRes.ok) {
+          const tData = await tRes.json();
+          setTriagem((prev) => ({
+            ...prev,
+            tensao: tData?.sistolica && tData?.diastolica ? `${tData.sistolica}/${tData.diastolica}` : prev.tensao,
+            pulso: tData?.freqcard || prev.pulso,
+            temperatura: tData?.temperatura || prev.temperatura,
+            saturacao: tData?.spo2 || prev.saturacao,
+            dor: tData?.nivel_dor || prev.dor,
+            sintomas: tData?.sintomas || prev.sintomas,
+            cor_sugerida: tData?.cortriagem || prev.cor_sugerida,
+          }));
+        }
+      }
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -227,7 +302,7 @@ export default function NurseDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_hospital: idHosp, utente, triagem }),
       });
-  
+
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao pedir sugestão IA.');
   
@@ -715,7 +790,7 @@ export default function NurseDashboard() {
             <button type="button" className={`admin-lang-btn ${idioma === 'en' ? 'is-active' : ''}`} onClick={() => mudarIdioma('en')}>EN</button>
           </div>
           <button type="button" className="admin-logout-button" onClick={fazerLogout}>
-            <IconExit />
+            <SvgExit />
             <span className="link-text">{textos?.geral?.sair || 'Sair'}</span>
           </button>
         </div>
@@ -730,7 +805,9 @@ export default function NurseDashboard() {
           <div className="admin-content-body">
             {erro     && <p className="admin-form__error">{erro}</p>}
             {mensagem && <p className="admin-form__success">{mensagem}</p>}
-            {renderCenter()}
+            {mainMenu === 'sala' && renderSalaDeEspera()}
+            {mainMenu === 'triagem' && renderTriagem()}
+            {mainMenu === 'processo' && renderProcessoClinico()}
           </div>
         </div>
         <FooterLayout />
