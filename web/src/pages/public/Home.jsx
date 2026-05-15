@@ -230,7 +230,7 @@ export default function Home() {
                 <StatCard
                   label="Área"
                   value="Saúde"
-                  note="Informação útil para decisões rápidas e seguras."
+                  note="Informação útil para decisions rápidas e seguras."
                 />
                 <StatCard
                   label="Tecnologia"
@@ -327,9 +327,7 @@ export default function Home() {
         <div className="container">
           <div className="home-info__header">
             <h2 className="home-hospitals__title">Informações adicionais</h2>
-            <p className="home-info__subtitle">
-              Conteúdo de apoio com linguagem clara, simples e coerente com o tema de saúde.
-            </p>
+            {/* A frase de conteúdo de apoio foi removida daqui */}
           </div>
 
           <div className="info-carousel__wrapper">
