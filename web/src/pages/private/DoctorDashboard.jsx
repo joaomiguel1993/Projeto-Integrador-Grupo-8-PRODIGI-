@@ -62,6 +62,33 @@ export default function DoctorDashboard() {
   const [utente, setUtente] = useState(null);
   const [alertas, setAlertas] = useState([]);
   const [medicacaoAtiva, setMedicacaoAtiva] = useState([]);
+  const [antecedentes, setAntecedentes] = useState(null);
+  const [mostrarAntecedentes, setMostrarAntecedentes] = useState(false);
+  
+  const [dadosTriagem, setDadosTriagem] = useState(null);
+  const [modoEdicaoTriagem, setModoEdicaoTriagem] = useState(false);
+  
+  // Estado do Formulário atualizado com os novos campos biométricos mapeados
+  const [formTriagem, setFormTriagem] = useState({
+    cor_triagem: '',
+    Temperatura: '',
+    FreqCard: '',
+    FreqResp: '',
+    SPO2: '',
+    Sistolica: '',
+    Diastolica: '',
+    Nivel_dor: '',
+    Consciencia: 'Acordado'
+  });
+  
+  const [temposMediosHospital, setTemposMediosHospital] = useState({
+    vermelho: '—',
+    laranja: '—',
+    amarelo: '—',
+    verde: '—',
+    azul: '—'
+  });
+  
   const [filtro, setFiltro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
@@ -87,12 +114,8 @@ export default function DoctorDashboard() {
     }
   }, []);
 
-  const nomeUtilizador =
-    utilizadorLogado?.nome ||
-    utilizadorLogado?.name ||
-    utilizadorLogado?.username ||
-    'Utilizador';
-
+  const nomeUtilizador = utilizadorLogado?.nome || utilizadorLogado?.name || utilizadorLogado?.username || 'Utilizador';
+  const nomeHospital = utilizadorLogado?.nome_hospital || utilizadorLogado?.hospital || 'Hospital Geral';
   const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
 
   const menuGroups = useMemo(
@@ -116,16 +139,19 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     carregarEpisodios();
-  }, []);
+    carregarTemposMediosHospital();
+  }, [utilizadorLogado]);
+
+  const extrairMensagemErro = (data, fallback) => {
+    if (!data) return fallback;
+    if (typeof data.detail === 'string') return data.detail;
+    if (typeof data.detail === 'object') return JSON.stringify(data.detail);
+    if (data.message) return data.message;
+    return fallback;
+  };
 
   const abrirPerfilUtilizador = () => {
-    const userId =
-      utilizadorLogado?.id_utilizador ||
-      utilizadorLogado?.idutilizador ||
-      utilizadorLogado?.id_user ||
-      utilizadorLogado?.id ||
-      utilizadorLogado?.utilizador_id;
-
+    const userId = utilizadorLogado?.id_utilizador || utilizadorLogado?.idutilizador || utilizadorLogado?.id_user || utilizadorLogado?.id;
     if (userId) navigate(`/perfil/${userId}`);
     else navigate('/perfil');
   };
@@ -135,11 +161,33 @@ export default function DoctorDashboard() {
       setErro('');
       const res = await fetch(`${API_URL}/api/v1/triagens`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
+      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar episódios.'));
       setEpisodios(Array.isArray(data) ? data : []);
     } catch (e) {
       setErro(e.message);
       setEpisodios([]);
+    }
+  };
+
+  const carregarTemposMediosHospital = async () => {
+    const hospitalId = utilizadorLogado?.id_hospital || utilizadorLogado?.hospital_id || utilizadorLogado?.idhospital;
+    if (!hospitalId) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/v1/hospitais/${hospitalId}/tempos-medios`);
+      const data = await res.json();
+      
+      if (res.ok && data) {
+        setTemposMediosHospital({
+          vermelho: data.vermelho || data.Vermelho || '—',
+          laranja: data.laranja || data.Laranja || '—',
+          amarelo: data.amarelo || data.Amarelo || '—',
+          verde: data.verde || data.Verde || '—',
+          azul: data.azul || data.Azul || '—'
+        });
+      }
+    } catch (e) {
+      console.error('Erro ao carregar tempos médios do SQL:', e);
     }
   };
 
@@ -154,34 +202,94 @@ export default function DoctorDashboard() {
   const abrirEpisodio = async (ep, focarNaAlta = false) => {
     setEpisodioSelecionado(ep);
     setMainMenu('atendimento');
+    setAntecedentes(null);
+    setMostrarAntecedentes(false);
+    setModoEdicaoTriagem(false);
     setErro('');
     setMensagem('');
 
+    const episodioId = ep.id_epurgencia || ep.id || ep.cod_ep_urgenc;
+    const utenteId = ep.id_utente || ep.idutente || ep.num_utent;
+
     try {
-      const utenteId = ep.id_utente || ep.idutente;
-      const [uRes, aRes, mRes] = await Promise.all([
+      const [uRes, aRes, mRes, tRes] = await Promise.all([
         fetch(`${API_URL}/api/v1/utentes/${utenteId}`),
         fetch(`${API_URL}/api/v1/alertas/${utenteId}`),
         fetch(`${API_URL}/api/v1/medicacaoativa/${utenteId}`),
+        fetch(`${API_URL}/api/v1/triagens/${episodioId}`)
       ]);
 
       const uData = await uRes.json();
       const aData = await aRes.json();
       const mData = await mRes.json();
+      const tData = await tRes.json();
 
-      if (!uRes.ok) throw new Error(uData?.detail || 'Erro ao carregar utente.');
-      if (!aRes.ok) throw new Error(aData?.detail || 'Erro ao carregar alertas.');
-      if (!mRes.ok) throw new Error(mData?.detail || 'Erro ao carregar medicação.');
+      if (!uRes.ok) throw new Error(extrairMensagemErro(uData, 'Erro ao carregar dados do utente.'));
+      if (!aRes.ok) throw new Error(extrairMensagemErro(aData, 'Erro ao carregar alertas do utente.'));
+      if (!mRes.ok) throw new Error(extrairMensagemErro(mData, 'Erro ao carregar medicação do utente.'));
+      if (!tRes.ok) throw new Error(extrairMensagemErro(tData, 'Erro ao carregar dados da triagem.'));
 
       setUtente(uData || null);
       setAlertas(Array.isArray(aData) ? aData : []);
       setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
+      
+      setDadosTriagem(tData);
+      setFormTriagem({
+        cor_triagem: tData?.cor_triagem || ep.cor_triagem || '',
+        Temperatura: tData?.Temperatura || '',
+        FreqCard: tData?.FreqCard || '',
+        FreqResp: tData?.FreqResp || '',
+        SPO2: tData?.SPO2 || '',
+        Sistolica: tData?.Sistolica || '',
+        Diastolica: tData?.Diastolica || '',
+        Nivel_dor: tData?.Nivel_dor || tData?.['Nivel de dor'] || '',
+        Consciencia: tData?.Consciencia || 'Acordado'
+      });
 
       if (focarNaAlta) {
         setTimeout(() => {
           document.getElementById('seccao-alta-form')?.scrollIntoView({ behavior: 'smooth' });
         }, 300);
       }
+    } catch (e) {
+      setErro(e.message);
+    }
+  };
+
+  const carregarAntecedentes = async () => {
+    const utenteId = utente?.id_utente || utente?.idutente;
+    if (!utenteId) return;
+
+    try {
+      setErro('');
+      const res = await fetch(`${API_URL}/api/v1/antecedentes/${utenteId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar antecedentes.'));
+      setAntecedentes(data);
+      setMostrarAntecedentes(true);
+    } catch (e) {
+      setErro(e.message);
+    }
+  };
+
+  const atualizarDadosTriagem = async (e) => {
+    e.preventDefault();
+    const episodioId = episodioSelecionado?.id_epurgencia || episodioSelecionado?.id || episodioSelecionado?.cod_ep_urgenc;
+    try {
+      setMensagem('');
+      setErro('');
+      const res = await fetch(`${API_URL}/api/v1/triagens/${episodioId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formTriagem)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao atualizar dados da triagem.'));
+      
+      setDadosTriagem(data);
+      setModoEdicaoTriagem(false);
+      setMensagem('Dados da triagem atualizados no SQL com sucesso.');
+      await carregarEpisodios();
     } catch (e) {
       setErro(e.message);
     }
@@ -203,21 +311,27 @@ export default function DoctorDashboard() {
       setMensagem('');
       setErro('');
 
+      const utenteId = utente?.id_utente || utente?.idutente;
       const res = await fetch(`${API_URL}/api/v1/prescricoes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id_utente: utente?.id_utente || utente?.idutente,
+          id_utente: utenteId,
           ...prescricao,
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro ao criar prescrição.');
+      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao criar prescrição.'));
 
       setMensagem('Prescrição registada com sucesso.');
       setPrescricao({ medicamento: '', dosagem: '', duracao: '', via: '' });
-      await carregarEpisodios();
+      
+      const mRes = await fetch(`${API_URL}/api/v1/medicacaoativa/${utenteId}`);
+      if (mRes.ok) {
+        const mData = await mRes.json();
+        setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
+      }
     } catch (e) {
       setErro(e.message);
     }
@@ -237,7 +351,7 @@ export default function DoctorDashboard() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro ao registar alta.');
+      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
 
       setMensagem('Alta ou internamento registado com sucesso.');
       await carregarEpisodios();
@@ -255,13 +369,11 @@ export default function DoctorDashboard() {
 
   const renderInformacaoGeral = () => (
     <div className="admin-general-info-group">
-      {/* KPIs Section */}
       <section className="admin-panel-section">
         <div className="admin-panel-section__header">
           <h2>{textos?.doctor?.kpisTitulo || 'Resumo clínico'}</h2>
           <p>{textos?.doctor?.kpisDesc || 'Visão rápida dos episódios triados e estado atual.'}</p>
         </div>
-
         <div className="admin-report-grid">
           <div className="admin-report-card">
             <h3>{textos?.doctor?.episodiosTriados || 'Episódios triados'}</h3>
@@ -282,24 +394,40 @@ export default function DoctorDashboard() {
         </div>
       </section>
 
-      {/* Médias Section */}
       <section className="admin-panel-section" style={{ marginTop: '2rem' }}>
         <div className="admin-panel-section__header">
-          <h2>{textos?.doctor?.temposMedios || 'Tempos médios por cor'}</h2>
+          <h2>🕒 Tempo médio por cor — <span style={{ color: '#007bff' }}>{nomeHospital}</span></h2>
+          <p>Indicadores em tempo real baseados nas triagens registadas no vosso servidor SQL.</p>
         </div>
-
         <div className="admin-table-card admin-table-card--full">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>{textos?.doctor?.cor || 'Cor'}</th>
-                <th>{textos?.doctor?.tempoMedio || 'Tempo médio'}</th>
+                <th>{textos?.doctor?.cor || 'Cor de Triagem'}</th>
+                <th>{textos?.doctor?.tempoMedio || 'Tempo Médio de Espera'}</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>Vermelho</td><td>—</td></tr>
-              <tr><td>Amarelo</td><td>—</td></tr>
-              <tr><td>Verde</td><td>—</td></tr>
+              <tr>
+                <td><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#dc3545', marginRight: '8px', borderRadius: '50%' }}></span>Vermelho</td>
+                <td><strong>{temposMediosHospital.vermelho}</strong></td>
+              </tr>
+              <tr>
+                <td><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#fd7e14', marginRight: '8px', borderRadius: '50%' }}></span>Laranja</td>
+                <td><strong>{temposMediosHospital.laranja}</strong></td>
+              </tr>
+              <tr>
+                <td><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffc107', marginRight: '8px', borderRadius: '50%' }}></span>Amarelo</td>
+                <td><strong>{temposMediosHospital.amarelo}</strong></td>
+              </tr>
+              <tr>
+                <td><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#28a745', marginRight: '8px', borderRadius: '50%' }}></span>Verde</td>
+                <td><strong>{temposMediosHospital.verde}</strong></td>
+              </tr>
+              <tr>
+                <td><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#007bff', marginRight: '8px', borderRadius: '50%' }}></span>Azul</td>
+                <td><strong>{temposMediosHospital.azul}</strong></td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -382,38 +510,176 @@ export default function DoctorDashboard() {
       {episodioSelecionado ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           
-          {/* 1. DETALHE DO EPISÓDIO */}
+          {/* 1. DETALHE DO EPISÓDIO & TABELA COMPLETA DE TRIAGEM */}
           <div className="admin-atendimento-block">
-            <h3 style={{ borderBottom: '2px solid var(--border-color, #eee)', paddingBottom: '0.5rem' }}>
-              {textos?.doctor?.detalheCompleto || '1. Detalhe completo do episódio'}
-            </h3>
-            <div className="admin-table-card" style={{ marginTop: '1rem' }}>
-              <p><strong>Utente:</strong> {utente?.nome || episodioSelecionado.nome_utente || '—'}</p>
-              <p><strong>{textos?.doctor?.cor || 'Cor'}:</strong> {episodioSelecionado.cor_triagem || '—'}</p>
-              <p><strong>{textos?.doctor?.espera || 'Espera'}:</strong> {episodioSelecionado.tempo_espera || '—'}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color, #eee)', paddingBottom: '0.5rem' }}>
+              <h3 style={{ margin: 0 }}>
+                {textos?.doctor?.detalheCompleto || '1. Detalhe completo e Ficha de Triagem'}
+              </h3>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  className="admin-secondary-button"
+                  style={{ backgroundColor: '#17a2b8', color: '#fff', borderColor: '#17a2b8' }}
+                  onClick={() => setModoEdicaoTriagem(!modoEdicaoTriagem)}
+                >
+                  {modoEdicaoTriagem ? '✕ Cancelar' : '✏️ Editar Triagem'}
+                </button>
+                <button 
+                  type="button" 
+                  className="admin-secondary-button"
+                  style={{ backgroundColor: '#007bff', color: '#fff', borderColor: '#007bff' }}
+                  onClick={carregarAntecedentes}
+                >
+                  👁️ Ver Antecedentes do Utente
+                </button>
+              </div>
             </div>
 
+            {mostrarAntecedentes && (
+              <div className="admin-table-card" style={{ marginTop: '1rem', backgroundColor: '#f8f9fa', borderLeft: '4px solid #007bff' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <h4>📋 Histórico / Antecedentes Clínicos</h4>
+                  <button type="button" style={{ border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setMostrarAntecedentes(false)}>✕</button>
+                </div>
+                {antecedentes ? (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <p><strong>Alergias Conhecidas:</strong> {antecedentes.alergias || 'Nenhuma registada.'}</p>
+                    <p><strong>Cirurgias Anteriores:</strong> {antecedentes.cirurgias || 'Sem histórico.'}</p>
+                    <p><strong>Doenças Crónicas:</strong> {antecedentes.doencas_cronicas || 'Nenhuma declarada.'}</p>
+                    <p><strong>Notas Clínicas Globais:</strong> {antecedentes.observacoes || 'Sem notas adicionais.'}</p>
+                  </div>
+                ) : (
+                  <p>A carregar antecedentes...</p>
+                )}
+              </div>
+            )}
+
             <div className="admin-table-card" style={{ marginTop: '1rem' }}>
-              <h3>{textos?.doctor?.alertas || 'Alertas'}</h3>
-              {alertas.length > 0 ? (
-                alertas.map((a, i) => <p key={i} style={{ color: '#dc3545', fontWeight: 'bold' }}>{a.descricao || a.mensagem || '—'}</p>)
+              <p style={{ marginBottom: '1rem' }}><strong>Utente:</strong> {utente?.nome || episodioSelecionado.nome_utente || '—'} (Tempo de Espera: {episodioSelecionado.tempo_espera || '—'})</p>
+              
+              {/* Tabela de triagem adaptada com os novos campos biométricos do SQL */}
+              {!modoEdicaoTriagem ? (
+                <div className="admin-table-card admin-table-card--full" style={{ boxShadow: 'none', padding: 0 }}>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Parâmetro Clínico</th>
+                        <th>Informação Registada</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Cor atribuída</strong></td>
+                        <td><span style={{ fontWeight: 'bold' }}>{dadosTriagem?.cor_triagem || episodioSelecionado.cor_triagem || '—'}</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Temperatura (°C)</strong></td>
+                        <td>{dadosTriagem?.Temperatura ? `${dadosTriagem.Temperatura} °C` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Freq. Cardíaca (BPM)</strong></td>
+                        <td>{dadosTriagem?.FreqCard ? `${dadosTriagem.FreqCard} bpm` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Freq. Respiratória (CPM)</strong></td>
+                        <td>{dadosTriagem?.FreqResp ? `${dadosTriagem.FreqResp} cpm` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>SPO2 (%)</strong></td>
+                        <td>{dadosTriagem?.SPO2 ? `${dadosTriagem.SPO2} %` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Tensão Arterial (Sistólica / Diastólica)</strong></td>
+                        <td>{dadosTriagem?.Sistolica || dadosTriagem?.Diastolica ? `${dadosTriagem.Sistolica || '—'} / ${dadosTriagem.Diastolica || '—'} mmHg` : '—'}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Nível de Dor</strong></td>
+                        <td>{dadosTriagem?.Nivel_dor || dadosTriagem?.['Nivel de dor'] || '—'} / 10</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Estado de Consciência</strong></td>
+                        <td><span style={{ fontStyle: 'italic' }}>{dadosTriagem?.Consciencia || '—'}</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               ) : (
-                <p>{textos?.doctor?.semAlertas || 'Sem alertas registados.'}</p>
+                <form onSubmit={atualizarDadosTriagem} style={{ marginTop: '1rem', background: '#fff', padding: '1rem', border: '1px dashed #17a2b8', borderRadius: '6px' }}>
+                  <div className="admin-form__grid">
+                    <div className="admin-form__group">
+                      <label>Cor da Triagem</label>
+                      <input value={formTriagem.cor_triagem} onChange={(e) => setFormTriagem({...formTriagem, cor_triagem: e.target.value})} required />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Temperatura (°C)</label>
+                      <input type="number" step="0.1" value={formTriagem.Temperatura} onChange={(e) => setFormTriagem({...formTriagem, Temperatura: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Freq. Cardíaca (BPM)</label>
+                      <input type="number" value={formTriagem.FreqCard} onChange={(e) => setFormTriagem({...formTriagem, FreqCard: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Freq. Respiratória (CPM)</label>
+                      <input type="number" value={formTriagem.FreqResp} onChange={(e) => setFormTriagem({...formTriagem, FreqResp: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>SPO2 (%)</label>
+                      <input type="number" value={formTriagem.SPO2} onChange={(e) => setFormTriagem({...formTriagem, SPO2: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Sistólica (mmHg)</label>
+                      <input type="number" value={formTriagem.Sistolica} onChange={(e) => setFormTriagem({...formTriagem, Sistolica: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Diastólica (mmHg)</label>
+                      <input type="number" value={formTriagem.Diastolica} onChange={(e) => setFormTriagem({...formTriagem, Diastolica: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Nível de Dor (0 a 10)</label>
+                      <input type="number" min="0" max="10" value={formTriagem.Nivel_dor} onChange={(e) => setFormTriagem({...formTriagem, Nivel_dor: e.target.value})} />
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Estado de Consciência</label>
+                      <select value={formTriagem.Consciencia} onChange={(e) => setFormTriagem({...formTriagem, Consciencia: e.target.value})}>
+                        <option value="Acordado">Acordado</option>
+                        <option value="Confuso">Confuso</option>
+                        <option value="Inconsciente">Inconsciente</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button type="submit" className="admin-form__submit" style={{ backgroundColor: '#17a2b8', marginTop: '1.5rem' }}>
+                    Atualizar Ficha de Triagem (PUT)
+                  </button>
+                </form>
               )}
             </div>
 
             <div className="admin-table-card" style={{ marginTop: '1rem' }}>
-              <h3>{textos?.doctor?.medicacaoAtiva || 'Medicação ativa'}</h3>
+              <h3>⚠️ {textos?.doctor?.alertas || 'Alertas Médicos (SQL)'}</h3>
+              {alertas.length > 0 ? (
+                alertas.map((a, i) => (
+                  <p key={i} style={{ color: '#dc3545', fontWeight: 'bold', margin: '0.4rem 0' }}>
+                    • {a.descricao || a.mensagem || a.alerta || '—'}
+                  </p>
+                ))
+              ) : (
+                <p>{textos?.doctor?.semAlertas || 'Sem alertas críticos registados no sistema.'}</p>
+              )}
+            </div>
+
+            <div className="admin-table-card" style={{ marginTop: '1rem' }}>
+              <h3>💊 {textos?.doctor?.medicacaoAtiva || 'Medicação habitual ativa'}</h3>
               {medicacaoAtiva.length > 0 ? (
-                <ul>
+                <ul style={{ paddingLeft: '1.2rem' }}>
                   {medicacaoAtiva.map((m, i) => (
-                    <li key={i}>
-                      {m.nome || '—'} — {m.dosagem || '—'}
+                    <li key={i} style={{ margin: '0.3rem 0' }}>
+                      <strong>{m.nome || m.medicamento || '—'}</strong> — {m.dosagem || '—'} ({m.frequencia || 'N/A'})
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p>{textos?.doctor?.semMedicacao || 'Sem medicação ativa.'}</p>
+                <p>{textos?.doctor?.semMedicacao || 'Nenhum medicamento ativo associado ao registo SQL.'}</p>
               )}
             </div>
           </div>
@@ -421,30 +687,30 @@ export default function DoctorDashboard() {
           {/* 2. PRESCRIÇÃO */}
           <div className="admin-atendimento-block">
             <h3 style={{ borderBottom: '2px solid var(--border-color, #eee)', paddingBottom: '0.5rem' }}>
-              {textos?.doctor?.prescricao || '2. Prescrição'}
+              {textos?.doctor?.prescricao || '2. Emitir Nova Prescrição'}
             </h3>
             <form className="admin-form" onSubmit={adicionarPrescricao} style={{ marginTop: '1rem' }}>
               <div className="admin-form__grid">
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.medicamento || 'Medicamento'}</label>
-                  <input name="medicamento" value={prescricao.medicamento} onChange={handlePrescricaoChange} />
+                  <input name="medicamento" value={prescricao.medicamento} onChange={handlePrescricaoChange} required />
                 </div>
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.dosagem || 'Dosagem'}</label>
-                  <input name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} />
+                  <input name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} placeholder="Ex: 500mg" />
                 </div>
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.duracao || 'Duração'}</label>
-                  <input name="duracao" value={prescricao.duracao} onChange={handlePrescricaoChange} />
+                  <input name="duracao" value={prescricao.duracao} onChange={handlePrescricaoChange} placeholder="Ex: 7 dias" />
                 </div>
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.via || 'Via'}</label>
-                  <input name="via" value={prescricao.via} onChange={handlePrescricaoChange} />
+                  <input name="via" value={prescricao.via} onChange={handlePrescricaoChange} placeholder="Ex: Oral" />
                 </div>
               </div>
               <div className="admin-actions-row">
                 <button className="admin-form__submit" type="submit">
-                  {textos?.doctor?.fazerPrescricao || 'Fazer prescrição'}
+                  {textos?.doctor?.fazerPrescricao || 'Submeter e Guardar no SQL'}
                 </button>
               </div>
             </form>
@@ -460,24 +726,24 @@ export default function DoctorDashboard() {
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.destino || 'Destino'}</label>
                   <select name="destino" value={alta.destino} onChange={handleAltaChange}>
-                    <option value="alta">{textos?.doctor?.alta || 'Alta'}</option>
-                    <option value="internamento">{textos?.doctor?.internamento || 'Internamento'}</option>
+                    <option value="alta">{textos?.doctor?.alta || 'Alta Home'}</option>
+                    <option value="internamento">{textos?.doctor?.internamento || 'Internamento Clínico'}</option>
                   </select>
                 </div>
 
                 <div className="admin-form__group">
-                  <label>{textos?.doctor?.destinoInternamento || 'Destino internamento'}</label>
-                  <input name="internamento_destino" value={alta.internamento_destino} onChange={handleAltaChange} />
+                  <label>{textos?.doctor?.destinoInternamento || 'Unidade/Serviço de destino'}</label>
+                  <input name="internamento_destino" value={alta.internamento_destino} onChange={handleAltaChange} placeholder="Ex: Medicina Interna" />
                 </div>
 
                 <div className="admin-form__group admin-form__group--full">
-                  <label>{textos?.doctor?.observacoes || 'Observações'}</label>
-                  <textarea name="observacoes" value={alta.observacoes} onChange={handleAltaChange} />
+                  <label>{textos?.doctor?.observacoes || 'Observações de Encerramento'}</label>
+                  <textarea name="observacoes" value={alta.observacoes} onChange={handleAltaChange} rows="4" />
                 </div>
               </div>
 
               <div className="admin-actions-row">
-                <button className="admin-form__submit" type="submit" style={{ backgroundColor: '#28a745' }}>
+                <button className="admin-form__submit" type="submit" style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}>
                   {textos?.doctor?.confirmar || 'Confirmar Decisão Final'}
                 </button>
               </div>
@@ -486,7 +752,7 @@ export default function DoctorDashboard() {
 
         </div>
       ) : (
-        <p>{textos?.doctor?.selecionaTriado || 'Seleciona um episódio na fila de prioridade para iniciar o atendimento.'}</p>
+        <p>{textos?.doctor?.selecionaTriado || 'Selecione um paciente na Fila por Prioridade para abrir a zona de atendimento.'}</p>
       )}
     </section>
   );
@@ -581,13 +847,21 @@ export default function DoctorDashboard() {
       <section className="admin-content-wrapper">
         <div className="admin-content-inner">
           <div className="admin-content-top">
-            <h1>{textos?.doctor?.tituloPainel || 'Dashboard Médico'}</h1>
+            <h1>SIAGUH</h1>
             <p>{textos?.doctor?.descricaoPainel || 'Prioridade, detalhe clínico completo, prescrição e decisão final.'}</p>
           </div>
 
           <div className="admin-content-body">
-            {erro && <p className="admin-form__error">{erro}</p>}
-            {mensagem && <p className="admin-form__success">{mensagem}</p>}
+            {erro && (
+              <p className="admin-form__error">
+                ⚠️ {typeof erro === 'object' ? 'Ocorreu uma falha na ligação ao servidor SQL.' : erro}
+              </p>
+            )}
+            {mensagem && (
+              <p className="admin-form__success">
+                ✅ {typeof mensagem === 'object' ? 'Operação concluída.' : mensagem}
+              </p>
+            )}
             {renderCenter()}
           </div>
         </div>
