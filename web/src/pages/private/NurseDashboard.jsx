@@ -17,14 +17,16 @@ const normalizar = (texto) =>
     .replace(/[\u0300-\u036f]/g, '');
 
 const TRIAGEM_VAZIA = {
-  tensao: '',
-  pulso: '',
+  sistolica:   '',
+  diastolica:  '',
+  freq_card:   '',
+  freq_resp:   '',
   temperatura: '',
-  saturacao: '',
-  dor: '',
-  sintomas: '',
-  observacoes: '',
-  cor_sugerida: '',
+  sp_o2:       '',
+  nivel_dor:   '',
+  consciencia: '',
+  cor_triagem: '',
+  sintomas:    '',
 };
 
 const CORES_MANCHESTER = [
@@ -217,20 +219,20 @@ export default function NurseDashboard() {
       const idHosp =
         utilizadorLogado?.id_hospital ||
         utilizadorLogado?.hospital_id ||
-        episodioSelecionado?.id_hosp ||
+        episodioSelecionado?.id_hosp  ||
         1;
-
+  
       const res = await fetch(`${API_IA}/api/v1/triagem/sugestao`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_hospital: idHosp, utente, triagem }),
       });
-
+  
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao pedir sugestão IA.');
-
+  
       const corSugerida = data?.cor_sugerida || data?.cor || '';
-      setTriagem((prev) => ({ ...prev, cor_sugerida: corSugerida }));
+      setTriagem((prev) => ({ ...prev, cor_triagem: corSugerida }));
       setMensagem(`Sugestão IA: ${corSugerida || 'sem resultado'}`);
     } catch (e) {
       setErro(e.message);
@@ -245,18 +247,30 @@ export default function NurseDashboard() {
     setErro('');
     setLoadingGravar(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/triagem`, {
+      const payload = {
+        cod_ep_urgenc:    episodioSelecionado?.cod_ep_urgenc,
+        data_hora_inicio: new Date().toISOString(),
+        cor_triagem:      triagem.cor_triagem,
+        sintomas:         triagem.sintomas,
+        temperatura:      triagem.temperatura !== '' ? parseFloat(triagem.temperatura) : null,
+        freq_card:        triagem.freq_card    !== '' ? parseInt(triagem.freq_card)    : null,
+        freq_resp:        triagem.freq_resp    !== '' ? parseInt(triagem.freq_resp)    : null,
+        sp_o2:            triagem.sp_o2        !== '' ? parseFloat(triagem.sp_o2)      : null,
+        sistolica:        triagem.sistolica    !== '' ? parseInt(triagem.sistolica)    : null,
+        diastolica:       triagem.diastolica   !== '' ? parseInt(triagem.diastolica)   : null,
+        nivel_dor:        triagem.nivel_dor    !== '' ? parseInt(triagem.nivel_dor)    : null,
+        consciencia:      triagem.consciencia  !== '' ? triagem.consciencia            : null,
+      };
+  
+      const res = await fetch(`${API_URL}/api/v1/triagens/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_episodio: episodioSelecionado?.cod_ep_urgenc,
-          ...triagem,
-        }),
+        body: JSON.stringify(payload),
       });
-
+  
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao gravar triagem.');
-
+  
       setMensagem('Triagem gravada com sucesso.');
       setEpisodioSelecionado(null);
       setUtente(null);
@@ -285,10 +299,10 @@ export default function NurseDashboard() {
 
   const corHex = useMemo(() => {
     const c = CORES_MANCHESTER.find(
-      (x) => normalizar(x.valor) === normalizar(triagem.cor_sugerida)
+      (x) => normalizar(x.valor) === normalizar(triagem.cor_triagem)
     );
     return c?.hex || null;
-  }, [triagem.cor_sugerida]);
+  }, [triagem.cor_triagem]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER SECTIONS
@@ -484,36 +498,118 @@ export default function NurseDashboard() {
       <div className="admin-panel-section__header">
         <h2>{textos?.nurse?.registarTriagem || 'Registar triagem'}</h2>
       </div>
+  
       {episodioSelecionado && renderBannerEpisodio()}
+  
       {!episodioSelecionado ? (
         <p>{textos?.nurse?.selecionaFila || 'Selecciona um episódio na fila para registar a triagem.'}</p>
       ) : (
         <form className="admin-form" onSubmit={gravarTriagem}>
           <div className="admin-form__grid">
+  
+            {/* Tensão arterial — sistólica e diastólica separadas */}
             <div className="admin-form__group">
-              <label>{textos?.nurse?.tensao || 'Tensão arterial'}</label>
-              <input name="tensao" value={triagem.tensao} onChange={handleTriagemChange} placeholder="ex: 120/80" />
+              <label>{textos?.nurse?.sistolica || 'Tensão sistólica (mmHg)'}</label>
+              <input
+                name="sistolica"
+                value={triagem.sistolica}
+                onChange={handleTriagemChange}
+                placeholder="ex: 120"
+                type="number" min="0" max="300"
+              />
             </div>
+  
             <div className="admin-form__group">
-              <label>{textos?.nurse?.pulso || 'Pulso (bpm)'}</label>
-              <input name="pulso" value={triagem.pulso} onChange={handleTriagemChange} placeholder="ex: 72" type="number" min="0" max="300" />
+              <label>{textos?.nurse?.diastolica || 'Tensão diastólica (mmHg)'}</label>
+              <input
+                name="diastolica"
+                value={triagem.diastolica}
+                onChange={handleTriagemChange}
+                placeholder="ex: 80"
+                type="number" min="0" max="200"
+              />
             </div>
+  
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.freqCard || 'Freq. cardíaca (bpm)'}</label>
+              <input
+                name="freq_card"
+                value={triagem.freq_card}
+                onChange={handleTriagemChange}
+                placeholder="ex: 72"
+                type="number" min="0" max="300"
+              />
+            </div>
+  
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.freqResp || 'Freq. respiratória (rpm)'}</label>
+              <input
+                name="freq_resp"
+                value={triagem.freq_resp}
+                onChange={handleTriagemChange}
+                placeholder="ex: 16"
+                type="number" min="0" max="100"
+              />
+            </div>
+  
             <div className="admin-form__group">
               <label>{textos?.nurse?.temperatura || 'Temperatura (°C)'}</label>
-              <input name="temperatura" value={triagem.temperatura} onChange={handleTriagemChange} placeholder="ex: 36.8" type="number" min="30" max="45" step="0.1" />
+              <input
+                name="temperatura"
+                value={triagem.temperatura}
+                onChange={handleTriagemChange}
+                placeholder="ex: 36.8"
+                type="number" min="30" max="45" step="0.1"
+              />
             </div>
+  
             <div className="admin-form__group">
-              <label>{textos?.nurse?.saturacao || 'Saturação O₂ (%)'}</label>
-              <input name="saturacao" value={triagem.saturacao} onChange={handleTriagemChange} placeholder="ex: 98" type="number" min="0" max="100" />
+              <label>{textos?.nurse?.spO2 || 'SpO₂ (%)'}</label>
+              <input
+                name="sp_o2"
+                value={triagem.sp_o2}
+                onChange={handleTriagemChange}
+                placeholder="ex: 98"
+                type="number" min="0" max="100" step="0.1"
+              />
             </div>
+  
             <div className="admin-form__group">
-              <label>{textos?.nurse?.dor || 'Dor (0–10)'}</label>
-              <input name="dor" value={triagem.dor} onChange={handleTriagemChange} placeholder="ex: 3" type="number" min="0" max="10" />
+              <label>{textos?.nurse?.nivelDor || 'Nível de dor (0–10)'}</label>
+              <input
+                name="nivel_dor"
+                value={triagem.nivel_dor}
+                onChange={handleTriagemChange}
+                placeholder="ex: 3"
+                type="number" min="0" max="10"
+              />
             </div>
+  
             <div className="admin-form__group">
-              <label>{textos?.nurse?.corSugerida || 'Cor de triagem (Manchester)'}</label>
+              <label>{textos?.nurse?.consciencia || 'Estado de consciência'}</label>
+              <select
+                name="consciencia"
+                value={triagem.consciencia}
+                onChange={handleTriagemChange}
+              >
+                <option value="">— seleccionar —</option>
+                <option value="Acordado">Acordado</option>
+                <option value="Confuso">Confuso</option>
+                <option value="Inconsciente">Inconsciente</option>
+              </select>
+            </div>
+  
+            {/* Cor de triagem Manchester */}
+            <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
+              <label>{textos?.nurse?.corTriagem || 'Cor de triagem (Manchester)'}</label>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <select name="cor_sugerida" value={triagem.cor_sugerida} onChange={handleTriagemChange} style={{ flex: 1 }}>
+                <select
+                  name="cor_triagem"
+                  value={triagem.cor_triagem}
+                  onChange={handleTriagemChange}
+                  style={{ flex: 1 }}
+                  required
+                >
                   <option value="">— seleccionar —</option>
                   {CORES_MANCHESTER.map((c) => (
                     <option key={c.valor} value={c.valor}>{c.label}</option>
@@ -521,28 +617,50 @@ export default function NurseDashboard() {
                 </select>
                 {corHex && (
                   <span style={{
-                    display: 'inline-block', width: 28, height: 28,
-                    borderRadius: '50%', background: corHex,
-                    border: '2px solid rgba(0,0,0,.15)', flexShrink: 0,
-                  }} title={triagem.cor_sugerida} />
+                    display: 'inline-block',
+                    width: 28, height: 28,
+                    borderRadius: '50%',
+                    background: corHex,
+                    border: '2px solid rgba(0,0,0,.15)',
+                    flexShrink: 0,
+                  }} title={triagem.cor_triagem} />
                 )}
               </div>
             </div>
+  
             <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
               <label>{textos?.nurse?.sintomas || 'Sintomas / queixa principal'}</label>
-              <textarea name="sintomas" value={triagem.sintomas} onChange={handleTriagemChange} rows={3} placeholder="Descreva os sintomas referidos pelo utente…" />
+              <textarea
+                name="sintomas"
+                value={triagem.sintomas}
+                onChange={handleTriagemChange}
+                rows={3}
+                placeholder="Descreva os sintomas referidos pelo utente…"
+                required
+              />
             </div>
-            <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-              <label>{textos?.nurse?.observacoes || 'Observações do enfermeiro'}</label>
-              <textarea name="observacoes" value={triagem.observacoes} onChange={handleTriagemChange} rows={2} placeholder="Notas adicionais…" />
-            </div>
+  
           </div>
+  
           <div className="admin-actions-row">
-            <button type="button" className="admin-secondary-button" onClick={pedirSugestaoCor} disabled={loadingIA}>
-              {loadingIA ? <><IconSpinner />A processar…</> : (textos?.nurse?.pedirSugestaoIa || 'Sugestão IA')}
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={pedirSugestaoCor}
+              disabled={loadingIA}
+            >
+              {loadingIA
+                ? <><IconSpinner />A processar…</>
+                : (textos?.nurse?.pedirSugestaoIa || 'Sugestão IA')}
             </button>
-            <button type="submit" className="admin-form__submit" disabled={loadingGravar}>
-              {loadingGravar ? <><IconSpinner />A gravar…</> : (textos?.nurse?.gravarTriagem || 'Gravar triagem')}
+            <button
+              type="submit"
+              className="admin-form__submit"
+              disabled={loadingGravar}
+            >
+              {loadingGravar
+                ? <><IconSpinner />A gravar…</>
+                : (textos?.nurse?.gravarTriagem || 'Gravar triagem')}
             </button>
           </div>
         </form>
