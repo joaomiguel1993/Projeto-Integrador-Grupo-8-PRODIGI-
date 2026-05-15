@@ -16,23 +16,32 @@ const normalizar = (texto) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-const iconProps = {
-  width: 18,
-  height: 18,
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 2,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
-  'aria-hidden': 'true',
+const TRIAGEM_VAZIA = {
+  sistolica:   '',
+  diastolica:  '',
+  freq_card:   '',
+  freq_resp:   '',
+  temperatura: '',
+  sp_o2:       '',
+  nivel_dor:   '',
+  consciencia: '',
+  cor_triagem: '',
+  sintomas:    '',
 };
 
-const SvgMenu = () => (
-  <svg {...iconProps} strokeWidth="2.4">
-    <path d="M4 7h16" />
-    <path d="M4 12h16" />
-    <path d="M4 17h16" />
+const CORES_MANCHESTER = [
+  { valor: 'vermelho', label: 'Vermelho', hex: '#e53e3e' },
+  { valor: 'laranja',  label: 'Laranja',  hex: '#dd6b20' },
+  { valor: 'amarelo',  label: 'Amarelo',  hex: '#d69e2e' },
+  { valor: 'verde',    label: 'Verde',    hex: '#38a169' },
+  { valor: 'azul',     label: 'Azul',     hex: '#3182ce' },
+];
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
+const IconMenu = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 7h16M4 12h16M4 17h16" />
   </svg>
 );
 
@@ -303,15 +312,27 @@ export default function NurseDashboard() {
   const pedirSugestaoCor = async () => {
     setErro('');
     setMensagem('');
+    setErro('');
+    setLoadingIA(true);
     try {
-      const res = await fetch(`${API_IA}/predict/triage`, {
+      const idHosp =
+        utilizadorLogado?.id_hospital ||
+        utilizadorLogado?.hospital_id ||
+        episodioSelecionado?.id_hosp ||
+        1;
+
+      const res = await fetch(`${API_IA}/api/v1/triagem/sugestao`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ episodio: episodioSelecionado, utente, triagem, enfermeiro: utilizadorLogado }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro na previsão IA.');
-      setTriagem((prev) => ({ ...prev, cor_sugerida: data?.cor_sugerida || data?.cor || prev.cor_sugerida }));
+      if (!res.ok) throw new Error(data?.detail || 'Erro ao pedir sugestão IA.');
+
+      const corSugerida = data?.cor_sugerida || data?.cor || '';
+      setTriagem((prev) => ({ ...prev, cor_sugerida: corSugerida }));
+      setMensagem(`Sugestão IA: ${corSugerida || 'sem resultado'}`);
     } catch (e) {
       setErro(e.message);
     }
@@ -321,63 +342,57 @@ export default function NurseDashboard() {
     e.preventDefault();
     setErro('');
     setMensagem('');
+    setErro('');
+    setLoadingGravar(true);
     try {
-      const payload = {
-        cod_epurgenc: episodioSelecionado?.id_epurgencia || episodioSelecionado?.id || episodioSelecionado?.CodEpUrgenc,
-        sintomas: triagem.sintomas,
-        temperatura: triagem.temperatura,
-        freqcard: triagem.pulso,
-        spo2: triagem.saturacao,
-        nivel_dor: triagem.dor,
-        cortriagem: triagem.cor_sugerida,
-        observacoes: triagem.observacoes,
-      };
-
-      const res = await fetch(`${API_URL}/api/v1/triagens/`, {
+      const res = await fetch(`${API_URL}/api/v1/triagem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+  
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao gravar triagem.');
 
-      setMensagem(textos?.nurse?.gravarOk || 'Triagem gravada com sucesso.');
-      await carregarEpisodios();
-      setMainMenu('sala');
-      setSalaTab('triados');
+      setMensagem('Triagem gravada com sucesso.');
+      setEpisodioSelecionado(null);
+      setUtente(null);
+      setMedicacaoAtiva([]);
+      setTriagem(TRIAGEM_VAZIA);
+      await carregarFila();
+      setMainMenu('fila');
     } catch (e) {
       setErro(e.message);
+    } finally {
+      setLoadingGravar(false);
     }
   };
 
-  const abrirProcessoClinico = async (num_utente) => {
-    setErro('');
-    setMensagem('');
-    try {
-      await carregarHistorico(num_utente);
-      setMainMenu('processo');
-    } catch (e) {
-      setErro(e.message);
-    }
-  };
+  // ── Filtro — campos reais do EpisodioOut ───────────────────────────────────
 
-  const fazerLogout = () => {
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('userRole');
-    sessionStorage.removeItem('user');
-    navigate('/login', { replace: true });
-  };
+  const episodiosFiltrados = useMemo(() =>
+    episodios.filter((ep) =>
+      normalizar([ep.cod_ep_urgenc, ep.num_utent].join(' '))
+        .includes(normalizar(filtro))
+    ),
+    [episodios, filtro]
+  );
 
-  const renderSalaDeEspera = () => {
-    const tabs = [
-      { id: 'sem', label: 'Sem triagem', icon: <SvgList /> },
-      { id: 'em', label: 'Em triagem', icon: <SvgClipboard /> },
-      { id: 'triados', label: 'Triados', icon: <SvgCheck /> },
-      { id: 'desistencias', label: 'Desistências', icon: <SvgX /> },
-    ];
-    const currentList = episodiosFiltrados[salaTab] || [];
+  // ── Cor badge Manchester ───────────────────────────────────────────────────
 
+  const corHex = useMemo(() => {
+    const c = CORES_MANCHESTER.find(
+      (x) => normalizar(x.valor) === normalizar(triagem.cor_sugerida)
+    );
+    return c?.hex || null;
+  }, [triagem.cor_sugerida]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER SECTIONS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const renderBannerEpisodio = () => {
+    if (!episodioSelecionado) return null;
     return (
       <section className="admin-panel-section">
         <div className="admin-panel-section__header">
@@ -617,42 +632,68 @@ export default function NurseDashboard() {
           <span className="btn-text">{textos?.nurse?.continuarTriagem || 'Continuar triagem'}</span>
         </button>
       </div>
-
-      {utente ? (
-        <div className="admin-table-card">
-          <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <p><strong>{textos?.nurse?.nome || 'Nome'}:</strong> {utente.nome || '—'}</p>
-            <p><strong>{textos?.nurse?.nif || 'NIF'}:</strong> {utente.nif || '—'}</p>
-          </div>
-
-          <div style={{ padding: 18, paddingTop: 0 }}>
-            <h4>{textos?.nurse?.historico || 'Histórico clínico'}</h4>
-            <div className="admin-table-scroll">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>{textos?.nurse?.data || 'Data'}</th>
-                    <th>{textos?.nurse?.descricao || 'Descrição'}</th>
-                    <th>{textos?.nurse?.profissional || 'Profissional'}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historico.length === 0 ? (
-                    <tr><td colSpan="3">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
-                  ) : historico.map((h, i) => (
-                    <tr key={i}>
-                      <td>{h.data || h.Data || '—'}</td>
-                      <td>{h.descricao || h.descricao_ato || '—'}</td>
-                      <td>{h.profissional || h.nome_profissional || '—'}</td>
-                    </tr>
+      {episodioSelecionado && renderBannerEpisodio()}
+      {!episodioSelecionado ? (
+        <p>{textos?.nurse?.selecionaFila || 'Selecciona um episódio na fila para registar a triagem.'}</p>
+      ) : (
+        <form className="admin-form" onSubmit={gravarTriagem}>
+          <div className="admin-form__grid">
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.tensao || 'Tensão arterial'}</label>
+              <input name="tensao" value={triagem.tensao} onChange={handleTriagemChange} placeholder="ex: 120/80" />
+            </div>
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.pulso || 'Pulso (bpm)'}</label>
+              <input name="pulso" value={triagem.pulso} onChange={handleTriagemChange} placeholder="ex: 72" type="number" min="0" max="300" />
+            </div>
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.temperatura || 'Temperatura (°C)'}</label>
+              <input name="temperatura" value={triagem.temperatura} onChange={handleTriagemChange} placeholder="ex: 36.8" type="number" min="30" max="45" step="0.1" />
+            </div>
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.saturacao || 'Saturação O₂ (%)'}</label>
+              <input name="saturacao" value={triagem.saturacao} onChange={handleTriagemChange} placeholder="ex: 98" type="number" min="0" max="100" />
+            </div>
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.dor || 'Dor (0–10)'}</label>
+              <input name="dor" value={triagem.dor} onChange={handleTriagemChange} placeholder="ex: 3" type="number" min="0" max="10" />
+            </div>
+            <div className="admin-form__group">
+              <label>{textos?.nurse?.corSugerida || 'Cor de triagem (Manchester)'}</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <select name="cor_sugerida" value={triagem.cor_sugerida} onChange={handleTriagemChange} style={{ flex: 1 }}>
+                  <option value="">— seleccionar —</option>
+                  {CORES_MANCHESTER.map((c) => (
+                    <option key={c.valor} value={c.valor}>{c.label}</option>
                   ))}
-                </tbody>
-              </table>
+                </select>
+                {corHex && (
+                  <span style={{
+                    display: 'inline-block', width: 28, height: 28,
+                    borderRadius: '50%', background: corHex,
+                    border: '2px solid rgba(0,0,0,.15)', flexShrink: 0,
+                  }} title={triagem.cor_sugerida} />
+                )}
+              </div>
+            </div>
+            <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
+              <label>{textos?.nurse?.sintomas || 'Sintomas / queixa principal'}</label>
+              <textarea name="sintomas" value={triagem.sintomas} onChange={handleTriagemChange} rows={3} placeholder="Descreva os sintomas referidos pelo utente…" />
+            </div>
+            <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
+              <label>{textos?.nurse?.observacoes || 'Observações do enfermeiro'}</label>
+              <textarea name="observacoes" value={triagem.observacoes} onChange={handleTriagemChange} rows={2} placeholder="Notas adicionais…" />
             </div>
           </div>
-        </div>
-      ) : (
-        <p>{textos?.nurse?.abreEpisodioFicha || 'Abre um episódio para consultar o processo clínico.'}</p>
+          <div className="admin-actions-row">
+            <button type="button" className="admin-secondary-button" onClick={pedirSugestaoCor} disabled={loadingIA}>
+              {loadingIA ? <><IconSpinner />A processar…</> : (textos?.nurse?.pedirSugestaoIa || 'Sugestão IA')}
+            </button>
+            <button type="submit" className="admin-form__submit" disabled={loadingGravar}>
+              {loadingGravar ? <><IconSpinner />A gravar…</> : (textos?.nurse?.gravarTriagem || 'Gravar triagem')}
+            </button>
+          </div>
+        </form>
       )}
     </section>
   );
