@@ -1,7 +1,5 @@
-from typing import Optional
 from backend.db import run_query
 
-# SELECT base com JOIN ao utente para trazer nome e data de nascimento
 _SELECT = """
     SELECT
         e.codepurgenc,
@@ -11,10 +9,12 @@ _SELECT = """
         e.datahoraatendimento,
         e.datahorasaida,
         e.estado,
-        u.nome      AS nome_utente,
-        u.datanasc  AS data_nasc_utente
+        u.nome     AS nome_utente,
+        u.datanasc AS data_nasc_utente,
+        t.datahorainicio AS data_hora_triagem
     FROM epurgencia e
-    LEFT JOIN utente u ON u.numutent = e.numutent
+    LEFT JOIN utente  u ON u.numutent    = e.numutent
+    LEFT JOIN triagem t ON t.codepurgenc = e.codepurgenc
 """
 
 

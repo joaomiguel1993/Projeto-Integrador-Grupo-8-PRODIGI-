@@ -545,7 +545,7 @@ export default function NurseDashboard() {
                       return (
                         <tr key={`ep-${key}`}>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
-                          <td>{ep?.data_hora_atendimento ? new Date(ep.data_hora_atendimento).toLocaleString('pt-PT') : '—'}</td>
+                          <td>{ep?.data_hora_triagem ? new Date(ep.data_hora_triagem).toLocaleString('pt-PT') : '—'}</td>
                           <td>—</td>
                           <td>
                             <button type="button" className="admin-secondary-button" onClick={() => abrirEpisodio(ep)}>

@@ -29,5 +29,7 @@ class EpisodioOut(BaseModel):
     data_hora_atendimento: Optional[datetime] = None
     data_hora_saida: Optional[datetime] = None
     estado: str
-    nome_utente: Optional[str] = None
-    data_nasc_utente: Optional[date] = None
+    # campos enriquecidos via JOIN
+    nome_utente:       Optional[str]      = None
+    data_nasc_utente:  Optional[date]     = None
+    data_hora_triagem: Optional[datetime] = None
