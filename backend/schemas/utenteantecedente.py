@@ -21,3 +21,5 @@ class UtenteAntecedenteOut(BaseModel):
     num_utent: int
     cod_antecedente: int
     data_registo: date
+    nome: Optional[str] = None
+    tipo: Optional[str] = None

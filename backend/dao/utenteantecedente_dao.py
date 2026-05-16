@@ -22,10 +22,16 @@ def select_utente_antecedente_by_ids(numutent: int, codantecedente: int):
 
 def select_antecedentes_by_utente(numutent: int):
     return run_query("""
-        SELECT numutent, codantecedente, dataregisto
-        FROM utenteantecedente
-        WHERE numutent = %s
-        ORDER BY dataregisto DESC
+        SELECT
+            ua.numutent      AS num_utent,
+            ua.codantecedente AS cod_antecedente,
+            ua.dataregisto   AS dataregisto,
+            a.nome           AS nome,
+            a.tipo           AS tipo
+        FROM utenteantecedente ua
+        JOIN antecedente a ON a.codantecedente = ua.codantecedente
+        WHERE ua.numutent = %s
+        ORDER BY ua.dataregisto DESC
     """, (numutent,))
 
 

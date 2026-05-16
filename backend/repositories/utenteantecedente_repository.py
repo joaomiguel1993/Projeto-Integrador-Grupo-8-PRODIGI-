@@ -10,11 +10,12 @@ def _first_or_none(rows):
 def _map_row(row):
     if row is None:
         return None
-
     return {
-        "num_utent": row["num_utent"],
+        "num_utent":       row["num_utent"],
         "cod_antecedente": row["cod_antecedente"],
-        "data_registo": row["data_registo"],
+        "data_registo":    row.get("dataregisto"),
+        "nome":            row.get("nome"),
+        "tipo":            row.get("tipo"),
     }
 
 

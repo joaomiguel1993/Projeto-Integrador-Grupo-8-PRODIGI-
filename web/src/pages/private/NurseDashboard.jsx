@@ -227,65 +227,56 @@ export default function NurseDashboard() {
     const endpoints = [
       { tipo: 'Ato',          url: `${API_URL}/api/v1/atos/episodio/${codEpUrgenc}` },
       { tipo: 'Internamento', url: `${API_URL}/api/v1/internamentos/episodio/${codEpUrgenc}` },
-      { tipo: 'Alergia',      url: `${API_URL}/api/v1/alergias/utente/${num_utente}` },
       { tipo: 'Antecedente',  url: `${API_URL}/api/v1/utente-antecedentes/utente/${num_utente}` },
     ];
 
-    const respostas = await Promise.all(
-      endpoints.map(async ({ tipo, url }) => {
-        try {
-          const res  = await authFetch(url);
-          const data = await res.json().catch(() => null);
-          return { tipo, res, data };
-        } catch {
-          return { tipo, res: null, data: null };
-        }
-      })
-    );
+      const respostas = await Promise.all(
+        endpoints.map(async ({ tipo, url }) => {
+          try {
+            const res  = await authFetch(url);
+            const data = await res.json().catch(() => null);
+            return { tipo, res, data };
+          } catch {
+            return { tipo, res: null, data: null };
+          }
+        })
+      );
 
-    const historicoNormalizado = [];
-    respostas.forEach(({ tipo, res, data }) => {
-      if (!res || !res.ok) return;
-      const lista = Array.isArray(data) ? data : data ? [data] : [];
-      lista.forEach((item) => {
-        if (tipo === 'Ato') {
-          historicoNormalizado.push({
-            tipo,
-            data: item?.data || item?.datahora || item?.data_hora || '—',
-            descricao: item?.descricao || item?.tipo_ato || item?.observacoes || 'Ato clínico',
-            profissional: item?.profissional || item?.nome_profissional || '—',
-          });
-        }
-        if (tipo === 'Internamento') {
-          historicoNormalizado.push({
-            tipo,
-            data: item?.data_entrada || item?.datainicio || item?.data_inicio || '—',
-            descricao: item?.motivo || item?.diagnostico || item?.descricao || 'Internamento',
-            profissional: item?.profissional || '—',
-          });
-        }
-        if (tipo === 'Alergia') {
-          historicoNormalizado.push({
-            tipo,
-            data: item?.data || item?.criado_em || '—',
-            descricao: item?.descricao || item?.nome || item?.alergia || 'Alergia registada',
-            profissional: item?.profissional || '—',
-          });
-        }
-        if (tipo === 'Antecedente') {
-          historicoNormalizado.push({
-            tipo,
-            data: item?.data || item?.criado_em || '—',
-            descricao: item?.descricao || item?.nome || item?.antecedente || 'Antecedente clínico',
-            profissional: item?.profissional || '—',
-          });
-        }
+      const historicoNormalizado = [];
+      respostas.forEach(({ tipo, res, data }) => {
+        if (!res || !res.ok) return;
+        const lista = Array.isArray(data) ? data : data ? [data] : [];
+        lista.forEach((item) => {
+          if (tipo === 'Ato') {
+            historicoNormalizado.push({
+              tipo,
+              data: item?.data || item?.datahora || item?.data_hora || '—',
+              descricao: item?.descricao || item?.tipo_ato || item?.observacoes || 'Ato clínico',
+              profissional: item?.profissional || item?.nome_profissional || '—',
+            });
+          }
+          if (tipo === 'Internamento') {
+            historicoNormalizado.push({
+              tipo,
+              data: item?.data_entrada || item?.datainicio || item?.data_inicio || '—',
+              descricao: item?.motivo || item?.diagnostico || item?.descricao || 'Internamento',
+              profissional: item?.profissional || '—',
+            });
+          }
+          if (tipo === 'Antecedente') {
+            historicoNormalizado.push({
+              tipo:         item?.tipo || 'Antecedente',
+              data:         item?.dataregisto || item?.data_registo || '—',
+              descricao:    item?.nome || item?.descricao || 'Antecedente clínico',
+              profissional: '—',
+            });
+          }
+        });
       });
-    });
 
-    historicoNormalizado.sort((a, b) => String(b.data).localeCompare(String(a.data)));
-    setHistorico(historicoNormalizado);
-  };
+      historicoNormalizado.sort((a, b) => String(b.data).localeCompare(String(a.data)));
+      setHistorico(historicoNormalizado);
+    };
 
   const handleTriagemChange = (e) => {
     const { name, value } = e.target;
