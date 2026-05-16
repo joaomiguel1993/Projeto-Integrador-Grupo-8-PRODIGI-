@@ -2038,7 +2038,7 @@ export default function AdminDashboard() {
                   <th>{textos.admin.lblNome}</th>
                   <th>{textos.admin.lblFuncao}</th>
                   <th>{textos.admin.lblHospitais}</th>
-                  <th>{textos.geral.editar}</th>
+                  <th>{ta('ações', 'Ações')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -2091,7 +2091,37 @@ export default function AdminDashboard() {
     );
   };
 
+  const removerHospital = async (hospitalId) => {
+    const confirmar = window.confirm(
+      'Tem a certeza que deseja remover este hospital?'
+    );
 
+    if (!confirmar) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3001/hospitais/${hospitalId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erro ao remover hospital');
+      }
+
+      setHospitais((prevHospitais) =>
+        prevHospitais.filter(
+          (hospital) => hospital.idhosp !== hospitalId
+        )
+      );
+
+      alert('Hospital removido com sucesso!');
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao remover hospital.');
+    }
+  };
 
 
   const renderHospitalCenter = () => {
@@ -2335,7 +2365,7 @@ export default function AdminDashboard() {
                   <th>{ta('lblLocalizacao', 'Location')}</th>
                   <th>{ta('lblEmail', 'Email')}</th>
                   <th>{ta('lblContacto', 'Contact')}</th>
-                  <th>{tt('editar', 'Editar')}</th>
+                  <th>{tt('lblAções', 'Ações')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -2355,16 +2385,35 @@ export default function AdminDashboard() {
                       <td>{h.email || '—'}</td>
                       <td>{h.contacto || '—'}</td>
                       <td>
-                        <button
-                          type="button"
-                          className="admin-secondary-button"
-                          onClick={() => abrirEditarHospital(h)}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M12.854.146a.5.5 0 0 0-.708 0L10.5 1.793 14.207 5.5l1.646-1.647a.5.5 0 0 0 0-.708l-3-3zM13.5 6.207 9.793 2.5 3 9.293V13h3.707L13.5 6.207z" />
-                          </svg>
-                          <span>{textos.geral.editar}</span>
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          
+                          <button
+                            type="button"
+                            className="admin-secondary-button"
+                            onClick={() => abrirEditarHospital(h)}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M12.854.146a.5.5 0 0 0-.708 0L10.5 1.793 14.207 5.5l1.646-1.647a.5.5 0 0 0 0-.708l-3-3zM13.5 6.207 9.793 2.5 3 9.293V13h3.707L13.5 6.207z" />
+                            </svg>
+                            <span>{textos.geral.editar}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            className="admin-secondary-button admin-button--danger"
+                            onClick={() => removerHospital(h.idhosp)}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path
+                                d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6h10z"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span>Remover</span>
+                          </button>
+
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -2436,7 +2485,8 @@ export default function AdminDashboard() {
             <option value="">{ta('todasAcoes', 'Todas')}</option>
             <option value="login">Login</option>
             <option value="criar-utilizador">{ta('criarUtilizador', 'Criar utilizador')}</option>
-            <option value="editar-utilizador">{ta('editarUtilizador', 'Editar utilizador')}</option>
+            <option value="editar-utilizad
+            or">{ta('editarUtilizador', 'Editar utilizador')}</option>
             <option value="criar-hospital">{ta('criarHospital', 'Criar hospital')}</option>
             <option value="editar-hospital">{ta('editarHospital', 'Editar hospital')}</option>
           </select>
