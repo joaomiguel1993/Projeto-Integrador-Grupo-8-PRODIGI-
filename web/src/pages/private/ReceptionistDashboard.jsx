@@ -25,6 +25,24 @@ const emptyUtente = {
   numutent: '',
 };
 
+const getToken = () =>
+  sessionStorage.getItem('token') ||
+  sessionStorage.getItem('access_token') ||
+  sessionStorage.getItem('accessToken') ||
+  null;
+
+const authFetch = (url, options = {}) => {
+  const token = getToken();
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+};
+
 const IconMenu = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M4 7h16M4 12h16M4 17h16" />
@@ -69,7 +87,6 @@ export default function ReceptionistDashboard() {
   const [filtro, setFiltro] = useState('');
   const [filtroEntrada, setFiltroEntrada] = useState('');
   const [filtroEpisodios, setFiltroEpisodios] = useState('');
-
   const [utentes, setUtentes] = useState([]);
   const [episodios, setEpisodios] = useState([]);
   const [hospitalAtivo, setHospitalAtivo] = useState(null);
@@ -88,17 +105,14 @@ export default function ReceptionistDashboard() {
       'utilizador',
       'authUser',
     ].filter(Boolean);
-
     for (const key of possibleKeys) {
       try {
         const raw = sessionStorage.getItem(key);
         if (!raw) continue;
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') return parsed;
-      } catch {
-      }
+      } catch { }
     }
-
     return {};
   }, []);
 
@@ -131,7 +145,6 @@ export default function ReceptionistDashboard() {
 
   useEffect(() => {
     const storedHospital = sessionStorage.getItem(STORAGE_KEYS.ACTIVE_HOSPITAL);
-
     if (storedHospital) {
       try {
         setHospitalAtivo(JSON.parse(storedHospital));
@@ -141,41 +154,28 @@ export default function ReceptionistDashboard() {
     } else {
       setHospitalAtivo(null);
     }
-
     carregarTudo();
-
   }, []);
 
   const abrirPerfilUtilizador = () => {
-    console.log('utilizadorLogado:', utilizadorLogado);
-
     navigate('/perfil');
   };
 
   const carregarTudo = async () => {
     setLoading(true);
     setErro('');
-
     try {
       const [uRes, eRes] = await Promise.all([
-        fetch(`${API_URL}/api/v1/utentes/`),
-        fetch(`${API_URL}/api/v1/episodios/`),
+        authFetch(`${API_URL}/api/v1/utentes/`),
+        authFetch(`${API_URL}/api/v1/episodios/`),
       ]);
-
       const uData = await uRes.json().catch(() => []);
       const eData = await eRes.json().catch(() => []);
-
-      console.log('EPISODIOS RAW:', JSON.stringify(eData, null, 2));
-
       if (!uRes.ok || !eRes.ok) {
         throw new Error(textos?.receptionist?.erroCarga || 'Erro ao carregar dados.');
       }
-
       setUtentes(Array.isArray(uData) ? uData : []);
       setEpisodios(Array.isArray(eData) ? eData : []);
-
-      console.log('UTENTES:', uData);
-      console.log('EPISODIOS:', eData);
     } catch (e) {
       setErro(e.message || 'Erro ao carregar dados.');
     } finally {
@@ -185,31 +185,14 @@ export default function ReceptionistDashboard() {
 
   const utentesFiltrados = useMemo(() => {
     return utentes.filter((u) => {
-      const texto = [
-        u.nome,
-        u.nif,
-        u.numero_utente,
-        u.num_utente,
-        u.numutent,
-        u.telefone,
-      ].join(' ');
-
+      const texto = [u.nome, u.nif, u.num_utent, u.numutent, u.numero_utente, u.num_utente, u.telefone].join(' ');
       return normalizar(texto).includes(normalizar(filtro));
     });
   }, [utentes, filtro]);
 
   const utentesParaEntrada = useMemo(() => {
     return utentes.filter((u) => {
-      const texto = [
-        u.nome,
-        u.nif,
-        u.numutent,
-        u.numero_utente,
-        u.num_utente,
-        u.telefone,
-        u.email,
-      ].join(' ');
-
+      const texto = [u.nome, u.nif, u.num_utent, u.numutent, u.numero_utente, u.num_utente, u.telefone, u.email].join(' ');
       return normalizar(texto).includes(normalizar(filtroEntrada));
     });
   }, [utentes, filtroEntrada]);
@@ -217,19 +200,10 @@ export default function ReceptionistDashboard() {
   const episodiosFiltrados = useMemo(() => {
     return episodios.filter((ep) => {
       const texto = [
-        ep.nome_utente,
-        ep.utente_nome,
-        ep.nomeutente,
-        ep.nomeUtente,
-        ep.utente?.nome,
-        ep.nome,
-        ep.estado,
-        ep.datahoraentr,
-        ep.datahora,
-        ep.datahorafim,
-        ep.data_fim,
+        ep.nome_utente, ep.utente_nome, ep.nomeutente, ep.nomeUtente,
+        ep.utente?.nome, ep.nome, ep.estado,
+        ep.datahoraentr, ep.datahora, ep.datahorafim, ep.data_fim,
       ].join(' ');
-
       return normalizar(texto).includes(normalizar(filtroEpisodios));
     });
   }, [episodios, filtroEpisodios]);
@@ -243,7 +217,6 @@ export default function ReceptionistDashboard() {
 
   const prepararEdicao = (u) => {
     setUtenteSelecionado(u);
-
     setNovoUtente({
       nome: u?.nome ?? '',
       nif: u?.nif ?? '',
@@ -254,7 +227,6 @@ export default function ReceptionistDashboard() {
       email: u?.email ?? '',
       numutent: u?.numutent ?? u?.num_utente ?? u?.numero_utente ?? '',
     });
-
     setUtentesView('criar');
     setMainMenu('utentes');
     setMensagem('');
@@ -280,7 +252,12 @@ export default function ReceptionistDashboard() {
     setMensagem('');
     setErro('');
 
-    const numUtente = novoUtente.numutent;
+    const numUtente =
+      novoUtente.num_utent ||
+      novoUtente.numutent ||
+      novoUtente.num_utente ||
+      novoUtente.numero_utente;
+
     const isEditing = !!numUtente;
 
     const url = isEditing
@@ -298,9 +275,8 @@ export default function ReceptionistDashboard() {
     };
 
     try {
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method: isEditing ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payloadUtente),
       });
 
@@ -312,8 +288,8 @@ export default function ReceptionistDashboard() {
 
       setMensagem(
         isEditing
-          ? (textos?.receptionist?.sucessoUpdate || 'Utente atualizado com sucesso.')
-          : (textos?.receptionist?.sucessoCriar || 'Utente criado com sucesso.')
+          ? textos?.receptionist?.sucessoUpdate || 'Utente atualizado com sucesso.'
+          : textos?.receptionist?.sucessoCriar || 'Utente criado com sucesso.'
       );
 
       setNovoUtente(emptyUtente);
@@ -327,42 +303,37 @@ export default function ReceptionistDashboard() {
   };
 
   const abrirEpisodio = async () => {
+    console.log('utenteSelecionado:', utenteSelecionado);
     const numUtente =
+      utenteSelecionado?.num_utent ||
       utenteSelecionado?.numutent ||
       utenteSelecionado?.num_utente ||
       utenteSelecionado?.numero_utente;
-
+    console.log('numUtente resolvido:', numUtente);
     if (!numUtente) {
       setErro(textos?.receptionist?.selecionaPrimeiro || 'Selecione primeiro um utente.');
       return;
     }
-
     const idHosp =
       hospitalAtivo?.idhosp ||
       hospitalAtivo?.IdHosp ||
       hospitalAtivo?.id_hosp ||
       hospitalAtivo?.id;
-
     if (!idHosp) {
       setErro('Nenhum hospital ativo selecionado.');
       return;
     }
-
     try {
-      const res = await fetch(`${API_URL}/api/v1/episodios/`, {
+      const res = await authFetch(`${API_URL}/api/v1/episodios/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          numutent: numUtente,
-          idhosp: idHosp,
+          num_utent: numUtente,
+          id_hosp: idHosp,
         }),
       });
-
       const data = await res.json().catch(() => null);
-
       if (!res.ok) {
         let mensagemErro = 'Erro ao abrir episódio.';
-
         if (data?.detail) {
           if (typeof data.detail === 'string') {
             mensagemErro = data.detail;
@@ -378,10 +349,8 @@ export default function ReceptionistDashboard() {
             mensagemErro = JSON.stringify(data.detail);
           }
         }
-
         throw new Error(mensagemErro);
       }
-
       setMensagem(textos?.receptionist?.sucessoEpisodio || 'Episódio aberto com sucesso.');
       setUtenteSelecionado(null);
       setFiltroEntrada('');
@@ -397,12 +366,11 @@ export default function ReceptionistDashboard() {
       setErro('Selecione primeiro um utente.');
       return;
     }
-
     setMainMenu('episodio');
     setFiltroEntrada(
       utenteSelecionado?.nome ||
+      utenteSelecionado?.num_utent ||
       utenteSelecionado?.numutent ||
-      utenteSelecionado?.num_utente ||
       ''
     );
   };
@@ -412,40 +380,6 @@ export default function ReceptionistDashboard() {
     navigate('/login', { replace: true });
   };
 
-  const obterNomeUtente = (ep) => {
-    const nomeDireto =
-      ep?.nome_utente ||
-      ep?.utente_nome ||
-      ep?.nomeutente ||
-      ep?.nomeUtente ||
-      ep?.utente?.nome ||
-      ep?.utente?.Nome ||
-      ep?.utente_info?.nome ||
-      ep?.utenteinfo?.nome ||
-      ep?.dados_utente?.nome ||
-      ep?.dadosUtente?.nome ||
-      ep?.utenteNome ||
-      ep?.nome;
-
-    if (nomeDireto) return nomeDireto;
-
-    const numeroUtente =
-      ep?.numutent ||
-      ep?.num_utente ||
-      ep?.numero_utente ||
-      ep?.utente?.numutent ||
-      ep?.utente?.num_utente;
-
-    if (!numeroUtente) return '—';
-
-    const utenteEncontrado = utentes.find(
-      (u) =>
-        String(u?.numutent || u?.num_utente || u?.numero_utente) === String(numeroUtente)
-    );
-
-    return utenteEncontrado?.nome || '—';
-  };
-
   const renderUtentes = () => {
     if (utentesView === 'criar') {
       return (
@@ -453,28 +387,24 @@ export default function ReceptionistDashboard() {
           <div className="admin-panel-section__header">
             <h2 id="title-criar">
               {novoUtente.numutent
-                ? (textos?.geral?.editar || 'Editar')
-                : (textos?.receptionist?.novoUtente || 'Novo utente')}
+                ? textos?.geral?.editar || 'Editar'
+                : textos?.receptionist?.novoUtente || 'Novo utente'}
             </h2>
           </div>
-
           <form className="admin-form" onSubmit={criarOuEditarUtente}>
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.nome || 'Nome'}</label>
                 <input name="nome" value={novoUtente.nome || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} required />
               </div>
-
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.nif || 'NIF'}</label>
                 <input name="nif" value={novoUtente.nif || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
-
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.dataNascimento || 'Data de nascimento'}</label>
                 <input type="date" name="data_nascimento" value={novoUtente.data_nascimento || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
-
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.sexo || 'Sexo'}</label>
                 <select name="sexo" value={novoUtente.sexo || 'M'} onChange={(e) => handleInputChange(e, setNovoUtente)}>
@@ -482,28 +412,23 @@ export default function ReceptionistDashboard() {
                   <option value="F">F</option>
                 </select>
               </div>
-
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.telefone || 'Telefone'}</label>
                 <input name="telefone" value={novoUtente.telefone || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
-
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.email || 'Email'}</label>
                 <input name="email" value={novoUtente.email || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
-
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                 <label>{textos?.receptionist?.morada || 'Morada'}</label>
                 <input name="morada" value={novoUtente.morada || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
             </div>
-
             <div className="admin-actions-row">
               <button className="admin-form__submit" type="submit">
                 {textos?.geral?.guardar || 'Guardar'}
               </button>
-
               <button className="admin-secondary-button" type="button" onClick={() => setUtentesView('lista')}>
                 {textos?.geral?.cancelar || 'Cancelar'}
               </button>
@@ -518,12 +443,10 @@ export default function ReceptionistDashboard() {
         <section className="admin-panel-section" aria-labelledby="title-ficha">
           <div className="admin-panel-section__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 id="title-ficha">{textos?.receptionist?.fichaBase || 'Ficha base'}</h2>
-
             <div className="admin-actions-row" style={{ marginLeft: 'auto' }}>
               <button type="button" className="admin-secondary-button" onClick={() => setUtentesView('lista')}>
                 {textos?.geral?.voltar || 'Voltar'}
               </button>
-
               {utenteSelecionado && (
                 <button type="button" className="admin-primary-big-button" onClick={() => prepararEdicao(utenteSelecionado)}>
                   {textos?.geral?.editar || 'Editar'}
@@ -531,70 +454,56 @@ export default function ReceptionistDashboard() {
               )}
             </div>
           </div>
-
           {utenteSelecionado ? (
             <div className="patient-card">
               <div className="patient-card__header">
                 <div className="patient-card__avatar">
                   {(utenteSelecionado.nome || '?').charAt(0).toUpperCase()}
                 </div>
-
                 <div className="patient-card__intro">
-                  <h2 className="patient-card__name">
-                    {utenteSelecionado.nome || 'Utente sem nome'}
-                  </h2>
-
+                  <h2 className="patient-card__name">{utenteSelecionado.nome || 'Utente sem nome'}</h2>
                   <div className="patient-card__badges">
                     <span className="patient-badge">NIF: {utenteSelecionado.nif || '—'}</span>
                     <span className="patient-badge">
-                      Nº Utente: {utenteSelecionado.numutent || utenteSelecionado.num_utente || utenteSelecionado.numero_utente || '—'}
+                      Nº Utente: {utenteSelecionado.num_utent || utenteSelecionado.numutent || utenteSelecionado.num_utente || '—'}
                     </span>
                   </div>
                 </div>
               </div>
-
               <div className="patient-card__section">
                 <h3 className="patient-card__section-title">Dados pessoais</h3>
-
                 <div className="patient-card__grid">
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.dataNascimento || 'Data de nascimento'}</span>
                     <span className="patient-info__value">{utenteSelecionado.datanasc || '—'}</span>
                   </div>
-
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.sexo || 'Sexo'}</span>
                     <span className="patient-info__value">{utenteSelecionado.sexo || '—'}</span>
                   </div>
-
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.morada || 'Localidade'}</span>
                     <span className="patient-info__value">{utenteSelecionado.localidade || '—'}</span>
                   </div>
                 </div>
               </div>
-
               <div className="patient-card__section">
                 <h3 className="patient-card__section-title">Contactos</h3>
-
                 <div className="patient-card__grid">
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.telefone || 'Telefone'}</span>
                     <span className="patient-info__value">{utenteSelecionado.telefone || '—'}</span>
                   </div>
-
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.email || 'Email'}</span>
                     <span className="patient-info__value">{utenteSelecionado.email || '—'}</span>
                   </div>
                 </div>
               </div>
-
               <div className="patient-card__actions">
                 <button type="button" className="patient-btn patient-btn--secondary" onClick={() => prepararEdicao(utenteSelecionado)}>
                   {textos?.common?.edit || 'Editar'}
                 </button>
-
                 <button type="button" className="patient-btn patient-btn--primary" onClick={abrirEpisodioDoUtente}>
                   {textos?.receptionist?.abrirEpisodioBtn || 'Dar entrada no hospital'}
                 </button>
@@ -615,13 +524,11 @@ export default function ReceptionistDashboard() {
         <div className="admin-panel-section__header">
           <h2 id="title-utentes">{textos?.receptionist?.pesquisarUtente || 'Utentes'}</h2>
         </div>
-
         <div className="admin-toolbar admin-toolbar--left">
           <button type="button" className="admin-primary-big-button" onClick={prepararNovoUtente}>
             {textos?.receptionist?.novoUtente || 'Novo utente'}
           </button>
         </div>
-
         <div className="admin-form__group">
           <label htmlFor="search-input">{textos?.receptionist?.pesquisaRapida || 'Pesquisa rápida'}</label>
           <input
@@ -631,7 +538,6 @@ export default function ReceptionistDashboard() {
             placeholder={textos?.receptionist?.placeholderPesquisa || 'Pesquisar por nome, NIF ou telefone'}
           />
         </div>
-
         <div className="admin-table-card admin-table-card--full">
           <div className="admin-table-scroll admin-table-scroll--employees">
             <table className="admin-table">
@@ -643,33 +549,26 @@ export default function ReceptionistDashboard() {
                   <th>{textos?.geral?.acoes || 'Ações'}</th>
                 </tr>
               </thead>
-
               <tbody>
-                {utentesFiltrados.map((u, index) => (
-                  <tr key={`utente-${u.numutent || u.num_utente || u.id_utente || u.idutente || index}`}>
-                    <td>{u.nome}</td>
-                    <td>{u.nif || '—'}</td>
-                    <td>{u.sexo || '—'}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="admin-secondary-button"
-                        onClick={() => selecionarUtente(u)}
-                        style={{ marginRight: '8px' }}
-                      >
-                        {textos?.receptionist?.verFicha || 'Ver ficha'}
-                      </button>
-
-                      <button
-                        type="button"
-                        className="admin-secondary-button"
-                        onClick={() => prepararEdicao(u)}
-                      >
-                        {textos?.geral?.editar || 'Editar'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {utentesFiltrados.length === 0 ? (
+                  <tr><td colSpan="4">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
+                ) : (
+                  utentesFiltrados.map((u, index) => (
+                    <tr key={`utente-${u.numutent || u.num_utente || u.id_utente || u.idutente || index}`}>
+                      <td>{u.nome}</td>
+                      <td>{u.nif || '—'}</td>
+                      <td>{u.sexo || '—'}</td>
+                      <td>
+                        <button type="button" className="admin-secondary-button" onClick={() => selecionarUtente(u)} style={{ marginRight: '8px' }}>
+                          {textos?.receptionist?.verFicha || 'Ver ficha'}
+                        </button>
+                        <button type="button" className="admin-secondary-button" onClick={() => prepararEdicao(u)}>
+                          {textos?.geral?.editar || 'Editar'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -691,7 +590,6 @@ export default function ReceptionistDashboard() {
             <div className="admin-panel-section__header">
               <h2 id="title-episodio">{textos?.receptionist?.menuEpisodio || 'Dar entrada'}</h2>
             </div>
-
             <div className="episode-search-shell">
               <div className="episode-search-topbar">
                 <div>
@@ -701,7 +599,6 @@ export default function ReceptionistDashboard() {
                     Pesquise por número de utente, NIF ou nome e escolha o utente para continuar.
                   </p>
                 </div>
-
                 <div className="episode-search-topbar__meta">
                   <span>{utentesParaEntrada.length} resultados</span>
                   <span>Hospital: {hospitalAtivo?.nome || hospitalAtivo?.Nome || 'Não selecionado'}</span>
@@ -709,10 +606,7 @@ export default function ReceptionistDashboard() {
               </div>
 
               <div className="episode-search-box">
-                <div className="episode-search-box__icon">
-                  <IconSearch />
-                </div>
-
+                <div className="episode-search-box__icon"><IconSearch /></div>
                 <input
                   id="search-entrada"
                   className="episode-search-box__input"
@@ -720,13 +614,8 @@ export default function ReceptionistDashboard() {
                   onChange={(e) => setFiltroEntrada(e.target.value)}
                   placeholder="Pesquisar por número de utente, NIF ou nome"
                 />
-
                 {filtroEntrada && (
-                  <button
-                    type="button"
-                    className="episode-search-box__clear"
-                    onClick={() => setFiltroEntrada('')}
-                  >
+                  <button type="button" className="episode-search-box__clear" onClick={() => setFiltroEntrada('')}>
                     Limpar
                   </button>
                 )}
@@ -740,9 +629,22 @@ export default function ReceptionistDashboard() {
               ) : (
                 <div className="episode-horizontal-grid">
                   {utentesParaEntrada.map((u, index) => {
-                    const numeroUtente = u?.numutent || u?.num_utente || u?.numero_utente;
+                    const numeroUtente =
+                      u?.num_utent || u?.numutent || u?.num_utente || u?.numero_utente;
+
+                    const utenteEncontrado = utentes.find(
+                      (utente) =>
+                        String(utente?.num_utent || utente?.numutent || utente?.num_utente || utente?.numero_utente) ===
+                        String(numeroUtente)
+                    );
+
                     const isSelected =
-                      (utenteSelecionado?.numutent || utenteSelecionado?.num_utente || utenteSelecionado?.numero_utente) === numeroUtente;
+                      String(
+                        utenteSelecionado?.num_utent ||
+                        utenteSelecionado?.numutent ||
+                        utenteSelecionado?.num_utente ||
+                        utenteSelecionado?.numero_utente
+                      ) === String(numeroUtente);
 
                     return (
                       <button
@@ -755,25 +657,24 @@ export default function ReceptionistDashboard() {
                           setErro('');
                         }}
                       >
+                        type="button"
+                        className={`episode-mini-card ${isSelected ? 'is-selected' : ''}`}
+                        onClick={() => { setUtenteSelecionado(u); setMensagem(''); setErro(''); }}
+
                         <div className="episode-mini-card__header">
                           <div className="episode-mini-card__avatar">
                             {(u.nome || '?').charAt(0).toUpperCase()}
                           </div>
-
                           <div className="episode-mini-card__identity">
                             <h4>{u.nome || 'Utente'}</h4>
                             <p>Nº Utente: {numeroUtente || '—'}</p>
                           </div>
                         </div>
-
                         <div className="episode-mini-card__body">
                           <span><strong>NIF:</strong> {u.nif || '—'}</span>
                           <span><strong>Telefone:</strong> {u.telefone || '—'}</span>
                         </div>
-
-                        {isSelected && (
-                          <div className="episode-mini-card__selected">Selecionado</div>
-                        )}
+                        {isSelected && <div className="episode-mini-card__selected">Selecionado</div>}
                       </button>
                     );
                   })}
@@ -794,36 +695,30 @@ export default function ReceptionistDashboard() {
                     <div className="episode-patient-card__avatar">
                       {(utenteSelecionado.nome || '?').charAt(0).toUpperCase()}
                     </div>
-
                     <div className="episode-patient-card__identity">
                       <h3>{utenteSelecionado.nome || 'Utente'}</h3>
                       <p>
-                        Nº Utente: {utenteSelecionado.numutent || utenteSelecionado.num_utente || utenteSelecionado.numero_utente || '—'}
+                        Nº Utente: {utenteSelecionado.num_utent || utenteSelecionado.numutent || utenteSelecionado.num_utente || utenteSelecionado.numero_utente || '—'}
                       </p>
                     </div>
                   </div>
-
                   <div className="episode-patient-card__grid">
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">NIF</span>
                       <span className="episode-data-item__value">{utenteSelecionado.nif || '—'}</span>
                     </div>
-
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">Data de nascimento</span>
                       <span className="episode-data-item__value">{utenteSelecionado.datanasc || '—'}</span>
                     </div>
-
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">Telefone</span>
                       <span className="episode-data-item__value">{utenteSelecionado.telefone || '—'}</span>
                     </div>
-
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">Email</span>
                       <span className="episode-data-item__value">{utenteSelecionado.email || '—'}</span>
                     </div>
-
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">Hospital ativo</span>
                       <span className="episode-data-item__value">
@@ -831,22 +726,13 @@ export default function ReceptionistDashboard() {
                       </span>
                     </div>
                   </div>
-
                   {!hospitalAtivo && (
-                    <p className="admin-form__error" role="alert">
-                      Nenhum hospital ativo selecionado.
-                    </p>
+                    <p className="admin-form__error" role="alert">Nenhum hospital ativo selecionado.</p>
                   )}
-
                   <div className="episode-patient-card__actions">
-                    <button
-                      type="button"
-                      className="episode-btn episode-btn--secondary"
-                      onClick={() => prepararEdicao(utenteSelecionado)}
-                    >
+                    <button type="button" className="episode-btn episode-btn--secondary" onClick={() => prepararEdicao(utenteSelecionado)}>
                       Editar dados
                     </button>
-
                     <button
                       className="episode-btn episode-btn--primary"
                       type="button"
@@ -869,7 +755,6 @@ export default function ReceptionistDashboard() {
             <div className="admin-panel-section__header">
               <h2 id="title-recentes">{textos?.receptionist?.episodiosRecentes || 'Entradas recentes'}</h2>
             </div>
-
             <div className="admin-form__group" style={{ marginBottom: '20px' }}>
               <label htmlFor="search-episodes">{textos?.receptionist?.pesquisaEpisodios || 'Pesquisar episódios'}</label>
               <input
@@ -879,7 +764,6 @@ export default function ReceptionistDashboard() {
                 placeholder={textos?.receptionist?.placeholderEpisodios || 'Pesquisar por utente ou estado'}
               />
             </div>
-
             <div className="admin-table-card admin-table-card--full">
               <div className="admin-table-scroll">
                 <table className="admin-table">
@@ -891,82 +775,42 @@ export default function ReceptionistDashboard() {
                       <th>{textos?.receptionist?.estado || 'Estado'}</th>
                     </tr>
                   </thead>
-
                   <tbody>
                     {episodiosFiltrados.length > 0 ? (
                       episodiosFiltrados.map((ep, index) => {
-                        const numeroUtente =
-                          ep.numutent ||
-                          ep.num_utente ||
-                          ep.numero_utente ||
-                          ep.utente?.numutent ||
-                          ep.utente?.num_utente;
+                        const numeroUtenteEp =
+                          ep.numutent || ep.num_utent || ep.num_utente || ep.numero_utente ||
+                          ep.utente?.num_utent || ep.utente?.numutent || ep.utente?.num_utente;
 
                         const nomeUtenteDireto =
-                          ep.nome_utente ||
-                          ep.utente_nome ||
-                          ep.nomeutente ||
-                          ep.nomeUtente ||
-                          ep.utente?.nome ||
-                          ep.nome;
+                          ep.nome_utente || ep.utente_nome || ep.nomeutente ||
+                          ep.nomeUtente || ep.utente?.nome || ep.nome;
 
                         const utenteEncontrado = utentes.find(
-                          (u) =>
-                            String(u?.numutent || u?.num_utente || u?.numero_utente) === String(numeroUtente)
+                          (u) => String(u?.num_utent || u?.numutent || u?.num_utente || u?.numero_utente) === String(numeroUtenteEp)
                         );
 
                         const nomeUtente = nomeUtenteDireto || utenteEncontrado?.nome || '—';
 
                         const valorData =
-                          ep.datahoraentr ||
-                          ep.datahora ||
-                          ep.data_entrada ||
-                          ep.created_at ||
-                          ep.dataentrada;
-
-                        let dataTexto = '—';
-                        let horaTexto = '—';
+                          ep.data_hora_inicio || ep.datahoraentr || ep.datahora || ep.data_entrada ||
+                          ep.created_at || ep.dataentrada;
 
                         const valorTermino =
-                          ep.datahorasaida ||
-                          ep.datahora_saida ||
-                          ep.datasaida ||
-                          ep.data_saida ||
-                          ep.datahorafim ||
-                          ep.data_fim ||
-                          ep.fim ||
-                          null;
+                          ep.data_hora_fim || ep.datahorasaida || ep.datahora_saida || ep.datasaida ||
+                          ep.data_saida || ep.datahorafim || ep.data_fim || ep.fim || null;
+                        const formatarData = (valor) => {
+                          if (!valor) return { data: '—', hora: '—' };
+                          const d = new Date(valor);
+                          if (Number.isNaN(d.getTime())) return { data: String(valor), hora: '—' };
+                          return {
+                            data: d.toLocaleDateString('pt-PT'),
+                            hora: d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }),
+                          };
+                        };
 
-                        let dataTermino = '—';
-                        let horaTermino = '—';
-
-                        if (valorTermino) {
-                          const d = new Date(valorTermino);
-
-                          if (!Number.isNaN(d.getTime())) {
-                            dataTermino = d.toLocaleDateString('pt-PT');
-                            horaTermino = d.toLocaleTimeString('pt-PT', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            });
-                          } else {
-                            dataTermino = String(valorTermino);
-                          }
-                        }
-
-                        if (valorData) {
-                          const d = new Date(valorData);
-
-                          if (!Number.isNaN(d.getTime())) {
-                            dataTexto = d.toLocaleDateString('pt-PT');
-                            horaTexto = d.toLocaleTimeString('pt-PT', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            });
-                          } else {
-                            dataTexto = String(valorData);
-                          }
-                        }
+                        const { data: dataTexto, hora: horaTexto } = formatarData(valorData);
+                        const { data: dataTermino, hora: horaTermino } = formatarData(valorTermino);
 
                         return (
                           <tr key={`episodio-${ep.cod_ep_urgenc || ep.id_epurgencia || ep.id || index}`} className="recent-entry-row">
@@ -983,21 +827,18 @@ export default function ReceptionistDashboard() {
                                 </div>
                               </div>
                             </td>
-
                             <td>
                               <div className="episode-date-time">
                                 <span className="episode-date-time__date">{dataTexto}</span>
                                 <span className="episode-date-time__time">{horaTexto}</span>
                               </div>
                             </td>
-
                             <td>
                               <div className="episode-date-time">
                                 <span className="episode-date-time__date">{dataTermino}</span>
                                 <span className="episode-date-time__time">{horaTermino}</span>
                               </div>
                             </td>
-
                             <td>
                               <span className={`recent-entry-status recent-entry-status--${String(ep.estado || 'aberto').toLowerCase()}`}>
                                 {ep.estado || textos?.receptionist?.estadoAberto || 'aberto'}
@@ -1056,15 +897,11 @@ export default function ReceptionistDashboard() {
           <button
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'utentes' ? 'is-active' : ''}`}
-            onClick={() => {
-              setMainMenu('utentes');
-              setUtentesView('lista');
-            }}
+            onClick={() => { setMainMenu('utentes'); setUtentesView('lista'); }}
           >
             <IconSearch />
             <span className="link-text">{textos?.receptionist?.menuPesquisar || 'Utentes'}</span>
           </button>
-
           <button
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'episodio' ? 'is-active' : ''}`}
@@ -1073,7 +910,6 @@ export default function ReceptionistDashboard() {
             <IconFolder />
             <span className="link-text">{textos?.receptionist?.menuEpisodio || 'Dar entrada'}</span>
           </button>
-
           <button
             type="button"
             className={`admin-sidebar__link ${mainMenu === 'recentes' ? 'is-active' : ''}`}
@@ -1086,25 +922,10 @@ export default function ReceptionistDashboard() {
 
         <div className="admin-sidebar__footer">
           <div className="admin-sidebar__lang-switcher">
-            <button
-              type="button"
-              className={`admin-lang-btn ${idioma === 'pt' ? 'is-active' : ''}`}
-              onClick={() => mudarIdioma('pt')}
-              aria-pressed={idioma === 'pt'}
-            >
-              PT
-            </button>
+            <button type="button" className={`admin-lang-btn ${idioma === 'pt' ? 'is-active' : ''}`} onClick={() => mudarIdioma('pt')} aria-pressed={idioma === 'pt'}>PT</button>
             <span>/</span>
-            <button
-              type="button"
-              className={`admin-lang-btn ${idioma === 'en' ? 'is-active' : ''}`}
-              onClick={() => mudarIdioma('en')}
-              aria-pressed={idioma === 'en'}
-            >
-              EN
-            </button>
+            <button type="button" className={`admin-lang-btn ${idioma === 'en' ? 'is-active' : ''}`} onClick={() => mudarIdioma('en')} aria-pressed={idioma === 'en'}>EN</button>
           </div>
-
           <button type="button" className="admin-logout-button" onClick={fazerLogout}>
             <IconExit />
             <span className="link-text">{textos?.geral?.sair || 'Sair'}</span>
@@ -1118,14 +939,12 @@ export default function ReceptionistDashboard() {
             <h1 id="dashboard-title">{textos?.receptionist?.tituloPainel || 'Painel do rececionista'}</h1>
             <p>{textos?.receptionist?.descricaoPainel || 'Gerir utentes e dar entrada no hospital.'}</p>
           </div>
-
           <div className="admin-content-body">
             {erro && <p className="admin-form__error" role="alert">{erro}</p>}
             {mensagem && <p className="admin-form__success" role="status">{mensagem}</p>}
             {renderCenter()}
           </div>
         </div>
-
         <FooterLayout />
       </section>
     </main>
