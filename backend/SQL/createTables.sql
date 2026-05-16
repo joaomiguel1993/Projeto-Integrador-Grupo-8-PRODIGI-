@@ -208,8 +208,10 @@ CREATE TABLE Triagem (
     Diastolica INT,
     NivelDor INT CHECK (NivelDor >= 0 AND NivelDor <= 10),
     Consciencia VARCHAR(50) CHECK (Consciencia IN ('Acordado', 'Confuso', 'Inconsciente')),
-    TempoEsperaPrevisto INT, 
-    FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE
+    TempoEsperaPrevisto INT,
+    IdFunc INT,
+    FOREIGN KEY (CodEpUrgenc) REFERENCES EpUrgencia(CodEpUrgenc) ON DELETE CASCADE,
+    FOREIGN KEY (IdFunc) REFERENCES Funcionario(IdFunc) ON DELETE SET NULL
 );
 
 -- ------------------------------------------------------------
