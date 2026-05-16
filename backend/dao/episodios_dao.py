@@ -1,39 +1,67 @@
 from typing import Optional
 from backend.db import run_query
 
+# SELECT base com JOIN ao utente para trazer nome e data de nascimento
+_SELECT = """
+    SELECT
+        e.codepurgenc,
+        e.numutent,
+        e.idhosp,
+        e.datahoraentr,
+        e.datahoraatendimento,
+        e.datahorasaida,
+        e.estado,
+        u.nome      AS nome_utente,
+        u.datanasc  AS data_nasc_utente
+    FROM epurgencia e
+    LEFT JOIN utente u ON u.numutent = e.numutent
+"""
+
 
 def select_all_episodios():
-    return run_query("""
-        SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
-        FROM epurgencia
-        ORDER BY datahoraentr DESC
+    return run_query(f"""
+        {_SELECT}
+        ORDER BY e.datahoraentr DESC
     """)
 
 
 def select_episodio_by_id(codepurgenc: int):
-    return run_query("""
-        SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
-        FROM epurgencia
-        WHERE codepurgenc = %s
+    return run_query(f"""
+        {_SELECT}
+        WHERE e.codepurgenc = %s
     """, (codepurgenc,))
 
 
 def select_episodios_by_utente(numutent: int):
-    return run_query("""
-        SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
-        FROM epurgencia
-        WHERE numutent = %s
-        ORDER BY datahoraentr DESC
+    return run_query(f"""
+        {_SELECT}
+        WHERE e.numutent = %s
+        ORDER BY e.datahoraentr DESC
     """, (numutent,))
 
 
 def select_episodios_by_hospital(idhosp: int):
-    return run_query("""
-        SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
-        FROM epurgencia
-        WHERE idhosp = %s
-        ORDER BY datahoraentr DESC
+    return run_query(f"""
+        {_SELECT}
+        WHERE e.idhosp = %s
+        ORDER BY e.datahoraentr DESC
     """, (idhosp,))
+
+
+def select_episodios_sem_triagem(idhosp: int = None):
+    if idhosp is not None:
+        return run_query(f"""
+            {_SELECT}
+            WHERE e.estado = 'aberto'
+              AND e.idhosp = %s
+            ORDER BY e.datahoraentr ASC
+        """, (idhosp,))
+
+    return run_query(f"""
+        {_SELECT}
+        WHERE e.estado = 'aberto'
+        ORDER BY e.datahoraentr ASC
+    """)
 
 
 def insert_episodio(numutent: int, idhosp: int, datahoraentr=None, estado: str = "aberto"):
@@ -91,21 +119,3 @@ def delete_episodio(codepurgenc: int):
         WHERE codepurgenc = %s
         RETURNING codepurgenc
     """, (codepurgenc,))
-
-
-def select_episodios_sem_triagem(idhosp: int = None):
-    if idhosp is not None:
-        return run_query("""
-            SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
-            FROM epurgencia
-            WHERE estado = 'aberto'
-              AND idhosp = %s
-            ORDER BY datahoraentr ASC
-        """, (idhosp,))
-
-    return run_query("""
-        SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
-        FROM epurgencia
-        WHERE estado = 'aberto'
-        ORDER BY datahoraentr ASC
-    """)

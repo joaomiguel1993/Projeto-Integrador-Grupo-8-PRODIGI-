@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, Literal
 
 
@@ -29,3 +29,5 @@ class EpisodioOut(BaseModel):
     data_hora_atendimento: Optional[datetime] = None
     data_hora_saida: Optional[datetime] = None
     estado: str
+    nome_utente: Optional[str] = None
+    data_nasc_utente: Optional[date] = None

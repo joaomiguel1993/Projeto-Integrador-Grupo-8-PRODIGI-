@@ -12,13 +12,15 @@ def _map_row(row):
         return None
 
     return {
-        "cod_ep_urgenc": row["codepurgenc"],
-        "num_utent": row["numutent"],
-        "id_hosp": row["idhosp"],
-        "data_hora_entr": row["datahoraentr"],
+        "cod_ep_urgenc":        row["codepurgenc"],
+        "num_utent":            row["numutent"],
+        "id_hosp":              row["idhosp"],
+        "data_hora_entr":       row["datahoraentr"],
         "data_hora_atendimento": row["datahoraatendimento"],
-        "data_hora_saida": row["datahorasaida"],
-        "estado": row["estado"],
+        "data_hora_saida":      row["datahorasaida"],
+        "estado":               row["estado"],
+        "nome_utente":          row.get("nome_utente"),
+        "data_nasc_utente":     row.get("data_nasc_utente"),
     }
 
 
