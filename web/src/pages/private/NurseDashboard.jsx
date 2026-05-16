@@ -30,12 +30,21 @@ const calcularIdade = (dataNasc) => {
 
 // Cores Manchester
 const CORES_MANCHESTER = [
-  { valor: 'vermelho', label: 'Vermelho', hex: '#e53e3e' },
-  { valor: 'laranja',  label: 'Laranja',  hex: '#dd6b20' },
-  { valor: 'amarelo',  label: 'Amarelo',  hex: '#d69e2e' },
-  { valor: 'verde',    label: 'Verde',    hex: '#38a169' },
   { valor: 'azul',     label: 'Azul',     hex: '#3182ce' },
+  { valor: 'verde',    label: 'Verde',    hex: '#38a169' },
+  { valor: 'amarelo',  label: 'Amarelo',  hex: '#d69e2e' },
+  { valor: 'laranja',  label: 'Laranja',  hex: '#dd6b20' },
+  { valor: 'vermelho', label: 'Vermelho', hex: '#e53e3e' },
 ];
+
+// Mapeamento das classes do modelo XGBoost → cores Manchester
+const MAPA_COR_IA = {
+  '0': 'azul',      // Blue
+  '1': 'verde',     // Green
+  '2': 'laranja',   // Orange
+  '3': 'vermelho',  // Red
+  '4': 'amarelo',   // Yellow
+};
 
 // Estado inicial da triagem — alinhado com TriagemCreate
 const TRIAGEM_VAZIA = {
@@ -282,22 +291,29 @@ export default function NurseDashboard() {
     const { name, value } = e.target;
     setTriagem((prev) => ({ ...prev, [name]: value }));
   };
-
+  
   const pedirSugestaoCor = async () => {
     setErro('');
     setMensagem('');
     try {
-      const res = await authFetch(`${API_IA}/api/v1/triagem/sugestao`, {
+      const idade = calcularIdade(episodioSelecionado?.data_nasc_utente);
+
+      const res = await authFetch(`${API_IA}/predict/v1/triage`, {
         method: 'POST',
         body: JSON.stringify({
-          id_hospital: episodioSelecionado?.id_hosp || 1,
-          utente,
-          triagem,
+          Age:            typeof idade === 'number' ? idade : 50,
+          Heart_Rate_BPM: triagem.freq_card    !== '' ? parseInt(triagem.freq_card)     : 70,
+          SpO2_Percent:   triagem.sp_o2         !== '' ? parseInt(triagem.sp_o2)         : 98,
+          Temperature_C:  triagem.temperatura   !== '' ? parseFloat(triagem.temperatura) : 37.0,
+          Pain_Level:     triagem.nivel_dor     !== '' ? parseInt(triagem.nivel_dor)     : 0,
+          Consciousness:  triagem.consciencia   !== '' ? triagem.consciencia             : 'Acordado',
         }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro na previsão IA.');
-      const corSugerida = data?.cor_sugerida || data?.cor || '';
+
+      const corSugerida = MAPA_COR_IA[String(data?.pulseira)] || '';
       setTriagem((prev) => ({ ...prev, cor_triagem: corSugerida }));
       setMensagem(`Sugestão IA: ${corSugerida || 'sem resultado'}`);
     } catch (e) {
