@@ -118,6 +118,24 @@ const SvgFileText = () => (
   </svg>
 );
 
+const getToken = () =>
+  sessionStorage.getItem('token') ||
+  sessionStorage.getItem('access_token') ||
+  sessionStorage.getItem('accessToken') ||
+  null;
+
+const authFetch = (url, options = {}) => {
+  const token = getToken();
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+};
+
 export default function NurseDashboard() {
   const navigate = useNavigate();
   const { textos, idioma, mudarIdioma } = useLanguage();
@@ -154,7 +172,12 @@ export default function NurseDashboard() {
     }
   }, []);
 
-  const nomeUtilizador = utilizadorLogado?.nome || utilizadorLogado?.name || utilizadorLogado?.username || 'Utilizador';
+  const nomeUtilizador =
+    utilizadorLogado?.nome ||
+    utilizadorLogado?.name ||
+    utilizadorLogado?.username ||
+    'Utilizador';
+
   const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
 
   const nomeHospital =
@@ -180,7 +203,6 @@ export default function NurseDashboard() {
     } else {
       setHospitalAtivo(null);
     }
-
     carregarEpisodios();
   }, []);
 
@@ -191,7 +213,6 @@ export default function NurseDashboard() {
       utilizadorLogado?.id_user ||
       utilizadorLogado?.id ||
       utilizadorLogado?.utilizador_id;
-
     if (userId) navigate(`/perfil/${userId}`);
     else navigate('/perfil');
   };
@@ -200,7 +221,7 @@ export default function NurseDashboard() {
     setLoading(true);
     setErro('');
     try {
-      const res = await fetch(`${API_URL}/api/v1/episodios/`);
+      const res = await authFetch(`${API_URL}/api/v1/episodios/`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
       setEpisodios(Array.isArray(data) ? data : []);
@@ -213,86 +234,116 @@ export default function NurseDashboard() {
   };
 
   const mapEstado = {
-    sem: (ep) => ep.estado === 'aberto' || ep.estado === 'sem_triagem',
-    em: (ep) => ep.estado === 'em_triagem' || ep.estado === 'triagem',
-    triados: (ep) => ep.estado === 'triado' || ep.estado === 'concluido',
-    desistencias: (ep) => ep.estado === 'desistencia' || ep.estado === 'nao_compareceu',
+    sem: (ep) => {
+      const estado = normalizar(ep?.estado);
+      return estado.includes('abert') || estado.includes('sem_triagem') || estado.includes('aguard');
+    },
+    em: (ep) => {
+      const estado = normalizar(ep?.estado);
+      return estado.includes('triagem') || estado.includes('em_triagem') || estado.includes('em curso');
+    },
+    triados: (ep) => {
+      const estado = normalizar(ep?.estado);
+      return estado.includes('triad') || estado.includes('conclu') || estado.includes('finaliz');
+    },
+    desistencias: (ep) => {
+      const estado = normalizar(ep?.estado);
+      return estado.includes('desist') || estado.includes('nao_compareceu');
+    },
   };
 
-  const episodiosFiltrados = useMemo(
-    () => ({
-      sem: (episodios || []).filter((ep) =>
-        mapEstado.sem(ep) &&
-        normalizar([ep.nome_utente, ep.nif_utente, ep.datahoraentr].join(' ')).includes(normalizar(filtrosSala.sem))
-      ),
-      em: (episodios || []).filter((ep) =>
-        mapEstado.em(ep) &&
-        normalizar([ep.nome_utente, ep.nif_utente, ep.datahoraini_triagem || ep.datahoraentr].join(' ')).includes(normalizar(filtrosSala.em))
-      ),
-      triados: (episodios || []).filter((ep) =>
-        mapEstado.triados(ep) &&
-        normalizar([ep.nome_utente, ep.nif_utente, ep.datahora_triagem || ep.datahoraentr].join(' ')).includes(normalizar(filtrosSala.triados))
-      ),
-      desistencias: (episodios || []).filter((ep) =>
-        mapEstado.desistencias(ep) &&
-        normalizar([ep.nome_utente, ep.nif_utente, ep.datahora_desistencia || ep.datahoraentr].join(' ')).includes(normalizar(filtrosSala.desistencias))
-      ),
-    }),
-    [episodios, filtrosSala]
-  );
+  const currentList = useMemo(() => {
+    const pesquisa = normalizar(filtrosSala[salaTab] || '');
+    const base = (episodios || []).filter((ep) => {
+      if (salaTab === 'sem') return mapEstado.sem(ep);
+      if (salaTab === 'em') return mapEstado.em(ep);
+      if (salaTab === 'triados') return mapEstado.triados(ep);
+      if (salaTab === 'desistencias') return mapEstado.desistencias(ep);
+      return true;
+    });
+    if (!pesquisa) return base;
+    return base.filter((ep) =>
+      normalizar([
+        ep?.nome_utente, ep?.nome, ep?.nif_utente, ep?.nif,
+        ep?.datahoraentr, ep?.datahoraini_triagem,
+        ep?.datahora_triagem, ep?.datahora_desistencia,
+      ].join(' ')).includes(pesquisa)
+    );
+  }, [episodios, filtrosSala, salaTab]);
 
-  const carregarHistorico = async (num_utente) => {
-    const res = await fetch(`${API_URL}/api/v1/utentes/${num_utente}/historico`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar histórico.');
-    setHistorico(Array.isArray(data) ? data : []);
-  };
+  const obterNumUtenteDoEpisodio = (ep) =>
+    ep?.num_utente ?? ep?.numutente ?? ep?.numUtente ??
+    ep?.id_utente ?? ep?.idutente ?? ep?.utente_id ??
+    ep?.utente?.num_utente ?? ep?.utente?.numutente ?? ep?.utente?.id ??
+    ep?.nif_utente ?? ep?.nif ?? null;
 
-  const abrirEpisodio = async (ep) => {
-    setErro('');
-    setMensagem('');
-    setEpisodioSelecionado(ep);
-    setMainMenu('triagem');
+  const obterCodEpisodio = (ep) =>
+    ep?.id_epurgencia ?? ep?.cod_ep_urgenc ?? ep?.CodEpUrgenc ??
+    ep?.cod_epurgenc ?? ep?.id ?? ep?.cod_ep ?? null;
 
-    try {
-      const num_utente = ep.num_utente || ep.numutente || ep.NumUtent || ep.numutent || ep.numUtente;
-      if (!num_utente) throw new Error('Identificador do utente não encontrado no episódio.');
+  const carregarHistorico = async (num_utente, codEpUrgenc) => {
+    const endpoints = [
+      { tipo: 'Ato', url: `${API_URL}/api/v1/atos/episodio/${codEpUrgenc}` },
+      { tipo: 'Internamento', url: `${API_URL}/api/v1/internamentos/episodio/${codEpUrgenc}` },
+      { tipo: 'Alergia', url: `${API_URL}/api/v1/alergias/utente/${num_utente}` },
+      { tipo: 'Antecedente', url: `${API_URL}/api/v1/utente-antecedentes/utente/${num_utente}` },
+    ];
 
-      const [uRes, mRes] = await Promise.all([
-        fetch(`${API_URL}/api/v1/utentes/${num_utente}`),
-        fetch(`${API_URL}/api/v1/medicacao-ativa/utente/${num_utente}`),
-      ]);
-
-      const uData = await uRes.json();
-      const mData = await mRes.json();
-
-      if (!uRes.ok) throw new Error(uData?.detail || 'Erro ao carregar utente.');
-      if (!mRes.ok) throw new Error(mData?.detail || 'Erro ao carregar medicação.');
-
-      setUtente(uData || null);
-      setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
-      await carregarHistorico(num_utente);
-
-      const codEp = ep.id_epurgencia || ep.id || ep.CodEpUrgenc || ep.cod_epurgenc;
-      if (codEp) {
-        const tRes = await fetch(`${API_URL}/api/v1/triagens/${codEp}`);
-        if (tRes.ok) {
-          const tData = await tRes.json();
-          setTriagem((prev) => ({
-            ...prev,
-            tensao: tData?.sistolica && tData?.diastolica ? `${tData.sistolica}/${tData.diastolica}` : prev.tensao,
-            pulso: tData?.freqcard || prev.pulso,
-            temperatura: tData?.temperatura || prev.temperatura,
-            saturacao: tData?.spo2 || prev.saturacao,
-            dor: tData?.nivel_dor || prev.dor,
-            sintomas: tData?.sintomas || prev.sintomas,
-            cor_sugerida: tData?.cortriagem || prev.cor_sugerida,
-          }));
+    const respostas = await Promise.all(
+      endpoints.map(async ({ tipo, url }) => {
+        try {
+          const res = await authFetch(url);
+          const data = await res.json().catch(() => null);
+          return { tipo, res, data };
+        } catch (e) {
+          return { tipo, res: null, data: null };
         }
-      }
-    } catch (e) {
-      setErro(e.message);
-    }
+      })
+    );
+
+    const historicoNormalizado = [];
+
+    respostas.forEach(({ tipo, res, data }) => {
+      if (!res || !res.ok) return;
+      const lista = Array.isArray(data) ? data : data ? [data] : [];
+      lista.forEach((item) => {
+        if (tipo === 'Ato') {
+          historicoNormalizado.push({
+            tipo,
+            data: item?.data || item?.Data || item?.datahora || item?.data_hora || '—',
+            descricao: item?.descricao || item?.tipo_ato || item?.observacoes || item?.nome || 'Ato clínico',
+            profissional: item?.profissional || item?.nome_profissional || '—',
+          });
+        }
+        if (tipo === 'Internamento') {
+          historicoNormalizado.push({
+            tipo,
+            data: item?.data_entrada || item?.datainicio || item?.datahora || item?.data_inicio || '—',
+            descricao: item?.motivo || item?.diagnostico || item?.descricao || 'Internamento',
+            profissional: item?.profissional || item?.nome_profissional || '—',
+          });
+        }
+        if (tipo === 'Alergia') {
+          historicoNormalizado.push({
+            tipo,
+            data: item?.data || item?.criado_em || item?.criacao || '—',
+            descricao: item?.descricao || item?.nome || item?.alergia || 'Alergia registada',
+            profissional: item?.profissional || '—',
+          });
+        }
+        if (tipo === 'Antecedente') {
+          historicoNormalizado.push({
+            tipo,
+            data: item?.data || item?.criado_em || item?.criacao || '—',
+            descricao: item?.descricao || item?.nome || item?.antecedente || 'Antecedente clínico',
+            profissional: item?.profissional || '—',
+          });
+        }
+      });
+    });
+
+    historicoNormalizado.sort((a, b) => String(b.data).localeCompare(String(a.data)));
+    setHistorico(historicoNormalizado);
   };
 
   const handleTriagemChange = (e) => {
@@ -304,9 +355,8 @@ export default function NurseDashboard() {
     setErro('');
     setMensagem('');
     try {
-      const res = await fetch(`${API_IA}/predict/triage`, {
+      const res = await authFetch(`${API_IA}/predict/triage`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ episodio: episodioSelecionado, utente, triagem, enfermeiro: utilizadorLogado }),
       });
       const data = await res.json();
@@ -323,19 +373,18 @@ export default function NurseDashboard() {
     setMensagem('');
     try {
       const payload = {
-        cod_epurgenc: episodioSelecionado?.id_epurgencia || episodioSelecionado?.id || episodioSelecionado?.CodEpUrgenc,
+        cod_epurgenc: obterCodEpisodio(episodioSelecionado),
         sintomas: triagem.sintomas,
         temperatura: triagem.temperatura,
-        freqcard: triagem.pulso,
-        spo2: triagem.saturacao,
+        freq_card: triagem.pulso,
+        sp_o2: triagem.saturacao,
         nivel_dor: triagem.dor,
-        cortriagem: triagem.cor_sugerida,
+        cor_triagem: triagem.cor_sugerida,
         observacoes: triagem.observacoes,
       };
 
-      const res = await fetch(`${API_URL}/api/v1/triagens/`, {
+      const res = await authFetch(`${API_URL}/api/v1/triagens/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -351,12 +400,64 @@ export default function NurseDashboard() {
     }
   };
 
-  const abrirProcessoClinico = async (num_utente) => {
+  const abrirProcessoClinico = async (num_utente, codEpUrgenc) => {
     setErro('');
     setMensagem('');
     try {
-      await carregarHistorico(num_utente);
+      if (!num_utente) throw new Error('Identificador do utente não encontrado.');
+      if (!codEpUrgenc) throw new Error('Código do episódio não encontrado.');
+      await carregarHistorico(num_utente, codEpUrgenc);
       setMainMenu('processo');
+    } catch (e) {
+      setErro(e.message);
+    }
+  };
+
+  const abrirEpisodio = async (ep) => {
+    setErro('');
+    setMensagem('');
+    setEpisodioSelecionado(ep);
+    setMainMenu('triagem');
+
+    try {
+      const num_utente = obterNumUtenteDoEpisodio(ep);
+      const codEp = obterCodEpisodio(ep);
+
+      if (!num_utente) throw new Error('Identificador do utente não encontrado no episódio.');
+      if (!codEp) throw new Error('Código do episódio não encontrado.');
+
+      const [uRes, mRes] = await Promise.all([
+        authFetch(`${API_URL}/api/v1/utentes/${num_utente}`),
+        authFetch(`${API_URL}/api/v1/medicacao-ativa/utente/${num_utente}`),
+      ]);
+
+      const uData = await uRes.json();
+      const mData = await mRes.json();
+
+      if (!uRes.ok) throw new Error(uData?.detail || 'Erro ao carregar utente.');
+      if (!mRes.ok) throw new Error(mData?.detail || 'Erro ao carregar medicação.');
+
+      setUtente(uData || null);
+      setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
+
+      const tRes = await authFetch(`${API_URL}/api/v1/triagens/${codEp}`);
+      if (tRes.ok) {
+        const tData = await tRes.json();
+        setTriagem((prev) => ({
+          ...prev,
+          tensao: tData?.sistolica && tData?.diastolica
+            ? `${tData.sistolica}/${tData.diastolica}`
+            : prev.tensao,
+          pulso: tData?.freq_card || prev.pulso,
+          temperatura: tData?.temperatura || prev.temperatura,
+          saturacao: tData?.sp_o2 || prev.saturacao,
+          dor: tData?.nivel_dor || prev.dor,
+          sintomas: tData?.sintomas || prev.sintomas,
+          cor_sugerida: tData?.cor_triagem || prev.cor_sugerida,
+        }));
+      }
+
+      await carregarHistorico(num_utente, codEp);
     } catch (e) {
       setErro(e.message);
     }
@@ -366,6 +467,8 @@ export default function NurseDashboard() {
     sessionStorage.removeItem('isAuthenticated');
     sessionStorage.removeItem('userRole');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('access_token');
     navigate('/login', { replace: true });
   };
 
@@ -376,7 +479,8 @@ export default function NurseDashboard() {
       { id: 'triados', label: 'Triados', icon: <SvgCheck /> },
       { id: 'desistencias', label: 'Desistências', icon: <SvgX /> },
     ];
-    const currentList = episodiosFiltrados[salaTab] || [];
+
+    const colSpan = salaTab === 'sem' || salaTab === 'triados' ? 4 : salaTab === 'em' ? 3 : 2;
 
     return (
       <section className="admin-panel-section">
@@ -422,82 +526,109 @@ export default function NurseDashboard() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  {salaTab === 'sem' && <>
-                    <th>{textos?.nurse?.utente || 'Utente'}</th>
-                    <th>{textos?.nurse?.idade || 'Idade'}</th>
-                    <th>{textos?.nurse?.entrada || 'Entrada'}</th>
-                    <th>{textos?.geral?.acoes || 'Ações'}</th>
-                  </>}
-                  {salaTab === 'em' && <>
-                    <th>{textos?.nurse?.utente || 'Utente'}</th>
-                    <th>{textos?.nurse?.inicioTriagem || 'Início triagem'}</th>
-                    <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
-                  </>}
-                  {salaTab === 'triados' && <>
-                    <th>{textos?.nurse?.utente || 'Utente'}</th>
-                    <th>{textos?.nurse?.dataTriagem || 'Data triagem'}</th>
-                    <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
-                    <th>{textos?.geral?.acoes || 'Ações'}</th>
-                  </>}
-                  {salaTab === 'desistencias' && <>
-                    <th>{textos?.nurse?.utente || 'Utente'}</th>
-                    <th>{textos?.nurse?.dataDesistencia || 'Data/Hora'}</th>
-                  </>}
+                  {salaTab === 'sem' && (
+                    <>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
+                      <th>{textos?.nurse?.idade || 'Idade'}</th>
+                      <th>{textos?.nurse?.entrada || 'Entrada'}</th>
+                      <th>{textos?.geral?.acoes || 'Ações'}</th>
+                    </>
+                  )}
+                  {salaTab === 'em' && (
+                    <>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
+                      <th>{textos?.nurse?.inicioTriagem || 'Início triagem'}</th>
+                      <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
+                    </>
+                  )}
+                  {salaTab === 'triados' && (
+                    <>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
+                      <th>{textos?.nurse?.dataTriagem || 'Data triagem'}</th>
+                      <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
+                      <th>{textos?.geral?.acoes || 'Ações'}</th>
+                    </>
+                  )}
+                  {salaTab === 'desistencias' && (
+                    <>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
+                      <th>{textos?.nurse?.dataDesistencia || 'Data/Hora'}</th>
+                    </>
+                  )}
                 </tr>
               </thead>
+
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="4">{textos?.geral?.aCarregar || 'A carregar...'}</td></tr>
+                  <tr>
+                    <td colSpan={colSpan}>{textos?.geral?.aCarregar || 'A carregar...'}</td>
+                  </tr>
                 ) : currentList.length === 0 ? (
-                  <tr><td colSpan="4">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
-                ) : currentList.map((ep) => {
-                  const key = ep.id_epurgencia || ep.id || ep.CodEpUrgenc;
-                  if (salaTab === 'sem') {
+                  <tr>
+                    <td colSpan={colSpan}>{textos?.geral?.semResultados || 'Sem resultados'}</td>
+                  </tr>
+                ) : (
+                  currentList.map((ep, index) => {
+                    const key = ep?.id_epurgencia ?? ep?.id ?? ep?.CodEpUrgenc ?? ep?.cod_ep ?? index;
+
+                    if (salaTab === 'sem') {
+                      return (
+                        <tr key={`episodio-${key}`}>
+                          <td>{ep?.nome_utente || ep?.nome || '—'}</td>
+                          <td>{ep?.idade || '—'}</td>
+                          <td>{ep?.datahoraentr || ep?.data_hora_entrada || ep?.datahora || '—'}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="admin-secondary-button"
+                              onClick={() => abrirEpisodio(ep)}
+                            >
+                              <span className="btn-icon"><SvgClipboard /></span>
+                              <span className="btn-text">{textos?.nurse?.iniciarTriagem || 'Iniciar triagem'}</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    if (salaTab === 'em') {
+                      return (
+                        <tr key={`episodio-${key}`}>
+                          <td>{ep?.nome_utente || ep?.nome || '—'}</td>
+                          <td>{ep?.datahoraini_triagem || ep?.data_hora_inicio || ep?.datahora_triagem || '—'}</td>
+                          <td>{ep?.enfermeiro_triagem || ep?.nome_enfermeiro || '—'}</td>
+                        </tr>
+                      );
+                    }
+
+                    if (salaTab === 'triados') {
+                      return (
+                        <tr key={`episodio-${key}`}>
+                          <td>{ep?.nome_utente || ep?.nome || '—'}</td>
+                          <td>{ep?.datahora_triagem || ep?.data_hora_fim || ep?.data_hora_triagem || '—'}</td>
+                          <td>{ep?.enfermeiro_triagem || ep?.nome_enfermeiro || '—'}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="admin-secondary-button"
+                              onClick={() => abrirEpisodio(ep)}
+                            >
+                              <span className="btn-icon"><SvgInfo /></span>
+                              <span className="btn-text">{textos?.nurse?.infoTriagem || 'Info triagem'}</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    }
+
                     return (
-                      <tr key={key}>
-                        <td>{ep.nome_utente || '—'}</td>
-                        <td>{ep.idade || '—'}</td>
-                        <td>{ep.datahoraentr || '—'}</td>
-                        <td>
-                          <button type="button" className="admin-secondary-button" onClick={() => abrirEpisodio(ep)}>
-                            <span className="btn-icon"><SvgClipboard /></span>
-                            <span className="btn-text">{textos?.nurse?.iniciarTriagem || 'Iniciar triagem'}</span>
-                          </button>
-                        </td>
+                      <tr key={`episodio-${key}`}>
+                        <td>{ep?.nome_utente || ep?.nome || '—'}</td>
+                        <td>{ep?.datahora_desistencia || ep?.datahora || '—'}</td>
                       </tr>
                     );
-                  }
-                  if (salaTab === 'em') {
-                    return (
-                      <tr key={key}>
-                        <td>{ep.nome_utente || '—'}</td>
-                        <td>{ep.datahoraini_triagem || ep.datahora_triagem || '—'}</td>
-                        <td>{ep.enfermeiro_triagem || ep.nome_enfermeiro || '—'}</td>
-                      </tr>
-                    );
-                  }
-                  if (salaTab === 'triados') {
-                    return (
-                      <tr key={key}>
-                        <td>{ep.nome_utente || '—'}</td>
-                        <td>{ep.datahora_triagem || ep.data_hora_triagem || '—'}</td>
-                        <td>{ep.enfermeiro_triagem || ep.nome_enfermeiro || '—'}</td>
-                        <td>
-                          <button type="button" className="admin-secondary-button" onClick={() => { setEpisodioSelecionado(ep); abrirEpisodio(ep); }}>
-                            <span className="btn-icon"><SvgInfo /></span>
-                            <span className="btn-text">{textos?.nurse?.infoTriagem || 'Info triagem'}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  }
-                  return (
-                    <tr key={key}>
-                      <td>{ep.nome_utente || '—'}</td>
-                      <td>{ep.datahora_desistencia || '—'}</td>
-                    </tr>
-                  );
-                })}
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -509,14 +640,23 @@ export default function NurseDashboard() {
   const renderTriagem = () => (
     <section className="admin-panel-section">
       <div className="admin-panel-section__header">
-        <Breadcrumbs items={breadcrumbsLinks} />
         <h2>{nomeHospital}</h2>
         <div className="admin-actions-row">
           <button type="button" className="admin-secondary-button" onClick={() => setMainMenu('sala')}>
             <span className="btn-icon"><SvgChevronLeft /></span>
             <span className="btn-text">{textos?.geral?.voltar || 'Voltar'}</span>
           </button>
-          <button type="button" className="admin-secondary-button" onClick={() => episodioSelecionado && abrirProcessoClinico(episodioSelecionado?.num_utente || episodioSelecionado?.numutente)}>
+          <button
+            type="button"
+            className="admin-secondary-button"
+            onClick={() =>
+              episodioSelecionado &&
+              abrirProcessoClinico(
+                obterNumUtenteDoEpisodio(episodioSelecionado),
+                obterCodEpisodio(episodioSelecionado)
+              )
+            }
+          >
             <span className="btn-icon"><SvgFileText /></span>
             <span className="btn-text">{textos?.nurse?.verProcesso || 'Processo'}</span>
           </button>
@@ -527,17 +667,17 @@ export default function NurseDashboard() {
         <div className="admin-table-card">
           <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <p><strong>Utente:</strong> {utente?.nome || episodioSelecionado?.nome_utente || '—'}</p>
-            <p><strong>{textos?.nurse?.entrada || 'Entrada'}:</strong> {episodioSelecionado?.datahoraentr || '—'}</p>
+            <p><strong>{textos?.nurse?.entrada || 'Entrada'}:</strong> {episodioSelecionado?.datahoraentr || episodioSelecionado?.data_hora_entrada || '—'}</p>
           </div>
 
           <form className="admin-form" onSubmit={gravarTriagem} style={{ padding: 18, paddingTop: 0 }}>
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label>{textos?.nurse?.tensao || 'Tensão'}</label>
-                <input name="tensao" value={triagem.tensao} onChange={handleTriagemChange} />
+                <input name="tensao" value={triagem.tensao} onChange={handleTriagemChange} placeholder="ex: 120/80" />
               </div>
               <div className="admin-form__group">
-                <label>{textos?.nurse?.pulso || 'Pulso'}</label>
+                <label>{textos?.nurse?.pulso || 'Pulso (freq. cardíaca)'}</label>
                 <input name="pulso" value={triagem.pulso} onChange={handleTriagemChange} />
               </div>
               <div className="admin-form__group">
@@ -545,20 +685,24 @@ export default function NurseDashboard() {
                 <input name="temperatura" value={triagem.temperatura} onChange={handleTriagemChange} />
               </div>
               <div className="admin-form__group">
-                <label>{textos?.nurse?.saturacao || 'Saturação'}</label>
+                <label>{textos?.nurse?.saturacao || 'SpO2'}</label>
                 <input name="saturacao" value={triagem.saturacao} onChange={handleTriagemChange} />
               </div>
               <div className="admin-form__group">
-                <label>{textos?.nurse?.dor || 'Dor'}</label>
+                <label>{textos?.nurse?.dor || 'Nível de dor'}</label>
                 <input name="dor" value={triagem.dor} onChange={handleTriagemChange} />
               </div>
               <div className="admin-form__group">
-                <label>{textos?.nurse?.corSugerida || 'Cor sugerida'}</label>
+                <label>{textos?.nurse?.corSugerida || 'Cor triagem'}</label>
                 <input name="cor_sugerida" value={triagem.cor_sugerida} onChange={handleTriagemChange} />
               </div>
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                 <label>{textos?.nurse?.sintomas || 'Sintomas'}</label>
                 <textarea name="sintomas" value={triagem.sintomas} onChange={handleTriagemChange} />
+              </div>
+              <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
+                <label>{textos?.nurse?.observacoes || 'Observações'}</label>
+                <textarea name="observacoes" value={triagem.observacoes} onChange={handleTriagemChange} />
               </div>
             </div>
 
@@ -589,14 +733,16 @@ export default function NurseDashboard() {
                 <tbody>
                   {medicacaoAtiva.length === 0 ? (
                     <tr><td colSpan="4">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
-                  ) : medicacaoAtiva.map((m, i) => (
-                    <tr key={i}>
-                      <td>{m.nome || '—'}</td>
-                      <td>{m.dosagem || m.posologia || '—'}</td>
-                      <td>{m.datainicio || m.DataInicio || '—'}</td>
-                      <td>{m.datafim || m.DataFim || '—'}</td>
-                    </tr>
-                  ))}
+                  ) : (
+                    medicacaoAtiva.map((m, i) => (
+                      <tr key={i}>
+                        <td>{m.nome || '—'}</td>
+                        <td>{m.dosagem || m.posologia || '—'}</td>
+                        <td>{m.datainicio || m.DataInicio || m.data_inicio || '—'}</td>
+                        <td>{m.datafim || m.DataFim || m.data_fim || '—'}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -632,20 +778,24 @@ export default function NurseDashboard() {
                 <thead>
                   <tr>
                     <th>{textos?.nurse?.data || 'Data'}</th>
+                    <th>Tipo</th>
                     <th>{textos?.nurse?.descricao || 'Descrição'}</th>
                     <th>{textos?.nurse?.profissional || 'Profissional'}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historico.length === 0 ? (
-                    <tr><td colSpan="3">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
-                  ) : historico.map((h, i) => (
-                    <tr key={i}>
-                      <td>{h.data || h.Data || '—'}</td>
-                      <td>{h.descricao || h.descricao_ato || '—'}</td>
-                      <td>{h.profissional || h.nome_profissional || '—'}</td>
-                    </tr>
-                  ))}
+                    <tr><td colSpan="4">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
+                  ) : (
+                    historico.map((h, i) => (
+                      <tr key={i}>
+                        <td>{h.data || '—'}</td>
+                        <td>{h.tipo || '—'}</td>
+                        <td>{h.descricao || '—'}</td>
+                        <td>{h.profissional || '—'}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
