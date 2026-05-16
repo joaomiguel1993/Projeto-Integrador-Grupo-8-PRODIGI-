@@ -249,16 +249,16 @@ export default function NurseDashboard() {
         lista.forEach((item) => {
           if (tipo === 'Ato') {
             historicoNormalizado.push({
-              tipo,
-              data: item?.data || item?.datahora || item?.data_hora || '—',
-              descricao: item?.descricao || item?.tipo_ato || item?.observacoes || 'Ato clínico',
-              profissional: item?.profissional || item?.nome_profissional || '—',
+              tipo:         item?.tipo || 'Ato',
+              data:         item?.data_hora_inicio || '—',
+              descricao:    item?.descricao || 'Ato clínico',
+              profissional: '—',
             });
           }
           if (tipo === 'Internamento') {
             historicoNormalizado.push({
               tipo,
-              data: item?.data_entrada || item?.datainicio || item?.data_inicio || '—',
+              data: item?.data_hora_int || item?.data_entrada || item?.datainicio || '—',
               descricao: item?.motivo || item?.diagnostico || item?.descricao || 'Internamento',
               profissional: item?.profissional || '—',
             });
@@ -389,9 +389,10 @@ export default function NurseDashboard() {
       if (!num_utent) throw new Error('Identificador do utente não encontrado no episódio.');
       if (!codEp)     throw new Error('Código do episódio não encontrado.');
 
-      const [uRes, mRes] = await Promise.all([
+      const [uRes, mRes, tRes] = await Promise.all([
         authFetch(`${API_URL}/api/v1/utentes/${num_utent}`),
         authFetch(`${API_URL}/api/v1/medicacao-ativa/utente/${num_utent}`),
+        authFetch(`${API_URL}/api/v1/triagens/${codEp}`),
       ]);
 
       const uData = await uRes.json();
@@ -401,6 +402,23 @@ export default function NurseDashboard() {
 
       setUtente(uData || null);
       setMedicacaoAtiva(mRes.ok && Array.isArray(mData) ? mData : []);
+
+      // Se já existe triagem, pré-preenche o formulário
+      if (tRes.ok) {
+        const tData = await tRes.json();
+        setTriagem({
+          sistolica:   tData?.sistolica   ?? '',
+          diastolica:  tData?.diastolica  ?? '',
+          freq_card:   tData?.freq_card   ?? '',
+          freq_resp:   tData?.freq_resp   ?? '',
+          temperatura: tData?.temperatura ?? '',
+          sp_o2:       tData?.sp_o2       ?? '',
+          nivel_dor:   tData?.nivel_dor   ?? '',
+          consciencia: tData?.consciencia ?? '',
+          cor_triagem: tData?.cor_triagem ?? '',
+          sintomas:    tData?.sintomas    ?? '',
+        });
+      }
 
       await carregarHistorico(num_utent, codEp);
     } catch (e) {
@@ -777,7 +795,11 @@ export default function NurseDashboard() {
                   ) : (
                     historico.map((h, i) => (
                       <tr key={i}>
-                        <td>{h.data        || '—'}</td>
+                        <td>
+                          {h.data && h.data !== '—'
+                            ? (() => { const d = new Date(h.data); return isNaN(d) ? h.data : d.toLocaleString('pt-PT'); })()
+                            : '—'}
+                        </td>
                         <td>{h.tipo        || '—'}</td>
                         <td>{h.descricao   || '—'}</td>
                         <td>{h.profissional || '—'}</td>
