@@ -1,12 +1,11 @@
-/* =========================================
-   BREADCRUMBS (MIGALHAS DE PÃO)
-   ========================================= */
-
 .breadcrumbs-nav {
-  padding: 1rem 0; /* Deixamos 1rem em cima e em baixo, e 0 nas laterais (o container trata disso) */
+  padding: 1rem 0;
   background-color: #f8f9fa;
   display: flex;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -15,8 +14,10 @@
   padding: 0;
   margin: 0;
   display: flex;
+  justify-content: flex-start;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .breadcrumbs-item {
@@ -25,22 +26,21 @@
   font-size: 1rem;
 }
 
-/* Força os links e o texto a herdarem a fonte moderna que definimos acima */
-.breadcrumbs-link, 
-.breadcrumbs-current, 
+.breadcrumbs-link,
+.breadcrumbs-current,
 .breadcrumbs-separator {
-  font-family: inherit; 
+  font-family: inherit;
 }
 
 .breadcrumbs-link {
-  color: #2b6cb0; 
-  text-decoration: none; /* Tirei o sublinhado para ficar mais moderno e limpo */
+  color: #2b6cb0;
+  text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .breadcrumbs-link:hover {
-  color: #1a365d; 
-  text-decoration: underline; /* O sublinhado só aparece quando passas o rato por cima */
+  color: #1a365d;
+  text-decoration: underline;
 }
 
 .breadcrumbs-separator {
@@ -51,6 +51,6 @@
 }
 
 .breadcrumbs-current {
-  color: #1a202c; 
+  color: #1a202c;
   text-decoration: none;
 }

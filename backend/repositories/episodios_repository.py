@@ -108,3 +108,10 @@ def remover_episodio(cod_ep_urgenc: int):
         return None
 
     return row["codepurgenc"]
+
+
+def listar_episodios_sem_triagem(id_hosp: int = None):
+    rows = episodios_dao.select_episodios_sem_triagem(id_hosp)
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]

@@ -91,3 +91,21 @@ def delete_episodio(codepurgenc: int):
         WHERE codepurgenc = %s
         RETURNING codepurgenc
     """, (codepurgenc,))
+
+
+def select_episodios_sem_triagem(idhosp: int = None):
+    if idhosp is not None:
+        return run_query("""
+            SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
+            FROM epurgencia
+            WHERE estado = 'aberto'
+              AND idhosp = %s
+            ORDER BY datahoraentr ASC
+        """, (idhosp,))
+
+    return run_query("""
+        SELECT codepurgenc, numutent, idhosp, datahoraentr, datahoraatendimento, datahorasaida, estado
+        FROM epurgencia
+        WHERE estado = 'aberto'
+        ORDER BY datahoraentr ASC
+    """)
