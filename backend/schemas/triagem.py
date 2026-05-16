@@ -18,6 +18,7 @@ class TriagemBase(BaseModel):
     nivel_dor: Optional[int] = Field(default=None, ge=0, le=10)
     consciencia: Optional[Literal["Acordado", "Confuso", "Inconsciente"]] = None
     tempo_espera_previsto: Optional[int] = None
+    id_func: Optional[int] = None
 
 
 class TriagemCreate(TriagemBase):
@@ -37,6 +38,7 @@ class TriagemUpdate(BaseModel):
     nivel_dor: Optional[int] = Field(default=None, ge=0, le=10)
     consciencia: Optional[Literal["Acordado", "Confuso", "Inconsciente"]] = None
     tempo_espera_previsto: Optional[int] = None
+    id_func: Optional[int] = None
 
 
 class TriagemOut(BaseModel):
@@ -54,3 +56,5 @@ class TriagemOut(BaseModel):
     nivel_dor: Optional[int] = None
     consciencia: Optional[str] = None
     tempo_espera_previsto: Optional[int] = None
+    id_func: Optional[int] = None
+    nome_enfermeiro: Optional[str] = None

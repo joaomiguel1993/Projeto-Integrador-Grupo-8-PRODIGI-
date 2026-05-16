@@ -22,6 +22,7 @@ def _map_row(row):
         "nome_utente":           row.get("nome_utente"),
         "data_nasc_utente":      row.get("data_nasc_utente"),
         "data_hora_triagem":     row.get("data_hora_triagem"),
+        "nome_enfermeiro":       row.get("nome_enfermeiro"),
     }
 
 

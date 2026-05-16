@@ -1,24 +1,38 @@
 from backend.db import run_query
 
+# SELECT base com JOIN ao funcionario para trazer nome do enfermeiro
+_SELECT = """
+    SELECT t.codepurgenc, t.datahorainicio, t.datahorafim, t.cortriagem, t.sintomas,
+           t.temperatura, t.freqcard, t.freqresp, t.spo2, t.sistolica, t.diastolica,
+           t.niveldor, t.consciencia, t.tempoesperaprevisto,
+           t.idfunc,
+           f.nome AS nome_enfermeiro
+    FROM triagem t
+    LEFT JOIN funcionario f ON f.idfunc = t.idfunc
+"""
+
 
 def select_all_triagens():
-    return run_query("""
-        SELECT codepurgenc, datahorainicio, datahorafim, cortriagem, sintomas,
-               temperatura, freqcard, freqresp, spo2, sistolica, diastolica,
-               niveldor, consciencia, tempoesperaprevisto
-        FROM triagem
-        ORDER BY datahorainicio DESC
+    return run_query(f"""
+        {_SELECT}
+        ORDER BY t.datahorainicio DESC
     """)
 
 
 def select_triagem_by_episodio(codepurgenc: int):
-    return run_query("""
-        SELECT codepurgenc, datahorainicio, datahorafim, cortriagem, sintomas,
-               temperatura, freqcard, freqresp, spo2, sistolica, diastolica,
-               niveldor, consciencia, tempoesperaprevisto
-        FROM triagem
-        WHERE codepurgenc = %s
+    return run_query(f"""
+        {_SELECT}
+        WHERE t.codepurgenc = %s
     """, (codepurgenc,))
+
+
+def select_triagens_by_hospital(idhosp: int):
+    return run_query(f"""
+        {_SELECT}
+        JOIN epurgencia e ON e.codepurgenc = t.codepurgenc
+        WHERE e.idhosp = %s
+        ORDER BY t.datahorainicio DESC
+    """, (idhosp,))
 
 
 def insert_triagem(
@@ -36,32 +50,22 @@ def insert_triagem(
     niveldor=None,
     consciencia=None,
     tempoesperaprevisto=None,
+    idfunc=None,
 ):
     return run_query("""
         INSERT INTO triagem (
             codepurgenc, datahorainicio, datahorafim, cortriagem, sintomas,
             temperatura, freqcard, freqresp, spo2, sistolica, diastolica,
-            niveldor, consciencia, tempoesperaprevisto
+            niveldor, consciencia, tempoesperaprevisto, idfunc
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING codepurgenc, datahorainicio, datahorafim, cortriagem, sintomas,
                   temperatura, freqcard, freqresp, spo2, sistolica, diastolica,
-                  niveldor, consciencia, tempoesperaprevisto
+                  niveldor, consciencia, tempoesperaprevisto, idfunc
     """, (
-        codepurgenc,
-        datahorainicio,
-        datahorafim,
-        cortriagem,
-        sintomas,
-        temperatura,
-        freqcard,
-        freqresp,
-        spo2,
-        sistolica,
-        diastolica,
-        niveldor,
-        consciencia,
-        tempoesperaprevisto,
+        codepurgenc, datahorainicio, datahorafim, cortriagem, sintomas,
+        temperatura, freqcard, freqresp, spo2, sistolica, diastolica,
+        niveldor, consciencia, tempoesperaprevisto, idfunc,
     ))
 
 
@@ -79,6 +83,7 @@ def update_triagem(
     niveldor=None,
     consciencia=None,
     tempoesperaprevisto=None,
+    idfunc=None,
 ):
     campos = []
     valores = []
@@ -131,6 +136,10 @@ def update_triagem(
         campos.append("tempoesperaprevisto = %s")
         valores.append(tempoesperaprevisto)
 
+    if idfunc is not None:
+        campos.append("idfunc = %s")
+        valores.append(idfunc)
+
     if len(campos) == 0:
         return select_triagem_by_episodio(codepurgenc)
 
@@ -142,7 +151,7 @@ def update_triagem(
         WHERE codepurgenc = %s
         RETURNING codepurgenc, datahorainicio, datahorafim, cortriagem, sintomas,
                   temperatura, freqcard, freqresp, spo2, sistolica, diastolica,
-                  niveldor, consciencia, tempoesperaprevisto
+                  niveldor, consciencia, tempoesperaprevisto, idfunc
     """
     return run_query(query, tuple(valores))
 
@@ -153,14 +162,3 @@ def delete_triagem(codepurgenc: int):
         WHERE codepurgenc = %s
         RETURNING codepurgenc
     """, (codepurgenc,))
-
-def select_triagens_by_hospital(idhosp: int):
-    return run_query("""
-        SELECT t.codepurgenc, t.datahorainicio, t.datahorafim, t.cortriagem, t.sintomas,
-               t.temperatura, t.freqcard, t.freqresp, t.spo2, t.sistolica, t.diastolica,
-               t.niveldor, t.consciencia, t.tempoesperaprevisto
-        FROM triagem t
-        JOIN epurgencia e ON e.codepurgenc = t.codepurgenc
-        WHERE e.idhosp = %s
-        ORDER BY t.datahorainicio DESC
-    """, (idhosp,))

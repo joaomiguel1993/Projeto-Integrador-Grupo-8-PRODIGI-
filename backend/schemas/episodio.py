@@ -33,3 +33,4 @@ class EpisodioOut(BaseModel):
     nome_utente:       Optional[str]      = None
     data_nasc_utente:  Optional[date]     = None
     data_hora_triagem: Optional[datetime] = None
+    nome_enfermeiro:   Optional[str]      = None

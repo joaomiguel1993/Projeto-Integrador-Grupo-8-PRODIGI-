@@ -12,20 +12,22 @@ def _map_row(row):
         return None
 
     return {
-        "cod_ep_urgenc": row["codepurgenc"],
-        "data_hora_inicio": row["datahorainicio"],
-        "data_hora_fim": row["datahorafim"],
-        "cor_triagem": row["cortriagem"],
-        "sintomas": row["sintomas"],
-        "temperatura": row["temperatura"],
-        "freq_card": row["freqcard"],
-        "freq_resp": row["freqresp"],
-        "spo2": row["spo2"],
-        "sistolica": row["sistolica"],
-        "diastolica": row["diastolica"],
-        "nivel_dor": row["niveldor"],
-        "consciencia": row["consciencia"],
+        "cod_ep_urgenc":        row["codepurgenc"],
+        "data_hora_inicio":     row["datahorainicio"],
+        "data_hora_fim":        row["datahorafim"],
+        "cor_triagem":          row["cortriagem"],
+        "sintomas":             row["sintomas"],
+        "temperatura":          row["temperatura"],
+        "freq_card":            row["freqcard"],
+        "freq_resp":            row["freqresp"],
+        "sp_o2":                row["spo2"],
+        "sistolica":            row["sistolica"],
+        "diastolica":           row["diastolica"],
+        "nivel_dor":            row["niveldor"],
+        "consciencia":          row["consciencia"],
         "tempo_espera_previsto": row["tempoesperaprevisto"],
+        "id_func":              row.get("idfunc"),
+        "nome_enfermeiro":      row.get("nome_enfermeiro"),
     }
 
 
@@ -52,12 +54,13 @@ def criar_triagem(data: dict):
         data.get("temperatura"),
         data.get("freq_card"),
         data.get("freq_resp"),
-        data.get("spo2"),
+        data.get("sp_o2"),
         data.get("sistolica"),
         data.get("diastolica"),
         data.get("nivel_dor"),
         data.get("consciencia"),
         data.get("tempo_espera_previsto"),
+        data.get("id_func"),
     )
     row = _first_or_none(rows)
     return _map_row(row)
@@ -72,12 +75,13 @@ def atualizar_triagem(cod_ep_urgenc: int, data: dict):
         data.get("temperatura"),
         data.get("freq_card"),
         data.get("freq_resp"),
-        data.get("spo2"),
+        data.get("sp_o2"),
         data.get("sistolica"),
         data.get("diastolica"),
         data.get("nivel_dor"),
         data.get("consciencia"),
         data.get("tempo_espera_previsto"),
+        data.get("id_func"),
     )
     row = _first_or_none(rows)
     return _map_row(row)
@@ -91,6 +95,7 @@ def remover_triagem(cod_ep_urgenc: int):
         return None
 
     return row["codepurgenc"]
+
 
 def listar_triagens_por_hospital(idhosp: int):
     rows = triagens_dao.select_triagens_by_hospital(idhosp)

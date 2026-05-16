@@ -315,6 +315,7 @@ export default function NurseDashboard() {
       const payload = {
         cod_ep_urgenc:    codEp,
         data_hora_inicio: new Date().toISOString(),
+        id_func:          utilizadorLogado?.idfunc || null,
         cor_triagem:      triagem.cor_triagem,
         sintomas:         triagem.sintomas,
         temperatura:      triagem.temperatura  !== '' ? parseFloat(triagem.temperatura)  : null,
@@ -546,7 +547,7 @@ export default function NurseDashboard() {
                         <tr key={`ep-${key}`}>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
                           <td>{ep?.data_hora_triagem ? new Date(ep.data_hora_triagem).toLocaleString('pt-PT') : '—'}</td>
-                          <td>—</td>
+                          <td>{ep?.nome_enfermeiro || '—'}</td>
                           <td>
                             <button type="button" className="admin-secondary-button" onClick={() => abrirEpisodio(ep)}>
                               <span className="btn-icon"><SvgInfo /></span>

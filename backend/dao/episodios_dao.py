@@ -11,10 +11,12 @@ _SELECT = """
         e.estado,
         u.nome     AS nome_utente,
         u.datanasc AS data_nasc_utente,
-        t.datahorainicio AS data_hora_triagem
+        t.datahorainicio AS data_hora_triagem,
+        f.nome           AS nome_enfermeiro
     FROM epurgencia e
     LEFT JOIN utente  u ON u.numutent    = e.numutent
     LEFT JOIN triagem t ON t.codepurgenc = e.codepurgenc
+    LEFT JOIN funcionario f ON f.idfunc     = t.idfunc
 """
 
 
