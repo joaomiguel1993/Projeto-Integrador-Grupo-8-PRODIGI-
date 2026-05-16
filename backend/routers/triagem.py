@@ -24,6 +24,11 @@ def obter_triagem(cod_ep_urgenc: int):
 @router.post("/", response_model=TriagemOut, status_code=201)
 def criar_triagem(data: TriagemCreate):
     return triagens_service.criar_triagem(data.model_dump())
+    
+
+@router.get("/hospital/{idhosp}", response_model=List[TriagemOut])
+def listar_triagens_por_hospital(idhosp: int):
+    return triagens_service.listar_triagens_por_hospital(idhosp)
 
 
 @router.put("/{cod_ep_urgenc}", response_model=TriagemOut)
@@ -37,3 +42,5 @@ def atualizar_triagem(cod_ep_urgenc: int, data: TriagemUpdate):
 @router.delete("/{cod_ep_urgenc}")
 def remover_triagem(cod_ep_urgenc: int):
     return triagens_service.remover_triagem(cod_ep_urgenc)
+
+

@@ -91,3 +91,9 @@ def remover_triagem(cod_ep_urgenc: int):
         return None
 
     return row["codepurgenc"]
+
+def listar_triagens_por_hospital(idhosp: int):
+    rows = triagens_dao.select_triagens_by_hospital(idhosp)
+    if rows is None:
+        return []
+    return [_map_row(row) for row in rows]

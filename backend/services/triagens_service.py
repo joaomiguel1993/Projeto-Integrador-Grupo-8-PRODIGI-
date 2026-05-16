@@ -65,3 +65,6 @@ def remover_triagem(cod_ep_urgenc: int):
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao remover triagem: {str(e)}")
+
+def listar_triagens_por_hospital(idhosp: int):
+    return triagens_repository.listar_triagens_por_hospital(idhosp)

@@ -153,3 +153,14 @@ def delete_triagem(codepurgenc: int):
         WHERE codepurgenc = %s
         RETURNING codepurgenc
     """, (codepurgenc,))
+
+def select_triagens_by_hospital(idhosp: int):
+    return run_query("""
+        SELECT t.codepurgenc, t.datahorainicio, t.datahorafim, t.cortriagem, t.sintomas,
+               t.temperatura, t.freqcard, t.freqresp, t.spo2, t.sistolica, t.diastolica,
+               t.niveldor, t.consciencia, t.tempoesperaprevisto
+        FROM triagem t
+        JOIN epurgencia e ON e.codepurgenc = t.codepurgenc
+        WHERE e.idhosp = %s
+        ORDER BY t.datahorainicio DESC
+    """, (idhosp,))

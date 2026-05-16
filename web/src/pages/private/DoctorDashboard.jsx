@@ -115,7 +115,7 @@ export default function DoctorDashboard() {
   }, []);
 
   const nomeUtilizador = utilizadorLogado?.nome || utilizadorLogado?.name || utilizadorLogado?.username || 'Utilizador';
-  const nomeHospital = utilizadorLogado?.nome_hospital || utilizadorLogado?.hospital || 'Hospital Geral';
+  const nomeHospital = utilizadorLogado?.hospitais?.[0]?.nome || 'Hospital Geral';
   const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
 
   const menuGroups = useMemo(
@@ -157,9 +157,11 @@ export default function DoctorDashboard() {
   };
 
   const carregarEpisodios = async () => {
+    const hospitalId = utilizadorLogado?.hospitais?.[0]?.idhosp;
+    if (!hospitalId) return;
     try {
       setErro('');
-      const res = await fetch(`${API_URL}/api/v1/triagens`);
+      const res = await fetch(`${API_URL}/api/v1/triagens/hospital/${hospitalId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar episódios.'));
       setEpisodios(Array.isArray(data) ? data : []);
@@ -170,24 +172,25 @@ export default function DoctorDashboard() {
   };
 
   const carregarTemposMediosHospital = async () => {
-    const hospitalId = utilizadorLogado?.id_hospital || utilizadorLogado?.hospital_id || utilizadorLogado?.idhospital;
+    const hospitalId = utilizadorLogado?.hospitais?.[0]?.idhosp;
     if (!hospitalId) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/v1/hospitais/${hospitalId}/tempos-medios`);
+      const res = await fetch(`${API_URL}/api/v1/predict/tempos-espera/${hospitalId}`);
       const data = await res.json();
       
-      if (res.ok && data) {
+        if (res.ok && data?.tempos_espera) {
+        const t = data.tempos_espera;
         setTemposMediosHospital({
-          vermelho: data.vermelho || data.Vermelho || '—',
-          laranja: data.laranja || data.Laranja || '—',
-          amarelo: data.amarelo || data.Amarelo || '—',
-          verde: data.verde || data.Verde || '—',
-          azul: data.azul || data.Azul || '—'
+          vermelho: t.vermelho?.minutos != null ? `${t.vermelho.minutos} min` : '—',
+          laranja:  t.laranja?.minutos  != null ? `${t.laranja.minutos} min`  : '—',
+          amarelo:  t.amarelo?.minutos  != null ? `${t.amarelo.minutos} min`  : '—',
+          verde:    t.verde?.minutos    != null ? `${t.verde.minutos} min`    : '—',
+          azul:     t.azul?.minutos     != null ? `${t.azul.minutos} min`     : '—',
         });
       }
     } catch (e) {
-      console.error('Erro ao carregar tempos médios do SQL:', e);
+      console.error('Erro ao carregar previsões IA:', e);
     }
   };
 
@@ -397,7 +400,6 @@ export default function DoctorDashboard() {
       <section className="admin-panel-section" style={{ marginTop: '2rem' }}>
         <div className="admin-panel-section__header">
           <h2>🕒 Tempo médio por cor — <span style={{ color: '#007bff' }}>{nomeHospital}</span></h2>
-          <p>Indicadores em tempo real baseados nas triagens registadas no vosso servidor SQL.</p>
         </div>
         <div className="admin-table-card admin-table-card--full">
           <table className="admin-table">
