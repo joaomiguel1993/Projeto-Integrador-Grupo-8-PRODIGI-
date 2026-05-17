@@ -153,11 +153,11 @@ export default function DoctorDashboard() {
       if (res.ok && data?.tempos_espera) {
         const t = data.tempos_espera;
         setTemposMediosHospital({
-          vermelho: t.vermelho?.minutos != null ? `${t.vermelho.minutos} min` : '—',
-          laranja:  t.laranja?.minutos  != null ? `${t.laranja.minutos} min`  : '—',
-          amarelo:  t.amarelo?.minutos  != null ? `${t.amarelo.minutos} min`  : '—',
-          verde:    t.verde?.minutos    != null ? `${t.verde.minutos} min`    : '—',
-          azul:     t.azul?.minutos     != null ? `${t.azul.minutos} min`     : '—',
+          vermelho: t.vermelho?.minutos != null ? `${Math.max(0, t.vermelho.minutos)} min` : '—',
+          laranja:  t.laranja?.minutos  != null ? `${Math.max(0, t.laranja.minutos)} min`  : '—',
+          amarelo:  t.amarelo?.minutos  != null ? `${Math.max(0, t.amarelo.minutos)} min`  : '—',
+          verde:    t.verde?.minutos    != null ? `${Math.max(0, t.verde.minutos)} min`    : '—',
+          azul:     t.azul?.minutos     != null ? `${Math.max(0, t.azul.minutos)} min`     : '—',
         });
       }
     } catch (e) {
