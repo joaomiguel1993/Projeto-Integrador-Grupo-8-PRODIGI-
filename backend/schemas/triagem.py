@@ -58,3 +58,5 @@ class TriagemOut(BaseModel):
     tempo_espera_previsto: Optional[int] = None
     id_func: Optional[int] = None
     nome_enfermeiro: Optional[str] = None
+    nome_utente: Optional[str] = None
+    num_utent:   Optional[int] = None

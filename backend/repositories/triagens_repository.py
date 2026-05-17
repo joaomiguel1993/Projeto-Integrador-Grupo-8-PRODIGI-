@@ -28,6 +28,8 @@ def _map_row(row):
         "tempo_espera_previsto": row["tempoesperaprevisto"],
         "id_func":              row.get("idfunc"),
         "nome_enfermeiro":      row.get("nome_enfermeiro"),
+        "nome_utente":          row.get("nome_utente"),
+        "num_utent":            row.get("num_utent"),
     }
 
 

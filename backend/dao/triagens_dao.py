@@ -1,14 +1,17 @@
 from backend.db import run_query
 
-# SELECT base com JOIN ao funcionario para trazer nome do enfermeiro
 _SELECT = """
     SELECT t.codepurgenc, t.datahorainicio, t.datahorafim, t.cortriagem, t.sintomas,
            t.temperatura, t.freqcard, t.freqresp, t.spo2, t.sistolica, t.diastolica,
            t.niveldor, t.consciencia, t.tempoesperaprevisto,
            t.idfunc,
-           f.nome AS nome_enfermeiro
+           f.nome  AS nome_enfermeiro,
+           u.nome  AS nome_utente,
+           u.numutent AS num_utent
     FROM triagem t
-    LEFT JOIN funcionario f ON f.idfunc = t.idfunc
+    LEFT JOIN funcionario f ON f.idfunc      = t.idfunc
+    LEFT JOIN epurgencia  e ON e.codepurgenc = t.codepurgenc
+    LEFT JOIN utente      u ON u.numutent    = e.numutent
 """
 
 
@@ -29,7 +32,6 @@ def select_triagem_by_episodio(codepurgenc: int):
 def select_triagens_by_hospital(idhosp: int):
     return run_query(f"""
         {_SELECT}
-        JOIN epurgencia e ON e.codepurgenc = t.codepurgenc
         WHERE e.idhosp = %s
         ORDER BY t.datahorainicio DESC
     """, (idhosp,))

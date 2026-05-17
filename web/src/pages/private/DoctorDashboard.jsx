@@ -474,7 +474,7 @@ export default function DoctorDashboard() {
                 </tr>
               ) : (
                 episodiosFiltrados.map((ep) => (
-                  <tr key={ep.id_epurgencia || ep.id}>
+                  <tr key={ep.cod_ep_urgenc}>
                     <td>{ep.nome_utente || '—'}</td>
                     <td>{ep.cor_triagem || '—'}</td>
                     <td>{ep.tempo_espera || '—'}</td>
