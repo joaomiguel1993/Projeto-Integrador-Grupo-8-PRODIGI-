@@ -20,10 +20,19 @@ def select_medicacao_ativa_by_id(codmedicacaoativa: int):
 
 def select_medicacoes_ativas_by_utente(numutent: int):
     return run_query("""
-        SELECT codmedicacaoativa, numutent, codmedicamento, datainicio, datafim, dosagem
-        FROM medicacaoativa
-        WHERE numutent = %s
-        ORDER BY datainicio DESC
+        SELECT
+            ma.codmedicacaoativa,
+            ma.numutent,
+            ma.codmedicamento,
+            ma.datainicio,
+            ma.datafim,
+            ma.dosagem,
+            m.nome          AS nome_medicamento,
+            m.principioativo AS principio_ativo
+        FROM medicacaoativa ma
+        JOIN medicamento m ON m.codmedicamento = ma.codmedicamento
+        WHERE ma.numutent = %s
+        ORDER BY ma.datainicio DESC
     """, (numutent,))
 
 

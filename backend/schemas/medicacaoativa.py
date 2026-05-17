@@ -33,3 +33,5 @@ class MedicacaoAtivaOut(BaseModel):
     data_inicio: date
     data_fim: Optional[date] = None
     dosagem: Optional[str] = None
+    nome_medicamento: Optional[str] = None
+    principio_ativo:  Optional[str] = None

@@ -13,11 +13,13 @@ def _map_row(row):
 
     return {
         "cod_medicacao_ativa": row["codmedicacaoativa"],
-        "num_utent": row["numutent"],
-        "cod_medicamento": row["codmedicamento"],
-        "data_inicio": row["datainicio"],
-        "data_fim": row["datafim"],
-        "dosagem": row["dosagem"],
+        "num_utent":           row["numutent"],
+        "cod_medicamento":     row["codmedicamento"],
+        "data_inicio":         row["datainicio"],
+        "data_fim":            row["datafim"],
+        "dosagem":             row["dosagem"],
+        "nome_medicamento":    row.get("nome_medicamento"),
+        "principio_ativo":     row.get("principio_ativo"),
     }
 
 

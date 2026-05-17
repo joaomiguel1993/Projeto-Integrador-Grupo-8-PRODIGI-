@@ -742,10 +742,10 @@ export default function NurseDashboard() {
                   ) : (
                     medicacaoAtiva.map((m, i) => (
                       <tr key={i}>
-                        <td>{m.nome || '—'}</td>
-                        <td>{m.dosagem || m.posologia || '—'}</td>
-                        <td>{m.datainicio || m.data_inicio || '—'}</td>
-                        <td>{m.datafim   || m.data_fim   || '—'}</td>
+                        <td>{m.principio_ativo || '—'}</td>
+                        <td>{m.dosagem || '—'}</td>
+                        <td>{m.data_inicio || '—'}</td>
+                        <td>{m.data_fim   || '—'}</td>
                       </tr>
                     ))
                   )}
