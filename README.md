@@ -79,7 +79,7 @@ A plataforma inclui uma área pública sem autenticação para comunicação ins
 
 ## Funcionalidades principais
 
-O sistema cobre os módulos centrais normalmente associados a plataformas hospitalares modernas, incluindo gestão operacional, acompanhamento clínico, reporting e automação baseada em IA [cite:820][cite:829].
+O sistema cobre os módulos centrais normalmente associados a plataformas hospitalares modernas, incluindo gestão operacional, acompanhamento clínico, reporting e automação baseada em IA 
 
 - Gestão de utentes.
 - Gestão de episódios.

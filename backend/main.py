@@ -31,9 +31,9 @@ from backend.routers import (
 )
 
 app = FastAPI(
-    title="SIGUI",
-    description="Sistema Integrado de Gestão de Urgência Inteligente",
-    version="1.0.0",
+    title="🏥 SIAGUH ",
+    description="Sistema Integrado de Apoio à Gestão de Urgências Hospitalares",
+    version="0.0.69",
 )
 
 
