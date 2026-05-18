@@ -1,0 +1,45 @@
+:root {
+  --color-primary: #3eb489;
+  --color-primary-dark: #2a9d73;
+  --color-primary-light: rgba(62, 180, 137, 0.15);
+  --color-primary-glow: rgba(62, 180, 137, 0.2);
+
+  --hero-bg-from: #0f2027;
+  --hero-bg-mid: #1a3a2a;
+  --hero-bg-to: #0d2e1e;
+
+  --surface-page: #f8faf9;
+  --surface-card: #ffffff;
+
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+
+  --border-default: #e5e7eb;
+  --border-light: #f0f0f0;
+
+  --triage-critical: #dc2626;
+  --triage-high: #ea580c;
+  --triage-medium: #ca8a04;
+  --triage-low: #16a34a;
+  --triage-normal: #3b82f6;
+
+  --wait-ok: #16a34a;
+  --wait-warn: #ca8a04;
+  --wait-danger: #dc2626;
+  --wait-neutral: #94a3b8;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 20px;
+  --radius-pill: 999px;
+
+  --shadow-card-hover: 0 12px 32px rgba(0, 0, 0, 0.10);
+
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.22s ease;
+
+  --content-width: 1180px;
+}

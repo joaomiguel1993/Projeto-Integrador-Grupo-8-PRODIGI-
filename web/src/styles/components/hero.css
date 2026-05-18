@@ -1,0 +1,43 @@
+.hero-background {
+  background: #f5f8f7;
+  padding: 3rem 0 3.5rem;
+}
+
+.hero-breadcrumbs {
+  margin-bottom: 1.25rem;
+}
+
+.hero-breadcrumbs .breadcrumbs,
+.hero-breadcrumbs a,
+.hero-breadcrumbs span {
+  color: #5e6e68 !important;
+}
+
+.hero-breadcrumbs a:hover {
+  color: #14362f !important;
+}
+
+.page-hero {
+  max-width: 680px;
+}
+
+.page-hero__title {
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  font-weight: 800;
+  color: #14362f;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.page-hero__title .highlight-title {
+  color: #1f5f4e;
+}
+
+.page-hero__subtitle {
+  font-size: 1rem;
+  color: #52625d;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 540px;
+}

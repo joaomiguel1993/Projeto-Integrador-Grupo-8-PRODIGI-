@@ -1,0 +1,348 @@
+.hosp-detail {
+  min-height: 100vh;
+  background: #f5f8f7;
+  padding-bottom: 3rem;
+}
+
+.hosp-detail--state {
+  display: grid;
+  place-items: center;
+  padding: 3rem 0;
+}
+
+.hosp-detail__state {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  padding: 2rem;
+}
+
+.hosp-detail__state--error {
+  color: #b42318;
+}
+
+.hosp-detail__hero {
+  padding: 2.5rem 0 1.5rem;
+}
+
+.hosp-detail__hero-inner {
+  display: grid;
+  gap: 1rem;
+}
+
+.btn-back {
+  align-self: flex-start;
+  border: 1px solid #d7e8de;
+  background: #ffffff;
+  color: #1f5f4e;
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, border-color 0.2s;
+}
+
+.btn-back:hover {
+  background: #eef6f2;
+  border-color: #c7ddd2;
+  transform: translateY(-1px);
+}
+
+.hosp-detail__hero-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.hosp-detail__hero-text {
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.hosp-detail__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1f5f4e;
+}
+
+.hosp-detail__title {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #14362f;
+  font-weight: 800;
+}
+
+.hosp-detail__subtitle {
+  margin: 0.85rem 0 0;
+  color: #52625d;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 60ch;
+}
+
+.hosp-detail__kpi {
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 100%;
+}
+
+.hosp-detail__kpi-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a8a84;
+}
+
+.hosp-detail__kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hosp-detail__kpi--green .hosp-detail__kpi-value {
+  color: #15803d;
+}
+
+.hosp-detail__kpi--yellow .hosp-detail__kpi-value {
+  color: #b45309;
+}
+
+.hosp-detail__kpi--red .hosp-detail__kpi-value {
+  color: #b42318;
+}
+
+.hosp-detail__kpi--neutral .hosp-detail__kpi-value {
+  color: #334155;
+}
+
+.hosp-detail__content {
+  padding-top: 0.5rem;
+}
+
+.hosp-detail__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.55fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.hosp-detail__main {
+  display: grid;
+  gap: 1rem;
+}
+
+.hosp-detail__side {
+  display: grid;
+  gap: 1rem;
+}
+
+.hosp-card {
+  background: #ffffff;
+  border: 1px solid #dfe9e4;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.hosp-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.hosp-card__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #14362f;
+}
+
+.hosp-card__link,
+.hosp-map-open {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1f5f4e;
+  text-decoration: none;
+}
+
+.hosp-card__link:hover,
+.hosp-map-open:hover {
+  text-decoration: underline;
+}
+
+.hosp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.hosp-info-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  background: #f8fbfa;
+  border: 1px solid #dfe9e4;
+  border-radius: 18px;
+}
+
+.hosp-info-item--full {
+  grid-column: 1 / -1;
+}
+
+.hosp-info-item__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a8a84;
+}
+
+.hosp-info-item__value {
+  color: #14362f;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.triage-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.triage-card {
+  border-radius: 18px;
+  padding: 1rem;
+  border: 1px solid #dfe9e4;
+  background: #f8fbfa;
+  display: grid;
+  gap: 0.45rem;
+  min-height: 96px;
+}
+
+.triage-card__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a8a84;
+}
+
+.triage-card__value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #14362f;
+}
+
+.triage-card--green {
+  background: rgba(21, 128, 61, 0.08);
+  border-color: rgba(21, 128, 61, 0.16);
+}
+
+.triage-card--yellow {
+  background: rgba(180, 83, 9, 0.08);
+  border-color: rgba(180, 83, 9, 0.16);
+}
+
+.triage-card--orange {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.16);
+}
+
+.triage-card--red {
+  background: rgba(180, 35, 24, 0.08);
+  border-color: rgba(180, 35, 24, 0.16);
+}
+
+.triage-card--blue {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.hosp-card--map {
+  padding-bottom: 1rem;
+}
+
+.hosp-map-embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #dfe9e4;
+  background: #edf5f1;
+}
+
+.hosp-map-embed__iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hosp-map-open {
+  display: inline-flex;
+  margin-top: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .hosp-detail__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hosp-detail__hero-body {
+    grid-template-columns: 1fr;
+  }
+
+  .triage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hosp-detail__hero-text,
+  .hosp-detail__kpi,
+  .hosp-card {
+    padding: 1.25rem;
+    border-radius: 20px;
+  }
+
+  .hosp-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .triage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hosp-detail__kpi-value {
+    font-size: 1.8rem;
+  }
+}

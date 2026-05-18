@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+python-dotenv
+passlib
+bcrypt==4.0.1
+pydantic
+openpyxl
+email-validator
+joblib
+numpy
+scikit-learn
+xgboost
+pandas
+httpx

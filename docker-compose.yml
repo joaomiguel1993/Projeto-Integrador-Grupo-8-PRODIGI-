@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16
+    container_name: prodigi_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES18_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES18_PORT}:5432"
+    volumes:
+      - prodigi_data:/var/lib/postgresql/data
+      - ./backend/SQL/createTables.sql:/docker-entrypoint-initdb.d/00-createTables.sql
+      - ./backend/SQL/populateDB.sql:/docker-entrypoint-initdb.d/01-populateDB.sql
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: prodigi_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  app:
+    build: .
+    container_name: prodigi_app
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+  ia:
+    build: ./ia
+    container_name: prodigi_ia
+    restart: always
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  prodigi_data:

@@ -1,0 +1,61 @@
+Certifica-te de que estás na pasta raiz (ia)
+
+# Configurar o Groq API (gratuito, sem instalação local):
+#   1. Aceder a https://console.groq.com
+#   2. Criar conta (se ainda não tiveres)
+#   3. Clicar em "API Keys" -> "Create API Key" e copiar a chave gerada
+#   4. Adicionar a chave ao ficheiro .env na raiz do projeto:
+#      GROQ_API_KEY=gsk_...
+
+# Para correr localmente (teste)
+#   5. Antes de correr o voz_nlp.py, definir a variável no terminal:
+#      Git Bash:   export GROQ_API_KEY="gsk_..."
+#      PowerShell: $env:GROQ_API_KEY="gsk_..."
+
+
+Bash -> Instala as bibliotecas presentes em requirements.txt:
+pip install -r requirements.txt
+
+Bash -> Para correr o voz_nlp.py localmente, instala também:
+pip install SpeechRecognition pyaudio
+
+
+ia Tempo
+Executa o código com o comando:
+Bash
+python src/gerar_dados_wait_time.py
+python src/preprocess_wait_time.py
+python src/train_wait_time.py
+python src/predict_wait_time.py
+python src/painel_wait_time.py
+
+
+ia Triagem
+Executa o código com o comando:
+Bash
+python src/gerar_dados_triagem.py
+python src/preprocess_triagem.py
+python src/train_triagem.py
+python src/predict_triagem.py
+
+
+Ia Leitura de sintomas por voz
+Executa o código com o comando:
+Bash
+python src/voz_nlp.py
+
+
+IA Medicine Risk
+Executa o código com o comando:
+Bash
+python src/gerar_dados_medicine_risk.py
+python src/preprocess_medicine_risk.py
+python src/train_medicine_risk.py
+python src/predict_medicine_risk.py
+
+
+Ia Servidor (API)
+Nota: Garante que todos os modelos estão treinados antes de iniciar o servidor.
+Executa o código com o comando:
+Bash
+python main_ai.py

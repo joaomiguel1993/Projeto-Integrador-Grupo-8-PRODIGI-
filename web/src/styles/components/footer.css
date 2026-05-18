@@ -1,0 +1,43 @@
+.home-footer {
+  background: var(--siaguh-text);
+  color: white;
+  padding: 2rem 0;
+}
+
+.home-footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.home-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.home-footer__logo {
+  width: 36px;
+  height: 36px;
+}
+
+.home-footer__brand strong {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.home-footer__brand span {
+  display: block;
+  font-size: var(--text-xs);
+  opacity: 0.6;
+  max-width: 36ch;
+}
+
+.home-footer__copy {
+  font-size: var(--text-xs);
+  opacity: 0.5;
+  margin: 0;
+}

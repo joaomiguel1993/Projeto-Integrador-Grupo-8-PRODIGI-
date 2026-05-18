@@ -1,0 +1,56 @@
+.container {
+  width: min(var(--content-width), calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.site-shell {
+  min-height: 100vh;
+}
+
+.container {
+  width: min(1160px, calc(100% - 2.5rem));
+  margin-inline: auto;
+}
+
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--siaguh-green);
+  margin: 0 0 0.6rem;
+}
+
+.section-title {
+  font-family: 'Instrument Serif', 'Georgia', serif;
+  font-size: var(--text-xl);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--siaguh-text);
+  margin: 0 0 0.75rem;
+}
+
+.section-title em {
+  font-style: italic;
+  color: var(--siaguh-green);
+}
+
+.fade-in {
+  opacity: 1;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e8f0ed 25%, #d4e5df 50%, #e8f0ed 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--r-sm);
+}
+
+.skeleton-stat {
+  height: 56px;
+  width: 120px;
+  border-radius: var(--r-md);
+}

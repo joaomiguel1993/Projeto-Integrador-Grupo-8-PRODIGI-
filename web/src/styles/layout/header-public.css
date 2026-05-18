@@ -1,0 +1,178 @@
+.header-public {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  width: 100%;
+  background: #eaf4ef;
+  border-bottom: 1px solid #d6e8de;
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.05);
+}
+
+.header-public--hero {
+  background: #eaf4ef;
+}
+
+.header-public__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 124px;
+  padding-inline: 2rem;
+}
+
+.header-public__inner--hero {
+  min-height: 124px;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand-mark__logo {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand-mark__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+}
+
+.brand-mark__title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #163b33;
+  letter-spacing: -0.02em;
+}
+
+.brand-mark__subtitle {
+  font-size: 0.74rem;
+  color: #5e6e68;
+  font-weight: 500;
+}
+
+.header-public__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #ffffff;
+  border: 1px solid #d7e8de;
+  border-radius: 10px;
+  padding: 0.25rem 0.45rem;
+}
+
+.lang-btn {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #4b5f58;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.lang-btn:hover {
+  background: #eef6f2;
+  color: #163b33;
+}
+
+.lang-btn.is-active {
+  background: #1f5f4e;
+  color: #ffffff;
+}
+
+.lang-divider {
+  font-size: 0.75rem;
+  color: #8a97a6;
+  user-select: none;
+}
+
+.header-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: #1f5f4e;
+  border-radius: 10px;
+  padding: 0.68rem 1rem;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s, background 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(31, 95, 78, 0.18);
+}
+
+.header-login:hover {
+  opacity: 0.96;
+  transform: translateY(-1px);
+  background: #2a6a58;
+  box-shadow: 0 4px 12px rgba(31, 95, 78, 0.22);
+}
+
+.header-login__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .header-public__inner,
+  .header-public__inner--hero {
+    min-height: 96px;
+    padding-inline: 1rem;
+  }
+
+  .brand-mark__logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .brand-mark__title {
+    font-size: 1rem;
+  }
+
+  .brand-mark__subtitle {
+    font-size: 0.68rem;
+  }
+
+  .header-login {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .lang-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.45rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-mark__logo {
+    width: 90px;
+    height: 90px;
+  }
+
+  .brand-mark__text {
+    display: none;
+  }
+}
