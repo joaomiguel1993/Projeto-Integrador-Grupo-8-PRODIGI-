@@ -137,6 +137,399 @@ A aplicação mobile funciona como extensão contínua da plataforma web e desti
 - Confirmação de administração de medicação.
 - Modo visita clínica ou rounds 
 
+
+## Tabelas
+
+### Utente
+- NIF
+- Nome
+- DataNasc
+- Sexo
+- Localidade
+- Telefone
+- Email
+
+### Hospital
+- IdHosp
+- Nome
+- Localizacao
+- Email
+- Telefone
+- TotalCamas
+
+### Funcionario
+- IdFunc
+- Nome
+- TipoFunc
+  - medico
+  - enfermeiro
+  - admin
+  - rececionista
+- Sexo
+- Email
+- Telefone
+- Biografia
+- Foto_url
+
+### Trabalha
+- IdFunc
+- IdHosp
+- Ativo
+
+### Medico
+- IdFunc
+- Estagiario
+- Especialidade
+
+### Enfermeiro
+- IdFunc
+
+### Utilizador
+- IdFunc
+- UserName
+- Password
+- bloqueado
+- role
+
+### Antecedente
+- CodAntecedente
+- Nome
+- Tipo
+
+### UtenteAntecedente
+- NIF
+- CodAntecedente
+- DataRegisto
+
+### Medicamento
+- CodMedicamento
+- Nome
+- PrincipioAtivo
+- ClasseTerapeutica
+  - analgesico
+  - anti_inflamatorio
+  - antibiotico
+  - antiviral
+  - antifungico
+  - anti_histaminico
+  - corticosteroide
+  - opioide
+  - ansiolitico
+  - antidepressivo
+  - antipsicotico
+  - antiepileptico
+  - anti_hipertensor
+  - beta_bloqueador
+  - anticoagulante
+  - antiagregante
+  - antidiabetico
+  - insulina
+  - broncodilatador
+  - antiacido
+  - diuretico
+  - relaxante_muscular
+  - imunossupressor
+  - vacina
+  - sedativo
+  - anestesico
+  - contraste_radiologico
+  - outro
+
+### Alergia
+- CodAlergia
+- NIF
+- Substancia
+- ClasseTerapeutica
+  - analgesico
+  - anti_inflamatorio
+  - antibiotico
+  - antiviral
+  - antifungico
+  - anti_histaminico
+  - corticosteroide
+  - opioide
+  - ansiolitico
+  - antidepressivo
+  - antipsicotico
+  - antiepileptico
+  - anti_hipertensor
+  - beta_bloqueador
+  - anticoagulante
+  - antiagregante
+  - antidiabetico
+  - insulina
+  - broncodilatador
+  - antiacido
+  - diuretico
+  - relaxante_muscular
+  - imunossupressor
+  - vacina
+  - sedativo
+  - anestesico
+  - contraste_radiologico
+  - outro
+- NivelGravidade
+- Reacao
+- DataRegisto
+
+### MedicacaoAtiva
+- CodMedicacaoAtiva
+- NIF
+- CodMedicamento
+- DataInicio
+- DataFim
+- Dosagem
+
+### EpUrgencia
+- CodEpUrgenc
+- NIF
+- IdHosp
+- DataHoraEntr
+- DataHoraAtendimento
+- DataHoraSaida
+- Estado
+  - aberto
+  - em_triagem
+  - em_atendimento
+  - internado
+  - terminado
+- PrioridadeAtual
+  - vermelho
+  - laranja
+  - amarelo
+  - verde
+  - azul
+- TempoEsperaAtual
+- EmObservacao
+- DestinoFinal
+
+### Triagem
+- CodEpUrgenc
+- DataHoraInicio
+- DataHoraFim
+- CorTriagem
+  - vermelho
+  - laranja
+  - amarelo
+  - verde
+  - azul
+- QueixaPrincipal
+  - dor_toracica
+  - dispneia
+  - febre
+  - cefaleia
+  - dor_abdominal
+  - trauma
+  - hemorragia
+  - vomitos
+  - alteracao_consciencia
+  - reacao_alergica
+  - convulsoes
+  - intoxicacao
+- ViaAerea
+  - permeavel
+  - comprometida
+  - obstruida
+- RespiracaoCirculacao
+  - normal
+  - dispneia_ligeira
+  - dispneia_moderada
+  - dispneia_grave
+  - choque
+  - paragem_cardiorrespiratoria
+- Hemorragia
+  - nenhuma
+  - ligeira
+  - moderada
+  - grave
+- Consciencia
+  - alerta
+  - confuso
+  - sonolento
+  - inconsciente
+- EstadoPele
+  - normal
+  - palida
+  - cianotica
+  - sudorese
+  - ruborizada
+- Mobilidade
+  - independente
+  - auxilio_parcial
+  - cadeira_rodas
+  - acamado
+- TipoDor
+  - pontada
+  - pressao
+  - ardor
+  - pulsatil
+  - continua
+  - intermitente
+- DorLocalizacao
+- Sintomas
+- ObservacoesClinicas
+- TempoInicioSintomas
+- EscalaGlasgow
+- Isolamento
+- Gravida
+- Temperatura
+- FreqCard
+- FreqResp
+- SpO2
+- Sistolica
+- Diastolica
+- NivelDor
+- TempoEsperaPrevisto
+- IdFunc
+
+### ReavaliacaoTriagem
+- IdReavaliacao
+- CodEpUrgenc
+- DataHora
+- Temperatura
+- FreqCard
+- FreqResp
+- SpO2
+- NivelDor
+- Observacoes
+- NovaCorTriagem
+  - vermelho
+  - laranja
+  - amarelo
+  - verde
+  - azul
+- IdFunc
+
+### Ato
+- IdAto
+- CodEpUrgenc
+- Tipo
+- Descricao
+- DataHoraInicio
+- DataHoraFim
+
+### Realiza
+- IdAto
+- IdFunc
+
+### Prescreve
+- IdPrescricao
+- IdAto
+- CodMedicamento
+- Dosagem
+- Frequencia
+- ViaAdministracao
+- DuracaoDias
+- Observacoes
+- DataHoraPresc
+- EstadoPrescricao
+  - pendente
+  - aprovada
+  - bloqueada
+  - anulada
+- ScoreRiscoIA
+- ValidadoPorIA
+- DataHoraValidacaoIA
+
+### Alerta
+- CodAlerta
+- IdPrescricao
+- IdFunc
+- Tipo
+- DataHorAlerta
+- Ignorado
+- Justificacao
+- Severidade
+  - baixo
+  - moderado
+  - alto
+  - critico
+- ScoreRisco
+- Resolvido
+- ResolvidoEm
+- ResolvidoPor
+- MensagemIA
+- Recomendacao
+
+### PredicaoIA
+- IdPredicao
+- TipoModelo
+  - triagem
+  - tempo_espera
+  - risco_medicamentoso
+- Entidade
+  - triagem
+  - prescricao
+  - tempo_espera
+- EntidadeId
+- InputJson
+- OutputJson
+- Score
+- ModeloVersao
+- Sucesso
+- ErroMensagem
+- CriadoEm
+
+### Internamento
+- CodInternamento
+- CodEpUrgenc
+- IdFunc
+- DataHoraInt
+- DataHoraConsulta
+- DataHoraAlta
+- MotivoInt
+- NumeroCama
+- Servico
+- PrioridadeInternamento
+- EstadoAtual
+- ObservacoesAlta
+- DiagnosticoAlta
+- TipoAlta
+  - clinica
+  - voluntaria
+  - transferencia
+  - obito
+
+### HistoricoInternamento
+- IdHistorico
+- CodInternamento
+- DataHora
+- TipoEvento
+- Descricao
+- IdFunc
+
+### Exame
+- CodExame
+- CodEpUrgenc
+- Tipo
+- Resultado
+- DataHoraPedido
+- DataHoraResultado
+- Estado
+- IdFunc
+
+### SinaisVitais
+- IdSinal
+- CodEpUrgenc
+- Temperatura
+- FreqCard
+- FreqResp
+- SpO2
+- Sistolica
+- Diastolica
+- NivelDor
+- DataHora
+- IdFunc
+
+### log_atividade
+- idlog
+- username
+- acao
+- detalhe
+- ip
+- criado_em
+
+
 ## Convenção dos endpoints
 
 Sim — pelo que foi definido, os endpoints estão a seguir a convenção ` /api/v1/... `, que é uma abordagem comum para versionamento de APIs e facilita evolução futura sem quebrar clientes existentes 
