@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from '../constants/roles';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function getErrorMessage(data, fallback) {
@@ -28,11 +30,14 @@ export async function login(credentials) {
 }
 
 export async function me() {
-  const user = sessionStorage.getItem('user');
-  if (!user) throw new Error('Sessão inválida');
-  return JSON.parse(user);
+  const rawUser = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+  if (!rawUser) throw new Error('Sessão inválida');
+  return JSON.parse(rawUser);
 }
 
 export async function logout() {
-  sessionStorage.clear();
+  sessionStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+  sessionStorage.removeItem(STORAGE_KEYS.USER_ROLE);
+  sessionStorage.removeItem(STORAGE_KEYS.USER_DATA);
+  sessionStorage.removeItem(STORAGE_KEYS.ACTIVE_HOSPITAL);
 }

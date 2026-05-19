@@ -81,16 +81,21 @@ const mapHospitalFromApi = (hospital) => ({
   contacto: hospital?.telefone ?? hospital?.contacto ?? '',
 });
 
-const obterIdFunc = (item) =>
-  item?.id_func ??
-  item?.idfunc ??
-  item?.idFunc ??
-  item?.IdFunc ??
-  item?.funcionario?.id_func ??
-  item?.funcionario?.idfunc ??
-  item?.funcionario?.idFunc ??
-  null;
 
+
+
+
+const obterIdFunc = (item) =>
+  Number(
+    item?.id_func ??
+    item?.idfunc ??
+    item?.idFunc ??
+    item?.IdFunc ??
+    item?.funcionario?.id_func ??
+    item?.funcionario?.idfunc ??
+    item?.funcionario?.idFunc ??
+    0
+  );
 
 const valorTexto = (...candidatos) => {
   for (const candidato of candidatos) {
@@ -101,11 +106,12 @@ const valorTexto = (...candidatos) => {
 };
 
 const obterNome = (item) =>
-  item?.nome ??
-  item?.Nome ??
-  item?.funcionario?.nome ??
-  item?.funcionario?.Nome ??
-  '—';
+  valorTexto(
+    item?.nome,
+    item?.Nome,
+    item?.funcionario?.nome,
+    item?.funcionario?.Nome
+  );
 
 const obterTipoFuncRaw = (item) =>
   valorTexto(
@@ -120,24 +126,12 @@ const obterTipoFuncRaw = (item) =>
   );
 
 const obterFuncaoTraduzida = (item, textos) => {
-  const valor =
-    item?.tipo_func ??
-    item?.tipofunc ??
-    item?.TipoFunc ??
-    item?.role ??
-    item?.funcionario?.tipo_func ??
-    item?.funcionario?.tipofunc ??
-    item?.funcionario?.TipoFunc ??
-    '';
-
-  const v = String(valor).toLowerCase();
-
-  if (v === 'admin') return textos.admin.roleAdmin;
-  if (v === 'medico') return textos.admin.roleMedico;
-  if (v === 'enfermeiro') return textos.admin.roleEnfermeiro;
-  if (v === 'rececionista') return textos.admin.roleRececionista;
-
-  return valor || '—';
+  const valor = obterTipoFuncRaw(item).toLowerCase();
+  if (valor === 'admin') return textos?.admin?.roleAdmin || 'Admin';
+  if (valor === 'medico') return textos?.admin?.roleMedico || 'Médico';
+  if (valor === 'enfermeiro') return textos?.admin?.roleEnfermeiro || 'Enfermeiro';
+  if (valor === 'rececionista') return textos?.admin?.roleRececionista || 'Rececionista';
+  return obterTipoFuncRaw(item);
 };
 
 const exportarRelatorioExcel = (dados) => {
@@ -477,7 +471,7 @@ export default function AdminDashboard() {
     try {
       setLoadingProfissionais(true);
       setErroProfissionais('');
-      const data = await apiFetch('/api/v1/profissionais/');
+      const data = await apiFetch('/api/v1/funcionarios/');
       setProfissionais(Array.isArray(data) ? data : []);
     } catch (err) {
       setErroProfissionais(err.message);
@@ -727,11 +721,15 @@ export default function AdminDashboard() {
 
     try {
       const idFunc = Number(obterIdFunc(utilizador));
+      if (!idFunc) {
+        setErroUser('ID de utilizador inválido.');
+        return;
+      }
 
       const [utilizadorData, hospitaisData, profissionalData] = await Promise.all([
         apiFetch(`/api/v1/utilizadores/${idFunc}`),
         apiFetch(`/api/v1/trabalha/funcionario/${idFunc}`),
-        apiFetch(`/api/v1/profissionais/${idFunc}`),
+        apiFetch(`/api/v1/funcionarios/${idFunc}`),
       ]);
 
       const hospitaisIds = Array.isArray(hospitaisData)
@@ -740,9 +738,7 @@ export default function AdminDashboard() {
           .filter((id) => !Number.isNaN(id) && id > 0)
         : [];
 
-      const prof = profissionalData || profissionais.find(
-        (p) => Number(obterIdFunc(p)) === idFunc
-      );
+      const prof = profissionalData || profissionais.find((p) => Number(obterIdFunc(p)) === idFunc);
 
       setUtilizadorEditando({
         idfunc: idFunc,
@@ -753,11 +749,12 @@ export default function AdminDashboard() {
           prof?.tipo_func ??
           prof?.tipofunc ??
           utilizador?.role ??
-          'admin',
+          ROLES.ADMIN,
         nome: prof?.nome ?? utilizador?.nome ?? '',
         sexo: prof?.sexo ?? utilizador?.sexo ?? 'M',
         bloqueado: utilizadorData?.bloqueado ?? utilizador?.bloqueado ?? false,
         hospitais: hospitaisIds,
+        isNovo: false,
       });
 
       setUserView('editar');
@@ -892,7 +889,7 @@ export default function AdminDashboard() {
     try {
       setSubmittingFunc(true);
       const payload = { nome: novoProfissional.nome, tipofunc: novoProfissional.tipofunc, sexo: novoProfissional.sexo };
-      const data = await apiFetch('/api/v1/profissionais/', { method: 'POST', body: JSON.stringify(payload) });
+      const data = await apiFetch('/api/v1/funcionarios/', { method: 'POST', body: JSON.stringify(payload) });
       for (const idhosp of novoProfissional.hospitais || []) {
         await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
@@ -961,7 +958,7 @@ export default function AdminDashboard() {
         body: JSON.stringify(payloadUser),
       });
 
-      await apiFetch(`/api/v1/profissionais/${idfunc}`, {
+      await apiFetch(`/api/v1/funcionarios/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify({
           nome: utilizadorEditando.nome,
@@ -1059,7 +1056,7 @@ export default function AdminDashboard() {
         foto_url: funcionarioEditando.foto_url || null,
       };
 
-      await apiFetch(`/api/v1/profissionais/${idfunc}`, {
+      await apiFetch(`/api/v1/funcionarios/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify(payloadFunc),
       });
@@ -2386,7 +2383,7 @@ export default function AdminDashboard() {
                       <td>{h.contacto || '—'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          
+
                           <button
                             type="button"
                             className="admin-secondary-button"

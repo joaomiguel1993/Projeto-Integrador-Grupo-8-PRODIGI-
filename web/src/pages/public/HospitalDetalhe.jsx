@@ -54,8 +54,8 @@ export default function HospitalDetalhe() {
         setErro('');
 
         const [respHosp, respPainel] = await Promise.all([
-          fetch(`http://localhost:8000/api/v1/hospitais/${id}`),
-          fetch(`http://localhost:8000/api/v1/predict/tempos-espera/${id}`),
+          fetch(`http://localhost:8000/docs#/Hospitais/obter_api_v1_hospitais__id_hosp__get`),
+          fetch(`http://localhost:8001/docs#/IA%20-%20Tempo%20de%20Espera/ia_tempo_espera_api_v1_ia_wait_time__post`),
         ]);
 
         if (!respHosp.ok) throw new Error('Erro ao carregar hospital');

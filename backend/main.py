@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.routers import (
     alergia,
@@ -28,19 +29,26 @@ from backend.routers import (
     utentes,
     utente_antecedentes,
     utilizadores,
+    auth,
 )
 
 app = FastAPI(
-    title="🏥 SIAGUH ",
+    title="🏥 SIAGUH",
     description="Sistema Integrado de Apoio à Gestão de Urgências Hospitalares",
     version="0.0.69",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-
 
 app.include_router(alergia.router)
 app.include_router(alerta.router)
@@ -69,3 +77,4 @@ app.include_router(triagem.router)
 app.include_router(utentes.router)
 app.include_router(utente_antecedentes.router)
 app.include_router(utilizadores.router)
+app.include_router(auth.router)

@@ -1,21 +1,13 @@
-/**
- * Constantes de Funções (Roles) do SIAGUH
- */
 export const ROLES = {
   ADMIN: 'admin',
-  MEDICO: 'medico',
+  RECECIONISTA: 'rececionista',
   ENFERMEIRO: 'enfermeiro',
-  RECECIONISTA: 'rececionista'
+  MEDICO: 'medico',
 };
 
-/**
- * Chaves de Armazenamento Seguro (Session/LocalStorage)
- */
 export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'is_authenticated',
+  AUTH_TOKEN: 'auth_token',
   USER_ROLE: 'user_role',
-  USER_DATA: 'user',
-  ACTIVE_HOSPITAL: 'hospital_ativo'
+  USER_DATA: 'user_data',
+  ACTIVE_HOSPITAL: 'active_hospital',
 };
-
-

@@ -42,23 +42,38 @@ export default function Login() {
       const data = await loginRequest({ username, password });
 
       const role = mapearRole(
-        data?.user?.role || data?.role || data?.tipofunc || data?.tipoFunc || data?.funcao
+        data?.user?.role || data?.role || data?.user?.tipofunc || data?.tipofunc || data?.funcao
       );
 
       if (!role) throw new Error(textos.login.erroRole);
 
-      sessionStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, 'true');
+      sessionStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.access_token);
       sessionStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
-      sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data?.user || data));
+      sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user || {}));
 
       if (role === ROLES.ADMIN) {
         navigate('/admin', { replace: true });
         return;
       }
 
-      const hospitaisAutorizados = data?.user?.hospitais || data?.hospitais || data?.hospitais_autorizados || [];
+      const hospitaisAutorizadosRaw =
+        data?.user?.hospitais ??
+        data?.user?.hospitais_autorizados ??
+        data?.user?.hospitaisAutorizados ??
+        data?.user?.hospitais_funcionario ??
+        data?.hospitais ??
+        data?.hospitais_autorizados ??
+        data?.hospitaisAutorizados ??
+        data?.hospitais_funcionario ??
+        [];
 
-      if (!Array.isArray(hospitaisAutorizados) || hospitaisAutorizados.length === 0) {
+      const hospitaisAutorizados = Array.isArray(hospitaisAutorizadosRaw)
+        ? hospitaisAutorizadosRaw
+        : hospitaisAutorizadosRaw
+          ? [hospitaisAutorizadosRaw]
+          : [];
+
+      if (!hospitaisAutorizados.length) {
         throw new Error(textos.login.erroHospitais);
       }
 
@@ -74,7 +89,7 @@ export default function Login() {
   };
 
   const handleEscolherHospital = (hospital) => {
-    sessionStorage.setItem(STORAGE_KEYS.ACTIVE_HOSPITAL, JSON.stringify(hospital));
+    sessionStorage.setItem(STORAGE_KEYS.ACTIVE_HOSPITAL, JSON.stringify(hospital || {}));
 
     const destinos = {
       [ROLES.RECECIONISTA]: '/rececionista',
@@ -82,9 +97,10 @@ export default function Login() {
       [ROLES.MEDICO]: '/medico',
     };
 
-    const destino = destinos[roleSelecionada];
+    const destino = destinos[normalizarRole(roleSelecionada)];
+
     if (!destino) {
-      setErro(textos.login.erroDestino);
+      setErro(textos.login.erroDestino || 'Destino inválido.');
       return;
     }
 
@@ -161,7 +177,11 @@ export default function Login() {
                   />
                 </div>
 
-                {erro && <p className="login-form__error login-form__error--pro" role="alert">{erro}</p>}
+                {erro && (
+                  <p className="login-form__error login-form__error--pro" role="alert">
+                    {erro}
+                  </p>
+                )}
 
                 <button type="submit" className="login-form__submit login-form__submit--pro" disabled={loading}>
                   {loading ? textos.geral.aCarregar : textos.login.btnEntrar}
@@ -176,12 +196,16 @@ export default function Login() {
                 <p className="login-card-pro__subtitle">{textos.login.subtituloHospital}</p>
               </div>
 
-              {erro && <p className="login-form__error login-form__error--pro" role="alert">{erro}</p>}
+              {erro && (
+                <p className="login-form__error login-form__error--pro" role="alert">
+                  {erro}
+                </p>
+              )}
 
               <div className="hospital-select-list hospital-select-list--pro" role="list" aria-label={textos.login.tituloHospital}>
                 {hospitais.map((hospital, index) => (
                   <button
-                    key={hospital.idhosp || index}
+                    key={hospital.idhosp || hospital.id_hosp || hospital.id || index}
                     type="button"
                     className="hospital-select-card hospital-select-card--pro"
                     onClick={() => handleEscolherHospital(hospital)}

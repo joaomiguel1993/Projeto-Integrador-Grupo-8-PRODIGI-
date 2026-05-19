@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from backend.schemas.utilizador import UtilizadorCreate, UtilizadorUpdate, UtilizadorOut
 from backend.services import utilizadores_service
 
+
 router = APIRouter(prefix="/api/v1/utilizadores", tags=["Utilizadores"])
 
 

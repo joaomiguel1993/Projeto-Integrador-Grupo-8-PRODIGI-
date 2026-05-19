@@ -1,12 +1,12 @@
 from fastapi import FastAPI
-from ia.src.api.v1 import (
+from src.api.v1 import (
     triage_routes,
     wait_time_routes,
     medicine_risk_routes,
     nlp_routes,
     health_routes,
 )
-from ia.src.core.config import settings
+from src.core.config import settings
 
 app = FastAPI(title=settings.APP_NAME)
 

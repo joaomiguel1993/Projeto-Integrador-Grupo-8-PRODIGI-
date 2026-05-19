@@ -155,10 +155,10 @@ INSERT INTO Enfermeiro (IdFunc) VALUES
 -- ============================================================
 
 INSERT INTO Utilizador (IdFunc, UserName, Password, bloqueado, role) VALUES
-(1, 'admin', '$2b$12$7M8xP7q3M2eQkYw5L8Jk0eJvA3xG2qPzWmF8hN4sR1uC9yT6dBvGa', FALSE, 'admin'),
-(2, 'rececao', '$2b$12$4N6rT2k8Q1mLp9Yw3DgH5uVxC7zBaE2nJfR6sPwKdT8hYmU1cXeSa', FALSE, 'rececionista'),
-(3, 'medico', '$2b$12$9Q3mX7pL2vNc8Kz5RwTg1eFdJ4sHaB6uYqP0nMrC7xVtL2kDsWeYb', FALSE, 'medico'),
-(4, 'enfermeiro', '$2b$12$2H8kV5qT1mZp7Xc4NrYw9uGsD3fLaE6bJrP0tMnC8xQvK5dSwYeUa', FALSE, 'enfermeiro');
+(1, 'admin.teste', '$2b$12$.AIIka6BDsXS3zty4u1yA.pQNAsTbsmc2ksl8uqvuSyklFR9Y8ZJO', FALSE, 'admin'),
+(3, 'rececao.teste', '$2b$12$5QLQnVTqinhjpp4bFZ3FD.VOsuq2SdJTz1Op2QN2d6lSlILUxec/m', FALSE, 'rececionista'),
+(8, 'medico.teste', '$2b$12$48rz5OON15UKV/uApK3RNOXD9.1mbCEZobxK7oyzzfWI21yb404cG', FALSE, 'medico'),
+(20, 'enfermeiro.teste', '$2b$12$FIaY5oXghS6uVtD3hRitAO36aSHUbxM/.WPTOgHaO4Um3retjIARa', FALSE, 'enfermeiro');
 
 
 -- ============================================================
