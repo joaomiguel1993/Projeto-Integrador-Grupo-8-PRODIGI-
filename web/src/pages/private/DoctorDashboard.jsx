@@ -4,6 +4,7 @@ import logo from '../../imagens/Logo.png';
 import '../../styles/main.css';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
+import Toast, { useToast } from '../../components/ui/Toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_IA  = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
@@ -90,9 +91,8 @@ export default function DoctorDashboard() {
     vermelho: '—', laranja: '—', amarelo: '—', verde: '—', azul: '—',
   });
 
-  const [filtro, setFiltro]       = useState('');
-  const [mensagem, setMensagem]   = useState('');
-  const [erro, setErro]           = useState('');
+  const [filtro, setFiltro] = useState('');
+  const { toast, mostrarToast, fecharToast } = useToast();
 
   const [prescricao, setPrescricao] = useState({
     cod_medicamento: '', dosagem: '', observacoes: '',
@@ -155,13 +155,13 @@ export default function DoctorDashboard() {
     const hospitalId = utilizadorLogado?.hospitais?.[0]?.idhosp;
     if (!hospitalId) return;
     try {
-      setErro('');
+      
       const res  = await fetch(`${API_URL}/api/v1/triagens/hospital/${hospitalId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar episódios.'));
       setEpisodios(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
       setEpisodios([]);
     }
   };
@@ -202,8 +202,8 @@ export default function DoctorDashboard() {
     setAntecedentes(null);
     setMostrarAntecedentes(false);
     setModoEdicaoTriagem(false);
-    setErro('');
-    setMensagem('');
+    
+    
 
     const episodioId = ep.cod_ep_urgenc;
     const utenteId   = ep.num_utent;
@@ -254,7 +254,7 @@ export default function DoctorDashboard() {
         }, 300);
       }
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
@@ -276,7 +276,7 @@ export default function DoctorDashboard() {
 
   const avaliarRiscoIA = async () => {
     if (!prescricao.cod_medicamento) {
-      setErro('Selecciona um medicamento antes de avaliar o risco.');
+      mostrarToast('Selecciona um medicamento antes de avaliar o risco.', 'aviso');
       return;
     }
     setAvaliacaoRisco(true);
@@ -315,7 +315,7 @@ export default function DoctorDashboard() {
       if (!res.ok) throw new Error(data?.detail || 'Erro na avaliação de risco.');
       setRiscoIA(data);
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     } finally {
       setAvaliacaoRisco(false);
     }
@@ -325,14 +325,14 @@ export default function DoctorDashboard() {
     const utenteId = utente?.num_utent || utente?.numutent;
     if (!utenteId) return;
     try {
-      setErro('');
+      
       const res  = await fetch(`${API_URL}/api/v1/utente-antecedentes/utente/${utenteId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar antecedentes.'));
       setAntecedentes(Array.isArray(data) ? data : []);
       setMostrarAntecedentes(true);
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
@@ -340,8 +340,8 @@ export default function DoctorDashboard() {
     e.preventDefault();
     const episodioId = episodioSelecionado?.cod_ep_urgenc;
     try {
-      setMensagem('');
-      setErro('');
+      
+      
       const res = await fetch(`${API_URL}/api/v1/triagens/${episodioId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -361,10 +361,10 @@ export default function DoctorDashboard() {
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao atualizar dados da triagem.'));
       setDadosTriagem(data);
       setModoEdicaoTriagem(false);
-      setMensagem('Dados da triagem atualizados com sucesso.');
+      mostrarToast('Dados da triagem atualizados com sucesso.', 'sucesso');
       await carregarEpisodios();
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
@@ -382,8 +382,8 @@ export default function DoctorDashboard() {
   const adicionarPrescricao = async (e) => {
     e.preventDefault();
     try {
-      setMensagem('');
-      setErro('');
+      
+      
       const utenteId = utente?.num_utent || utente?.numutent;
 
       // Usa o ato mais recente do episódio
@@ -409,28 +409,28 @@ export default function DoctorDashboard() {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            score_risco_ia:  riscoIA.probabilidade,
-            validado_por_ia: true,
+            score_risco_ia:    riscoIA.probabilidade,
+            validado_por_ia:   true,
             estado_prescricao: riscoIA.risco === 1 ? 'bloqueada' : 'aprovada',
           }),
         });
       }
 
-      setMensagem('Prescrição registada com sucesso.');
+      mostrarToast('Prescrição registada com sucesso.', 'sucesso');
       setPrescricao({ cod_medicamento: '', dosagem: '', observacoes: '' });
       setRiscoIA(null);
       const mRes = await fetch(`${API_URL}/api/v1/medicacao-ativa/utente/${utenteId}`);
       if (mRes.ok) setMedicacaoAtiva(await mRes.json());
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
   const registarAlta = async (e) => {
     e.preventDefault();
     try {
-      setMensagem('');
-      setErro('');
+      
+      
       const episodioId = episodioSelecionado?.cod_ep_urgenc;
       const res = await fetch(`${API_URL}/api/v1/episodios/${episodioId}/alta`, {
         method: 'PATCH',
@@ -439,10 +439,10 @@ export default function DoctorDashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
-      setMensagem('Alta ou internamento registado com sucesso.');
+      mostrarToast('Alta ou internamento registado com sucesso.', 'sucesso');
       await carregarEpisodios();
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
@@ -915,13 +915,12 @@ export default function DoctorDashboard() {
             <p>{textos?.doctor?.descricaoPainel || 'Prioridade, detalhe clínico completo, prescrição e decisão final.'}</p>
           </div>
           <div className="admin-content-body">
-            {erro     && <p className="admin-form__error">⚠️ {typeof erro     === 'object' ? 'Ocorreu uma falha na ligação ao servidor.' : erro}</p>}
-            {mensagem && <p className="admin-form__success">✅ {typeof mensagem === 'object' ? 'Operação concluída.'                    : mensagem}</p>}
             {renderCenter()}
           </div>
         </div>
         <FooterLayout />
       </section>
+      <Toast mensagem={toast.mensagem} tipo={toast.tipo} onFechar={fecharToast} />
     </main>
   );
 }
