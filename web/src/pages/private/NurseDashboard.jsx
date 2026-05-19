@@ -461,7 +461,7 @@ export default function NurseDashboard() {
       { id: 'desistencias', label: 'Desistências', icon: <SvgX /> },
     ];
 
-    const colSpan = salaTab === 'sem' || salaTab === 'triados' ? 5 : salaTab === 'em' ? 4 : salaTab === 'desistencias' ? 3 : 2;
+    const colSpan = salaTab === 'sem' || salaTab === 'triados' ? 5 : salaTab === 'em' ? 3 : salaTab === 'desistencias' ? 3 : 2;
 
     return (
       <section className="admin-panel-section">
@@ -514,8 +514,7 @@ export default function NurseDashboard() {
                     <>
                       <th>Episódio</th>
                       <th>{textos?.nurse?.utente || 'Utente'}</th>
-                      <th>{textos?.nurse?.inicioTriagem || 'Início triagem'}</th>
-                      <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
+                      <th>{textos?.nurse?.inicioTriagem || 'Entrada'}</th>
                     </>
                   )}
                   {salaTab === 'triados' && (
@@ -572,7 +571,6 @@ export default function NurseDashboard() {
                           <td>#{ep?.cod_ep_urgenc}</td>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
                           <td>{ep?.data_hora_entr ? new Date(ep.data_hora_entr).toLocaleString('pt-PT') : '—'}</td>
-                          <td>{ep?.nome_enfermeiro || '—'}</td>
                         </tr>
                       );
                     }
