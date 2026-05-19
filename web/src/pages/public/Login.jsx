@@ -33,6 +33,22 @@ export default function Login() {
   const [roleSelecionada, setRoleSelecionada] = useState('');
   const [hospitais, setHospitais] = useState([]);
 
+  const buscarHospitaisDoFuncionario = async (idFunc) => {
+    const res = await fetch(`/api/v1/trabalha/funcionario/${idFunc}`);
+    if (!res.ok) throw new Error(textos.login.erroHospitais);
+    const data = await res.json();
+
+    const lista = Array.isArray(data) ? data : data ? [data] : [];
+
+    return lista
+      .map((item) => ({
+        idhosp: item?.idhosp ?? item?.id_hosp ?? item?.idHosp ?? item?.hospital?.idhosp ?? item?.hospital?.id_hosp ?? item?.id,
+        nome: item?.hospital?.nome ?? item?.nome ?? item?.hospital_nome ?? item?.hospitalName ?? '',
+        localizacao: item?.hospital?.localizacao ?? item?.localizacao ?? item?.morada ?? '',
+      }))
+      .filter((h) => h.idhosp);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
@@ -51,37 +67,32 @@ export default function Login() {
       sessionStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
       sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user || {}));
 
+      const idFunc = Number(data?.user?.idfunc ?? data?.user?.id_func ?? data?.user?.idFunc ?? data?.idfunc ?? data?.id_func ?? data?.idFunc ?? 0);
+      if (idFunc) {
+        sessionStorage.setItem('user_idfunc', String(idFunc));
+      }
+
       if (role === ROLES.ADMIN) {
         navigate('/admin', { replace: true });
         return;
       }
 
-      const hospitaisAutorizadosRaw =
-        data?.user?.hospitais ??
-        data?.user?.hospitais_autorizados ??
-        data?.user?.hospitaisAutorizados ??
-        data?.user?.hospitais_funcionario ??
-        data?.hospitais ??
-        data?.hospitais_autorizados ??
-        data?.hospitaisAutorizados ??
-        data?.hospitais_funcionario ??
-        [];
+      if (!idFunc) {
+        throw new Error(textos.login.erroHospitais);
+      }
 
-      const hospitaisAutorizados = Array.isArray(hospitaisAutorizadosRaw)
-        ? hospitaisAutorizadosRaw
-        : hospitaisAutorizadosRaw
-          ? [hospitaisAutorizadosRaw]
-          : [];
+      const hospitaisFuncionario = await buscarHospitaisDoFuncionario(idFunc);
 
-      if (!hospitaisAutorizados.length) {
+      if (!hospitaisFuncionario.length) {
         throw new Error(textos.login.erroHospitais);
       }
 
       setRoleSelecionada(role);
-      setHospitais(hospitaisAutorizados);
+      setHospitais(hospitaisFuncionario);
       setShowHospitalStep(true);
     } catch (err) {
       Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
+      sessionStorage.removeItem('user_idfunc');
       setErro(err.message || textos.login.erroLogin);
     } finally {
       setLoading(false);
