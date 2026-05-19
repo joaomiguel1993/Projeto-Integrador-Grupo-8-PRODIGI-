@@ -188,10 +188,12 @@ export default function DoctorDashboard() {
   };
 
   const episodiosFiltrados = useMemo(() =>
-    episodios.filter((ep) =>
-      normalizar([ep.nome_utente, ep.cod_ep_urgenc, ep.cor_triagem].join(' '))
-        .includes(normalizar(filtro))
-    ),
+    episodios
+      .filter((ep) => !['terminado', 'desistiu'].includes(ep.estado_episodio || ''))
+      .filter((ep) =>
+        normalizar([ep.nome_utente, ep.cod_ep_urgenc, ep.cor_triagem].join(' '))
+          .includes(normalizar(filtro))
+      ),
     [episodios, filtro]
   );
 
@@ -432,15 +434,20 @@ export default function DoctorDashboard() {
       
       
       const episodioId = episodioSelecionado?.cod_ep_urgenc;
-      const res = await fetch(`${API_URL}/api/v1/episodios/${episodioId}/alta`, {
-        method: 'PATCH',
+      const res = await fetch(`${API_URL}/api/v1/episodios/${episodioId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(alta),
+        body: JSON.stringify({
+          estado:          alta.destino === 'internamento' ? 'internado' : 'terminado',
+          data_hora_saida: new Date().toISOString(),
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
+      const data = await res.json();      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
       mostrarToast('Alta ou internamento registado com sucesso.', 'sucesso');
       await carregarEpisodios();
+      setEpisodioSelecionado(null);
+      setAlta({ destino: 'alta', observacoes: '', internamento_destino: '' });
+      setMainMenu('fila');
     } catch (e) {
       mostrarToast(e.message, 'erro');
     }

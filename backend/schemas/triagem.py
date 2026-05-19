@@ -60,3 +60,4 @@ class TriagemOut(BaseModel):
     nome_enfermeiro: Optional[str] = None
     nome_utente: Optional[str] = None
     num_utent:   Optional[int] = None
+    estado_episodio: Optional[str] = None

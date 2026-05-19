@@ -7,7 +7,8 @@ _SELECT = """
            t.idfunc,
            f.nome  AS nome_enfermeiro,
            u.nome  AS nome_utente,
-           u.numutent AS num_utent
+           u.numutent AS num_utent,
+           e.estado AS estado_episodio
     FROM triagem t
     LEFT JOIN funcionario f ON f.idfunc      = t.idfunc
     LEFT JOIN epurgencia  e ON e.codepurgenc = t.codepurgenc
