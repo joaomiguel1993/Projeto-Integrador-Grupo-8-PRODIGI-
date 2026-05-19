@@ -6,6 +6,20 @@ import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_IA  = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
+
+const MAPA_GRAVIDADE = { 'Baixa': 1, 'Média': 2, 'Media': 2, 'Alta': 3 };
+
+const calcularIdade = (dataNasc) => {
+  if (!dataNasc) return 50;
+  const nasc = new Date(dataNasc);
+  if (isNaN(nasc)) return 50;
+  const hoje = new Date();
+  let anos = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) anos--;
+  return anos;
+};
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -81,8 +95,13 @@ export default function DoctorDashboard() {
   const [erro, setErro]           = useState('');
 
   const [prescricao, setPrescricao] = useState({
-    medicamento: '', dosagem: '', duracao: '', via: '',
+    cod_medicamento: '', dosagem: '', duracao: '', via: '',
   });
+
+  const [medicamentos, setMedicamentos]     = useState([]);
+  const [alergias, setAlergias]             = useState([]);
+  const [riscoIA, setRiscoIA]               = useState(null);
+  const [avaliacaoRisco, setAvaliacaoRisco] = useState(false);
 
   const [alta, setAlta] = useState({
     destino: 'alta', observacoes: '', internamento_destino: '',
@@ -114,6 +133,7 @@ export default function DoctorDashboard() {
   useEffect(() => {
     carregarEpisodios();
     carregarTemposMediosHospital();
+    carregarMedicamentos();
   }, [utilizadorLogado]);
 
   const extrairMensagemErro = (data, fallback) => {
@@ -153,11 +173,11 @@ export default function DoctorDashboard() {
       if (res.ok && data?.tempos_espera) {
         const t = data.tempos_espera;
         setTemposMediosHospital({
-          vermelho: t.vermelho?.minutos != null ? `${Math.max(0, t.vermelho.minutos)} min` : '—',
-          laranja:  t.laranja?.minutos  != null ? `${Math.max(0, t.laranja.minutos)} min`  : '—',
-          amarelo:  t.amarelo?.minutos  != null ? `${Math.max(0, t.amarelo.minutos)} min`  : '—',
-          verde:    t.verde?.minutos    != null ? `${Math.max(0, t.verde.minutos)} min`    : '—',
-          azul:     t.azul?.minutos     != null ? `${Math.max(0, t.azul.minutos)} min`     : '—',
+          vermelho: t.vermelho?.minutos != null ? `${t.vermelho.minutos} min` : '—',
+          laranja:  t.laranja?.minutos  != null ? `${t.laranja.minutos} min`  : '—',
+          amarelo:  t.amarelo?.minutos  != null ? `${t.amarelo.minutos} min`  : '—',
+          verde:    t.verde?.minutos    != null ? `${t.verde.minutos} min`    : '—',
+          azul:     t.azul?.minutos     != null ? `${t.azul.minutos} min`     : '—',
         });
       }
     } catch (e) {
@@ -202,6 +222,11 @@ export default function DoctorDashboard() {
       setUtente(uData || null);
       setAlertas(aRes.ok && Array.isArray(aData) ? aData : []);
       setMedicacaoAtiva(mRes.ok && Array.isArray(mData) ? mData : []);
+      setRiscoIA(null);
+      setPrescricao({ cod_medicamento: '', dosagem: '', duracao: '', via: '' });
+
+      // Carregar alergias do utente para cruzamento IA
+      await carregarAlergias(utenteId);
 
       // Triagem já está em ep (vem do TriagemOut)
       setDadosTriagem(ep);
@@ -224,6 +249,69 @@ export default function DoctorDashboard() {
       }
     } catch (e) {
       setErro(e.message);
+    }
+  };
+
+  const carregarMedicamentos = async () => {
+    try {
+      const res  = await fetch(`${API_URL}/api/v1/medicamentos/`);
+      const data = await res.json();
+      if (res.ok) setMedicamentos(Array.isArray(data) ? data : []);
+    } catch (e) { console.error('Erro ao carregar medicamentos:', e); }
+  };
+
+  const carregarAlergias = async (utenteId) => {
+    try {
+      const res  = await fetch(`${API_URL}/api/v1/alergias/utente/${utenteId}`);
+      const data = await res.json();
+      if (res.ok) setAlergias(Array.isArray(data) ? data : []);
+    } catch (e) { console.error('Erro ao carregar alergias:', e); }
+  };
+
+  const avaliarRiscoIA = async () => {
+    if (!prescricao.cod_medicamento) {
+      setErro('Selecciona um medicamento antes de avaliar o risco.');
+      return;
+    }
+    setAvaliacaoRisco(true);
+    setRiscoIA(null);
+    try {
+      const med = medicamentos.find((m) => String(m.cod_medicamento) === String(prescricao.cod_medicamento));
+      if (!med) throw new Error('Medicamento não encontrado.');
+
+      const classeNovoMed = med.classe_terapeutica_id;
+
+      // Verificar alergia à classe do novo medicamento
+      const alergiaClasse = alergias.find((a) => a.classe_terapeutica_id === classeNovoMed);
+      const temAlergia    = alergiaClasse ? 1 : 0;
+      const gravidadeAlergia = alergiaClasse ? (MAPA_GRAVIDADE[alergiaClasse.nivel_gravidade] || 0) : 0;
+
+      // Verificar interação com medicação ativa da mesma classe
+      const temInteracao = medicacaoAtiva.some((m) => {
+        const medAtivo = medicamentos.find((x) => x.cod_medicamento === m.cod_medicamento);
+        return medAtivo?.classe_terapeutica_id === classeNovoMed;
+      }) ? 1 : 0;
+
+      const idade = calcularIdade(utente?.data_nasc);
+
+      const res = await fetch(`${API_IA}/predict/v1/medicine-risk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Classe_Novo_Med:     classeNovoMed,
+          Tem_Alergia_Classe:  temAlergia,
+          Gravidade_Alergia:   gravidadeAlergia,
+          Tem_Interacao_Ativa: temInteracao,
+          Idade_Utente:        idade,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.detail || 'Erro na avaliação de risco.');
+      setRiscoIA(data);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setAvaliacaoRisco(false);
     }
   };
 
@@ -277,6 +365,7 @@ export default function DoctorDashboard() {
   const handlePrescricaoChange = (e) => {
     const { name, value } = e.target;
     setPrescricao((prev) => ({ ...prev, [name]: value }));
+    if (name === 'cod_medicamento') setRiscoIA(null);
   };
 
   const handleAltaChange = (e) => {
@@ -293,12 +382,19 @@ export default function DoctorDashboard() {
       const res = await fetch(`${API_URL}/api/v1/prescricoes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_utente: utenteId, ...prescricao }),
+        body: JSON.stringify({
+          num_utent:       utenteId,
+          cod_medicamento: parseInt(prescricao.cod_medicamento),
+          dosagem:         prescricao.dosagem,
+          duracao:         prescricao.duracao,
+          via:             prescricao.via,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao criar prescrição.'));
       setMensagem('Prescrição registada com sucesso.');
-      setPrescricao({ medicamento: '', dosagem: '', duracao: '', via: '' });
+      setPrescricao({ cod_medicamento: '', dosagem: '', duracao: '', via: '' });
+      setRiscoIA(null);
       const mRes = await fetch(`${API_URL}/api/v1/medicacao-ativa/utente/${utenteId}`);
       if (mRes.ok) setMedicacaoAtiva(await mRes.json());
     } catch (e) {
@@ -627,9 +723,24 @@ export default function DoctorDashboard() {
             </h3>
             <form className="admin-form" onSubmit={adicionarPrescricao} style={{ marginTop: '1rem' }}>
               <div className="admin-form__grid">
-                <div className="admin-form__group">
+                <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                   <label>{textos?.doctor?.medicamento || 'Medicamento'}</label>
-                  <input name="medicamento" value={prescricao.medicamento} onChange={handlePrescricaoChange} required />
+                  <select
+                    name="cod_medicamento"
+                    value={prescricao.cod_medicamento}
+                    onChange={(e) => {
+                      setPrescricao((prev) => ({ ...prev, cod_medicamento: e.target.value }));
+                      setRiscoIA(null);
+                    }}
+                    required
+                  >
+                    <option value="">— seleccionar medicamento —</option>
+                    {medicamentos.map((m) => (
+                      <option key={m.cod_medicamento} value={m.cod_medicamento}>
+                        {m.principio_ativo} (Classe {m.classe_terapeutica_id})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.dosagem || 'Dosagem'}</label>
@@ -644,7 +755,37 @@ export default function DoctorDashboard() {
                   <input name="via" value={prescricao.via} onChange={handlePrescricaoChange} placeholder="Ex: Oral" />
                 </div>
               </div>
+
+              {/* Resultado da avaliação IA */}
+              {riscoIA && (
+                <div style={{
+                  margin: '1rem 0',
+                  padding: '1rem',
+                  borderRadius: 6,
+                  backgroundColor: riscoIA.risco === 1 ? '#fff3cd' : '#d4edda',
+                  border: `1px solid ${riscoIA.risco === 1 ? '#ffc107' : '#28a745'}`,
+                }}>
+                  <p style={{ margin: 0, fontWeight: 'bold', color: riscoIA.risco === 1 ? '#856404' : '#155724' }}>
+                    {riscoIA.risco === 1 ? '⚠️ COM RISCO' : '✅ SEM RISCO'} — {(riscoIA.probabilidade * 100).toFixed(1)}% de probabilidade de risco
+                  </p>
+                  {riscoIA.risco === 1 && (
+                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', color: '#856404' }}>
+                      Atenção: este medicamento pode ter interacção com alergias ou medicação activa do utente.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="admin-actions-row">
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  style={{ backgroundColor: '#17a2b8', color: '#fff', borderColor: '#17a2b8' }}
+                  onClick={avaliarRiscoIA}
+                  disabled={avaliacaoRisco}
+                >
+                  {avaliacaoRisco ? 'A avaliar...' : '🧠 Avaliar Risco IA'}
+                </button>
                 <button className="admin-form__submit" type="submit">
                   {textos?.doctor?.fazerPrescricao || 'Submeter Prescrição'}
                 </button>
