@@ -6,6 +6,7 @@ import FooterLayout from '../../components/layout/FooterLayout';
 import Breadcrumbs from '../../components/layout/Breadcrumbs.jsx';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
+import Toast, { useToast } from '../../components/ui/Toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_IA  = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
@@ -100,6 +101,7 @@ const authFetch = (url, options = {}) => {
 export default function NurseDashboard() {
   const navigate = useNavigate();
   const { textos, idioma, mudarIdioma } = useLanguage();
+  const { toast, mostrarToast, fecharToast } = useToast();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mainMenu, setMainMenu]     = useState('sala');
@@ -113,8 +115,7 @@ export default function NurseDashboard() {
   const [hospitalAtivo, setHospitalAtivo] = useState(null);
   const [triagem, setTriagem]       = useState(TRIAGEM_VAZIA);
   const [loading, setLoading]       = useState(false);
-  const [erro, setErro]             = useState('');
-  const [mensagem, setMensagem]     = useState('');
+  const [sugestaoIA, setSugestaoIA] = useState(null);
 
   const utilizadorLogado = useMemo(() => {
     try { return JSON.parse(sessionStorage.getItem('user') || '{}'); }
@@ -164,14 +165,13 @@ export default function NurseDashboard() {
   // (as tabs filtram por estado no frontend)
   const carregarEpisodios = async () => {
     setLoading(true);
-    setErro('');
     try {
       const res  = await authFetch(`${API_URL}/api/v1/episodios/`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
       setEpisodios(Array.isArray(data) ? data : []);
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
       setEpisodios([]);
     } finally {
       setLoading(false);
@@ -284,8 +284,6 @@ export default function NurseDashboard() {
   };
   
   const pedirSugestaoCor = async () => {
-    setErro('');
-    setMensagem('');
     try {
       const idade = calcularIdade(episodioSelecionado?.data_nasc_utente);
 
@@ -305,18 +303,15 @@ export default function NurseDashboard() {
       if (!res.ok) throw new Error(data?.detail || 'Erro na previsão IA.');
 
       const corSugerida = MAPA_COR_IA[String(data?.pulseira)] || '';
-      setTriagem((prev) => ({ ...prev, cor_triagem: corSugerida }));
-      setMensagem(`Sugestão IA: ${corSugerida || 'sem resultado'}`);
+      setSugestaoIA(corSugerida);
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
   // Payload alinhado com TriagemCreate
   const gravarTriagem = async (e) => {
     e.preventDefault();
-    setErro('');
-    setMensagem('');
     try {
       const codEp = obterCodEpisodio(episodioSelecionado);
       const payload = {
@@ -349,7 +344,7 @@ export default function NurseDashboard() {
         body: JSON.stringify({ estado: 'em_atendimento' }),
       });
 
-      setMensagem(textos?.nurse?.gravarOk || 'Triagem gravada com sucesso.');
+      mostrarToast(textos?.nurse?.gravarOk || 'Triagem gravada com sucesso.', 'sucesso');
       setTriagem(TRIAGEM_VAZIA);
       setEpisodioSelecionado(null);
       setUtente(null);
@@ -358,27 +353,24 @@ export default function NurseDashboard() {
       setMainMenu('sala');
       setSalaTab('triados');
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
   const abrirProcessoClinico = async (num_utente, codEpUrgenc) => {
-    setErro('');
-    setMensagem('');
     try {
       if (!num_utente)   throw new Error('Identificador do utente não encontrado.');
       if (!codEpUrgenc)  throw new Error('Código do episódio não encontrado.');
       await carregarHistorico(num_utente, codEpUrgenc);
       setMainMenu('processo');
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
   const abrirEpisodio = async (ep) => {
-    setErro('');
-    setMensagem('');
     setTriagem(TRIAGEM_VAZIA);
+    setSugestaoIA(null);
     setEpisodioSelecionado(ep);
     setMainMenu('triagem');
 
@@ -422,7 +414,7 @@ export default function NurseDashboard() {
 
       await carregarHistorico(num_utent, codEp);
     } catch (e) {
-      setErro(e.message);
+      mostrarToast(e.message, 'erro');
     }
   };
 
@@ -703,6 +695,29 @@ export default function NurseDashboard() {
                     }} title={triagem.cor_triagem} />
                   )}
                 </div>
+                {sugestaoIA && (
+                  <div style={{
+                    marginTop: '0.5rem', padding: '0.75rem 1rem', borderRadius: 6,
+                    backgroundColor: '#e8f4fd', border: '1px solid #3182ce', color: '#1a365d',
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                  }}>
+                    <span>💡 Sugestão IA: <strong>{sugestaoIA}</strong></span>
+                    <button
+                      type="button"
+                      style={{ fontSize: '0.85rem', color: '#3182ce', background: 'none', border: '1px solid #3182ce', borderRadius: 4, padding: '2px 10px', cursor: 'pointer' }}
+                      onClick={() => { setTriagem((prev) => ({ ...prev, cor_triagem: sugestaoIA })); setSugestaoIA(null); }}
+                    >
+                      Aplicar
+                    </button>
+                    <button
+                      type="button"
+                      style={{ fontSize: '0.85rem', color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => setSugestaoIA(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
@@ -869,8 +884,6 @@ export default function NurseDashboard() {
             <p>{textos?.nurse?.descricaoPainel || 'Fila de episódios, contexto clínico e triagem assistida.'}</p>
           </div>
           <div className="admin-content-body">
-            {erro     && <p className="admin-form__error">{erro}</p>}
-            {mensagem && <p className="admin-form__success">{mensagem}</p>}
             {mainMenu === 'sala'     && renderSalaDeEspera()}
             {mainMenu === 'triagem'  && renderTriagem()}
             {mainMenu === 'processo' && renderProcessoClinico()}
@@ -878,6 +891,7 @@ export default function NurseDashboard() {
         </div>
         <FooterLayout />
       </section>
+      <Toast mensagem={toast.mensagem} tipo={toast.tipo} onFechar={fecharToast} />
     </main>
   );
 }
