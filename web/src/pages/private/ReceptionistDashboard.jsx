@@ -17,12 +17,12 @@ const normalizar = (texto) =>
 const emptyUtente = {
   nome: '',
   nif: '',
-  data_nascimento: '',
+  data_nasc: '',
   sexo: 'M',
-  morada: '',
+  localidade: '',
   telefone: '',
   email: '',
-  numutent: '',
+  num_utent: '',
 };
 
 const getToken = () =>
@@ -171,6 +171,7 @@ export default function ReceptionistDashboard() {
       ]);
       const uData = await uRes.json().catch(() => []);
       const eData = await eRes.json().catch(() => []);
+      
       if (!uRes.ok || !eRes.ok) {
         throw new Error(textos?.receptionist?.erroCarga || 'Erro ao carregar dados.');
       }
@@ -220,12 +221,12 @@ export default function ReceptionistDashboard() {
     setNovoUtente({
       nome: u?.nome ?? '',
       nif: u?.nif ?? '',
-      data_nascimento: u?.datanasc ?? '',
+      data_nasc: u?.data_nasc ?? '',
       sexo: u?.sexo ?? 'M',
-      morada: u?.localidade ?? '',
+      localidade: u?.localidade ?? '',
       telefone: u?.telefone ?? '',
       email: u?.email ?? '',
-      numutent: u?.numutent ?? u?.num_utente ?? u?.numero_utente ?? '',
+      num_utent: u?.num_utent ?? '',
     });
     setUtentesView('criar');
     setMainMenu('utentes');
@@ -249,30 +250,34 @@ export default function ReceptionistDashboard() {
 
   const criarOuEditarUtente = async (e) => {
     e.preventDefault();
+
     setMensagem('');
     setErro('');
 
-    const numUtente =
-      novoUtente.num_utent ||
-      novoUtente.numutent ||
-      novoUtente.num_utente ||
-      novoUtente.numero_utente;
+    const isEditing = !!utenteSelecionado;
 
-    const isEditing = !!numUtente;
+    const numUtente =
+      utenteSelecionado?.num_utent ||
+      utenteSelecionado?.numutent ||
+      utenteSelecionado?.num_utente ||
+      utenteSelecionado?.numero_utente;
 
     const url = isEditing
       ? `${API_URL}/api/v1/utentes/${numUtente}`
       : `${API_URL}/api/v1/utentes/`;
 
     const payloadUtente = {
-      nome: novoUtente.nome ?? '',
-      nif: novoUtente.nif ?? '',
-      datanasc: novoUtente.data_nascimento || null,
-      sexo: novoUtente.sexo ?? 'M',
-      localidade: novoUtente.morada ?? '',
-      telefone: novoUtente.telefone ?? '',
-      email: novoUtente.email ?? '',
+      nome: novoUtente.nome,
+      nif: novoUtente.nif,
+      data_nasc: novoUtente.data_nasc,
+      sexo: novoUtente.sexo,
+      localidade: novoUtente.localidade,
+      telefone: novoUtente.telefone,
+      email: novoUtente.email,
     };
+
+    console.log('Payload enviado:', payloadUtente);
+    console.log('URL:', url);
 
     try {
       const res = await authFetch(url, {
@@ -282,22 +287,27 @@ export default function ReceptionistDashboard() {
 
       const data = await res.json().catch(() => null);
 
+      console.log('Resposta backend:', data);
+
       if (!res.ok) {
-        throw new Error(data?.detail || 'Erro ao processar dados do utente.');
+        throw new Error(
+          JSON.stringify(data?.detail || data || 'Erro ao guardar utente.')
+        );
       }
 
       setMensagem(
         isEditing
-          ? textos?.receptionist?.sucessoUpdate || 'Utente atualizado com sucesso.'
-          : textos?.receptionist?.sucessoCriar || 'Utente criado com sucesso.'
+          ? 'Utente atualizado com sucesso.'
+          : 'Utente criado com sucesso.'
       );
 
       setNovoUtente(emptyUtente);
-      setUtenteSelecionado(data);
+
       await carregarTudo();
-      setUtentesView('ficha');
-      setMainMenu('utentes');
+
+      setUtentesView('lista');
     } catch (e) {
+      console.error(e);
       setErro(e.message || 'Erro ao guardar utente.');
     }
   };
@@ -386,7 +396,7 @@ export default function ReceptionistDashboard() {
         <section className="admin-panel-section" aria-labelledby="title-criar">
           <div className="admin-panel-section__header">
             <h2 id="title-criar">
-              {novoUtente.numutent
+              {utenteSelecionado
                 ? textos?.geral?.editar || 'Editar'
                 : textos?.receptionist?.novoUtente || 'Novo utente'}
             </h2>
@@ -403,7 +413,7 @@ export default function ReceptionistDashboard() {
               </div>
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.dataNascimento || 'Data de nascimento'}</label>
-                <input type="date" name="data_nascimento" value={novoUtente.data_nascimento || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
+                <input type="date" name="data_nasc" value={novoUtente.data_nasc || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.sexo || 'Sexo'}</label>
@@ -421,8 +431,8 @@ export default function ReceptionistDashboard() {
                 <input name="email" value={novoUtente.email || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
               <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
-                <label>{textos?.receptionist?.morada || 'Morada'}</label>
-                <input name="morada" value={novoUtente.morada || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
+                <label>{textos?.receptionist?.localidade || 'Localidade'}</label>
+                <input name="localidade" value={novoUtente.localidade || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
               </div>
             </div>
             <div className="admin-actions-row">
@@ -475,14 +485,14 @@ export default function ReceptionistDashboard() {
                 <div className="patient-card__grid">
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.dataNascimento || 'Data de nascimento'}</span>
-                    <span className="patient-info__value">{utenteSelecionado.datanasc || '—'}</span>
+                    <span className="patient-info__value">{utenteSelecionado.data_nasc || '—'}</span>
                   </div>
                   <div className="patient-info">
                     <span className="patient-info__label">{textos?.receptionist?.sexo || 'Sexo'}</span>
                     <span className="patient-info__value">{utenteSelecionado.sexo || '—'}</span>
                   </div>
                   <div className="patient-info">
-                    <span className="patient-info__label">{textos?.receptionist?.morada || 'Localidade'}</span>
+                    <span className="patient-info__label">{textos?.receptionist?.localidade || 'Localidade'}</span>
                     <span className="patient-info__value">{utenteSelecionado.localidade || '—'}</span>
                   </div>
                 </div>
@@ -657,9 +667,6 @@ export default function ReceptionistDashboard() {
                           setErro('');
                         }}
                       >
-                        type="button"
-                        className={`episode-mini-card ${isSelected ? 'is-selected' : ''}`}
-                        onClick={() => { setUtenteSelecionado(u); setMensagem(''); setErro(''); }}
 
                         <div className="episode-mini-card__header">
                           <div className="episode-mini-card__avatar">
@@ -709,7 +716,7 @@ export default function ReceptionistDashboard() {
                     </div>
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">Data de nascimento</span>
-                      <span className="episode-data-item__value">{utenteSelecionado.datanasc || '—'}</span>
+                      <span className="episode-data-item__value">{utenteSelecionado.data_nasc || '—'}</span>
                     </div>
                     <div className="episode-data-item">
                       <span className="episode-data-item__label">Telefone</span>
@@ -793,19 +800,53 @@ export default function ReceptionistDashboard() {
                         const nomeUtente = nomeUtenteDireto || utenteEncontrado?.nome || '—';
 
                         const valorData =
-                          ep.data_hora_inicio || ep.datahoraentr || ep.datahora || ep.data_entrada ||
-                          ep.created_at || ep.dataentrada;
+                          ep.data_hora_entr ||
+                          ep.data_hora_inicio ||
+                          ep.datahoraentr ||
+                          ep.datahora ||
+                          ep.data_entrada ||
+                          ep.created_at ||
+                          ep.dataentrada;
 
                         const valorTermino =
-                          ep.data_hora_fim || ep.datahorasaida || ep.datahora_saida || ep.datasaida ||
-                          ep.data_saida || ep.datahorafim || ep.data_fim || ep.fim || null;
+                          ep.data_hora_saida ||
+                          ep.data_hora_fim ||
+                          ep.datahorasaida ||
+                          ep.datahora_saida ||
+                          ep.datasaida ||
+                          ep.data_saida ||
+                          ep.datahorafim ||
+                          ep.data_fim ||
+                          ep.fim ||
+                          null;
                         const formatarData = (valor) => {
-                          if (!valor) return { data: '—', hora: '—' };
-                          const d = new Date(valor);
-                          if (Number.isNaN(d.getTime())) return { data: String(valor), hora: '—' };
+                          if (!valor) {
+                            return {
+                              data: '—',
+                              hora: '—',
+                            };
+                          }
+
+                          // Corrige formato vindo do PostgreSQL/FastAPI
+                          const dataCorrigida = String(valor).replace(' ', 'T');
+
+                          const d = new Date(dataCorrigida);
+
+                          if (Number.isNaN(d.getTime())) {
+                            console.log('DATA INVÁLIDA:', valor);
+
+                            return {
+                              data: '—',
+                              hora: '—',
+                            };
+                          }
+
                           return {
                             data: d.toLocaleDateString('pt-PT'),
-                            hora: d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }),
+                            hora: d.toLocaleTimeString('pt-PT', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }),
                           };
                         };
 

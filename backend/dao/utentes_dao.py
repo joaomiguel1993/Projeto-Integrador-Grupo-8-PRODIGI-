@@ -27,7 +27,15 @@ def select_utente_by_id(numutent: int):
 
 def select_utente_by_nif(nif: str):
     return run_query("""
-        SELECT numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        SELECT
+            numutent AS num_utent,
+            nome,
+            nif,
+            datanasc AS data_nasc,
+            sexo,
+            localidade,
+            telefone,
+            email
         FROM utente
         WHERE nif = %s
     """, (nif,))
@@ -45,7 +53,7 @@ def insert_utente(
     return run_query("""
         INSERT INTO utente (nome, nif, datanasc, sexo, localidade, telefone, email)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
-        RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        RETURNING numutent AS num_utent, nome, nif, datanasc AS data_nasc, sexo, localidade, telefone, email
     """, (
         nome,
         nif,
@@ -107,7 +115,7 @@ def update_utente(
         UPDATE utente
         SET {', '.join(campos)}
         WHERE numutent = %s
-        RETURNING numutent, nome, nif, datanasc, sexo, localidade, telefone, email
+        RETURNING numutent AS num_utent,  nome, nif, datanasc AS data_nasc, sexo, localidade, telefone, email
     """
     return run_query(query, tuple(valores))
 
