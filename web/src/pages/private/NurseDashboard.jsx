@@ -572,7 +572,7 @@ export default function NurseDashboard() {
                           <td>#{ep?.cod_ep_urgenc}</td>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
                           <td>{ep?.data_hora_entr ? new Date(ep.data_hora_entr).toLocaleString('pt-PT') : '—'}</td>
-                          <td>—</td>
+                          <td>{ep?.nome_enfermeiro || '—'}</td>
                         </tr>
                       );
                     }
