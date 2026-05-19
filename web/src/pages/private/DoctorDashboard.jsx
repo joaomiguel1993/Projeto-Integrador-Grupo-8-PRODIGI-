@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/Logo.png';
 import '../../styles/main.css';
@@ -95,11 +95,13 @@ export default function DoctorDashboard() {
   const [erro, setErro]           = useState('');
 
   const [prescricao, setPrescricao] = useState({
-    cod_medicamento: '', dosagem: '', duracao: '', via: '',
+    cod_medicamento: '', dosagem: '', observacoes: '',
   });
 
   const [medicamentos, setMedicamentos]     = useState([]);
   const [alergias, setAlergias]             = useState([]);
+  const [atos, setAtos]                     = useState([]);
+  const atosRef = useRef([]);
   const [riscoIA, setRiscoIA]               = useState(null);
   const [avaliacaoRisco, setAvaliacaoRisco] = useState(false);
 
@@ -207,23 +209,27 @@ export default function DoctorDashboard() {
     const utenteId   = ep.num_utent;
 
     try {
-      const [uRes, aRes, mRes] = await Promise.all([
+      const [uRes, aRes, mRes, atosRes] = await Promise.all([
         fetch(`${API_URL}/api/v1/utentes/${utenteId}`),
         fetch(`${API_URL}/api/v1/alertas/${utenteId}`),
         fetch(`${API_URL}/api/v1/medicacao-ativa/utente/${utenteId}`),
+        fetch(`${API_URL}/api/v1/atos/episodio/${episodioId}`),
       ]);
 
-      const uData = await uRes.json();
-      const aData = await aRes.json();
-      const mData = await mRes.json();
+      const uData    = await uRes.json();
+      const aData    = await aRes.json();
+      const mData    = await mRes.json();
+      const atosData = await atosRes.json();
 
       if (!uRes.ok) throw new Error(extrairMensagemErro(uData, 'Erro ao carregar dados do utente.'));
 
       setUtente(uData || null);
       setAlertas(aRes.ok && Array.isArray(aData) ? aData : []);
       setMedicacaoAtiva(mRes.ok && Array.isArray(mData) ? mData : []);
+      setAtos(atosRes.ok && Array.isArray(atosData) ? atosData : []);
+      atosRef.current = atosRes.ok && Array.isArray(atosData) ? atosData : [];
       setRiscoIA(null);
-      setPrescricao({ cod_medicamento: '', dosagem: '', duracao: '', via: '' });
+      setPrescricao({ cod_medicamento: '', dosagem: '', observacoes: '' });
 
       // Carregar alergias do utente para cruzamento IA
       await carregarAlergias(utenteId);
@@ -379,21 +385,39 @@ export default function DoctorDashboard() {
       setMensagem('');
       setErro('');
       const utenteId = utente?.num_utent || utente?.numutent;
-      const res = await fetch(`${API_URL}/api/v1/prescricoes`, {
+
+      // Usa o ato mais recente do episódio
+      const idAto = atosRef.current.length > 0 ? atosRef.current[0].id_ato : null;
+      if (!idAto) throw new Error('Não existe nenhum ato clínico associado a este episódio.');
+
+      const res = await fetch(`${API_URL}/api/v1/prescricoes/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          num_utent:       utenteId,
+          id_ato:          idAto,
           cod_medicamento: parseInt(prescricao.cod_medicamento),
           dosagem:         prescricao.dosagem,
-          duracao:         prescricao.duracao,
-          via:             prescricao.via,
+          observacoes:     prescricao.observacoes || null,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao criar prescrição.'));
+
+      // Se temos resultado da IA, actualiza a prescrição com o score
+      if (riscoIA && data.id_prescricao) {
+        await fetch(`${API_URL}/api/v1/prescricoes/${data.id_prescricao}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            score_risco_ia:  riscoIA.probabilidade,
+            validado_por_ia: true,
+            estado_prescricao: riscoIA.risco === 1 ? 'bloqueada' : 'aprovada',
+          }),
+        });
+      }
+
       setMensagem('Prescrição registada com sucesso.');
-      setPrescricao({ cod_medicamento: '', dosagem: '', duracao: '', via: '' });
+      setPrescricao({ cod_medicamento: '', dosagem: '', observacoes: '' });
       setRiscoIA(null);
       const mRes = await fetch(`${API_URL}/api/v1/medicacao-ativa/utente/${utenteId}`);
       if (mRes.ok) setMedicacaoAtiva(await mRes.json());
@@ -512,6 +536,7 @@ export default function DoctorDashboard() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Episódio</th>
                 <th>{textos?.doctor?.utente || 'Utente'}</th>
                 <th>{textos?.doctor?.cor    || 'Cor'}</th>
                 <th>{textos?.doctor?.espera || 'Espera'}</th>
@@ -520,10 +545,11 @@ export default function DoctorDashboard() {
             </thead>
             <tbody>
               {episodiosFiltrados.length === 0 ? (
-                <tr><td colSpan="4">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
+                <tr><td colSpan="5">{textos?.geral?.semResultados || 'Sem resultados'}</td></tr>
               ) : (
                 episodiosFiltrados.map((ep) => (
                   <tr key={ep.cod_ep_urgenc}>
+                    <td>#{ep.cod_ep_urgenc}</td>
                     <td>{ep.nome_utente || '—'}</td>
                     <td>{ep.cor_triagem || '—'}</td>
                     <td>{ep.tempo_espera_previsto ? `${ep.tempo_espera_previsto} min` : '—'}</td>
@@ -744,15 +770,11 @@ export default function DoctorDashboard() {
                 </div>
                 <div className="admin-form__group">
                   <label>{textos?.doctor?.dosagem || 'Dosagem'}</label>
-                  <input name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} placeholder="Ex: 500mg" />
+                  <input name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} placeholder="Ex: 500mg" required />
                 </div>
-                <div className="admin-form__group">
-                  <label>{textos?.doctor?.duracao || 'Duração'}</label>
-                  <input name="duracao" value={prescricao.duracao} onChange={handlePrescricaoChange} placeholder="Ex: 7 dias" />
-                </div>
-                <div className="admin-form__group">
-                  <label>{textos?.doctor?.via || 'Via'}</label>
-                  <input name="via" value={prescricao.via} onChange={handlePrescricaoChange} placeholder="Ex: Oral" />
+                <div className="admin-form__group admin-form__group--full">
+                  <label>{textos?.doctor?.observacoes || 'Observações'}</label>
+                  <textarea name="observacoes" value={prescricao.observacoes} onChange={handlePrescricaoChange} rows={2} placeholder="Notas clínicas sobre a prescrição..." />
                 </div>
               </div>
 
