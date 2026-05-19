@@ -52,7 +52,7 @@ CREATE TYPE entidade_ia_enum AS ENUM ('triagem', 'prescricao');
 -- ------------------------------------------------------------
 CREATE TYPE cor_triagem_enum AS ENUM ('vermelho', 'laranja', 'amarelo', 'verde', 'azul');
 CREATE TYPE tipo_func_enum AS ENUM ('medico', 'enfermeiro', 'admin', 'rececionista');
-CREATE TYPE estado_ep_enum AS ENUM ('aberto', 'em_triagem', 'em_atendimento', 'internado', 'terminado');
+CREATE TYPE estado_ep_enum AS ENUM ('aberto', 'em_triagem', 'em_atendimento', 'internado', 'terminado', 'desistiu');
 CREATE TYPE tipo_alta_enum AS ENUM ('clinica', 'voluntaria', 'transferencia', 'obito');
 
 -- ------------------------------------------------------------

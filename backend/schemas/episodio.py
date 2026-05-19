@@ -18,7 +18,7 @@ class EpisodioUpdate(BaseModel):
     id_hosp: Optional[int] = None
     data_hora_atendimento: Optional[datetime] = None
     data_hora_saida: Optional[datetime] = None
-    estado: Optional[Literal["aberto", "em_triagem", "em_atendimento", "internado", "terminado"]] = None
+    estado: Optional[Literal["aberto", "em_triagem", "em_atendimento", "internado", "terminado", "desistiu"]] = None
 
 
 class EpisodioOut(BaseModel):

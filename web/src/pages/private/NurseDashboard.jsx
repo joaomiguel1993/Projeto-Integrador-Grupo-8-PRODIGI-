@@ -9,7 +9,7 @@ import { STORAGE_KEYS } from '../../constants/roles';
 import Toast, { useToast } from '../../components/ui/Toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const API_IA  = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
+const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 
 const normalizar = (texto) =>
   String(texto || '')
@@ -31,10 +31,10 @@ const calcularIdade = (dataNasc) => {
 
 // Cores Manchester
 const CORES_MANCHESTER = [
-  { valor: 'azul',     label: 'Azul',     hex: '#3182ce' },
-  { valor: 'verde',    label: 'Verde',    hex: '#38a169' },
-  { valor: 'amarelo',  label: 'Amarelo',  hex: '#d69e2e' },
-  { valor: 'laranja',  label: 'Laranja',  hex: '#dd6b20' },
+  { valor: 'azul', label: 'Azul', hex: '#3182ce' },
+  { valor: 'verde', label: 'Verde', hex: '#38a169' },
+  { valor: 'amarelo', label: 'Amarelo', hex: '#d69e2e' },
+  { valor: 'laranja', label: 'Laranja', hex: '#dd6b20' },
   { valor: 'vermelho', label: 'Vermelho', hex: '#e53e3e' },
 ];
 
@@ -49,16 +49,16 @@ const MAPA_COR_IA = {
 
 // Estado inicial da triagem — alinhado com TriagemCreate
 const TRIAGEM_VAZIA = {
-  sistolica:   '',
-  diastolica:  '',
-  freq_card:   '',
-  freq_resp:   '',
+  sistolica: '',
+  diastolica: '',
+  freq_card: '',
+  freq_resp: '',
   temperatura: '',
-  sp_o2:       '',
-  nivel_dor:   '',
+  sp_o2: '',
+  nivel_dor: '',
   consciencia: '',
   cor_triagem: '',
-  sintomas:    '',
+  sintomas: '',
 };
 
 const iconProps = {
@@ -67,18 +67,18 @@ const iconProps = {
   strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true',
 };
 
-const SvgMenu       = () => <svg {...iconProps} strokeWidth="2.4"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>;
-const SvgList       = () => <svg {...iconProps}><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>;
-const SvgClipboard  = () => <svg {...iconProps}><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>;
-const SvgHeart      = () => <svg {...iconProps}><path d="M12 21s-7-4.35-9-8.5A5.4 5.4 0 0 1 12 5a5.4 5.4 0 0 1 9 7.5C19 16.65 12 21 12 21z"/></svg>;
-const SvgExit       = () => <svg {...iconProps}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>;
-const SvgSearch     = () => <svg {...iconProps}><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>;
-const SvgCheck      = () => <svg {...iconProps}><path d="M20 6L9 17l-5-5"/></svg>;
-const SvgInfo       = () => <svg {...iconProps}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
-const SvgX          = () => <svg {...iconProps}><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>;
-const SvgChevronLeft  = () => <svg {...iconProps}><path d="M15 18l-6-6 6-6"/></svg>;
-const SvgChevronRight = () => <svg {...iconProps}><path d="M9 18l6-6-6-6"/></svg>;
-const SvgFileText   = () => <svg {...iconProps}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>;
+const SvgMenu = () => <svg {...iconProps} strokeWidth="2.4"><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" /></svg>;
+const SvgList = () => <svg {...iconProps}><path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" /><path d="M3 6h.01" /><path d="M3 12h.01" /><path d="M3 18h.01" /></svg>;
+const SvgClipboard = () => <svg {...iconProps}><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /></svg>;
+const SvgHeart = () => <svg {...iconProps}><path d="M12 21s-7-4.35-9-8.5A5.4 5.4 0 0 1 12 5a5.4 5.4 0 0 1 9 7.5C19 16.65 12 21 12 21z" /></svg>;
+const SvgExit = () => <svg {...iconProps}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></svg>;
+const SvgSearch = () => <svg {...iconProps}><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>;
+const SvgCheck = () => <svg {...iconProps}><path d="M20 6L9 17l-5-5" /></svg>;
+const SvgInfo = () => <svg {...iconProps}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>;
+const SvgX = () => <svg {...iconProps}><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>;
+const SvgChevronLeft = () => <svg {...iconProps}><path d="M15 18l-6-6 6-6" /></svg>;
+const SvgChevronRight = () => <svg {...iconProps}><path d="M9 18l6-6-6-6" /></svg>;
+const SvgFileText = () => <svg {...iconProps}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M8 13h8" /><path d="M8 17h8" /><path d="M8 9h2" /></svg>;
 
 const getToken = () =>
   sessionStorage.getItem('token') ||
@@ -104,17 +104,17 @@ export default function NurseDashboard() {
   const { toast, mostrarToast, fecharToast } = useToast();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [mainMenu, setMainMenu]     = useState('sala');
-  const [salaTab, setSalaTab]       = useState('sem');
-  const [episodios, setEpisodios]   = useState([]);
+  const [mainMenu, setMainMenu] = useState('sala');
+  const [salaTab, setSalaTab] = useState('sem');
+  const [episodios, setEpisodios] = useState([]);
   const [filtrosSala, setFiltrosSala] = useState({ sem: '', em: '', triados: '', desistencias: '' });
   const [episodioSelecionado, setEpisodioSelecionado] = useState(null);
-  const [utente, setUtente]         = useState(null);
+  const [utente, setUtente] = useState(null);
   const [medicacaoAtiva, setMedicacaoAtiva] = useState([]);
-  const [historico, setHistorico]   = useState([]);
+  const [historico, setHistorico] = useState([]);
   const [hospitalAtivo, setHospitalAtivo] = useState(null);
-  const [triagem, setTriagem]       = useState(TRIAGEM_VAZIA);
-  const [loading, setLoading]       = useState(false);
+  const [triagem, setTriagem] = useState(TRIAGEM_VAZIA);
+  const [loading, setLoading] = useState(false);
   const [sugestaoIA, setSugestaoIA] = useState(null);
 
   const utilizadorLogado = useMemo(() => {
@@ -154,9 +154,9 @@ export default function NurseDashboard() {
   const abrirPerfilUtilizador = () => {
     const userId =
       utilizadorLogado?.id_utilizador ||
-      utilizadorLogado?.idutilizador  ||
-      utilizadorLogado?.id_user       ||
-      utilizadorLogado?.id            ||
+      utilizadorLogado?.idutilizador ||
+      utilizadorLogado?.id_user ||
+      utilizadorLogado?.id ||
       utilizadorLogado?.utilizador_id;
     navigate(userId ? `/perfil/${userId}` : '/perfil');
   };
@@ -166,7 +166,7 @@ export default function NurseDashboard() {
   const carregarEpisodios = async () => {
     setLoading(true);
     try {
-      const res  = await authFetch(`${API_URL}/api/v1/episodios/`);
+      const res = await authFetch(`${API_URL}/api/v1/episodios/`);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
       setEpisodios(Array.isArray(data) ? data : []);
@@ -200,12 +200,18 @@ export default function NurseDashboard() {
   const currentList = useMemo(() => {
     const pesquisa = normalizar(filtrosSala[salaTab] || '');
     const base = (episodios || []).filter((ep) => {
-      if (salaTab === 'sem')          return mapEstado.sem(ep);
-      if (salaTab === 'em')           return mapEstado.em(ep);
-      if (salaTab === 'triados')      return mapEstado.triados(ep);
+      if (salaTab === 'sem') return mapEstado.sem(ep);
+      if (salaTab === 'em') return mapEstado.em(ep);
+      if (salaTab === 'triados') return mapEstado.triados(ep);
       if (salaTab === 'desistencias') return mapEstado.desistencias(ep);
       return true;
     });
+    
+    // FIFO — ordenado por entrada mais antiga primeiro
+    if (salaTab === 'sem' || salaTab === 'em' || salaTab === 'triados' || salaTab === 'desistencias') {
+      base.sort((a, b) => new Date(a.data_hora_entr) - new Date(b.data_hora_entr));
+    }
+
     if (!pesquisa) return base;
     return base.filter((ep) =>
       normalizar([
@@ -225,64 +231,64 @@ export default function NurseDashboard() {
 
   const carregarHistorico = async (num_utente, codEpUrgenc) => {
     const endpoints = [
-      { tipo: 'Ato',          url: `${API_URL}/api/v1/atos/episodio/${codEpUrgenc}` },
+      { tipo: 'Ato', url: `${API_URL}/api/v1/atos/episodio/${codEpUrgenc}` },
       { tipo: 'Internamento', url: `${API_URL}/api/v1/internamentos/episodio/${codEpUrgenc}` },
-      { tipo: 'Antecedente',  url: `${API_URL}/api/v1/utente-antecedentes/utente/${num_utente}` },
+      { tipo: 'Antecedente', url: `${API_URL}/api/v1/utente-antecedentes/utente/${num_utente}` },
     ];
 
-      const respostas = await Promise.all(
-        endpoints.map(async ({ tipo, url }) => {
-          try {
-            const res  = await authFetch(url);
-            const data = await res.json().catch(() => null);
-            return { tipo, res, data };
-          } catch {
-            return { tipo, res: null, data: null };
-          }
-        })
-      );
+    const respostas = await Promise.all(
+      endpoints.map(async ({ tipo, url }) => {
+        try {
+          const res = await authFetch(url);
+          const data = await res.json().catch(() => null);
+          return { tipo, res, data };
+        } catch {
+          return { tipo, res: null, data: null };
+        }
+      })
+    );
 
-      const historicoNormalizado = [];
-      respostas.forEach(({ tipo, res, data }) => {
-        if (!res || !res.ok) return;
-        const lista = Array.isArray(data) ? data : data ? [data] : [];
-        lista.forEach((item) => {
-          if (tipo === 'Ato') {
-            historicoNormalizado.push({
-              tipo:         item?.tipo || 'Ato',
-              data:         item?.data_hora_inicio || '—',
-              descricao:    item?.descricao || 'Ato clínico',
-              profissional: '—',
-            });
-          }
-          if (tipo === 'Internamento') {
-            historicoNormalizado.push({
-              tipo,
-              data: item?.data_hora_int || item?.data_entrada || item?.datainicio || '—',
-              descricao: item?.motivo || item?.diagnostico || item?.descricao || 'Internamento',
-              profissional: item?.profissional || '—',
-            });
-          }
-          if (tipo === 'Antecedente') {
-            historicoNormalizado.push({
-              tipo:         item?.tipo || 'Antecedente',
-              data:         item?.dataregisto || item?.data_registo || '—',
-              descricao:    item?.nome || item?.descricao || 'Antecedente clínico',
-              profissional: '—',
-            });
-          }
-        });
+    const historicoNormalizado = [];
+    respostas.forEach(({ tipo, res, data }) => {
+      if (!res || !res.ok) return;
+      const lista = Array.isArray(data) ? data : data ? [data] : [];
+      lista.forEach((item) => {
+        if (tipo === 'Ato') {
+          historicoNormalizado.push({
+            tipo: item?.tipo || 'Ato',
+            data: item?.data_hora_inicio || '—',
+            descricao: item?.descricao || 'Ato clínico',
+            profissional: '—',
+          });
+        }
+        if (tipo === 'Internamento') {
+          historicoNormalizado.push({
+            tipo,
+            data: item?.data_hora_int || item?.data_entrada || item?.datainicio || '—',
+            descricao: item?.motivo || item?.diagnostico || item?.descricao || 'Internamento',
+            profissional: item?.profissional || '—',
+          });
+        }
+        if (tipo === 'Antecedente') {
+          historicoNormalizado.push({
+            tipo: item?.tipo || 'Antecedente',
+            data: item?.dataregisto || item?.data_registo || '—',
+            descricao: item?.nome || item?.descricao || 'Antecedente clínico',
+            profissional: '—',
+          });
+        }
       });
+    });
 
-      historicoNormalizado.sort((a, b) => String(b.data).localeCompare(String(a.data)));
-      setHistorico(historicoNormalizado);
-    };
+    historicoNormalizado.sort((a, b) => String(b.data).localeCompare(String(a.data)));
+    setHistorico(historicoNormalizado);
+  };
 
   const handleTriagemChange = (e) => {
     const { name, value } = e.target;
     setTriagem((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const pedirSugestaoCor = async () => {
     try {
       const idade = calcularIdade(episodioSelecionado?.data_nasc_utente);
@@ -290,12 +296,12 @@ export default function NurseDashboard() {
       const res = await authFetch(`${API_IA}/predict/v1/triage`, {
         method: 'POST',
         body: JSON.stringify({
-          Age:            typeof idade === 'number' ? idade : 50,
-          Heart_Rate_BPM: triagem.freq_card    !== '' ? parseInt(triagem.freq_card)     : 70,
-          SpO2_Percent:   triagem.sp_o2         !== '' ? parseInt(triagem.sp_o2)         : 98,
-          Temperature_C:  triagem.temperatura   !== '' ? parseFloat(triagem.temperatura) : 37.0,
-          Pain_Level:     triagem.nivel_dor     !== '' ? parseInt(triagem.nivel_dor)     : 0,
-          Consciousness:  triagem.consciencia   !== '' ? triagem.consciencia             : 'Acordado',
+          Age: typeof idade === 'number' ? idade : 50,
+          Heart_Rate_BPM: triagem.freq_card !== '' ? parseInt(triagem.freq_card) : 70,
+          SpO2_Percent: triagem.sp_o2 !== '' ? parseInt(triagem.sp_o2) : 98,
+          Temperature_C: triagem.temperatura !== '' ? parseFloat(triagem.temperatura) : 37.0,
+          Pain_Level: triagem.nivel_dor !== '' ? parseInt(triagem.nivel_dor) : 0,
+          Consciousness: triagem.consciencia !== '' ? triagem.consciencia : 'Acordado',
         }),
       });
 
@@ -315,19 +321,19 @@ export default function NurseDashboard() {
     try {
       const codEp = obterCodEpisodio(episodioSelecionado);
       const payload = {
-        cod_ep_urgenc:    codEp,
+        cod_ep_urgenc: codEp,
         data_hora_inicio: new Date().toISOString(),
-        id_func:          utilizadorLogado?.idfunc || null,
-        cor_triagem:      triagem.cor_triagem,
-        sintomas:         triagem.sintomas,
-        temperatura:      triagem.temperatura  !== '' ? parseFloat(triagem.temperatura)  : null,
-        freq_card:        triagem.freq_card     !== '' ? parseInt(triagem.freq_card)      : null,
-        freq_resp:        triagem.freq_resp     !== '' ? parseInt(triagem.freq_resp)      : null,
-        sp_o2:            triagem.sp_o2         !== '' ? parseFloat(triagem.sp_o2)        : null,
-        sistolica:        triagem.sistolica     !== '' ? parseInt(triagem.sistolica)      : null,
-        diastolica:       triagem.diastolica    !== '' ? parseInt(triagem.diastolica)     : null,
-        nivel_dor:        triagem.nivel_dor     !== '' ? parseInt(triagem.nivel_dor)      : null,
-        consciencia:      triagem.consciencia   !== '' ? triagem.consciencia              : null,
+        id_func: utilizadorLogado?.idfunc || null,
+        cor_triagem: triagem.cor_triagem,
+        sintomas: triagem.sintomas,
+        temperatura: triagem.temperatura !== '' ? parseFloat(triagem.temperatura) : null,
+        freq_card: triagem.freq_card !== '' ? parseInt(triagem.freq_card) : null,
+        freq_resp: triagem.freq_resp !== '' ? parseInt(triagem.freq_resp) : null,
+        sp_o2: triagem.sp_o2 !== '' ? parseFloat(triagem.sp_o2) : null,
+        sistolica: triagem.sistolica !== '' ? parseInt(triagem.sistolica) : null,
+        diastolica: triagem.diastolica !== '' ? parseInt(triagem.diastolica) : null,
+        nivel_dor: triagem.nivel_dor !== '' ? parseInt(triagem.nivel_dor) : null,
+        consciencia: triagem.consciencia !== '' ? triagem.consciencia : null,
       };
 
       const res = await authFetch(`${API_URL}/api/v1/triagens/`, {
@@ -359,8 +365,8 @@ export default function NurseDashboard() {
 
   const abrirProcessoClinico = async (num_utente, codEpUrgenc) => {
     try {
-      if (!num_utente)   throw new Error('Identificador do utente não encontrado.');
-      if (!codEpUrgenc)  throw new Error('Código do episódio não encontrado.');
+      if (!num_utente) throw new Error('Identificador do utente não encontrado.');
+      if (!codEpUrgenc) throw new Error('Código do episódio não encontrado.');
       await carregarHistorico(num_utente, codEpUrgenc);
       setMainMenu('processo');
     } catch (e) {
@@ -374,12 +380,20 @@ export default function NurseDashboard() {
     setEpisodioSelecionado(ep);
     setMainMenu('triagem');
 
+    if (ep?.estado === 'aberto') {
+      await authFetch(`${API_URL}/api/v1/episodios/${obterCodEpisodio(ep)}`, {
+        method: 'PUT',
+        body: JSON.stringify({ estado: 'em_triagem' }),
+      });
+      await carregarEpisodios();
+    }
+
     try {
       const num_utent = obterNumUtenteDoEpisodio(ep);
-      const codEp     = obterCodEpisodio(ep);
+      const codEp = obterCodEpisodio(ep);
 
       if (!num_utent) throw new Error('Identificador do utente não encontrado no episódio.');
-      if (!codEp)     throw new Error('Código do episódio não encontrado.');
+      if (!codEp) throw new Error('Código do episódio não encontrado.');
 
       const [uRes, mRes, tRes] = await Promise.all([
         authFetch(`${API_URL}/api/v1/utentes/${num_utent}`),
@@ -399,16 +413,16 @@ export default function NurseDashboard() {
       if (tRes.ok) {
         const tData = await tRes.json();
         setTriagem({
-          sistolica:   tData?.sistolica   ?? '',
-          diastolica:  tData?.diastolica  ?? '',
-          freq_card:   tData?.freq_card   ?? '',
-          freq_resp:   tData?.freq_resp   ?? '',
+          sistolica: tData?.sistolica ?? '',
+          diastolica: tData?.diastolica ?? '',
+          freq_card: tData?.freq_card ?? '',
+          freq_resp: tData?.freq_resp ?? '',
           temperatura: tData?.temperatura ?? '',
-          sp_o2:       tData?.sp_o2       ?? '',
-          nivel_dor:   tData?.nivel_dor   ?? '',
+          sp_o2: tData?.sp_o2 ?? '',
+          nivel_dor: tData?.nivel_dor ?? '',
           consciencia: tData?.consciencia ?? '',
           cor_triagem: tData?.cor_triagem ?? '',
-          sintomas:    tData?.sintomas    ?? '',
+          sintomas: tData?.sintomas ?? '',
         });
       }
 
@@ -441,13 +455,13 @@ export default function NurseDashboard() {
 
   const renderSalaDeEspera = () => {
     const tabs = [
-      { id: 'sem',          label: 'Sem triagem',  icon: <SvgList /> },
-      { id: 'em',           label: 'Em triagem',   icon: <SvgClipboard /> },
-      { id: 'triados',      label: 'Triados',      icon: <SvgCheck /> },
+      { id: 'sem', label: 'Sem triagem', icon: <SvgList /> },
+      { id: 'em', label: 'Em triagem', icon: <SvgClipboard /> },
+      { id: 'triados', label: 'Triados', icon: <SvgCheck /> },
       { id: 'desistencias', label: 'Desistências', icon: <SvgX /> },
     ];
 
-    const colSpan = salaTab === 'sem' || salaTab === 'triados' ? 4 : salaTab === 'em' ? 3 : 2;
+    const colSpan = salaTab === 'sem' || salaTab === 'triados' ? 5 : salaTab === 'em' ? 4 : salaTab === 'desistencias' ? 3 : 2;
 
     return (
       <section className="admin-panel-section">
@@ -491,29 +505,32 @@ export default function NurseDashboard() {
                   {salaTab === 'sem' && (
                     <>
                       <th>Episódio</th>
-                      <th>{textos?.nurse?.utente  || 'Utente'}</th>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
                       <th>{textos?.nurse?.entrada || 'Entrada'}</th>
-                      <th>{textos?.geral?.acoes   || 'Ações'}</th>
+                      <th>{textos?.geral?.acoes || 'Ações'}</th>
                     </>
                   )}
                   {salaTab === 'em' && (
                     <>
-                      <th>{textos?.nurse?.utente        || 'Utente'}</th>
+                      <th>Episódio</th>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
                       <th>{textos?.nurse?.inicioTriagem || 'Início triagem'}</th>
-                      <th>{textos?.nurse?.enfermeiro    || 'Enfermeiro'}</th>
+                      <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
                     </>
                   )}
                   {salaTab === 'triados' && (
                     <>
-                      <th>{textos?.nurse?.utente      || 'Utente'}</th>
+                      <th>Episódio</th>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
                       <th>{textos?.nurse?.dataTriagem || 'Data triagem'}</th>
-                      <th>{textos?.nurse?.enfermeiro  || 'Enfermeiro'}</th>
-                      <th>{textos?.geral?.acoes       || 'Ações'}</th>
+                      <th>{textos?.nurse?.enfermeiro || 'Enfermeiro'}</th>
+                      <th>{textos?.geral?.acoes || 'Ações'}</th>
                     </>
                   )}
                   {salaTab === 'desistencias' && (
                     <>
-                      <th>{textos?.nurse?.utente          || 'Utente'}</th>
+                      <th>Episódio</th>
+                      <th>{textos?.nurse?.utente || 'Utente'}</th>
                       <th>{textos?.nurse?.dataDesistencia || 'Data/Hora'}</th>
                     </>
                   )}
@@ -552,6 +569,7 @@ export default function NurseDashboard() {
                     if (salaTab === 'em') {
                       return (
                         <tr key={`ep-${key}`}>
+                          <td>#{ep?.cod_ep_urgenc}</td>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
                           <td>{ep?.data_hora_entr ? new Date(ep.data_hora_entr).toLocaleString('pt-PT') : '—'}</td>
                           <td>—</td>
@@ -562,6 +580,7 @@ export default function NurseDashboard() {
                     if (salaTab === 'triados') {
                       return (
                         <tr key={`ep-${key}`}>
+                          <td>#{ep?.cod_ep_urgenc}</td>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
                           <td>{ep?.data_hora_triagem ? new Date(ep.data_hora_triagem).toLocaleString('pt-PT') : '—'}</td>
                           <td>{ep?.nome_enfermeiro || '—'}</td>
@@ -577,6 +596,7 @@ export default function NurseDashboard() {
 
                     return (
                       <tr key={`ep-${key}`}>
+                        <td>#{ep?.cod_ep_urgenc}</td>
                         <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
                         <td>{ep?.data_hora_saida ? new Date(ep.data_hora_saida).toLocaleString('pt-PT') : '—'}</td>
                       </tr>
@@ -732,6 +752,29 @@ export default function NurseDashboard() {
                 <span className="btn-icon"><SvgHeart /></span>
                 <span className="btn-text">{textos?.nurse?.pedirSugestaoIa || 'Sugestão IA'}</span>
               </button>
+              <button type="button" className="admin-secondary-button"
+                style={{ backgroundColor: '#e53e3e', color: '#fff', borderColor: '#e53e3e' }}
+                onClick={async () => {
+                  const codEp = obterCodEpisodio(episodioSelecionado);
+                  await authFetch(`${API_URL}/api/v1/episodios/${codEp}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ 
+                      estado: 'desistiu',
+                      data_hora_saida: new Date().toISOString(),
+                    }),
+                  });
+                  mostrarToast('Desistência registada.', 'aviso');
+                  setTriagem(TRIAGEM_VAZIA);
+                  setEpisodioSelecionado(null);
+                  setUtente(null);
+                  setMedicacaoAtiva([]);
+                  await carregarEpisodios();
+                  setMainMenu('sala');
+                  setSalaTab('desistencias');
+                }}>
+                <span className="btn-icon"><SvgX /></span>
+                <span className="btn-text">Registar Desistência</span>
+              </button>
               <button type="submit" className="admin-form__submit">
                 <span className="btn-icon"><SvgCheck /></span>
                 <span className="btn-text">{textos?.nurse?.gravarTriagem || 'Gravar triagem'}</span>
@@ -745,10 +788,10 @@ export default function NurseDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>{textos?.nurse?.nome     || 'Nome'}</th>
+                    <th>{textos?.nurse?.nome || 'Nome'}</th>
                     <th>{textos?.nurse?.posologia || 'Posologia'}</th>
-                    <th>{textos?.nurse?.inicio   || 'Início'}</th>
-                    <th>{textos?.nurse?.fim      || 'Fim'}</th>
+                    <th>{textos?.nurse?.inicio || 'Início'}</th>
+                    <th>{textos?.nurse?.fim || 'Fim'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -760,7 +803,7 @@ export default function NurseDashboard() {
                         <td>{m.principio_ativo || '—'}</td>
                         <td>{m.dosagem || '—'}</td>
                         <td>{m.data_inicio || '—'}</td>
-                        <td>{m.data_fim   || '—'}</td>
+                        <td>{m.data_fim || '—'}</td>
                       </tr>
                     ))
                   )}
@@ -789,7 +832,7 @@ export default function NurseDashboard() {
         <div className="admin-table-card">
           <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p><strong>{textos?.nurse?.nome || 'Nome'}:</strong> {utente.nome || '—'}</p>
-            <p><strong>{textos?.nurse?.nif  || 'NIF'}:</strong>  {utente.nif  || '—'}</p>
+            <p><strong>{textos?.nurse?.nif || 'NIF'}:</strong>  {utente.nif || '—'}</p>
           </div>
 
           <div style={{ padding: '0 24px 18px' }}>
@@ -798,9 +841,9 @@ export default function NurseDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>{textos?.nurse?.data        || 'Data'}</th>
+                    <th>{textos?.nurse?.data || 'Data'}</th>
                     <th>Tipo</th>
-                    <th>{textos?.nurse?.descricao   || 'Descrição'}</th>
+                    <th>{textos?.nurse?.descricao || 'Descrição'}</th>
                     <th>{textos?.nurse?.profissional || 'Profissional'}</th>
                   </tr>
                 </thead>
@@ -815,8 +858,8 @@ export default function NurseDashboard() {
                             ? (() => { const d = new Date(h.data); return isNaN(d) ? h.data : d.toLocaleString('pt-PT'); })()
                             : '—'}
                         </td>
-                        <td>{h.tipo        || '—'}</td>
-                        <td>{h.descricao   || '—'}</td>
+                        <td>{h.tipo || '—'}</td>
+                        <td>{h.descricao || '—'}</td>
                         <td>{h.profissional || '—'}</td>
                       </tr>
                     ))
@@ -884,8 +927,8 @@ export default function NurseDashboard() {
             <p>{textos?.nurse?.descricaoPainel || 'Fila de episódios, contexto clínico e triagem assistida.'}</p>
           </div>
           <div className="admin-content-body">
-            {mainMenu === 'sala'     && renderSalaDeEspera()}
-            {mainMenu === 'triagem'  && renderTriagem()}
+            {mainMenu === 'sala' && renderSalaDeEspera()}
+            {mainMenu === 'triagem' && renderTriagem()}
             {mainMenu === 'processo' && renderProcessoClinico()}
           </div>
         </div>
