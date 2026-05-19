@@ -490,8 +490,8 @@ export default function NurseDashboard() {
                 <tr>
                   {salaTab === 'sem' && (
                     <>
+                      <th>Episódio</th>
                       <th>{textos?.nurse?.utente  || 'Utente'}</th>
-                      <th>{textos?.nurse?.idade   || 'Idade'}</th>
                       <th>{textos?.nurse?.entrada || 'Entrada'}</th>
                       <th>{textos?.geral?.acoes   || 'Ações'}</th>
                     </>
@@ -532,8 +532,8 @@ export default function NurseDashboard() {
                     if (salaTab === 'sem') {
                       return (
                         <tr key={`ep-${key}`}>
+                          <td>#{ep?.cod_ep_urgenc}</td>
                           <td>{ep?.nome_utente || `#${ep?.num_utent}` || '—'}</td>
-                          <td>{calcularIdade(ep?.data_nasc_utente)}</td>
                           <td>
                             {ep?.data_hora_entr
                               ? new Date(ep.data_hora_entr).toLocaleString('pt-PT')
