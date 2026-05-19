@@ -155,7 +155,6 @@ export default function DoctorDashboard() {
     const hospitalId = utilizadorLogado?.hospitais?.[0]?.idhosp;
     if (!hospitalId) return;
     try {
-      
       const res  = await fetch(`${API_URL}/api/v1/triagens/hospital/${hospitalId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar episódios.'));
@@ -204,8 +203,6 @@ export default function DoctorDashboard() {
     setAntecedentes(null);
     setMostrarAntecedentes(false);
     setModoEdicaoTriagem(false);
-    
-    
 
     const episodioId = ep.cod_ep_urgenc;
     const utenteId   = ep.num_utent;
@@ -327,7 +324,6 @@ export default function DoctorDashboard() {
     const utenteId = utente?.num_utent || utente?.numutent;
     if (!utenteId) return;
     try {
-      
       const res  = await fetch(`${API_URL}/api/v1/utente-antecedentes/utente/${utenteId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao carregar antecedentes.'));
@@ -342,8 +338,6 @@ export default function DoctorDashboard() {
     e.preventDefault();
     const episodioId = episodioSelecionado?.cod_ep_urgenc;
     try {
-      
-      
       const res = await fetch(`${API_URL}/api/v1/triagens/${episodioId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -384,8 +378,6 @@ export default function DoctorDashboard() {
   const adicionarPrescricao = async (e) => {
     e.preventDefault();
     try {
-      
-      
       const utenteId = utente?.num_utent || utente?.numutent;
 
       // Usa o ato mais recente do episódio
@@ -431,8 +423,6 @@ export default function DoctorDashboard() {
   const registarAlta = async (e) => {
     e.preventDefault();
     try {
-      
-      
       const episodioId = episodioSelecionado?.cod_ep_urgenc;
       const res = await fetch(`${API_URL}/api/v1/episodios/${episodioId}`, {
         method: 'PUT',
@@ -442,7 +432,8 @@ export default function DoctorDashboard() {
           data_hora_saida: new Date().toISOString(),
         }),
       });
-      const data = await res.json();      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
+      const data = await res.json();
+      if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
       mostrarToast('Alta ou internamento registado com sucesso.', 'sucesso');
       await carregarEpisodios();
       setEpisodioSelecionado(null);
@@ -634,6 +625,7 @@ export default function DoctorDashboard() {
               </div>
             )}
 
+            {/* Ficha de triagem */}
             <div className="admin-table-card" style={{ marginTop: '1rem', padding: '16px 24px' }}>
               <p style={{ marginBottom: '1rem' }}>
                 <strong>Utente:</strong> {utente?.nome || episodioSelecionado.nome_utente || '—'}
@@ -720,6 +712,44 @@ export default function DoctorDashboard() {
               )}
             </div>
 
+            {/* Histórico de Atos Clínicos */}
+            <div className="admin-table-card" style={{ marginTop: '1rem', padding: '16px 24px' }}>
+              <h3>📋 {textos?.doctor?.historicoAtos || 'Histórico de Atos Clínicos'}</h3>
+              {atos.length > 0 ? (
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Tipo</th>
+                      <th>Descrição</th>
+                      <th>Início</th>
+                      <th>Fim</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {atos.map((a) => (
+                      <tr key={a.id_ato || a.idato}>
+                        <td>{a.id_ato || a.idato}</td>
+                        <td>{a.tipo || '—'}</td>
+                        <td>{a.descricao || '—'}</td>
+                        <td>{a.data_hora_inicio || a.datahorainicio
+                          ? new Date(a.data_hora_inicio || a.datahorainicio).toLocaleString('pt-PT')
+                          : '—'}
+                        </td>
+                        <td>{a.data_hora_fim || a.datahorafim
+                          ? new Date(a.data_hora_fim || a.datahorafim).toLocaleString('pt-PT')
+                          : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p>Sem atos clínicos registados para este episódio.</p>
+              )}
+            </div>
+
+            {/* Alertas Médicos */}
             <div className="admin-table-card" style={{ marginTop: '1rem', padding: '16px 24px' }}>
               <h3>⚠️ {textos?.doctor?.alertas || 'Alertas Médicos'}</h3>
               {alertas.length > 0 ? (
@@ -733,6 +763,7 @@ export default function DoctorDashboard() {
               )}
             </div>
 
+            {/* Medicação Ativa */}
             <div className="admin-table-card" style={{ marginTop: '1rem', padding: '16px 24px' }}>
               <h3>💊 {textos?.doctor?.medicacaoAtiva || 'Medicação habitual ativa'}</h3>
               {medicacaoAtiva.length > 0 ? (
