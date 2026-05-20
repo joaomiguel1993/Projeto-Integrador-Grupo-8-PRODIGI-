@@ -24,6 +24,12 @@ def _map_row(row):
         "tipo_alta": row["tipoalta"],
     }
 
+def _map_row_hospital(row):
+    if row is None:
+        return None
+    result = _map_row(row)
+    result["nome_utente"] = row.get("nome_utente")
+    return result
 
 def listar_internamentos():
     rows = internamentos_dao.select_all_internamentos()
@@ -94,3 +100,10 @@ def remover_internamento(cod_internamento: int):
         return None
 
     return row["codinternamento"]
+
+
+def listar_internamentos_por_hospital(idhosp: int):
+    rows = internamentos_dao.select_internamentos_by_hospital(idhosp)
+    if rows is None:
+        return []
+    return [_map_row_hospital(row) for row in rows]

@@ -16,6 +16,15 @@ def listar_internamentos():
     return internamentos_service.listar_internamentos()
 
 
+# NOTA: /hospital/{idhosp} e /episodio/{cod_ep_urgenc} têm de vir ANTES
+# de /{cod_internamento} para o FastAPI não tentar fazer match do literal
+# "hospital" ou "episodio" como inteiro.
+
+@router.get("/hospital/{idhosp}", response_model=List[InternamentoOut])
+def listar_internamentos_por_hospital(idhosp: int):
+    return internamentos_service.listar_internamentos_por_hospital(idhosp)
+
+
 @router.get("/episodio/{cod_ep_urgenc}", response_model=InternamentoOut)
 def obter_internamento_por_episodio(cod_ep_urgenc: int):
     return internamentos_service.obter_internamento_por_episodio(cod_ep_urgenc)

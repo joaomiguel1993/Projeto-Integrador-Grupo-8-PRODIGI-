@@ -51,6 +51,10 @@ def remover_internamento(cod_internamento: int):
             raise HTTPException(status_code=404, detail="Internamento não encontrado.")
         return {"detail": "Internamento removido com sucesso."}
     except HTTPException:
-        raise
+        raisea
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao remover internamento: {str(e)}")
+
+
+def listar_internamentos_por_hospital(idhosp: int):
+    return internamentos_repository.listar_internamentos_por_hospital(idhosp)

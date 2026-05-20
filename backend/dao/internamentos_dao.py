@@ -123,3 +123,16 @@ def delete_internamento(codinternamento: int):
         WHERE codinternamento = %s
         RETURNING codinternamento
     """, (codinternamento,))
+
+def select_internamentos_by_hospital(idhosp: int):
+    return run_query("""
+        SELECT i.codinternamento, i.codepurgenc, i.idfunc, i.datahoraint, i.datahoraconsulta,
+               i.datahoraalta, i.motivoint, i.numerocama, i.servico, i.tipoalta,
+               u.nome AS nome_utente
+        FROM internamento i
+        JOIN epurgencia e ON e.codepurgenc = i.codepurgenc
+        JOIN utente     u ON u.numutent    = e.numutent
+        WHERE e.idhosp = %s
+          AND i.datahoraalta IS NULL
+        ORDER BY i.datahoraint DESC
+    """, (idhosp,))

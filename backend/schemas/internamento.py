@@ -56,3 +56,4 @@ class InternamentoOut(BaseModel):
     numero_cama: Optional[str] = None
     servico: Optional[str] = None
     tipo_alta: Optional[str] = None
+    nome_utente: Optional[str] = None  # ← adicionar
