@@ -11,6 +11,21 @@ const API_IA  = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
 
 const MAPA_GRAVIDADE = { 'Baixa': 1, 'Média': 2, 'Media': 2, 'Alta': 3 };
 
+const SERVICOS = ['Cardiologia', 'Medicina', 'Ortopedia', 'Cirurgia'];
+
+const MOTIVOS_INTERNAMENTO = [
+  'Insuficiência cardíaca',
+  'Pneumonia',
+  'Fratura óssea',
+  'Pós-operatório',
+  'Monitorização clínica',
+  'AVC',
+  'Sépsis',
+  'Descompensação diabética',
+  'Dor torácica',
+  'Outro',
+];
+
 const calcularIdade = (dataNasc) => {
   if (!dataNasc) return 50;
   const nasc = new Date(dataNasc);
@@ -57,6 +72,14 @@ const IconExit = () => (
     <path d="M16 17l5-5-5-5" /><path d="M21 12H9" />
   </svg>
 );
+const IconBed = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8" />
+    <path d="M2 14h20" />
+    <path d="M6 14v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" />
+    <path d="M2 20h20" />
+  </svg>
+);
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
@@ -74,7 +97,11 @@ export default function DoctorDashboard() {
   const [dadosTriagem, setDadosTriagem] = useState(null);
   const [modoEdicaoTriagem, setModoEdicaoTriagem] = useState(false);
 
-  // campos em minúsculas — alinhados com TriagemOut
+  // Internamentos activos
+  const [internamentos, setInternamentos] = useState([]);
+  const [internamentoSelecionado, setInternamentoSelecionado] = useState(null);
+  const [altaInternamento, setAltaInternamento] = useState({ tipo_alta: 'clinica', observacoes: '' });
+
   const [formTriagem, setFormTriagem] = useState({
     cor_triagem:  '',
     temperatura:  '',
@@ -106,7 +133,12 @@ export default function DoctorDashboard() {
   const [avaliacaoRisco, setAvaliacaoRisco] = useState(false);
 
   const [alta, setAlta] = useState({
-    destino: 'alta', observacoes: '', internamento_destino: '',
+    destino: 'alta',
+    observacoes: '',
+    servico: '',
+    numero_cama: '',
+    motivo_int: '',
+    motivo_int_outro: '',
   });
 
   const utilizadorLogado = useMemo(() => {
@@ -126,8 +158,9 @@ export default function DoctorDashboard() {
     {
       title: textos?.doctor?.menuGrupoTriagem || 'Triagem',
       items: [
-        { key: 'fila',        icon: <IconQueue />,     label: textos?.doctor?.menuFila       || 'Fila por prioridade' },
-        { key: 'atendimento', icon: <IconClipboard />, label: textos?.doctor?.menuAtendimento || 'Atendimento' },
+        { key: 'fila',           icon: <IconQueue />,     label: textos?.doctor?.menuFila           || 'Fila por prioridade' },
+        { key: 'atendimento',    icon: <IconClipboard />, label: textos?.doctor?.menuAtendimento     || 'Atendimento' },
+        { key: 'internamentos',  icon: <IconBed />,       label: textos?.doctor?.menuInternamentos   || 'Internamentos Activos' },
       ],
     },
   ], [textos]);
@@ -136,7 +169,12 @@ export default function DoctorDashboard() {
     carregarEpisodios();
     carregarTemposMediosHospital();
     carregarMedicamentos();
+    carregarInternamentosActivos();
   }, [utilizadorLogado]);
+
+  useEffect(() => {
+  if (mainMenu === 'internamentos') carregarInternamentosActivos();
+}, [mainMenu]);
 
   const extrairMensagemErro = (data, fallback) => {
     if (!data) return fallback;
@@ -188,7 +226,7 @@ export default function DoctorDashboard() {
 
   const episodiosFiltrados = useMemo(() =>
     episodios
-      .filter((ep) => !['terminado', 'desistiu'].includes(ep.estado_episodio || ''))
+      .filter((ep) => !['terminado', 'desistiu', 'internado'].includes(ep.estado_episodio || ''))
       .filter((ep) =>
         normalizar([ep.nome_utente, ep.cod_ep_urgenc, ep.cor_triagem].join(' '))
           .includes(normalizar(filtro))
@@ -196,7 +234,18 @@ export default function DoctorDashboard() {
     [episodios, filtro]
   );
 
-  // FIX: usa num_utent (campo real do TriagemOut)
+  const carregarInternamentosActivos = async () => {
+    const hospitalId = utilizadorLogado?.hospitais?.[0]?.idhosp;
+    if (!hospitalId) return;
+    try {
+      const res  = await fetch(`${API_URL}/api/v1/internamentos/hospital/${hospitalId}`);
+      const data = await res.json();
+      if (res.ok) setInternamentos(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('Erro ao carregar internamentos:', e);
+    }
+  };
+
   const abrirEpisodio = async (ep, focarNaAlta = false) => {
     setEpisodioSelecionado(ep);
     setMainMenu('atendimento');
@@ -230,10 +279,8 @@ export default function DoctorDashboard() {
       setRiscoIA(null);
       setPrescricao({ cod_medicamento: '', dosagem: '', observacoes: '' });
 
-      // Carregar alergias do utente para cruzamento IA
       await carregarAlergias(utenteId);
 
-      // Triagem já está em ep (vem do TriagemOut)
       setDadosTriagem(ep);
       setFormTriagem({
         cor_triagem: ep?.cor_triagem  || '',
@@ -286,12 +333,10 @@ export default function DoctorDashboard() {
 
       const classeNovoMed = med.classe_terapeutica_id;
 
-      // Verificar alergia à classe do novo medicamento
       const alergiaClasse = alergias.find((a) => a.classe_terapeutica_id === classeNovoMed);
       const temAlergia    = alergiaClasse ? 1 : 0;
       const gravidadeAlergia = alergiaClasse ? (MAPA_GRAVIDADE[alergiaClasse.nivel_gravidade] || 0) : 0;
 
-      // Verificar interação com medicação ativa da mesma classe
       const temInteracao = medicacaoAtiva.some((m) => {
         const medAtivo = medicamentos.find((x) => x.cod_medicamento === m.cod_medicamento);
         return medAtivo?.classe_terapeutica_id === classeNovoMed;
@@ -380,7 +425,6 @@ export default function DoctorDashboard() {
     try {
       const utenteId = utente?.num_utent || utente?.numutent;
 
-      // Usa o ato mais recente do episódio
       const idAto = atosRef.current.length > 0 ? atosRef.current[0].id_ato : null;
       if (!idAto) throw new Error('Não existe nenhum ato clínico associado a este episódio.');
 
@@ -397,7 +441,6 @@ export default function DoctorDashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao criar prescrição.'));
 
-      // Se temos resultado da IA, actualiza a prescrição com o score
       if (riscoIA && data.id_prescricao) {
         await fetch(`${API_URL}/api/v1/prescricoes/${data.id_prescricao}`, {
           method: 'PUT',
@@ -424,6 +467,7 @@ export default function DoctorDashboard() {
     e.preventDefault();
     try {
       const episodioId = episodioSelecionado?.cod_ep_urgenc;
+
       const res = await fetch(`${API_URL}/api/v1/episodios/${episodioId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -434,10 +478,31 @@ export default function DoctorDashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(extrairMensagemErro(data, 'Erro ao registar alta.'));
+
+      if (alta.destino === 'internamento') {
+        const motivoFinal = alta.motivo_int === 'Outro' ? alta.motivo_int_outro : alta.motivo_int;
+        if (!motivoFinal) throw new Error('O motivo de internamento é obrigatório.');
+
+        const resInt = await fetch(`${API_URL}/api/v1/internamentos/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cod_ep_urgenc: episodioId,
+            id_func:       utilizadorLogado?.idfunc || null,
+            data_hora_int: new Date().toISOString(),
+            motivo_int:    motivoFinal,
+            servico:       alta.servico || null,
+            numero_cama:   alta.numero_cama || null,
+          }),
+        });
+        const dataInt = await resInt.json();
+        if (!resInt.ok) throw new Error(extrairMensagemErro(dataInt, 'Erro ao criar registo de internamento.'));
+      }
+
       mostrarToast('Alta ou internamento registado com sucesso.', 'sucesso');
       await carregarEpisodios();
       setEpisodioSelecionado(null);
-      setAlta({ destino: 'alta', observacoes: '', internamento_destino: '' });
+      setAlta({ destino: 'alta', observacoes: '', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '' });
       setMainMenu('fila');
     } catch (e) {
       mostrarToast(e.message, 'erro');
@@ -816,7 +881,6 @@ export default function DoctorDashboard() {
                 </div>
               </div>
 
-              {/* Resultado da avaliação IA */}
               {riscoIA && (
                 <div style={{
                   margin: '1rem 0',
@@ -860,20 +924,55 @@ export default function DoctorDashboard() {
             </h3>
             <form className="admin-form" onSubmit={registarAlta} style={{ marginTop: '1rem' }}>
               <div className="admin-form__grid">
-                <div className="admin-form__group">
+                <div className="admin-form__group" style={{ gridColumn: '1 / -1' }}>
                   <label>{textos?.doctor?.destino || 'Destino'}</label>
                   <select name="destino" value={alta.destino} onChange={handleAltaChange}>
                     <option value="alta">{textos?.doctor?.alta || 'Alta'}</option>
                     <option value="internamento">{textos?.doctor?.internamento || 'Internamento'}</option>
                   </select>
                 </div>
-                <div className="admin-form__group">
-                  <label>{textos?.doctor?.destinoInternamento || 'Unidade/Serviço de destino'}</label>
-                  <input name="internamento_destino" value={alta.internamento_destino} onChange={handleAltaChange} placeholder="Ex: Medicina Interna" />
-                </div>
+
+                {alta.destino === 'internamento' && (
+                  <>
+                    <div className="admin-form__group">
+                      <label>Serviço</label>
+                      <select name="servico" value={alta.servico} onChange={handleAltaChange} required>
+                        <option value="">— seleccionar —</option>
+                        {SERVICOS.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="admin-form__group">
+                      <label>Número de Cama</label>
+                      <input name="numero_cama" value={alta.numero_cama} onChange={handleAltaChange} placeholder="Ex: C001" />
+                    </div>
+                    <div className="admin-form__group admin-form__group--full">
+                      <label>Motivo de Internamento</label>
+                      <select name="motivo_int" value={alta.motivo_int} onChange={handleAltaChange} required>
+                        <option value="">— seleccionar —</option>
+                        {MOTIVOS_INTERNAMENTO.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                      {alta.motivo_int === 'Outro' && (
+                        <textarea
+                          name="motivo_int_outro"
+                          value={alta.motivo_int_outro}
+                          onChange={handleAltaChange}
+                          rows={3}
+                          placeholder="Descreva o motivo de internamento..."
+                          required
+                          style={{ marginTop: '0.5rem' }}
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
+
                 <div className="admin-form__group admin-form__group--full">
                   <label>{textos?.doctor?.observacoes || 'Observações de Encerramento'}</label>
-                  <textarea name="observacoes" value={alta.observacoes} onChange={handleAltaChange} rows="4" />
+                  <textarea name="observacoes" value={alta.observacoes} onChange={handleAltaChange} rows="3" placeholder="Notas adicionais de encerramento do episódio..." />
                 </div>
               </div>
               <div className="admin-actions-row">
@@ -891,11 +990,160 @@ export default function DoctorDashboard() {
     </section>
   );
 
+  const registarAltaInternamento = async (e) => {
+    e.preventDefault();
+    if (!internamentoSelecionado) return;
+    try {
+      const { cod_internamento, cod_ep_urgenc } = internamentoSelecionado;
+
+      // Actualizar internamento com data de alta e tipo
+      const resInt = await fetch(`${API_URL}/api/v1/internamentos/${cod_internamento}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data_hora_alta: new Date().toISOString(),
+          tipo_alta:      altaInternamento.tipo_alta,
+        }),
+      });
+      const dataInt = await resInt.json();
+      if (!resInt.ok) throw new Error(extrairMensagemErro(dataInt, 'Erro ao registar alta do internamento.'));
+
+      // Actualizar episódio para terminado
+      const resEp = await fetch(`${API_URL}/api/v1/episodios/${cod_ep_urgenc}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: 'terminado', data_hora_saida: new Date().toISOString() }),
+      });
+      const dataEp = await resEp.json();
+      if (!resEp.ok) throw new Error(extrairMensagemErro(dataEp, 'Erro ao encerrar episódio.'));
+
+      mostrarToast('Alta de internamento registada com sucesso.', 'sucesso');
+      setInternamentoSelecionado(null);
+      setAltaInternamento({ tipo_alta: 'clinica', observacoes: '' });
+      await carregarInternamentosActivos();
+      await carregarEpisodios();
+    } catch (e) {
+      mostrarToast(e.message, 'erro');
+    }
+  };
+
+  const renderInternamentos = () => (
+    <section className="admin-panel-section">
+      <div className="admin-panel-section__header">
+        <h2>🛏️ {textos?.doctor?.internamentosActivos || 'Internamentos Activos'}</h2>
+        <p>{textos?.doctor?.internamentosDesc || 'Utentes actualmente internados. Registe a alta quando o utente tiver condições de saída.'}</p>
+      </div>
+
+      <div className="admin-table-card admin-table-card--full">
+        <div className="admin-table-card__header">
+          <h3>Utentes internados</h3>
+          <span>{internamentos.filter((i) => !i.data_hora_alta).length}</span>
+        </div>
+        <div className="admin-table-scroll admin-table-scroll--employees">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Internamento</th>
+                <th>Episódio</th>
+                <th>Utente</th>
+                <th>Serviço</th>
+                <th>Cama</th>
+                <th>Motivo</th>
+                <th>Data Entrada</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {internamentos.filter((i) => !i.data_hora_alta).length === 0 ? (
+                <tr><td colSpan="8">Sem utentes internados de momento.</td></tr>
+              ) : (
+                internamentos
+                  .filter((i) => !i.data_hora_alta)
+                  .map((int) => (
+                    <tr key={int.cod_internamento}
+                      style={internamentoSelecionado?.cod_internamento === int.cod_internamento
+                        ? { backgroundColor: 'var(--bg-selected, #e8f4fd)' } : {}}>
+                      <td>#{int.cod_internamento}</td>
+                      <td>#{int.cod_ep_urgenc}</td>
+                      <td>{int.nome_utente || '—'}</td>
+                      <td>{int.servico || '—'}</td>
+                      <td>{int.numero_cama || '—'}</td>
+                      <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {int.motivo_int || '—'}
+                      </td>
+                      <td>{int.data_hora_int
+                        ? new Date(int.data_hora_int).toLocaleString('pt-PT')
+                        : '—'}</td>
+                      <td>
+                        <button type="button" className="admin-secondary-button"
+                          style={{ backgroundColor: '#28a745', color: '#fff', borderColor: '#28a745' }}
+                          onClick={() => {
+                            setInternamentoSelecionado(int);
+                            setAltaInternamento({ tipo_alta: 'clinica', observacoes: '' });
+                          }}>
+                          Registar Alta
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Formulário de alta do internamento */}
+      {internamentoSelecionado && (
+        <div className="admin-table-card" style={{ marginTop: '2rem', padding: '1.5rem', borderLeft: '4px solid #28a745' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ margin: 0 }}>
+              Alta do internamento #{internamentoSelecionado.cod_internamento}
+              {internamentoSelecionado.nome_utente ? ` — ${internamentoSelecionado.nome_utente}` : ''}
+            </h3>
+            <button type="button" style={{ border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}
+              onClick={() => setInternamentoSelecionado(null)}>✕</button>
+          </div>
+          <form onSubmit={registarAltaInternamento} className="admin-form">
+            <div className="admin-form__grid">
+              <div className="admin-form__group">
+                <label>Tipo de Alta</label>
+                <select
+                  value={altaInternamento.tipo_alta}
+                  onChange={(e) => setAltaInternamento((prev) => ({ ...prev, tipo_alta: e.target.value }))}
+                  required>
+                  <option value="clinica">Clínica</option>
+                  <option value="voluntaria">Voluntária</option>
+                  <option value="transferencia">Transferência</option>
+                  <option value="obito">Óbito</option>
+                </select>
+              </div>
+              <div className="admin-form__group admin-form__group--full">
+                <label>Observações (opcional)</label>
+                <textarea
+                  rows={3}
+                  value={altaInternamento.observacoes}
+                  onChange={(e) => setAltaInternamento((prev) => ({ ...prev, observacoes: e.target.value }))}
+                  placeholder="Notas clínicas de encerramento do internamento..." />
+              </div>
+            </div>
+            <div className="admin-actions-row">
+              <button type="submit" className="admin-form__submit"
+                style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}>
+                Confirmar Alta
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </section>
+  );
+
   const renderCenter = () => {
     switch (mainMenu) {
       case 'informacao_geral': return renderInformacaoGeral();
       case 'fila':             return renderFila();
       case 'atendimento':      return renderAtendimentoCompleto();
+      case 'internamentos':    return renderInternamentos();
       default:                 return renderInformacaoGeral();
     }
   };
