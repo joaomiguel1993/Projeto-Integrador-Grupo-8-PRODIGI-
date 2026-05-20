@@ -48,6 +48,9 @@ CAMPOS_ESPERADOS = {
     "Temperature_C":  "Dado não obtido",
     "Pain_Level":     "Dado não obtido",
     "Consciousness":  "Dado não obtido",
+    "Sistolica":      "Dado não obtido",
+    "Diastolica":     "Dado não obtido",
+    "Freq_Resp":      "Dado não obtido",
 }
 
 # --- 3. Modelos de Dados ---
@@ -165,7 +168,23 @@ def predict_voz(d: DadosVoz):
 
     cliente = Groq(api_key=api_key)
 
-    prompt = f"""És um assistente clínico...
+    prompt = f"""És um assistente clínico. Extrai os sinais vitais do seguinte texto falado por um enfermeiro em português.
+Devolve APENAS um objeto JSON válido, sem explicações nem markdown, com exatamente estas chaves:
+- "Age": número inteiro (anos) ou null
+- "Heart_Rate_BPM": número inteiro ou null
+- "SpO2_Percent": número inteiro (percentagem de saturação) ou null
+- "Temperature_C": número decimal (graus Celsius) ou null
+- "Pain_Level": número inteiro de 0 a 10 ou null
+- "Consciousness": uma de ["Acordado", "Confuso", "Inconsciente"] ou null
+- "Sistolica": número inteiro em mmHg ou null
+- "Diastolica": número inteiro em mmHg ou null
+- "Freq_Resp": número inteiro em rpm ou null
+
+Regras:
+- Se um valor não for mencionado, usa null.
+- Interpreta linguagem natural: "quase noventa de saturação" → 89, "febre de 39 e meio" → 39.5, "está desorientado" → "Confuso", "tensão 120 por 80" → Sistolica 120 Diastolica 80, "16 respirações por minuto" → Freq_Resp 16.
+- Devolve APENAS o JSON, sem mais nada.
+
 Texto: "{d.texto}"
 
 JSON:"""
@@ -185,6 +204,10 @@ JSON:"""
             return {"erro": "Conteúdo vazio do Groq"}
 
         conteudo = conteudo.strip()
+
+        # Remove markdown se presente
+        conteudo = re.sub(r'```json\s*', '', conteudo)
+        conteudo = re.sub(r'```\s*', '', conteudo)
 
         match = re.search(r'\{.*\}', conteudo, re.DOTALL)
         if not match:
