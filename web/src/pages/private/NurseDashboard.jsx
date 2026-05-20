@@ -913,6 +913,9 @@ export default function NurseDashboard() {
           temperatura: data.Temperature_C  !== 'Dado não obtido' ? String(data.Temperature_C)  : prev.temperatura,
           nivel_dor:   data.Pain_Level     !== 'Dado não obtido' ? String(data.Pain_Level)      : prev.nivel_dor,
           consciencia: data.Consciousness  !== 'Dado não obtido' ? data.Consciousness           : prev.consciencia,
+          sistolica:   data.Sistolica      !== 'Dado não obtido' ? String(data.Sistolica)       : prev.sistolica,
+          diastolica:  data.Diastolica     !== 'Dado não obtido' ? String(data.Diastolica)      : prev.diastolica,
+          freq_resp:   data.Freq_Resp      !== 'Dado não obtido' ? String(data.Freq_Resp)       : prev.freq_resp,
         }));
 
         mostrarToast('Campos preenchidos com sucesso.', 'sucesso');
