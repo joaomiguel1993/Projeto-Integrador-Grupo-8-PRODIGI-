@@ -116,6 +116,7 @@ export default function NurseDashboard() {
   const [triagem, setTriagem] = useState(TRIAGEM_VAZIA);
   const [loading, setLoading] = useState(false);
   const [sugestaoIA, setSugestaoIA] = useState(null);
+  const [aDitar, setADitar] = useState(false);
 
   const utilizadorLogado = useMemo(() => {
     try { return JSON.parse(sessionStorage.getItem('user') || '{}'); }
@@ -750,6 +751,10 @@ export default function NurseDashboard() {
                 <span className="btn-icon"><SvgHeart /></span>
                 <span className="btn-text">{textos?.nurse?.pedirSugestaoIa || 'Sugestão IA'}</span>
               </button>
+              <button type="button" className="admin-secondary-button" onClick={ditarTriagem} disabled={aDitar}>
+                <span className="btn-icon">🎤</span>
+                <span className="btn-text">{aDitar ? 'A ouvir...' : 'Gravar Triagem'}</span>
+              </button>
               <button type="button" className="admin-secondary-button"
                 style={{ backgroundColor: '#e53e3e', color: '#fff', borderColor: '#e53e3e' }}
                 onClick={async () => {
@@ -872,6 +877,57 @@ export default function NurseDashboard() {
       )}
     </section>
   );
+
+  const ditarTriagem = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      mostrarToast('O teu browser não suporta reconhecimento de voz. Usa Chrome ou Edge.', 'erro');
+      return;
+    }
+
+    const rec = new SpeechRecognition();
+    rec.lang = 'pt-PT';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    setADitar(true);
+    rec.start();
+
+    rec.onresult = async (event) => {
+      const texto = event.results[0][0].transcript;
+      setADitar(false);
+      mostrarToast(`Texto captado: "${texto}"`, 'sucesso');
+
+      try {
+        const res = await authFetch(`${API_IA}/predict/v1/voz`, {
+          method: 'POST',
+          body: JSON.stringify({ texto }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.erro) throw new Error(data.erro || 'Erro ao processar voz.');
+
+        setTriagem((prev) => ({
+          ...prev,
+          freq_card:   data.Heart_Rate_BPM !== 'Dado não obtido' ? String(data.Heart_Rate_BPM) : prev.freq_card,
+          sp_o2:       data.SpO2_Percent   !== 'Dado não obtido' ? String(data.SpO2_Percent)   : prev.sp_o2,
+          temperatura: data.Temperature_C  !== 'Dado não obtido' ? String(data.Temperature_C)  : prev.temperatura,
+          nivel_dor:   data.Pain_Level     !== 'Dado não obtido' ? String(data.Pain_Level)      : prev.nivel_dor,
+          consciencia: data.Consciousness  !== 'Dado não obtido' ? data.Consciousness           : prev.consciencia,
+        }));
+
+        mostrarToast('Campos preenchidos com sucesso.', 'sucesso');
+      } catch (e) {
+        mostrarToast(e.message, 'erro');
+      }
+    };
+
+    rec.onerror = (event) => {
+      setADitar(false);
+      mostrarToast(`Erro no microfone: ${event.error}`, 'erro');
+    };
+
+    rec.onend = () => setADitar(false);
+  };
 
   return (
     <main className={`admin-layout nurse-dashboard ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
