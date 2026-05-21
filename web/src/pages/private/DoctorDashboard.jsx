@@ -655,12 +655,12 @@ export default function DoctorDashboard() {
                 <button type="button" className="admin-secondary-button"
                   style={{ backgroundColor: '#17a2b8', color: '#fff', borderColor: '#17a2b8' }}
                   onClick={() => setModoEdicaoTriagem(!modoEdicaoTriagem)}>
-                  {modoEdicaoTriagem ? '✕ Cancelar' : '✏️ Editar Triagem'}
+                  {modoEdicaoTriagem ? '✕ Cancelar' : 'Editar dados vitais'}
                 </button>
                 <button type="button" className="admin-secondary-button"
                   style={{ backgroundColor: '#007bff', color: '#fff', borderColor: '#007bff' }}
                   onClick={carregarAntecedentes}>
-                  👁️ Ver Antecedentes
+                  Ver Antecedentes
                 </button>
               </div>
             </div>

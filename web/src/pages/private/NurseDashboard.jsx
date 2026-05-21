@@ -753,7 +753,7 @@ export default function NurseDashboard() {
               </button>
               <button type="button" className="admin-secondary-button" onClick={ditarTriagem} disabled={aDitar}>
                 <span className="btn-icon">🎤</span>
-                <span className="btn-text">{aDitar ? 'A ouvir...' : 'Gravar Triagem'}</span>
+                <span className="btn-text">{aDitar ? 'A ouvir...' : 'Ditar triagem'}</span>
               </button>
               <button type="button" className="admin-secondary-button"
                 style={{ backgroundColor: '#e53e3e', color: '#fff', borderColor: '#e53e3e' }}
