@@ -384,7 +384,7 @@ export default function AdminDashboard() {
   const [tipoAcao, setTipoAcao] = useState('');
 
   const [novoUtilizador, setNovoUtilizador] = useState({ idfunc: '', username: '', password: '', role: ROLES.ADMIN, hospitais: [] });
-  const [novoProfissional, setNovoProfissional] = useState({ nome: '', tipofunc: ROLES.ADMIN, sexo: 'M', hospitais: [] });
+  const [novoProfissional, setNovoProfissional] = useState({ nome: '', tipo_func: ROLES.ADMIN, sexo: 'M', hospitais: [] });
   const [novoHospital, setNovoHospital] = useState({ nome: '', email: '', localidade: '', contacto: '' });
 
   const [utilizadorEditando, setUtilizadorEditando] = useState(null);
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
     setUtilizadorEditando({
       idfunc: obterIdFunc(funcionario),
       nome: obterNome(funcionario),
-      tipofunc: obterTipoFuncRaw(funcionario),
+      tipo_func: obterTipoFuncRaw(funcionario),
       sexo: funcionario?.sexo ?? funcionario?.Sexo ?? 'M',
       username: gerarUsername(obterNome(funcionario)),
       password: '',
@@ -787,7 +787,7 @@ export default function AdminDashboard() {
 
   const abrirNovoFuncionario = () => {
     resetMensagens();
-    setNovoProfissional({ nome: '', tipofunc: ROLES.ADMIN, sexo: 'M', hospitais: [] });
+    setNovoProfissional({ nome: '', tipo_func: ROLES.ADMIN, sexo: 'M', hospitais: [] });
     setFuncionarioEditando(null);
     setEmployeeView('novo');
   };
@@ -802,7 +802,7 @@ export default function AdminDashboard() {
     setFuncionarioEditando({
       idfunc,
       nome: funcionario?.nome ?? '',
-      tipofunc: funcionario?.tipo_func ?? funcionario?.tipofunc ?? ROLES.ADMIN,
+      tipo_func: funcionario?.tipo_func ?? funcionario?.tipofunc ?? ROLES.ADMIN,
       sexo: funcionario?.sexo ?? 'M',
       email: funcionario?.email ?? '',
       telefone: funcionario?.telefone ?? '',
@@ -891,17 +891,17 @@ export default function AdminDashboard() {
     setErroFunc('');
     try {
       setSubmittingFunc(true);
-      const payload = { nome: novoProfissional.nome, tipofunc: novoProfissional.tipofunc, sexo: novoProfissional.sexo };
+      const payload = { nome: novoProfissional.nome, tipo_func: novoProfissional.tipo_func, sexo: novoProfissional.sexo };
       const data = await apiFetch('/api/v1/profissionais/', { method: 'POST', body: JSON.stringify(payload) });
       for (const idhosp of novoProfissional.hospitais || []) {
         await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
-          body: JSON.stringify({ idfunc: data.idfunc, idhosp: Number(idhosp) }),
+          body: JSON.stringify({ id_func: data.id_func, id_hosp: Number(idhosp) }),
         });
       }
       setMensagemFunc(ta('sucessoCriarFunc', 'Employee created successfully.'));
       adicionarHistorico('Criar funcionário', `Foi criado o funcionário ${data.nome || novoProfissional.nome}.`);
-      setNovoProfissional({ nome: '', tipofunc: ROLES.ADMIN, sexo: 'M', hospitais: [] });
+      setNovoProfissional({ nome: '', tipo_func: ROLES.ADMIN, sexo: 'M', hospitais: [] });
       await carregarProfissionais();
       setEmployeeView('lista');
     } catch (err) {
@@ -965,7 +965,7 @@ export default function AdminDashboard() {
         method: 'PUT',
         body: JSON.stringify({
           nome: utilizadorEditando.nome,
-          tipofunc: utilizadorEditando.role,
+          tipo_func: utilizadorEditando.role,
           sexo: utilizadorEditando.sexo,
         }),
       });
@@ -1051,7 +1051,7 @@ export default function AdminDashboard() {
 
       const payloadFunc = {
         nome: funcionarioEditando.nome,
-        tipofunc: funcionarioEditando.tipofunc,
+        tipo_func: funcionarioEditando.tipo_func,
         sexo: funcionarioEditando.sexo,
         email: funcionarioEditando.email || null,
         telefone: funcionarioEditando.telefone || null,
@@ -1300,7 +1300,7 @@ export default function AdminDashboard() {
                           >
                             <span className="admin-dropdown__item-name">{p.nome}</span>
                             <span className="admin-dropdown__item-meta">
-                              #{p.idfunc} · {p.tipofunc}
+                              #{p.idfunc} · {p.tipo_func}
                             </span>
                           </button>
                         ))
@@ -1758,8 +1758,8 @@ export default function AdminDashboard() {
                 <label htmlFor="func-role">{ta('lblFuncao', 'Role')}</label>
                 <select
                   id="func-role"
-                  name="tipofunc"
-                  value={novoProfissional.tipofunc || ''}
+                  name="tipo_func"
+                  value={novoProfissional.tipo_func || ''}
                   onChange={handleNovoProfChange}
                 >
                   <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
