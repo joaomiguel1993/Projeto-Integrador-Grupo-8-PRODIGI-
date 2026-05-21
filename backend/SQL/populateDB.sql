@@ -8036,4 +8036,19 @@ INSERT INTO Triagem (CodEpUrgenc, DataHoraInicio, DataHoraFim, CorTriagem, Sinto
 
 SELECT setval('epurgencia_codepurgenc_seq', MAX(codepurgenc)) FROM EpUrgencia;
 
+-- Atos para episódios de teste em_atendimento (521-530)
+INSERT INTO Ato (IdAto, CodEpUrgenc, Tipo, Descricao, DataHoraInicio, DataHoraFim) VALUES
+(1501, 521, 'consulta',   'Consulta realizada no episodio 521', '2026-05-21 08:00:00', '2026-05-21 08:30:00'),
+(1502, 522, 'consulta',   'Consulta realizada no episodio 522', '2026-05-21 08:30:00', '2026-05-21 09:00:00'),
+(1503, 523, 'observacao', 'Observacao realizada no episodio 523', '2026-05-21 09:00:00', '2026-05-21 09:30:00'),
+(1504, 524, 'consulta',   'Consulta realizada no episodio 524', '2026-05-21 09:30:00', '2026-05-21 10:00:00'),
+(1505, 525, 'consulta',   'Consulta realizada no episodio 525', '2026-05-21 10:00:00', '2026-05-21 10:30:00'),
+(1506, 526, 'observacao', 'Observacao realizada no episodio 526', '2026-05-21 10:30:00', '2026-05-21 11:00:00'),
+(1507, 527, 'consulta',   'Consulta realizada no episodio 527', '2026-05-21 11:00:00', '2026-05-21 11:30:00'),
+(1508, 528, 'exame',      'Exame realizado no episodio 528',    '2026-05-21 11:30:00', '2026-05-21 12:00:00'),
+(1509, 529, 'consulta',   'Consulta realizada no episodio 529', '2026-05-21 12:00:00', '2026-05-21 12:30:00'),
+(1510, 530, 'observacao', 'Observacao realizada no episodio 530', '2026-05-21 12:30:00', '2026-05-21 13:00:00');
+
+SELECT setval('ato_idato_seq', MAX(idato)) FROM Ato;
+
 COMMIT;
