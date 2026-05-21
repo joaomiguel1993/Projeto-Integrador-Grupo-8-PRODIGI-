@@ -10,3 +10,22 @@ Texto.txt
 .env.example
 node_modules/
 web\node_modules
+
+# ==========================================
+# Configurações do Android Studio e Gradle
+# ==========================================
+.gradle/
+build/
+/build/
+/*/build/
+.idea/
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
+.idea/modules.xml
+local.properties
+.cxx/
