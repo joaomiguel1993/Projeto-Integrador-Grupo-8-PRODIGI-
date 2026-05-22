@@ -33,7 +33,7 @@ fun SiaguhNavHost() {
 
     val navController = rememberNavController()
     var loginResponse by remember { mutableStateOf<LoginResponse?>(null) }
-    var numUtenteAtivo by remember { mutableStateOf<Int?>(null) }
+    var codEpisodioAtivo by remember { mutableStateOf<Int?>(null) }
 
     NavHost(navController = navController, startDestination = Routes.LOGIN) {
 
@@ -55,8 +55,8 @@ fun SiaguhNavHost() {
             ScannerScreen(
                 nomeUtilizador = lr.nome,
                 role = lr.role,
-                onUtenteScanned = { numUtente ->
-                    numUtenteAtivo = numUtente
+                onUtenteScanned = { codEpisodio ->
+                    codEpisodioAtivo = codEpisodio
                     navController.navigate(Routes.PACIENTE)
                 },
                 onLogout = {
@@ -72,10 +72,10 @@ fun SiaguhNavHost() {
             val viewModel: PacienteViewModel = viewModel(
                 factory = PacienteViewModel.Factory(utenteRepository)
             )
-            val numUtente = numUtenteAtivo ?: return@composable
+            val codEpisodio = codEpisodioAtivo ?: return@composable
 
-            LaunchedEffect(numUtente) {
-                viewModel.carregarPaciente(numUtente)
+            LaunchedEffect(codEpisodio) {
+                viewModel.carregarPacientePorEpisodio(codEpisodio)
             }
 
             PacienteScreen(

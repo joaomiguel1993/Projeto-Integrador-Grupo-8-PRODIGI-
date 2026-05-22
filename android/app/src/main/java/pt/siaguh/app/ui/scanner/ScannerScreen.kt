@@ -22,7 +22,7 @@ fun ScannerScreen(
     onUtenteScanned: (Int) -> Unit,
     onLogout: () -> Unit
 ) {
-    var inputNumUtente by remember { mutableStateOf("") }
+    var inputCodEpisodio by remember { mutableStateOf("") }
     var erro by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -67,9 +67,9 @@ fun ScannerScreen(
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = inputNumUtente,
-            onValueChange = { inputNumUtente = it.filter { c -> c.isDigit() }; erro = null },
-            label = { Text("Nº Utente") },
+            value = inputCodEpisodio,
+            onValueChange = { inputCodEpisodio = it.filter { c -> c.isDigit() }; erro = null },
+            label = { Text("Cód. Episódio") },
             singleLine = true,
             isError = erro != null,
             supportingText = erro?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -80,13 +80,13 @@ fun ScannerScreen(
 
         Button(
             onClick = {
-                val num = inputNumUtente.toIntOrNull()
-                if (num == null || num <= 0) erro = "Número de utente inválido."
+                val num = inputCodEpisodio.toIntOrNull()
+                if (num == null || num <= 0) erro = "Código de episódio inválido."
                 else onUtenteScanned(num)
             },
             modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
-            Text("Consultar Paciente", fontSize = 16.sp)
+            Text("Consultar Episódio", fontSize = 16.sp)
         }
 
         Spacer(Modifier.height(24.dp))

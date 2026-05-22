@@ -14,12 +14,15 @@ class UtenteRepository(private val api: SiaguhApiService) {
         api.getAntecedentes(numUtente)
     }
 
+    suspend fun getEpisodio(codEpUrgenc: Int): Result<Episodio> = safeCall {
+        api.getEpisodio(codEpUrgenc)
+    }
+
     suspend fun getEpisodioAtivo(numUtente: Int): Result<Episodio> {
         return try {
-            val response = api.getEpisodios()
+            val response = api.getEpisodiosPorUtente(numUtente)
             if (response.isSuccessful) {
                 val episodio = response.body()
-                    ?.filter { it.numutent == numUtente }
                     ?.sortedByDescending { it.datahoraentr }
                     ?.firstOrNull()
                 if (episodio != null) Result.Success(episodio)

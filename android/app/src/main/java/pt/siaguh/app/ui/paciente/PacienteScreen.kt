@@ -78,7 +78,11 @@ private fun PacienteContent(uiState: PacienteUiState) {
         SeccaoCard(titulo = "Dados do Utente") {
             InfoLinha("Nome", utente.nome)
             InfoLinha("NIF", utente.nif)
-            InfoLinha("Data Nasc.", utente.datanasc.take(10))
+
+            // CORREÇÃO DA LINHA 81: Se datanasc for nulo, mostra "Não registada"
+            val dataNascFormatada = utente.datanasc?.take(10) ?: "Não registada"
+            InfoLinha("Data Nasc.", dataNascFormatada)
+
             InfoLinha("Sexo", if (utente.sexo == "M") "Masculino" else "Feminino")
             utente.localidade?.let { InfoLinha("Localidade", it) }
         }
@@ -105,7 +109,11 @@ private fun PacienteContent(uiState: PacienteUiState) {
             SeccaoCard(titulo = "Episódio Atual") {
                 InfoLinha("Código", ep.codepurgenc.toString())
                 InfoLinha("Estado", ep.estado.replaceFirstChar { it.uppercase() })
-                InfoLinha("Entrada", ep.datahoraentr.take(16).replace("T", " "))
+
+                // PROTEÇÃO EXTRA: Se a data de entrada for nula por erro do sistema, não crasha
+                val entradaFormatada = ep.datahoraentr?.take(16)?.replace("T", " ") ?: "Sem data"
+                InfoLinha("Entrada", entradaFormatada)
+
                 ep.datahorasaida?.let { InfoLinha("Saída", it.take(16).replace("T", " ")) }
             }
         }
@@ -121,6 +129,8 @@ private fun PacienteContent(uiState: PacienteUiState) {
                 if (tr.sistolica != null && tr.diastolica != null) {
                     InfoLinha("Tensão Arterial", "${tr.sistolica}/${tr.diastolica} mmHg")
                 }
+                tr.datahorainicio?.let { InfoLinha("Início Triagem", it.take(16).replace("T", " ")) }
+                tr.idfunc?.let { InfoLinha("ID Funcionário", it.toString()) }
             }
         }
     }
@@ -129,7 +139,7 @@ private fun PacienteContent(uiState: PacienteUiState) {
 @Composable
 private fun PulseiraCard(triagem: Triagem) {
     val (bgColor, textColor, label) = when (triagem.cortriagem.lowercase()) {
-        "vermelho"  -> Triple(Color(0xFFD32F2F), Color.White, "EMERGENTE")
+        "vermelho"  -> Triple(Color(0xFFD32F2F), Color.White, "EMERGÊNCIA")
         "laranja"   -> Triple(Color(0xFFE65100), Color.White, "MUITO URGENTE")
         "amarelo"   -> Triple(Color(0xFFF9A825), Color.Black, "URGENTE")
         "verde"     -> Triple(Color(0xFF2E7D32), Color.White, "POUCO URGENTE")

@@ -26,40 +26,41 @@ class PacienteViewModel(private val repository: UtenteRepository) : ViewModel() 
     private val _uiState = MutableStateFlow(PacienteUiState())
     val uiState: StateFlow<PacienteUiState> = _uiState.asStateFlow()
 
-    fun carregarPaciente(numUtente: Int) {
+    fun carregarPacientePorEpisodio(codEpUrgenc: Int) {
         viewModelScope.launch {
             _uiState.value = PacienteUiState(isLoading = true)
 
-            // Utente e antecedentes em paralelo
+            // 1. Obter o episódio primeiro
+            val episodioResult = repository.getEpisodio(codEpUrgenc)
+
+            if (episodioResult is Result.Error) {
+                _uiState.value = PacienteUiState(errorMessage = episodioResult.message)
+                return@launch
+            }
+
+            val episodio = (episodioResult as Result.Success).data
+            val numUtente = episodio.numutent
+
+            // 2. Com o numUtente, obter utente, antecedentes e triagem em paralelo
             val utenteDeferred = async { repository.getUtente(numUtente) }
             val antecedentesDeferred = async { repository.getAntecedentes(numUtente) }
-            val episodioDeferred = async { repository.getEpisodioAtivo(numUtente) }
+            val triagemDeferred = async { repository.getTriagem(codEpUrgenc) }
 
             val utenteResult = utenteDeferred.await()
             val antecedentesResult = antecedentesDeferred.await()
-            val episodioResult = episodioDeferred.await()
+            val triagemResult = triagemDeferred.await()
 
             if (utenteResult is Result.Error) {
                 _uiState.value = PacienteUiState(errorMessage = utenteResult.message)
                 return@launch
             }
 
-            val utente = (utenteResult as Result.Success).data
-            val antecedentes = if (antecedentesResult is Result.Success) antecedentesResult.data else emptyList()
-            val episodio = if (episodioResult is Result.Success) episodioResult.data else null
-
-            // Triagem só se houver episódio
-            val triagem = episodio?.let {
-                val r = repository.getTriagem(it.codepurgenc)
-                if (r is Result.Success) r.data else null
-            }
-
             _uiState.value = PacienteUiState(
                 isLoading = false,
-                utente = utente,
-                antecedentes = antecedentes,
+                utente = (utenteResult as Result.Success).data,
+                antecedentes = if (antecedentesResult is Result.Success) antecedentesResult.data else emptyList(),
                 episodio = episodio,
-                triagem = triagem
+                triagem = if (triagemResult is Result.Success) triagemResult.data else null
             )
         }
     }
