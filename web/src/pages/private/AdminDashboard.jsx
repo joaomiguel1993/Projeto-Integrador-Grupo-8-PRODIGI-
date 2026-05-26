@@ -94,10 +94,20 @@ const obterIdFunc = (item) =>
 
 const valorTexto = (...candidatos) => {
   for (const candidato of candidatos) {
+
+    if (typeof candidato === 'object' && candidato !== null) {
+      continue;
+    }
     const texto = String(candidato ?? '').trim();
-    if (texto) return texto;
+    if (
+      texto &&
+      texto !== '[object Object]'
+    ) {
+      return texto;
+    }
   }
-  return '—';
+
+  return '';
 };
 
 const obterNome = (item) =>
@@ -748,12 +758,13 @@ export default function AdminDashboard() {
         idfunc: idFunc,
         username: utilizadorData?.username ?? utilizador?.username ?? '',
         password: '',
-        role:
+        role: String(
           utilizadorData?.role ??
           prof?.tipo_func ??
           prof?.tipofunc ??
           utilizador?.role ??
-          'admin',
+          ROLES.ADMIN
+        ).toLowerCase(),
         nome: prof?.nome ?? utilizador?.nome ?? '',
         sexo: prof?.sexo ?? utilizador?.sexo ?? 'M',
         bloqueado: utilizadorData?.bloqueado ?? utilizador?.bloqueado ?? false,
@@ -802,7 +813,12 @@ export default function AdminDashboard() {
     setFuncionarioEditando({
       idfunc,
       nome: funcionario?.nome ?? '',
-      tipo_func: funcionario?.tipo_func ?? funcionario?.tipofunc ?? ROLES.ADMIN,
+      tipo_func: String(
+        funcionario?.tipo_func ??
+        funcionario?.tipofunc ??
+        funcionario?.role ??
+        ROLES.ADMIN
+      ).toLowerCase(),
       sexo: funcionario?.sexo ?? 'M',
       email: funcionario?.email ?? '',
       telefone: funcionario?.telefone ?? '',
@@ -1051,7 +1067,7 @@ export default function AdminDashboard() {
 
       const payloadFunc = {
         nome: funcionarioEditando.nome,
-        tipo_func: funcionarioEditando.tipo_func,
+        tipo_func: String(funcionarioEditando.tipo_func),
         sexo: funcionarioEditando.sexo,
         email: funcionarioEditando.email || null,
         telefone: funcionarioEditando.telefone || null,
