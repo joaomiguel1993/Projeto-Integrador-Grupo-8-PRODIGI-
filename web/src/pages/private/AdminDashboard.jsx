@@ -965,6 +965,7 @@ export default function AdminDashboard() {
 
       const payloadUser = {
         username: utilizadorEditando.username,
+        role: utilizadorEditando.role,
         bloqueado: utilizadorEditando.bloqueado ?? false,
       };
 
