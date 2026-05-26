@@ -879,3 +879,1109 @@
 .doctor-form-grid-full {
   grid-column: 1 / -1;
 }
+
+.doctor-stacked-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.doctor-subcard {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.doctor-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.doctor-info-card {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.doctor-info-card__label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.doctor-info-card__value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.doctor-bp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.doctor-field {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.doctor-empty-box {
+  padding: 20px;
+  text-align: center;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  color: #6b7280;
+  margin-top: 16px;
+}
+
+.doctor-info-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 92px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.doctor-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.doctor-info-card__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.doctor-info-card__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doctor-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.doctor-subcard {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.doctor-patient-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  color: white;
+
+  padding: 28px;
+  border-radius: 24px;
+  margin-bottom: 28px;
+}
+
+.doctor-patient-banner__name {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.doctor-patient-banner__meta {
+  opacity: 0.9;
+  margin-top: 6px;
+}
+
+.doctor-subcard {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.doctor-vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.doctor-info-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 20px;
+  min-height: 110px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  transition: 0.2s ease;
+}
+
+.doctor-info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.doctor-info-card__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.doctor-info-card__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.doctor-patient-banner {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  border-radius: 24px;
+  padding: 30px;
+  color: white;
+  margin-bottom: 28px;
+}
+
+.doctor-patient-banner__name {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.doctor-patient-banner__meta {
+  margin-top: 8px;
+  opacity: 0.9;
+}
+
+.doctor-tab-btn {
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-weight: 700;
+  border: 1px solid #dbe4ea;
+  background: white;
+  transition: 0.2s ease;
+}
+
+.doctor-tab-btn.is-active {
+  background: #0f766e;
+  color: white;
+  border-color: #0f766e;
+}
+
+.doctor-clinic-section {
+  background: #ffffff;
+  border: 1px solid #dfe7ec;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.doctor-clinic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 20px;
+
+  background: #f8fafc;
+  border-bottom: 1px solid #e5edf2;
+}
+
+.doctor-clinic-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doctor-clinic-header span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.doctor-clinic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.doctor-clinic-item {
+  padding: 18px 20px;
+
+  border-right: 1px solid #edf2f7;
+  border-bottom: 1px solid #edf2f7;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  min-height: 84px;
+}
+
+.doctor-clinic-item label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  color: #64748b;
+}
+
+.doctor-clinic-item strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doctor-patient-banner {
+  background: #0f766e;
+  border-radius: 14px;
+  padding: 22px 24px;
+  color: white;
+}
+
+.doctor-patient-banner__name {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.doctor-tabs-row {
+  border-bottom: 1px solid #dfe7ec;
+  padding-bottom: 12px;
+}
+
+.doctor-tab-btn {
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.doctor-tab-btn.is-active {
+  background: #0f766e;
+  color: white;
+}
+
+@media (max-width: 900px) {
+  .doctor-clinic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-clinic-item {
+    border-right: none;
+  }
+}
+
+.doctor-triage-clinical {
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 28px;
+}
+
+.doctor-triage-header {
+  display: flex;
+  gap: 18px;
+  margin-top: 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.doctor-triage-priority,
+.doctor-triage-time {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px 18px;
+  min-width: 220px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doctor-triage-priority__label,
+.doctor-triage-time span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.doctor-triage-time strong {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.doctor-clinical-section {
+  margin-top: 24px;
+}
+
+.doctor-clinical-title {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doctor-vitals-clinical-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.doctor-vital-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 18px;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.doctor-vital-line span {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.doctor-vital-line strong {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.doctor-clinical-note {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+  color: #1e293b;
+  line-height: 1.6;
+}
+
+.doctor-clinical-footer {
+  margin-top: 28px;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+
+  padding-top: 18px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.doctor-clinical-footer div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doctor-clinical-footer span {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.doctor-clinical-footer strong {
+  color: #0f172a;
+}
+
+.doctor-episode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  padding-bottom: 22px;
+  margin-bottom: 24px;
+
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.doctor-episode-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 12px 0 6px;
+}
+
+.doctor-episode-subtitle {
+  color: #64748b;
+  margin: 0;
+}
+
+.doctor-episode-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.doctor-episode-meta span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.doctor-episode-meta strong {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.doctor-medical-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.doctor-medical-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 24px 28px;
+
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.doctor-medical-card__header h3 {
+  margin: 0;
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.doctor-medical-card__header p {
+  margin-top: 4px;
+  color: #64748b;
+}
+
+.doctor-outline-btn {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #0f766e;
+
+  padding: 12px 18px;
+  border-radius: 14px;
+
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.doctor-patient-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.doctor-patient-item {
+  padding: 24px 28px;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.doctor-patient-item span {
+  display: block;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.doctor-patient-item strong {
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.doctor-triage-top-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 18px;
+
+  padding: 24px 28px;
+}
+
+.doctor-triage-priority,
+.doctor-triage-mini {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.doctor-triage-priority span,
+.doctor-triage-mini span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.doctor-triage-priority strong,
+.doctor-triage-mini strong {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.doctor-vital-signs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+
+  padding: 0 28px 28px;
+}
+
+.doctor-vital-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  padding: 22px;
+  background: #fcfcfd;
+}
+
+.doctor-vital-box span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.doctor-vital-box strong {
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.doctor-symptoms-box {
+  margin: 0 28px 28px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  padding: 22px;
+}
+
+.doctor-symptoms-box span {
+  display: block;
+  color: #64748b;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.doctor-symptoms-box p {
+  margin: 0;
+  font-size: 17px;
+  color: #0f172a;
+  line-height: 1.6;
+}
+
+.doctor-triage-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.doctor-triage-footer div {
+  padding: 22px 28px;
+}
+
+.doctor-triage-footer span {
+  display: block;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.doctor-triage-footer strong {
+  font-size: 18px;
+  color: #0f172a;
+}
+
+@media (max-width: 1200px) {
+
+  .doctor-patient-grid,
+  .doctor-vital-signs-grid,
+  .doctor-triage-top-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .doctor-patient-grid,
+  .doctor-vital-signs-grid,
+  .doctor-triage-top-grid,
+  .doctor-triage-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-episode-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+}
+
+/* =========================
+   HEADER MAIS COMPACTO
+========================= */
+
+.doctor-episode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  padding: 18px 22px;
+
+  box-shadow:
+    0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.doctor-back-link {
+  margin-bottom: 10px;
+
+  font-size: 13px;
+}
+
+.doctor-episode-title {
+  margin: 0;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  color: #0f172a;
+
+  line-height: 1.1;
+}
+
+.doctor-episode-subtitle {
+  margin-top: 4px;
+
+  font-size: 13px;
+
+  color: #64748b;
+}
+
+.doctor-episode-date-card {
+  padding: 10px 14px;
+
+  border-radius: 14px;
+
+  min-width: 180px;
+}
+
+.doctor-episode-date-label {
+  font-size: 10px;
+
+  margin-bottom: 4px;
+}
+
+.doctor-episode-date-value {
+  font-size: 13px;
+}
+
+/* =========================
+   TABS MAIS PEQUENAS
+========================= */
+
+.doctor-tabs-row {
+  display: flex;
+  gap: 8px;
+}
+
+.doctor-tab-btn {
+  border-radius: 12px;
+
+  padding: 9px 14px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================
+   CARDS MAIS COMPACTOS
+========================= */
+
+.doctor-subcard {
+  border-radius: 18px;
+
+  padding: 18px;
+}
+
+.doctor-vitals-grid {
+  gap: 12px;
+
+  margin-top: 16px;
+}
+
+.doctor-info-card {
+  border-radius: 14px;
+
+  padding: 12px 14px;
+
+  min-height: 72px;
+}
+
+.doctor-info-card__label {
+  font-size: 10px;
+
+  margin-bottom: 4px;
+}
+
+.doctor-info-card__value {
+  font-size: 16px;
+}
+
+/* =========================
+   TABELAS MAIS CLEAN
+========================= */
+
+.doctor-modern-table thead th {
+  padding: 12px 14px;
+
+  font-size: 11px;
+}
+
+.doctor-modern-table tbody td {
+  padding: 12px 14px;
+
+  font-size: 13px;
+}
+
+/* =========================
+   BOTÕES MAIS HOSPITAL
+========================= */
+
+.doctor-action-btn {
+  padding: 9px 14px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+}
+
+.doctor-pill {
+  padding: 8px 14px;
+
+  font-size: 13px;
+}
+
+/* =========================
+   LAYOUT GERAL
+========================= */
+
+.doctor-layout-container {
+  max-width: 1400px;
+
+  padding: 1.25rem 1.25rem 2rem;
+}
+
+.doctor-panel-card {
+  padding: 1rem;
+
+  border-radius: 20px;
+}
+
+/* HEADER */
+
+.doctor-episode-header {
+  padding: 14px 18px;
+  border-radius: 16px;
+}
+
+.doctor-back-link {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.doctor-episode-title {
+  font-size: 20px;
+}
+
+.doctor-episode-subtitle {
+  font-size: 12px;
+}
+
+.doctor-episode-date-card {
+  padding: 8px 12px;
+  min-width: 160px;
+}
+
+.doctor-episode-date-label {
+  font-size: 9px;
+}
+
+.doctor-episode-date-value {
+  font-size: 12px;
+}
+
+/* TABS */
+
+.doctor-tabs-row {
+  gap: 6px;
+}
+
+.doctor-tab-btn {
+  padding: 7px 12px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+/* CARDS */
+
+.doctor-subcard {
+  padding: 14px;
+  border-radius: 16px;
+}
+
+.doctor-vitals-grid {
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.doctor-info-card {
+  padding: 10px 12px;
+  min-height: 62px;
+  border-radius: 12px;
+}
+
+.doctor-info-card__label {
+  font-size: 9px;
+}
+
+.doctor-info-card__value {
+  font-size: 14px;
+}
+
+/* BOTÕES */
+
+.doctor-action-btn {
+  padding: 7px 12px;
+  font-size: 12px;
+  border-radius: 9px;
+}
+
+/* TABELAS */
+
+.doctor-modern-table thead th {
+  font-size: 10px;
+  padding: 10px 12px;
+}
+
+.doctor-modern-table tbody td {
+  font-size: 12px;
+  padding: 10px 12px;
+}
+
+/* GERAL */
+
+.doctor-panel-card {
+  padding: 0.85rem;
+  border-radius: 18px;
+}
+
+/* =========================================
+   TRIAGEM ESTILO HOSPITALAR
+========================================= */
+
+.doctor-medical-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #dbe4ee;
+  overflow: hidden;
+}
+
+.doctor-medical-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 18px 22px;
+
+  border-bottom: 1px solid #edf2f7;
+}
+
+.doctor-medical-card__header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.doctor-medical-card__header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.doctor-outline-btn {
+  border: 1px solid #cbd5e1;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* TOPO */
+
+.doctor-triage-banner {
+  display: grid;
+  grid-template-columns: 1.2fr repeat(3, 1fr);
+
+  gap: 12px;
+
+  padding: 18px 22px;
+
+  background: #f8fafc;
+
+  border-bottom: 1px solid #edf2f7;
+}
+
+.doctor-triage-banner__priority,
+.doctor-triage-banner__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doctor-triage-banner span {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.doctor-triage-banner strong {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+/* VITAIS */
+
+.doctor-vitals-table {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  border-bottom: 1px solid #edf2f7;
+}
+
+.doctor-vital-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 20px;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.doctor-vital-row:nth-child(odd) {
+  border-right: 1px solid #f1f5f9;
+}
+
+.doctor-vital-row span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.doctor-vital-row strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+/* SINTOMAS */
+
+.doctor-clinical-note {
+  padding: 18px 22px;
+}
+
+.doctor-clinical-note span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  color: #64748b;
+}
+
+.doctor-clinical-note p {
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  color: #0f172a;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 900px) {
+
+  .doctor-triage-banner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .doctor-vitals-table {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-vital-row:nth-child(odd) {
+    border-right: none;
+  }
+
+}
+
+.doctor-triage-banner__priority .triage-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: capitalize;
+}
