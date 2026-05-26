@@ -13,7 +13,7 @@ import HospitalDetalhe from '../pages/public/HospitalDetalhe';
 import DashboardAdmin from '../pages/private/AdminDashboard';
 import DashboardRececionista from '../pages/private/ReceptionistDashboard';
 import DashboardEnfermeiro from '../pages/private/NurseDashboard';
-import DashboardMedico from '../pages/private/DoctorDashboard';
+import DashboardMedico from "../pages/private/doctor/DoctorDashboard";
 import SemPermissao from '../pages/auth/SemPermissao';
 
 const router = createBrowserRouter([
