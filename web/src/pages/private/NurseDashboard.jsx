@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/Logo.png';
 import '../../styles/main.css';
@@ -117,6 +117,7 @@ export default function NurseDashboard() {
   const [loading, setLoading] = useState(false);
   const [sugestaoIA, setSugestaoIA] = useState(null);
   const [aDitar, setADitar] = useState(false);
+  const mediaRecorderRef = useRef(null);
 
   const utilizadorLogado = useMemo(() => {
     try { return JSON.parse(sessionStorage.getItem('user') || '{}'); }
@@ -751,9 +752,9 @@ export default function NurseDashboard() {
                 <span className="btn-icon"><SvgHeart /></span>
                 <span className="btn-text">{textos?.nurse?.pedirSugestaoIa || 'Sugestão IA'}</span>
               </button>
-              <button type="button" className="admin-secondary-button" onClick={ditarTriagem} disabled={aDitar}>
+              <button type="button" className="admin-secondary-button" onClick={ditarTriagem}>
                 <span className="btn-icon">🎤</span>
-                <span className="btn-text">{aDitar ? 'A ouvir...' : 'Ditar triagem'}</span>
+                <span className="btn-text">{aDitar ? '⏹ Parar gravação' : 'Ditar triagem'}</span>
               </button>
               <button type="button" className="admin-secondary-button"
                 style={{ backgroundColor: '#e53e3e', color: '#fff', borderColor: '#e53e3e' }}
@@ -878,58 +879,86 @@ export default function NurseDashboard() {
     </section>
   );
 
-  const ditarTriagem = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      mostrarToast('O teu browser não suporta reconhecimento de voz. Usa Chrome ou Edge.', 'erro');
+  const ditarTriagem = async () => {
+    // Se já está a gravar, para
+    if (aDitar) {
+      mediaRecorderRef.current?.stop();
       return;
     }
 
-    const rec = new SpeechRecognition();
-    rec.lang = 'pt-PT';
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
+    if (!navigator.mediaDevices?.getUserMedia) {
+      mostrarToast('O teu browser não suporta gravação de áudio.', 'erro');
+      return;
+    }
 
     setADitar(true);
-    rec.start();
+    mostrarToast('🎤 A gravar... clica novamente para terminar.', 'sucesso');
 
-    rec.onresult = async (event) => {
-      const texto = event.results[0][0].transcript;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      const chunks = [];
+
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+
+        try {
+          const formData = new FormData();
+          formData.append('file', blob, 'audio.webm');
+          formData.append('model', 'whisper-large-v3');
+          formData.append('language', 'pt');
+
+          const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+            },
+            body: formData,
+          });
+
+          const whisperData = await whisperRes.json();
+          if (!whisperRes.ok) throw new Error(whisperData?.error?.message || 'Erro na transcrição.');
+          const texto = whisperData.text;
+          mostrarToast(`📝 "${texto}"`, 'sucesso');
+
+          const res = await authFetch(`${API_IA}/predict/v1/voz`, {
+            method: 'POST',
+            body: JSON.stringify({ texto }),
+          });
+
+          const data = await res.json();
+          if (!res.ok || data.erro) throw new Error(data.erro || 'Erro ao processar voz.');
+
+          setTriagem((prev) => ({
+            ...prev,
+            freq_card:   data.Heart_Rate_BPM !== 'Dado não obtido' ? String(data.Heart_Rate_BPM) : prev.freq_card,
+            sp_o2:       data.SpO2_Percent   !== 'Dado não obtido' ? String(data.SpO2_Percent)   : prev.sp_o2,
+            temperatura: data.Temperature_C  !== 'Dado não obtido' ? String(data.Temperature_C)  : prev.temperatura,
+            nivel_dor:   data.Pain_Level     !== 'Dado não obtido' ? String(data.Pain_Level)      : prev.nivel_dor,
+            consciencia: data.Consciousness  !== 'Dado não obtido' ? data.Consciousness           : prev.consciencia,
+            sistolica:   data.Sistolica      !== 'Dado não obtido' ? String(data.Sistolica)       : prev.sistolica,
+            diastolica:  data.Diastolica     !== 'Dado não obtido' ? String(data.Diastolica)      : prev.diastolica,
+            freq_resp:   data.Freq_Resp      !== 'Dado não obtido' ? String(data.Freq_Resp)       : prev.freq_resp,
+          }));
+
+          mostrarToast('✅ Campos preenchidos com sucesso.', 'sucesso');
+        } catch (e) {
+          mostrarToast(e.message, 'erro');
+        } finally {
+          setADitar(false);
+        }
+      };
+
+      mediaRecorder.start();
+
+    } catch (e) {
       setADitar(false);
-      mostrarToast(`Texto captado: "${texto}"`, 'sucesso');
-
-      try {
-        const res = await authFetch(`${API_IA}/predict/v1/voz`, {
-          method: 'POST',
-          body: JSON.stringify({ texto }),
-        });
-        const data = await res.json();
-        if (!res.ok || data.erro) throw new Error(data.erro || 'Erro ao processar voz.');
-
-        setTriagem((prev) => ({
-          ...prev,
-          freq_card:   data.Heart_Rate_BPM !== 'Dado não obtido' ? String(data.Heart_Rate_BPM) : prev.freq_card,
-          sp_o2:       data.SpO2_Percent   !== 'Dado não obtido' ? String(data.SpO2_Percent)   : prev.sp_o2,
-          temperatura: data.Temperature_C  !== 'Dado não obtido' ? String(data.Temperature_C)  : prev.temperatura,
-          nivel_dor:   data.Pain_Level     !== 'Dado não obtido' ? String(data.Pain_Level)      : prev.nivel_dor,
-          consciencia: data.Consciousness  !== 'Dado não obtido' ? data.Consciousness           : prev.consciencia,
-          sistolica:   data.Sistolica      !== 'Dado não obtido' ? String(data.Sistolica)       : prev.sistolica,
-          diastolica:  data.Diastolica     !== 'Dado não obtido' ? String(data.Diastolica)      : prev.diastolica,
-          freq_resp:   data.Freq_Resp      !== 'Dado não obtido' ? String(data.Freq_Resp)       : prev.freq_resp,
-        }));
-
-        mostrarToast('Campos preenchidos com sucesso.', 'sucesso');
-      } catch (e) {
-        mostrarToast(e.message, 'erro');
-      }
-    };
-
-    rec.onerror = (event) => {
-      setADitar(false);
-      mostrarToast(`Erro no microfone: ${event.error}`, 'erro');
-    };
-
-    rec.onend = () => setADitar(false);
+      mostrarToast('Erro ao aceder ao microfone: ' + e.message, 'erro');
+    }
   };
 
   return (
