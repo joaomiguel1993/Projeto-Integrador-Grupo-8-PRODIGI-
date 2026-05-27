@@ -22,6 +22,7 @@ import pt.siaguh.app.data.model.*
 @Composable
 fun PacienteScreen(
     viewModel: PacienteViewModel,
+    userRole: String,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -54,7 +55,7 @@ fun PacienteScreen(
                     }
                 }
                 uiState.utente != null -> {
-                    PacienteContent(uiState = uiState)
+                    PacienteContent(uiState = uiState, userRole = userRole)
                 }
             }
         }
@@ -62,8 +63,10 @@ fun PacienteScreen(
 }
 
 @Composable
-private fun PacienteContent(uiState: PacienteUiState) {
+private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
     val utente = uiState.utente!!
+    val isRececionista = userRole.lowercase() == "rececionista"
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -71,8 +74,10 @@ private fun PacienteContent(uiState: PacienteUiState) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Pulseira (cor triagem)
-        uiState.triagem?.let { PulseiraCard(it) }
+        // Pulseira (cor triagem) - Ocultar para rececionista
+        if (!isRececionista) {
+            uiState.triagem?.let { PulseiraCard(it) }
+        }
 
         // Dados pessoais
         SeccaoCard(titulo = "Dados do Utente") {
@@ -87,17 +92,19 @@ private fun PacienteContent(uiState: PacienteUiState) {
             utente.localidade?.let { InfoLinha("Localidade", it) }
         }
 
-        // Antecedentes
-        SeccaoCard(titulo = "Antecedentes (${uiState.antecedentes.size})") {
-            if (uiState.antecedentes.isEmpty()) {
-                Text("Sem antecedentes registados.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-            } else {
-                uiState.antecedentes.forEach { ant ->
-                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-                        Text("• ", color = MaterialTheme.colorScheme.primary)
-                        Column {
-                            ant.descricao?.let { Text(it, fontSize = 14.sp) }
-                            ant.tipo?.let { Text(it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        // Antecedentes - Ocultar para rececionista
+        if (!isRececionista) {
+            SeccaoCard(titulo = "Antecedentes (${uiState.antecedentes.size})") {
+                if (uiState.antecedentes.isEmpty()) {
+                    Text("Sem antecedentes registados.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                } else {
+                    uiState.antecedentes.forEach { ant ->
+                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                            Text("• ", color = MaterialTheme.colorScheme.primary)
+                            Column {
+                                ant.descricao?.let { Text(it, fontSize = 14.sp) }
+                                ant.tipo?.let { Text(it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            }
                         }
                     }
                 }
@@ -118,19 +125,21 @@ private fun PacienteContent(uiState: PacienteUiState) {
             }
         }
 
-        // Triagem detalhada
-        uiState.triagem?.let { tr ->
-            SeccaoCard(titulo = "Triagem") {
-                tr.sintomas?.let { InfoLinha("Sintomas", it) }
-                tr.temperatura?.let { InfoLinha("Temperatura", "${it}°C") }
-                tr.freqcard?.let { InfoLinha("Freq. Cardíaca", "$it bpm") }
-                tr.freqresp?.let { InfoLinha("Freq. Respiratória", "$it rpm") }
-                tr.spo2?.let { InfoLinha("SpO2", "${it}%") }
-                if (tr.sistolica != null && tr.diastolica != null) {
-                    InfoLinha("Tensão Arterial", "${tr.sistolica}/${tr.diastolica} mmHg")
+        // Triagem detalhada - Ocultar para rececionista
+        if (!isRececionista) {
+            uiState.triagem?.let { tr ->
+                SeccaoCard(titulo = "Triagem") {
+                    tr.sintomas?.let { InfoLinha("Sintomas", it) }
+                    tr.temperatura?.let { InfoLinha("Temperatura", "${it}°C") }
+                    tr.freqcard?.let { InfoLinha("Freq. Cardíaca", "$it bpm") }
+                    tr.freqresp?.let { InfoLinha("Freq. Respiratória", "$it rpm") }
+                    tr.spo2?.let { InfoLinha("SpO2", "${it}%") }
+                    if (tr.sistolica != null && tr.diastolica != null) {
+                        InfoLinha("Tensão Arterial", "${tr.sistolica}/${tr.diastolica} mmHg")
+                    }
+                    tr.datahorainicio?.let { InfoLinha("Início Triagem", it.take(16).replace("T", " ")) }
+                    tr.idfunc?.let { InfoLinha("ID Funcionário", it.toString()) }
                 }
-                tr.datahorainicio?.let { InfoLinha("Início Triagem", it.take(16).replace("T", " ")) }
-                tr.idfunc?.let { InfoLinha("ID Funcionário", it.toString()) }
             }
         }
     }

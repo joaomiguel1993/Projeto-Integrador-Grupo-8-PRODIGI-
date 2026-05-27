@@ -73,6 +73,7 @@ fun SiaguhNavHost() {
                 factory = PacienteViewModel.Factory(utenteRepository)
             )
             val codEpisodio = codEpisodioAtivo ?: return@composable
+            val role = loginResponse?.role ?: ""
 
             LaunchedEffect(codEpisodio) {
                 viewModel.carregarPacientePorEpisodio(codEpisodio)
@@ -80,6 +81,7 @@ fun SiaguhNavHost() {
 
             PacienteScreen(
                 viewModel = viewModel,
+                userRole = role,
                 onBack = { navController.popBackStack() }
             )
         }
