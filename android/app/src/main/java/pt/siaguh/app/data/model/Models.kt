@@ -24,9 +24,12 @@ data class Utente(
     val numutent: Int,
     val nome: String,
     val nif: String,
-    val datanasc: String,
+    @SerializedName("data_nasc", alternate = ["datanasc"])
+    val datanasc: String?,
     val sexo: String,
-    val localidade: String?
+    val localidade: String?,
+    val telefone: String?,
+    val email: String?
 )
 
 data class Antecedente(
