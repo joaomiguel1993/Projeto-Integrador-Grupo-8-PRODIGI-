@@ -1,4 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SIAGUH</string>
+    <string name="app_description">Gestão de Urgências Hospitalares</string>
+
+    <!-- Login -->
+    <string name="logo_content_description">Logotipo SIAGUH</string>
+    <string name="label_username">Utilizador</string>
+    <string name="label_password">Password</string>
+    <string name="action_show">Mostrar</string>
+    <string name="action_hide">Ocultar</string>
+    <string name="action_login">Entrar</string>
+
+    <!-- Scanner -->
+    <string name="welcome_user">Olá, %1$s</string>
+    <string name="scan_title">Scan QR da Pulseira</string>
+    <string name="scan_instructions">Aponta a câmara para o QR code da pulseira</string>
+    <string name="camera_no_permission">Sem permissão de câmara</string>
+    <string name="manual_input_label">Ou introduz manualmente:</string>
+    <string name="label_episode_code">Cód. Episódio</string>
+    <string name="error_invalid_episode">Código de episódio inválido.</string>
+    <string name="action_consult_episode">Consultar Episódio</string>
+    <string name="action_logout">Terminar Sessão</string>
+
+    <!-- Roles -->
+    <string name="role_medico">Médico</string>
+    <string name="role_enfermeiro">Enfermeiro</string>
+    <string name="role_admin">Administrador</string>
+    <string name="role_rececionista">Rececionista</string>
+
+    <!-- Paciente -->
+    <string name="patient_file_title">Ficha do Paciente</string>
+    <string name="action_back">Voltar</string>
+    <string name="section_user_data">Dados do Utente</string>
+    <string name="label_name">Nome</string>
+    <string name="label_nif">NIF</string>
+    <string name="label_birth_date">Data Nasc.</string>
+    <string name="not_registered">Não registada</string>
+    <string name="label_gender">Sexo</string>
+    <string name="gender_male">Masculino</string>
+    <string name="gender_female">Feminino</string>
+    <string name="label_locality">Localidade</string>
+    <string name="section_antecedents">Antecedentes (%1$d)</string>
+    <string name="no_antecedents">Sem antecedentes registados.</string>
+    <string name="section_current_episode">Episódio Atual</string>
+    <string name="label_code">Código</string>
+    <string name="label_status">Estado</string>
+    <string name="label_entry">Entrada</string>
+    <string name="no_date">Sem data</string>
+    <string name="label_exit">Saída</string>
+    <string name="section_triage">Triagem</string>
+    <string name="label_symptoms">Sintomas</string>
+    <string name="label_temperature">Temperatura</string>
+    <string name="label_heart_rate">Freq. Cardíaca</string>
+    <string name="label_respiratory_rate">Freq. Respiratória</string>
+    <string name="label_spo2">SpO2</string>
+    <string name="label_blood_pressure">Tensão Arterial</string>
+    <string name="label_triage_start">Início Triagem</string>
+    <string name="label_employee_id">ID Funcionário</string>
+
+    <!-- Triage Colors -->
+    <string name="triage_emergency">EMERGÊNCIA</string>
+    <string name="triage_very_urgent">MUITO URGENTE</string>
+    <string name="triage_urgent">URGENTE</string>
+    <string name="triage_not_so_urgent">POUCO URGENTE</string>
+    <string name="triage_non_urgent">NÃO URGENTE</string>
+    <string name="label_wristband">PULSEIRA</string>
 </resources>

@@ -12,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import pt.siaguh.app.R
 import pt.siaguh.app.data.model.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,10 +32,13 @@ fun PacienteScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ficha do Paciente") },
+                title = { Text(stringResource(R.string.patient_file_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = stringResource(R.string.action_back)
+                        )
                     }
                 }
             )
@@ -51,7 +56,7 @@ fun PacienteScreen(
                     ) {
                         Text(uiState.errorMessage!!, color = MaterialTheme.colorScheme.error)
                         Spacer(Modifier.height(16.dp))
-                        Button(onClick = onBack) { Text("Voltar") }
+                        Button(onClick = onBack) { Text(stringResource(R.string.action_back)) }
                     }
                 }
                 uiState.utente != null -> {
@@ -80,23 +85,29 @@ private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
         }
 
         // Dados pessoais
-        SeccaoCard(titulo = "Dados do Utente") {
-            InfoLinha("Nome", utente.nome)
-            InfoLinha("NIF", utente.nif)
+        SeccaoCard(titulo = stringResource(R.string.section_user_data)) {
+            InfoLinha(stringResource(R.string.label_name), utente.nome)
+            InfoLinha(stringResource(R.string.label_nif), utente.nif)
 
-            // CORREÇÃO DA LINHA 81: Se datanasc for nulo, mostra "Não registada"
-            val dataNascFormatada = utente.datanasc?.take(10) ?: "Não registada"
-            InfoLinha("Data Nasc.", dataNascFormatada)
+            val dataNascFormatada = utente.datanasc?.take(10) ?: stringResource(R.string.not_registered)
+            InfoLinha(stringResource(R.string.label_birth_date), dataNascFormatada)
 
-            InfoLinha("Sexo", if (utente.sexo == "M") "Masculino" else "Feminino")
-            utente.localidade?.let { InfoLinha("Localidade", it) }
+            InfoLinha(
+                stringResource(R.string.label_gender), 
+                if (utente.sexo == "M") stringResource(R.string.gender_male) else stringResource(R.string.gender_female)
+            )
+            utente.localidade?.let { InfoLinha(stringResource(R.string.label_locality), it) }
         }
 
         // Antecedentes - Ocultar para rececionista
         if (!isRececionista) {
-            SeccaoCard(titulo = "Antecedentes (${uiState.antecedentes.size})") {
+            SeccaoCard(titulo = stringResource(R.string.section_antecedents, uiState.antecedentes.size)) {
                 if (uiState.antecedentes.isEmpty()) {
-                    Text("Sem antecedentes registados.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    Text(
+                        text = stringResource(R.string.no_antecedents), 
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                        fontSize = 14.sp
+                    )
                 } else {
                     uiState.antecedentes.forEach { ant ->
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
@@ -113,32 +124,31 @@ private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
 
         // Episódio
         uiState.episodio?.let { ep ->
-            SeccaoCard(titulo = "Episódio Atual") {
-                InfoLinha("Código", ep.codepurgenc.toString())
-                InfoLinha("Estado", ep.estado.replaceFirstChar { it.uppercase() })
+            SeccaoCard(titulo = stringResource(R.string.section_current_episode)) {
+                InfoLinha(stringResource(R.string.label_code), ep.codepurgenc.toString())
+                InfoLinha(stringResource(R.string.label_status), ep.estado.replaceFirstChar { it.uppercase() })
 
-                // PROTEÇÃO EXTRA: Se a data de entrada for nula por erro do sistema, não crasha
-                val entradaFormatada = ep.datahoraentr?.take(16)?.replace("T", " ") ?: "Sem data"
-                InfoLinha("Entrada", entradaFormatada)
+                val entradaFormatada = ep.datahoraentr?.take(16)?.replace("T", " ") ?: stringResource(R.string.no_date)
+                InfoLinha(stringResource(R.string.label_entry), entradaFormatada)
 
-                ep.datahorasaida?.let { InfoLinha("Saída", it.take(16).replace("T", " ")) }
+                ep.datahorasaida?.let { InfoLinha(stringResource(R.string.label_exit), it.take(16).replace("T", " ")) }
             }
         }
 
         // Triagem detalhada - Ocultar para rececionista
         if (!isRececionista) {
             uiState.triagem?.let { tr ->
-                SeccaoCard(titulo = "Triagem") {
-                    tr.sintomas?.let { InfoLinha("Sintomas", it) }
-                    tr.temperatura?.let { InfoLinha("Temperatura", "${it}°C") }
-                    tr.freqcard?.let { InfoLinha("Freq. Cardíaca", "$it bpm") }
-                    tr.freqresp?.let { InfoLinha("Freq. Respiratória", "$it rpm") }
-                    tr.spo2?.let { InfoLinha("SpO2", "${it}%") }
+                SeccaoCard(titulo = stringResource(R.string.section_triage)) {
+                    tr.sintomas?.let { InfoLinha(stringResource(R.string.label_symptoms), it) }
+                    tr.temperatura?.let { InfoLinha(stringResource(R.string.label_temperature), "${it}°C") }
+                    tr.freqcard?.let { InfoLinha(stringResource(R.string.label_heart_rate), "$it bpm") }
+                    tr.freqresp?.let { InfoLinha(stringResource(R.string.label_respiratory_rate), "$it rpm") }
+                    tr.spo2?.let { InfoLinha(stringResource(R.string.label_spo2), "${it}%") }
                     if (tr.sistolica != null && tr.diastolica != null) {
-                        InfoLinha("Tensão Arterial", "${tr.sistolica}/${tr.diastolica} mmHg")
+                        InfoLinha(stringResource(R.string.label_blood_pressure), "${tr.sistolica}/${tr.diastolica} mmHg")
                     }
-                    tr.datahorainicio?.let { InfoLinha("Início Triagem", it.take(16).replace("T", " ")) }
-                    tr.idfunc?.let { InfoLinha("ID Funcionário", it.toString()) }
+                    tr.datahorainicio?.let { InfoLinha(stringResource(R.string.label_triage_start), it.take(16).replace("T", " ")) }
+                    tr.idfunc?.let { InfoLinha(stringResource(R.string.label_employee_id), it.toString()) }
                 }
             }
         }
@@ -147,13 +157,13 @@ private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
 
 @Composable
 private fun PulseiraCard(triagem: Triagem) {
-    val (bgColor, textColor, label) = when (triagem.cortriagem.lowercase()) {
-        "vermelho"  -> Triple(Color(0xFFD32F2F), Color.White, "EMERGÊNCIA")
-        "laranja"   -> Triple(Color(0xFFE65100), Color.White, "MUITO URGENTE")
-        "amarelo"   -> Triple(Color(0xFFF9A825), Color.Black, "URGENTE")
-        "verde"     -> Triple(Color(0xFF2E7D32), Color.White, "POUCO URGENTE")
-        "azul"      -> Triple(Color(0xFF1565C0), Color.White, "NÃO URGENTE")
-        else        -> Triple(Color(0xFF757575), Color.White, triagem.cortriagem.uppercase())
+    val (bgColor, textColor, labelRes) = when (triagem.cortriagem.lowercase()) {
+        "vermelho"  -> Triple(Color(0xFFD32F2F), Color.White, R.string.triage_emergency)
+        "laranja"   -> Triple(Color(0xFFE65100), Color.White, R.string.triage_very_urgent)
+        "amarelo"   -> Triple(Color(0xFFF9A825), Color.Black, R.string.triage_urgent)
+        "verde"     -> Triple(Color(0xFF2E7D32), Color.White, R.string.triage_not_so_urgent)
+        "azul"      -> Triple(Color(0xFF1565C0), Color.White, R.string.triage_non_urgent)
+        else        -> Triple(Color(0xFF757575), Color.White, null)
     }
 
     Card(
@@ -168,8 +178,18 @@ private fun PulseiraCard(triagem: Triagem) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("PULSEIRA", fontSize = 11.sp, color = textColor.copy(alpha = 0.8f), fontWeight = FontWeight.Medium)
-                Text(label, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = textColor)
+                Text(
+                    text = stringResource(R.string.label_wristband), 
+                    fontSize = 11.sp, 
+                    color = textColor.copy(alpha = 0.8f), 
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = if (labelRes != null) stringResource(labelRes) else triagem.cortriagem.uppercase(), 
+                    fontSize = 20.sp, 
+                    fontWeight = FontWeight.Bold, 
+                    color = textColor
+                )
             }
         }
     }
