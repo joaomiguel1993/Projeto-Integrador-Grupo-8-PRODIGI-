@@ -277,7 +277,7 @@ const carregarAtos = async (codEpisodio) => {
 
 const carregarEpisodios = async () => {
   const hospitalId =
-    utilizadorLogado?.hospitais?.[0]?.idhosp ||
+    utilizadorLogado?.hospitais?.[0]?.idhosp ??
     utilizadorLogado?.hospitais?.[0]?.id_hosp;
 
   if (!hospitalId) {
@@ -304,10 +304,10 @@ const carregarEpisodios = async () => {
       listaBase.map(async (ep) => {
         try {
           const codEp =
-            ep.cod_ep_urgenc ||
-            ep.codepurgenc ||
-            ep.codEpisodio ||
-            ep.codepisodio;
+            ep?.cod_ep_urgenc ??
+            ep?.codepurgenc ??
+            ep?.codEpisodio ??
+            ep?.codepisodio;
 
           if (!codEp) return ep;
 
@@ -319,20 +319,45 @@ const carregarEpisodios = async () => {
 
           const triagem = await rTriagem.json();
 
+          const corTriagem =
+            triagem?.cortriagem ??
+            triagem?.corTriagem ??
+            triagem?.cor_triagem ??
+            triagem?.prioridade ??
+            triagem?.cor ??
+            ep?.cortriagem ??
+            ep?.corTriagem ??
+            ep?.cor_triagem ??
+            "";
+
+          const tempoEsperaPrevisto =
+            triagem?.tempoesperaprevisto ??
+            triagem?.tempoEsperaPrevisto ??
+            triagem?.tempo_espera_previsto ??
+            ep?.tempoesperaprevisto ??
+            ep?.tempoEsperaPrevisto ??
+            ep?.tempo_espera_previsto ??
+            "";
+
+          const dataHoraTriagem =
+            triagem?.data_hora_triagem ??
+            triagem?.datahoratriagem ??
+            triagem?.dataHoratriagem ??
+            ep?.data_hora_triagem ??
+            ep?.datahoratriagem ??
+            ep?.dataHoratriagem ??
+            "";
+
           return {
             ...ep,
-            cortriagem:
-              triagem?.cortriagem ||
-              triagem?.cor_triagem ||
-              ep?.cortriagem ||
-              ep?.cor_triagem ||
-              "",
-            tempoesperaprevisto:
-              triagem?.tempoesperaprevisto ||
-              triagem?.tempo_espera_previsto ||
-              ep?.tempoesperaprevisto ||
-              ep?.tempo_espera_previsto ||
-              "",
+            cortriagem: corTriagem,
+            corTriagem: corTriagem,
+            cor_triagem: corTriagem,
+            tempoesperaprevisto: tempoEsperaPrevisto,
+            tempoEsperaPrevisto: tempoEsperaPrevisto,
+            tempo_espera_previsto: tempoEsperaPrevisto,
+            data_hora_triagem: dataHoraTriagem,
+            datahoratriagem: dataHoraTriagem,
           };
         } catch (e) {
           console.error("Erro a carregar triagem do episódio:", ep, e);
@@ -349,264 +374,140 @@ const carregarEpisodios = async () => {
   }
 };
 
+
 const abrirEpisodio = async (ep) => {
-
-
-
   if (!ep) {
-    mostrarToast('Episódio inválido.', 'error');
+    mostrarToast("Episódio inválido.", "error");
     return;
   }
 
   const codEpisodio = getCodEpisodio(ep);
   const numUtente = getCodUtente(ep);
 
-  // muda estado para em consulta
-  if (ep?.estado === 'em_atendimento') {
-
-    await fetch(`${API_URL}/episodios/${codEpisodio}`, {
-      method: 'PUT',
-      headers: headers(),
-      body: JSON.stringify({
-        estado: 'em_consulta',
-      }),
-    });
-
-  }
-
-  console.log('EPISODIO:', ep);
-
-  console.log('COD EPISODIO:', codEpisodio);
-
-  console.log(
-    'URL TRIAGEM:',
-    `${API_URL}/triagens/${codEpisodio}`
-  );
-
-  const resMedicacaoAtiva = await fetch(
-    `${API_URL}/medicacao-ativa/utente/${numUtente}`,
-    {
-      headers: headers(),
-    }
-  );
-
-  const dataMedicacaoAtiva = await resMedicacaoAtiva.json();
-
-  setMedicacaoAtiva(
-    Array.isArray(dataMedicacaoAtiva)
-      ? dataMedicacaoAtiva
-      : []
-  );
-
-  if (!numUtente) {
-    mostrarToast('Utente do episódio não encontrado.', 'error');
-    return;
-  }
-
   if (!codEpisodio) {
-    mostrarToast('Código do episódio não encontrado.', 'error');
+    mostrarToast("Código do episódio inválido.", "error");
     return;
   }
-
-  setEpisodioSelecionado(ep);
-
-  setTabAtendimento('prescricao');
-
-  setRiscoIA(null);
-
-
 
   try {
-
-    const [
-      rUtente,
-      rTriagem,
-      rAlertas,
-      rMedicacao,
-      rAtos,
-      rAlergias
-    ] = await Promise.all([
-
-      fetch(`${API_URL}/utentes/${numUtente}`, {
-        headers: headers()
-      }),
-
-      fetch(`${API_URL}/triagens/${codEpisodio}`, {
-        headers: headers()
-      }),
-
-      fetch(`${API_URL}/alertas/utente/${numUtente}`, {
-        headers: headers()
-      }),
-
-      fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, {
-        headers: headers()
-      }),
-
-      fetch(`${API_URL}/atos/episodio/${codEpisodio}`, {
-        headers: headers()
-      }),
-
-      fetch(`${API_URL}/alergias/utente/${numUtente}`, {
-        headers: headers()
-      }),
-
-    ]);
-
-    if (rUtente.ok) {
-      setUtente(await rUtente.json());
-    } else {
-      setUtente(null);
+    if (ep?.estado === "em_atendimento") {
+      await fetch(`${API_URL}/episodios/${codEpisodio}`, {
+        method: "PUT",
+        headers: headers(),
+        body: JSON.stringify({
+          estado: "em_consulta",
+        }),
+      });
     }
 
-    if (rTriagem.ok) {
-      const triagem = await rTriagem.json();
+    console.log("EPISODIO:", ep);
+    console.log("COD EPISODIO:", codEpisodio);
+    console.log("URL TRIAGEM:", `${API_URL}/triagens/${codEpisodio}`);
 
-      console.log("TRIAGEM:", triagem);
-      console.log("TRIAGEM RAW KEYS:", Object.keys(triagem));
-      console.log("TRIAGEM TEMPO CANDIDATOS:", {
-        tempo_espera_previsto: triagem?.tempo_espera_previsto,
-        tempoesperaprevisto: triagem?.tempoesperaprevisto,
-        tempo_medio_espera: triagem?.tempo_medio_espera,
-        tempoespera: triagem?.tempoespera,
-        tempo_espera: triagem?.tempo_espera,
+    let triagem = null;
+
+    try {
+      const rTriagem = await fetch(`${API_URL}/triagens/${codEpisodio}`, {
+        headers: headers(),
       });
 
-      setDadosTriagem({
-        ...triagem,
-        cortriagem:
-          triagem?.cortriagem ??
-          triagem?.cor_triagem ??
-          "",
-        tempoesperaprevisto:
-          triagem?.tempoesperaprevisto ??
-          triagem?.tempo_espera_previsto ??
-          triagem?.tempo_medio_espera ??
-          triagem?.tempoespera ??
-          triagem?.tempo_espera ??
-          "",
-        freqcard:
-          triagem?.freqcard ??
-          triagem?.freq_card ??
-          "",
-        freqresp:
-          triagem?.freqresp ??
-          triagem?.freq_resp ??
-          "",
-        spo2:
-          triagem?.spo2 ??
-          triagem?.sp_o2 ??
-          "",
-        niveldor:
-          triagem?.niveldor ??
-          triagem?.nivel_dor ??
-          "",
-        nomeenfermeiro:
-          triagem?.nomeenfermeiro ??
-          triagem?.nome_enfermeiro ??
-          "",
-        datahorainicio:
-          triagem?.datahorainicio ??
-          triagem?.data_hora_inicio ??
-          "",
-        datahorafim:
-          triagem?.datahorafim ??
-          triagem?.data_hora_fim ??
-          "",
-      });
-    } else if (rTriagem.status === 404) {
-      console.log("Triagem ainda não criada.");
-
-      setDadosTriagem({
-        cortriagem: "—",
-        temperatura: "—",
-        freqcard: "—",
-        freqresp: "—",
-        spo2: "—",
-        sistolica: "—",
-        diastolica: "—",
-        niveldor: "—",
-        consciencia: "—",
-        sintomas: "Sem triagem registada.",
-        tempoesperaprevisto: "—",
-        nomeenfermeiro: "—",
-        datahorainicio: "—",
-        datahorafim: "—",
-      });
-    } else {
-      console.log("ERRO TRIAGEM:", rTriagem.status);
-      setDadosTriagem(null);
+      if (rTriagem.ok) {
+        triagem = await rTriagem.json();
+        console.log("TRIAGEM ABRIR RAW JSON:", JSON.stringify(triagem, null, 2));
+      } else {
+        console.warn("Triagem não encontrada para episódio:", codEpisodio);
+      }
+    } catch (e) {
+      console.error("Erro ao carregar triagem no abrirEpisodio:", e);
     }
 
-    if (rAlertas.ok) {
+    const corTriagem =
+      triagem?.cortriagem ??
+      triagem?.corTriagem ??
+      triagem?.cor_triagem ??
+      triagem?.prioridade ??
+      triagem?.cor ??
+      ep?.cortriagem ??
+      ep?.corTriagem ??
+      ep?.cor_triagem ??
+      "";
 
-      const a = await rAlertas.json();
+    const tempoEsperaPrevisto =
+      triagem?.tempoesperaprevisto ??
+      triagem?.tempoEsperaPrevisto ??
+      triagem?.tempo_espera_previsto ??
+      ep?.tempoesperaprevisto ??
+      ep?.tempoEsperaPrevisto ??
+      ep?.tempo_espera_previsto ??
+      "";
 
-      setAlertas(Array.isArray(a) ? a : []);
+    const dataHoraTriagem =
+      triagem?.data_hora_triagem ??
+      triagem?.datahoratriagem ??
+      triagem?.dataHoratriagem ??
+      ep?.data_hora_triagem ??
+      ep?.datahoratriagem ??
+      ep?.dataHoratriagem ??
+      "";
 
-    } else {
+    const episodioCompleto = {
+      ...ep,
+      estado: ep?.estado === "em_atendimento" ? "em_consulta" : ep?.estado,
+      estadolocal: ep?.estado === "em_atendimento" ? "em_consulta" : ep?.estadolocal,
+      cortriagem: corTriagem,
+      corTriagem: corTriagem,
+      cor_triagem: corTriagem,
+      tempoesperaprevisto: tempoEsperaPrevisto,
+      tempoEsperaPrevisto: tempoEsperaPrevisto,
+      tempo_espera_previsto: tempoEsperaPrevisto,
+      data_hora_triagem: dataHoraTriagem,
+      datahoratriagem: dataHoraTriagem,
+    };
 
-      setAlertas([]);
-
-    }
-
-    if (rMedicacao.ok) {
-
-      const m = await rMedicacao.json();
-
-      setMedicacaoAtiva(Array.isArray(m) ? m : []);
-
-    } else {
-
-      setMedicacaoAtiva([]);
-
-    }
-
-    if (rAtos.ok) {
-
-      const listaAtos = await rAtos.json();
-
-      const finalAtos = Array.isArray(listaAtos)
-        ? listaAtos
-        : [];
-
-      setAtos(finalAtos);
-
-      atosRef.current = finalAtos;
-
-    } else {
-
-      setAtos([]);
-
-      atosRef.current = [];
-
-    }
-
-    if (rAlergias.ok) {
-
-      const al = await rAlergias.json();
-
-      setAlergias(Array.isArray(al) ? al : []);
-
-    } else {
-
-      setAlergias([]);
-
-    }
-
-    await carregarMedicamentos();
-
-  } catch (e) {
-
-    console.error(e);
-
-    mostrarToast(
-      'Erro ao abrir o episódio.',
-      'error'
+    console.log(
+      "EPISODIO COMPLETO ABRIR:",
+      JSON.stringify(episodioCompleto, null, 2)
     );
 
-  }
+    setEpisodios((prev) =>
+      (prev || []).map((item) => {
+        const codItem = getCodEpisodio(item);
+        return codItem === codEpisodio ? episodioCompleto : item;
+      })
+    );
 
+    setEpisodioSelecionado(episodioCompleto);
+
+    const [triagemData, alergiasData, historicoData, sinaisVitaisData] =
+      await Promise.all([
+        fetch(`${API_URL}/triagens/${codEpisodio}`, { headers: headers() }).then((r) =>
+          r.ok ? r.json() : null
+        ),
+        numUtente
+          ? fetch(`${API_URL}/alergias/utente/${numUtente}`, { headers: headers() }).then((r) =>
+            r.ok ? r.json() : []
+          )
+          : Promise.resolve([]),
+        numUtente
+          ? fetch(`${API_URL}/historico/${numUtente}`, { headers: headers() }).then((r) =>
+            r.ok ? r.json() : []
+          )
+          : Promise.resolve([]),
+        fetch(`${API_URL}/sinaisvitais/episodio/${codEpisodio}`, {
+          headers: headers(),
+        }).then((r) => (r.ok ? r.json() : [])),
+      ]);
+
+    setDadosTriagem(triagemData || triagem || {});
+    setAlergias(Array.isArray(alergiasData) ? alergiasData : []);
+    setHistorico(Array.isArray(historicoData) ? historicoData : []);
+    setSinaisVitais(Array.isArray(sinaisVitaisData) ? sinaisVitaisData : []);
+
+    setEpisodioSelecionado(episodioCompleto);
+  } catch (e) {
+    console.error("Erro ao abrir episódio:", e);
+    mostrarToast("Erro ao abrir episódio.", "error");
+  }
 };
 
 function SectionHeader({ title, subtitle }) {
@@ -698,6 +599,8 @@ export default function DoctorDashboard() {
 
   const [medicamentos, setMedicamentos] = useState([]);
 
+  const [prescricaoImpressao, setPrescricaoImpressao] = useState(null);
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState('informacao_geral');
   const [subMenuFila, setSubMenuFila] = useState('em_espera');
@@ -705,6 +608,10 @@ export default function DoctorDashboard() {
   const [episodios, setEpisodios] = useState([]);
   const [episodiosEstado, setEpisodiosEstado] = useState({});
   const [episodioSelecionado, setEpisodioSelecionado] = useState(null);
+
+  const [acaoClinica, setAcaoClinica] = useState('');
+
+  const [aSubmeterDecisao, setASubmeterDecisao] = useState(false);
 
   const [filtro, setFiltro] = useState('');
 
@@ -714,7 +621,7 @@ export default function DoctorDashboard() {
   const [antecedentes, setAntecedentes] = useState(null);
   const [dadosTriagem, setDadosTriagem] = useState(null);
 
-  const [prescricaoImpressao, setPrescricaoImpressao] = useState(null);
+  const [prescricoesImpressao, setPrescricoesImpressao] = useState([]);
 
   const [tabAtendimento, setTabAtendimento] = useState('vitais');
 
@@ -725,6 +632,8 @@ export default function DoctorDashboard() {
     tipo_alta: 'clinica',
     observacoes: '',
   });
+
+
 
 
   const handlePrescricaoChange = (e) => {
@@ -752,10 +661,9 @@ export default function DoctorDashboard() {
   });
 
   const [prescricao, setPrescricao] = useState({
-    codmedicamento: "",
-    dosagem: "",
-    frequencia: "",
-    observacoes: "",
+    codmedicamento: '',
+    dosagem: '',
+    observacoes: '',
   });
 
   const [temposMediosHospital, setTemposMediosHospital] = useState({
@@ -831,7 +739,28 @@ export default function DoctorDashboard() {
     carregarTudo();
   }, []);
 
-
+  const obterNumeroUtente = () =>
+    getField(
+      utente,
+      'numero_utente',
+      'numeroUtente',
+      'num_utente',
+      'numutente',
+      'numutent',
+      'codutente',
+      'cod_utente'
+    ) ||
+    getField(
+      episodioSelecionado,
+      'numero_utente',
+      'numeroUtente',
+      'num_utente',
+      'numutente',
+      'numutent',
+      'codutente',
+      'cod_utente'
+    ) ||
+    '—';
 
   const carregarTudo = () => {
     carregarEpisodios();
@@ -842,128 +771,123 @@ export default function DoctorDashboard() {
 
   const submeterPrescricao = async () => {
     try {
-      const codEpisodio =
-        episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codepurgenc;
-
+      const codEpisodio = getCodEpisodio(episodioSelecionado);
       if (!codEpisodio) {
         mostrarToast('Episódio inválido.', 'error');
         return;
       }
 
-      const atoSelecionado = atos?.[0];
-      const idAto = atoSelecionado?.id_ato || atoSelecionado?.idato;
+      const atoSelecionado = Array.isArray(atos) && atos.length > 0 ? atos[0] : null;
+      const idAto = atoSelecionado?.idato ?? atoSelecionado?.id_ato ?? null;
 
       if (!idAto) {
         mostrarToast('Não existe ato clínico associado ao episódio.', 'error');
         return;
       }
 
+      if (!prescricao?.codmedicamento || !prescricao?.dosagem) {
+        mostrarToast('Seleciona medicamento e dosagem.', 'error');
+        return;
+      }
+
       const body = {
         id_ato: Number(idAto),
-        cod_medicamento: Number(prescricao?.codmedicamento),
-        dosagem: prescricao?.dosagem,
-        frequencia: prescricao?.frequencia,
-        observacoes: prescricao?.observacoes,
+        cod_medicamento: Number(prescricao.codmedicamento),
+        dosagem: String(prescricao.dosagem).trim(),
+        observacoes: prescricao.observacoes?.trim() || null,
       };
 
-      console.log('BODY PRESCRICAO:', body);
+      console.log('BODY PRESCRICAO', body);
 
       const r = await fetch(`${API_URL}/prescricoes/`, {
         method: 'POST',
-        headers: headers(),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(body),
       });
 
       const responseText = await r.text();
-      console.log('RES POST /prescricoes status:', r.status);
-      console.log('RES POST /prescricoes body:', responseText);
+      console.log('RES POST prescricoes status', r.status);
+      console.log('RES POST prescricoes body', responseText);
 
-      if (r.ok) {
-        const created = responseText ? JSON.parse(responseText) : null;
-
-        const medicamentoSelecionado = medicamentos.find(
-          (m) => String(getMedicamentoId(m)) === String(prescricao?.codmedicamento)
-        );
-
-        const medicamentoSelecionadoAtivo = medicacaoAtiva.find(
-          (m) =>
-            String(
-              m?.codmedicamento ??
-              m?.cod_medicamento ??
-              m?.idmedicamento ??
-              m?.id_medicamento ??
-              m?.id
-            ) === String(prescricao?.codmedicamento)
-        );
-
-        const nomeMedicamento =
-          medicamentoSelecionadoAtivo?.nomeApresentacao ||
-          medicamentoSelecionadoAtivo?.nome ||
-          medicamentoSelecionadoAtivo?.nomemedicamento ||
-          medicamentoSelecionadoAtivo?.nome_medicamento ||
-          medicamentoSelecionadoAtivo?.medicamento ||
-          medicamentoSelecionado?.nome ||
-          medicamentoSelecionado?.nomemedicamento ||
-          medicamentoSelecionado?.nome_medicamento ||
-          medicamentoSelecionado?.designacao ||
-          medicamentoSelecionado?.descricao ||
-          getMedicamentoNome(medicamentoSelecionadoAtivo || medicamentoSelecionado) ||
-          '—';
-
-        const novaMedicacao = {
-          id: created?.id_prescricao ?? `tmp-${Date.now()}`,
-          id_prescricao: created?.id_prescricao ?? null,
-          id_ato: created?.id_ato ?? Number(idAto),
-          codmedicamento:
-            created?.cod_medicamento ?? Number(prescricao?.codmedicamento),
-          cod_medicamento:
-            created?.cod_medicamento ?? Number(prescricao?.codmedicamento),
-          dosagem: created?.dosagem ?? prescricao?.dosagem,
-          frequencia: created?.frequencia ?? prescricao?.frequencia,
-          observacoes: created?.observacoes ?? prescricao?.observacoes,
-          estado_prescricao: created?.estado_prescricao ?? 'pendente',
-          nomeApresentacao: nomeMedicamento,
-        };
-
-        const dadosParaImpressao = {
-          codmedicamento:
-            created?.cod_medicamento ?? Number(prescricao?.codmedicamento),
-          nomeApresentacao: nomeMedicamento,
-          dosagem: created?.dosagem ?? prescricao?.dosagem,
-          frequencia: created?.frequencia ?? prescricao?.frequencia,
-          observacoes: created?.observacoes ?? prescricao?.observacoes,
-          numeroUtente:
-            utente?.num_utente ||
-            utente?.numutente ||
-            utente?.numutent ||
-            utente?.codutente ||
-            utente?.cod_utente ||
-            episodioSelecionado?.num_utente ||
-            episodioSelecionado?.numutente ||
-            episodioSelecionado?.numutent ||
-            episodioSelecionado?.codutente ||
-            episodioSelecionado?.cod_utente ||
-            '—',
-        };
-
-        setPrescricaoImpressao(dadosParaImpressao);
-        setMedicacaoAtiva((prev) => [novaMedicacao, ...prev]);
-        mostrarToast('Prescrição registada.', 'success');
-
-        setPrescricao({
-          codmedicamento: '',
-          dosagem: '',
-          frequencia: '',
-          observacoes: '',
-        });
-
-        setRiscoIA(null);
-        setTabAtendimento('prescricao');
-      } else {
+      if (!r.ok) {
         mostrarToast(`Erro ao prescrever (${r.status}).`, 'error');
+        return;
       }
+
+      const created = responseText ? JSON.parse(responseText) : null;
+
+      const medicamentoSelecionado = medicamentos.find(
+        (m, index) => String(getMedicamentoId(m, index)) === String(prescricao.codmedicamento)
+      );
+
+      const nomeMedicamento =
+        medicamentoSelecionado?.nome ||
+        medicamentoSelecionado?.nomemedicamento ||
+        medicamentoSelecionado?.designacao ||
+        medicamentoSelecionado?.descricao ||
+        getMedicamentoNome(medicamentoSelecionado) ||
+        'Medicamento';
+
+      const numeroUtenteAtual =
+        getField(
+          utente,
+          'numero_utente',
+          'numeroutente',
+          'numeroUtente',
+          'numutente',
+          'numutent',
+          'codutente'
+        ) ||
+        getField(
+          episodioSelecionado,
+          'numero_utente',
+          'numeroutente',
+          'numeroUtente',
+          'numutente',
+          'numutent',
+          'codutente'
+        ) ||
+        '—';
+
+      const novaMedicacao = {
+        id: created?.id_prescricao ?? `tmp-${Date.now()}`,
+        idprescricao: created?.id_prescricao ?? null,
+        idato: created?.id_ato ?? Number(idAto),
+        codmedicamento: created?.cod_medicamento ?? Number(prescricao.codmedicamento),
+        dosagem: created?.dosagem ?? prescricao.dosagem,
+        observacoes: created?.observacoes ?? prescricao.observacoes ?? '',
+        estadoprescricao: created?.estado_prescricao ?? 'pendente',
+        nomeApresentacao: nomeMedicamento,
+      };
+
+      setMedicacaoAtiva((prev) => [novaMedicacao, ...(Array.isArray(prev) ? prev : [])]);
+
+      setPrescricoesImpressao((prev) => [
+        ...(Array.isArray(prev) ? prev : []),
+        {
+          codmedicamento: novaMedicacao.codmedicamento,
+          nomeApresentacao: nomeMedicamento,
+          dosagem: novaMedicacao.dosagem,
+          frequencia: novaMedicacao.frequencia || '',
+          observacoes: novaMedicacao.observacoes,
+          numeroUtente: numeroUtenteAtual,
+          riscoIA: riscoIA || null,
+        },
+      ]);
+
+      setPrescricao({
+        codmedicamento: '',
+        dosagem: '',
+        observacoes: '',
+      });
+
+      setRiscoIA(null);
+      mostrarToast(`Prescrição de ${nomeMedicamento} registada com sucesso.`, 'success');
     } catch (e) {
-      console.error('ERRO submeterPrescricao:', e);
+      console.error('ERRO submeterPrescricao', e);
       mostrarToast('Erro ao prescrever.', 'error');
     }
   };
@@ -1207,6 +1131,7 @@ export default function DoctorDashboard() {
     setTabAtendimento('vitais');
 
     setRiscoIA(null);
+    setPrescricoesImpressao([]);
 
 
 
@@ -1440,90 +1365,116 @@ export default function DoctorDashboard() {
       icon: <IconBed />,
     },
   ];
+
   const submeterAlta = async () => {
-
     try {
+      if (aSubmeterDecisao) return;
 
-      const cod =
+      const codEpisodio =
         episodioSelecionado?.cod_ep_urgenc ||
+        episodioSelecionado?.codep_urgenc ||
+        episodioSelecionado?.cod_epurgenc ||
         episodioSelecionado?.codepurgenc;
 
-      if (!cod) {
-
-        mostrarToast(
-          'Episódio inválido.',
-          'error'
-        );
-
+      if (!codEpisodio) {
+        mostrarToast('Episódio inválido.', 'error');
         return;
       }
 
-      const body = {
-        ...episodioSelecionado,
-
-        estado: 'concluido',
-
-        data_alta: new Date().toISOString(),
-      };
-
-      const r = await fetch(
-        `${API_URL}/episodios/${cod}`,
-        {
-          method: 'PUT',
-          headers: headers(),
-          body: JSON.stringify(body),
-        }
-      );
-
-      if (r.ok) {
-
-        setEpisodios((prev) =>
-          prev.map((e) => {
-
-            const eCod =
-              e.cod_ep_urgenc ||
-              e.codepurgenc;
-
-            if (eCod === cod) {
-
-              return {
-                ...e,
-                estado_local: 'concluido',
-                data_alta: new Date().toISOString(),
-              };
-            }
-
-            return e;
-          })
-        );
-
-        mostrarToast(
-          'Alta registada.',
-          'success'
-        );
-
-        setSubMenuFila('concluidos');
-
-        setTabAtendimento('vitais');
-
-      } else {
-
-        mostrarToast(
-          'Erro ao registar alta.',
-          'error'
-        );
+      if (!acaoClinica) {
+        mostrarToast('Selecione Alta ou Internamento.', 'error');
+        return;
       }
 
-    } catch (e) {
+      if (acaoClinica === 'internamento' && !alta.servico) {
+        mostrarToast('Selecione o serviço de internamento.', 'error');
+        return;
+      }
 
-      console.error(e);
+      setASubmeterDecisao(true);
+
+      const payload = {
+        estado: acaoClinica === 'alta' ? 'terminado' : 'internado',
+        data_hora_saida: acaoClinica === 'alta' ? new Date().toISOString() : null,
+      };
+
+      console.log('PAYLOAD DECISAO', payload);
+
+      const r = await fetch(`${API_URL}/episodios/${codEpisodio}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseText = await r.text();
+      console.log('RES PUT episodio status', r.status);
+      console.log('RES PUT episodio body', responseText);
+
+      if (!r.ok) {
+        throw new Error(`Erro ao registar decisão clínica (${r.status})`);
+      }
+
+      if (!r.ok) {
+        throw new Error(`Erro ao registar decisão clínica (${r.status})`);
+      }
+
+      setEpisodios((prev) =>
+        prev.map((ep) => {
+          const epCod =
+            ep?.cod_ep_urgenc ||
+            ep?.codep_urgenc ||
+            ep?.cod_epurgenc ||
+            ep?.codepurgenc;
+
+          if (String(epCod) !== String(codEpisodio)) return ep;
+
+          return {
+            ...ep,
+            estado: acaoClinica === 'alta' ? 'concluido' : 'internado',
+            estado_local: acaoClinica === 'alta' ? 'concluido' : 'internado',
+          };
+        })
+      );
 
       mostrarToast(
-        'Erro ao registar alta.',
-        'error'
+        acaoClinica === 'alta'
+          ? 'Alta registada com sucesso.'
+          : 'Internamento registado com sucesso.',
+        'success'
       );
+
+      setAlta({
+        destino: 'alta',
+        observacoes: '',
+        servico: '',
+        numero_cama: '',
+        motivo_int: '',
+        motivo_int_outro: '',
+      });
+
+      setAcaoClinica('');
+      setEpisodioSelecionado(null);
+      setUtente(null);
+      setDadosTriagem(null);
+      setAlertas([]);
+      setMedicacaoAtiva([]);
+      setAlergias([]);
+      setTabAtendimento('vitais');
+      setSubMenuFila('emespera');
+
+      await carregarEpisodios();
+      await carregarInternamentos();
+    } catch (e) {
+      console.error('ERRO submeterAlta', e);
+      mostrarToast(e.message || 'Erro ao registar decisão clínica.', 'error');
+    } finally {
+      setASubmeterDecisao(false);
     }
   };
+
   const submeterAltaRapida = async (ep) => {
 
     try {
@@ -1578,24 +1529,25 @@ export default function DoctorDashboard() {
   };
 
   const renderFilaTriagens = () => {
-
     if (subMenuFila === 'atendimento' && episodioSelecionado) {
       return renderAtendimento();
     }
 
     const episodiosFiltrados = episodios.filter((ep) => {
-
       const estado =
-        ep.estado ||
-        ep.estado_local ||
-        ep.estado_episodio;
+        ep?.estado ||
+        ep?.estadolocal ||
+        ep?.estadoepisodio ||
+        ep?.estado_local ||
+        ep?.estado_episodio ||
+        '';
 
-      if (subMenuFila === 'em_espera') {
-        return estado !== 'concluido';
+      if (subMenuFila === 'emespera') {
+        return estado !== 'terminado' && estado !== 'desistiu';
       }
 
       if (subMenuFila === 'concluidos') {
-        return estado === 'concluido';
+        return estado === 'terminado' || estado === 'desistiu';
       }
 
       return true;
@@ -1603,8 +1555,8 @@ export default function DoctorDashboard() {
 
     return (
       <DoctorQueue
-        episodios={episodios}
-        episodiosOrdenados={episodios}
+        episodios={episodiosFiltrados}
+        episodiosOrdenados={episodiosFiltrados}
         setEpisodios={setEpisodios}
         subMenuFila={subMenuFila}
         setSubMenuFila={setSubMenuFila}
@@ -1699,15 +1651,19 @@ export default function DoctorDashboard() {
 
       const response = await fetch(`${API_URL}/triagens/${codEpisodio}`, {
         method: "PUT",
-        headers: headers(),
+        headers,
         body: JSON.stringify(payload),
       });
+
+      const responseText = await response.text();
+      console.log("RES PUT triagem status", response.status);
+      console.log("RES PUT triagem body", responseText);
 
       if (!response.ok) {
         throw new Error(`Erro ao guardar triagem: ${response.status}`);
       }
 
-      const triagemAtualizada = await response.json();
+      const triagemAtualizada = responseText ? JSON.parse(responseText) : {};
 
       setDadosTriagem((prev) => ({
         ...(prev || {}),
@@ -1758,9 +1714,32 @@ export default function DoctorDashboard() {
       setModoEdicaoTriagem(false);
       mostrarToast("Triagem atualizada com sucesso.", "success");
     } catch (error) {
-      console.error(error);
+      console.error("ERRO guardarEdicaoTriagem", error);
       mostrarToast("Erro ao guardar edição da triagem.", "error");
     }
+  };
+
+  const [agora, setAgora] = useState(Date.now());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setAgora(Date.now());
+    }, 60000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const calcularTempoEsperaMin = (dataTriagem) => {
+    if (!dataTriagem) return null;
+
+    const inicio = new Date(dataTriagem).getTime();
+
+    if (Number.isNaN(inicio)) return null;
+
+    const diferencaMs = agora - inicio;
+    const minutos = Math.floor(diferencaMs / 60000);
+
+    return minutos < 0 ? 0 : minutos;
   };
 
   const renderTabVitais = () => {
@@ -1782,6 +1761,11 @@ export default function DoctorDashboard() {
       "cor_triagem",
       "cortriagem"
     );
+
+    const dataTriagem =
+      getField(dadosTriagem, 'datahorainicio', 'data_hora_inicio', 'dataTriagem');
+
+    const tempoEsperaAtual = calcularTempoEsperaMin(dataTriagem);
 
     return (
       <div className="doctor-stacked-sections">
@@ -1920,11 +1904,8 @@ export default function DoctorDashboard() {
             <div className="doctor-triage-banner__info">
               <span>Tempo Espera</span>
               <strong>
-                {tempoEsperaTriagem !== "—" &&
-                  tempoEsperaTriagem !== "" &&
-                  tempoEsperaTriagem !== null &&
-                  tempoEsperaTriagem !== undefined
-                  ? `${tempoEsperaTriagem} min`
+                {tempoEsperaAtual !== null && tempoEsperaAtual !== undefined
+                  ? `${tempoEsperaAtual} min`
                   : "—"}
               </strong>
             </div>
@@ -2375,119 +2356,174 @@ export default function DoctorDashboard() {
   const renderTabDecisao = () => {
     return (
       <div className="doctor-stacked-sections">
-
         <section className="doctor-subcard">
-
           <SectionHeader
             title="Decisão Clínica"
-            subtitle="Alta médica ou internamento"
+            subtitle="Selecionar o tipo de decisão e preencher os dados necessários"
           />
 
-          <div className="doctor-form-grid">
+          <div className="doctor-actions-inline" style={{ marginBottom: '1rem' }}>
+            <button
+              type="button"
+              className={`doctor-action-btn ${acaoClinica === 'alta'
+                ? 'doctor-action-btn--primary'
+                : 'doctor-action-btn--secondary'
+                }`}
+              onClick={() => setAcaoClinica('alta')}
+            >
+              Alta
+            </button>
 
-            <div>
-              <label>Destino</label>
+            <button
+              type="button"
+              className={`doctor-action-btn ${acaoClinica === 'internamento'
+                ? 'doctor-action-btn--primary'
+                : 'doctor-action-btn--secondary'
+                }`}
+              onClick={() => setAcaoClinica('internamento')}
+            >
+              Internamento
+            </button>
+          </div>
 
-              <select
-                className="doctor-field"
-                value={alta.destino}
-                onChange={(e) =>
-                  setAlta((prev) => ({
-                    ...prev,
-                    destino: e.target.value,
-                  }))
-                }
-              >
-                <option value="alta">
-                  Alta
-                </option>
-
-                <option value="internamento">
-                  Internamento
-                </option>
-              </select>
+          {!acaoClinica && (
+            <div className="doctor-empty-box">
+              Escolha uma ação clínica para continuar.
             </div>
+          )}
 
-            {alta.destino === 'internamento' && (
-              <>
-                <div>
-                  <label>Serviço</label>
+          {acaoClinica === 'alta' && (
+            <div className="doctor-form-grid">
+              <div>
+                <label>Destino</label>
+                <select
+                  className="doctor-field"
+                  value={alta.destino}
+                  onChange={(e) =>
+                    setAlta((prev) => ({ ...prev, destino: e.target.value }))
+                  }
+                >
+                  <option value="alta">Alta</option>
+                </select>
+              </div>
 
-                  <select
-                    className="doctor-field"
-                    value={alta.servico}
-                    onChange={(e) =>
-                      setAlta((prev) => ({
-                        ...prev,
-                        servico: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">
-                      Selecionar...
+              <div className="doctor-form-grid-full">
+                <label>Observações</label>
+                <textarea
+                  className="doctor-field"
+                  rows="4"
+                  value={alta.observacoes}
+                  onChange={(e) =>
+                    setAlta((prev) => ({ ...prev, observacoes: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="doctor-actions-inline" style={{ marginTop: '1rem' }}>
+                <button
+                  type="button"
+                  className="doctor-action-btn doctor-action-btn--primary"
+                  onClick={submeterAlta}
+                  disabled={aSubmeterDecisao}
+                >
+                  {aSubmeterDecisao ? 'A guardar...' : acaoClinica === 'alta' ? 'Gravar alta' : 'Gravar internamento'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {acaoClinica === 'internamento' && (
+            <div className="doctor-form-grid">
+              <div>
+                <label>Serviço</label>
+                <select
+                  className="doctor-field"
+                  value={alta.servico}
+                  onChange={(e) =>
+                    setAlta((prev) => ({ ...prev, servico: e.target.value }))
+                  }
+                >
+                  <option value="">Selecionar...</option>
+                  {SERVICOS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
                     </option>
+                  ))}
+                </select>
+              </div>
 
-                    {SERVICOS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label>Número da cama</label>
+                <input
+                  className="doctor-field"
+                  type="text"
+                  value={alta.numerocama}
+                  onChange={(e) =>
+                    setAlta((prev) => ({ ...prev, numerocama: e.target.value }))
+                  }
+                />
+              </div>
 
-                <div>
-                  <label>Número da cama</label>
+              <div>
+                <label>Motivo</label>
+                <select
+                  className="doctor-field"
+                  value={alta.motivoint}
+                  onChange={(e) =>
+                    setAlta((prev) => ({ ...prev, motivoint: e.target.value }))
+                  }
+                >
+                  <option value="">Selecionar...</option>
+                  {MOTIVOS_INTERNAMENTO.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              {alta.motivoint === 'Outro' && (
+                <div className="doctor-form-grid-full">
+                  <label>Outro motivo</label>
                   <input
                     className="doctor-field"
                     type="text"
-                    value={alta.numero_cama}
+                    value={alta.motivointoutro}
                     onChange={(e) =>
                       setAlta((prev) => ({
                         ...prev,
-                        numero_cama: e.target.value,
+                        motivointoutro: e.target.value,
                       }))
                     }
                   />
                 </div>
-              </>
-            )}
+              )}
 
-            <div className="doctor-form-grid-full">
+              <div className="doctor-form-grid-full">
+                <label>Observações</label>
+                <textarea
+                  className="doctor-field"
+                  rows="4"
+                  value={alta.observacoes}
+                  onChange={(e) =>
+                    setAlta((prev) => ({ ...prev, observacoes: e.target.value }))
+                  }
+                />
+              </div>
 
-              <label>Observações</label>
-
-              <textarea
-                className="doctor-field"
-                rows={4}
-                value={alta.observacoes}
-                onChange={(e) =>
-                  setAlta((prev) => ({
-                    ...prev,
-                    observacoes: e.target.value,
-                  }))
-                }
-              />
-
+              <div className="doctor-actions-inline" style={{ marginTop: '1rem' }}>
+                <button
+                  type="button"
+                  className="doctor-action-btn doctor-action-btn--primary"
+                  onClick={submeterAlta}
+                  disabled={aSubmeterDecisao}
+                >
+                  {aSubmeterDecisao ? 'A guardar...' : acaoClinica === 'internamento' ? 'Gravar alta' : 'Gravar internamento'}
+                </button>
+              </div>
             </div>
-
-          </div>
-
-          <div
-            className="doctor-actions-inline"
-            style={{ marginTop: '1rem' }}
-          >
-            <button
-              type="button"
-              className="doctor-action-btn doctor-action-btn--primary"
-              onClick={submeterAlta}
-            >
-              Confirmar decisão
-            </button>
-          </div>
-
+          )}
         </section>
-
       </div>
     );
   };
@@ -2934,650 +2970,608 @@ export default function DoctorDashboard() {
 
 
   const imprimirPrescricao = () => {
-    const dadosImpressao = prescricaoImpressao || {};
+    try {
+      console.log('CLICK imprimirPrescricao');
+      console.log('prescricoesImpressao', prescricoesImpressao);
 
-    const codEpisodio =
-      episodioSelecionado?.cod_ep_urgenc ||
-      episodioSelecionado?.codepurgenc ||
-      episodioSelecionado?.codepisodio ||
-      episodioSelecionado?.cod_episodio ||
-      '—';
+      const listaImpressao =
+        Array.isArray(prescricoesImpressao) && prescricoesImpressao.length > 0
+          ? prescricoesImpressao
+          : [];
 
-    const nomeUtente =
-      utente?.nome ||
-      utente?.nome_utente ||
-      episodioSelecionado?.nome_utente ||
-      episodioSelecionado?.nomeutente ||
-      '—';
+      if (listaImpressao.length === 0) {
+        mostrarToast('Ainda não existem prescrições registadas para imprimir.', 'error');
+        return;
+      }
 
-    const numeroUtente =
-      dadosImpressao.numeroUtente ||
-      utente?.num_utente ||
-      utente?.numutente ||
-      utente?.numutent ||
-      utente?.codutente ||
-      utente?.cod_utente ||
-      episodioSelecionado?.num_utente ||
-      episodioSelecionado?.numutente ||
-      episodioSelecionado?.numutent ||
-      episodioSelecionado?.codutente ||
-      episodioSelecionado?.cod_utente ||
-      '—';
+      const codEpisodio =
+        episodioSelecionado?.cod_ep_urgenc ||
+        episodioSelecionado?.codep_urgenc ||
+        episodioSelecionado?.cod_epurgenc ||
+        episodioSelecionado?.codepurgenc ||
+        episodioSelecionado?.cod_episodio ||
+        episodioSelecionado?.codepisodio ||
+        '—';
 
-    const dataNascimento =
-      utente?.data_nasc ||
-      utente?.datanasc ||
-      utente?.data_nascimento ||
-      '—';
+      const nomeUtente =
+        utente?.nome ||
+        utente?.nome_utente ||
+        utente?.nomeutente ||
+        episodioSelecionado?.nome_utente ||
+        episodioSelecionado?.nomeutente ||
+        '—';
 
-    const idade =
-      dataNascimento && dataNascimento !== '—'
-        ? calcularIdade(dataNascimento)
-        : '—';
+      const numeroUtente =
+        listaImpressao[0]?.numeroUtente ??
+        getField(
+          utente,
+          'numero_utente',
+          'numeroutente',
+          'numeroUtente',
+          'num_utente',
+          'numutente',
+          'numutent',
+          'num_utent',
+          'codutente',
+          'cod_utente'
+        ) ??
+        getField(
+          episodioSelecionado,
+          'numero_utente',
+          'numeroutente',
+          'numeroUtente',
+          'num_utente',
+          'numutente',
+          'numutent',
+          'num_utent',
+          'codutente',
+          'cod_utente'
+        ) ??
+        '—';
 
-    const sexo =
-      utente?.sexo ||
-      utente?.genero ||
-      '—';
+      const dataNascimento =
+        utente?.data_nasc ||
+        utente?.datanasc ||
+        utente?.data_nascimento ||
+        utente?.datanascimento ||
+        '—';
 
-    const medico =
-      utilizadorLogado?.nome ||
-      utilizadorLogado?.name ||
-      utilizadorLogado?.username ||
-      'Médico';
+      const idade =
+        dataNascimento && dataNascimento !== '—'
+          ? calcularIdade(dataNascimento)
+          : '—';
 
-    const corTriagem =
-      dadosTriagem?.cor_triagem ||
-      dadosTriagem?.cortriagem ||
-      episodioSelecionado?.cor_triagem ||
-      episodioSelecionado?.cortriagem ||
-      '—';
+      const sexo =
+        utente?.sexo ||
+        utente?.genero ||
+        '—';
 
-    const medicamentoSelecionadoCatalogo = medicamentos.find(
-      (m) =>
-        String(getMedicamentoId(m)) ===
-        String(dadosImpressao?.codmedicamento ?? prescricao?.codmedicamento)
-    );
+      const medico =
+        utilizadorLogado?.nome ||
+        utilizadorLogado?.name ||
+        utilizadorLogado?.username ||
+        'Médico';
 
-    const medicamentoSelecionadoAtivo = medicacaoAtiva.find(
-      (m) =>
-        String(
-          m?.codmedicamento ??
-          m?.cod_medicamento ??
-          m?.idmedicamento ??
-          m?.id_medicamento ??
-          m?.id
-        ) === String(dadosImpressao?.codmedicamento ?? prescricao?.codmedicamento)
-    );
+      const corTriagem =
+        dadosTriagem?.cor_triagem ||
+        dadosTriagem?.cortriagem ||
+        episodioSelecionado?.cor_triagem ||
+        episodioSelecionado?.cortriagem ||
+        '—';
 
-    const nomeMedicamento =
-      dadosImpressao?.nomeApresentacao ||
-      medicamentoSelecionadoAtivo?.nomeApresentacao ||
-      medicamentoSelecionadoAtivo?.nome ||
-      medicamentoSelecionadoAtivo?.nomemedicamento ||
-      medicamentoSelecionadoAtivo?.nome_medicamento ||
-      medicamentoSelecionadoAtivo?.medicamento ||
-      medicamentoSelecionadoAtivo?.designacao ||
-      medicamentoSelecionadoAtivo?.descricao ||
-      medicamentoSelecionadoCatalogo?.nome ||
-      medicamentoSelecionadoCatalogo?.nomemedicamento ||
-      medicamentoSelecionadoCatalogo?.nome_medicamento ||
-      medicamentoSelecionadoCatalogo?.medicamento ||
-      medicamentoSelecionadoCatalogo?.designacao ||
-      medicamentoSelecionadoCatalogo?.descricao ||
-      getMedicamentoNome(
-        medicamentoSelecionadoAtivo || medicamentoSelecionadoCatalogo
-      ) ||
-      '—';
+      const dataAtual = new Date();
+      const dataEmissao = dataAtual.toLocaleDateString('pt-PT');
+      const horaEmissao = dataAtual.toLocaleTimeString('pt-PT', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
 
-    const dosagem =
-      dadosImpressao?.dosagem ||
-      medicamentoSelecionadoAtivo?.dosagem ||
-      '—';
+      const linhasPrescricoes = listaImpressao
+        .map((item, index) => {
+          const estadoIAItem = item?.riscoIA
+            ? item.riscoIA?.riscoalto || item.riscoIA?.risco === 1
+              ? 'Risco identificado'
+              : 'Sem risco identificado'
+            : 'Não avaliado';
 
-    const frequencia =
-      dadosImpressao?.frequencia ||
-      medicamentoSelecionadoAtivo?.frequencia ||
-      '—';
+          const detalheIAItem = item?.riscoIA
+            ? [item.riscoIA?.mensagem, item.riscoIA?.explicacao]
+              .filter(Boolean)
+              .join(' ')
+            : 'Sem avaliação IA registada.';
 
-    const observacoes =
-      dadosImpressao?.observacoes ||
-      medicamentoSelecionadoAtivo?.observacoes ||
-      'Sem observações adicionais.';
+          return `
+        <tr>
+          <td>
+            <div class="rx-main">${item?.nomeApresentacao || `Medicamento ${index + 1}`}</div>
+            <div>Prescrição registada no episódio #${codEpisodio}</div>
+          </td>
+          <td>${item?.dosagem || '—'}</td>
+          <td>${item?.observacoes || '—'}</td>
+          <td>
+            <strong>${estadoIAItem}</strong>
+            <div style="margin-top:4px; color:#475569;">${detalheIAItem}</div>
+          </td>
+        </tr>
+      `;
+        })
+        .join('');
 
-    const dataAtual = new Date();
-    const dataEmissao = dataAtual.toLocaleDateString('pt-PT');
-    const horaEmissao = dataAtual.toLocaleTimeString('pt-PT', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+      const janela = window.open('', '_blank', 'width=1024,height=840');
 
-    const estadoIA = riscoIA
-      ? riscoIA.riscoalto
-        ? 'Risco identificado'
-        : 'Sem risco identificado'
-      : 'Não avaliado';
+      if (!janela) {
+        mostrarToast('Não foi possível abrir a janela de impressão.', 'error');
+        return;
+      }
+      console.log('UTENTE RAW', utente);
+      console.log('EPISODIO RAW', episodioSelecionado);
+      console.log('NUMERO UTENTE FINAL', numeroUtente);
+      const html = `
+  <!DOCTYPE html>
+  <html lang="pt">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Prescrição Médica - ${nomeHospital}</title>
+      <style>
+        * { box-sizing: border-box; }
 
-    const detalheIA =
-      riscoIA?.explicacao ||
-      riscoIA?.mensagem ||
-      'Sem observações adicionais da avaliação inteligente.';
+        :root {
+          --ink: #1f2937;
+          --muted: #6b7280;
+          --line: #d7dde5;
+          --soft: #eef3f7;
+          --soft-2: #f8fafc;
+          --brand: #0f766e;
+          --brand-2: #155e75;
+          --brand-soft: #dff5f2;
+          --danger: #9f1239;
+          --danger-soft: #fde8ef;
+        }
 
-    const janela = window.open('', '_blank', 'width=1024,height=840');
+        html, body {
+          margin: 0;
+          padding: 0;
+          background: #e9eef3;
+          color: var(--ink);
+          font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        }
 
-    if (!janela) {
-      mostrarToast('Não foi possível abrir a janela de impressão.', 'error');
-      return;
-    }
+        body { padding: 32px 20px; }
 
-    const html = `
-    <!DOCTYPE html>
-    <html lang="pt">
-      <head>
-        <meta charset="UTF-8" />
-        <title>Prescrição Médica - ${nomeHospital}</title>
-        <style>
-          * { box-sizing: border-box; }
+        .page {
+          width: 210mm;
+          min-height: 297mm;
+          margin: 0 auto;
+          background: #fff;
+          box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+          position: relative;
+          overflow: hidden;
+        }
 
-          :root {
-            --ink: #1f2937;
-            --muted: #6b7280;
-            --line: #d7dde5;
-            --soft: #eef3f7;
-            --soft-2: #f8fafc;
-            --brand: #0f766e;
-            --brand-2: #155e75;
-            --brand-soft: #dff5f2;
-            --danger: #9f1239;
-            --danger-soft: #fde8ef;
-          }
+        .page::before {
+          content: "";
+          display: block;
+          height: 10px;
+          background: linear-gradient(90deg, var(--brand) 0%, var(--brand-2) 100%);
+        }
 
-          html, body {
-            margin: 0;
+        .sheet { padding: 32px 36px 28px; }
+
+        .topbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+          border-bottom: 1px solid var(--line);
+          padding-bottom: 20px;
+          margin-bottom: 24px;
+        }
+
+        .brand {
+          display: flex;
+          gap: 16px;
+          align-items: flex-start;
+        }
+
+        .brand-mark {
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 18px;
+          letter-spacing: 0.06em;
+          flex-shrink: 0;
+        }
+
+        .brand h1 {
+          margin: 0;
+          font-size: 28px;
+          line-height: 1.1;
+          letter-spacing: -0.02em;
+        }
+
+        .brand p {
+          margin: 6px 0 0;
+          color: var(--muted);
+          font-size: 14px;
+        }
+
+        .doc-meta {
+          text-align: right;
+          min-width: 240px;
+        }
+
+        .doc-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 7px 12px;
+          border-radius: 999px;
+          background: var(--brand-soft);
+          color: var(--brand);
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 10px;
+        }
+
+        .doc-meta-row {
+          margin-top: 6px;
+          font-size: 14px;
+          color: var(--muted);
+        }
+
+        .section { margin-bottom: 22px; }
+
+        .section-title {
+          margin: 0 0 12px;
+          font-size: 13px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--muted);
+        }
+
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .info-card {
+          border: 1px solid var(--line);
+          background: var(--soft-2);
+          border-radius: 14px;
+          padding: 14px 16px;
+        }
+
+        .label {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--muted);
+          font-weight: 700;
+        }
+
+        .value {
+          font-size: 17px;
+          font-weight: 600;
+          color: var(--ink);
+          line-height: 1.35;
+        }
+
+        .prescription-box {
+          border: 1px solid #bfdbfe;
+          background: linear-gradient(180deg, #f8fbff 0%, #f3f8fd 100%);
+          border-radius: 18px;
+          padding: 18px;
+        }
+
+        .prescription-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+          margin-bottom: 14px;
+        }
+
+        .prescription-header h2 {
+          margin: 0;
+          font-size: 24px;
+          line-height: 1.15;
+        }
+
+        .prescription-sub {
+          margin: 6px 0 0;
+          color: var(--muted);
+          font-size: 14px;
+        }
+
+        .triage-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          border-radius: 999px;
+          padding: 8px 12px;
+          background: white;
+          border: 1px solid var(--line);
+          font-size: 13px;
+          color: var(--ink);
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .rx-table {
+          overflow: hidden;
+          border-radius: 14px;
+          border: 1px solid var(--line);
+          background: white;
+        }
+
+        .rx-table th {
+          text-align: left;
+          padding: 12px 14px;
+          background: #f3f6f9;
+          color: #475569;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+
+        .rx-table td {
+          padding: 14px;
+          border-top: 1px solid var(--line);
+          vertical-align: top;
+          font-size: 14px;
+        }
+
+        .rx-main {
+          font-size: 16px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 4px;
+        }
+
+        .rx-note {
+          margin-top: 14px;
+          padding: 14px 16px;
+          border-radius: 14px;
+          background: white;
+          border: 1px dashed #cbd5e1;
+          color: #334155;
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .signature-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+          margin-top: 26px;
+        }
+
+        .signature-card {
+          border: 1px solid var(--line);
+          border-radius: 16px;
+          padding: 18px 18px 42px;
+          background: white;
+          min-height: 120px;
+          position: relative;
+        }
+
+        .signature-line {
+          position: absolute;
+          left: 18px;
+          right: 18px;
+          bottom: 18px;
+          border-top: 1px solid #94a3b8;
+          padding-top: 8px;
+          font-size: 12px;
+          color: var(--muted);
+        }
+
+        .footer {
+          margin-top: 28px;
+          padding-top: 14px;
+          border-top: 1px solid var(--line);
+          display: flex;
+          justify-content: space-between;
+          gap: 20px;
+          color: var(--muted);
+          font-size: 12px;
+          line-height: 1.6;
+        }
+
+        .actions {
+          width: 210mm;
+          margin: 16px auto 0;
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+        }
+
+        .btn {
+          border: none;
+          border-radius: 12px;
+          padding: 12px 18px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .btn-secondary {
+          background: #dfe5eb;
+          color: #0f172a;
+        }
+
+        .btn-primary {
+          background: linear-gradient(90deg, var(--brand) 0%, var(--brand-2) 100%);
+          color: white;
+        }
+
+        @media print {
+          body {
+            background: white;
             padding: 0;
-            background: #e9eef3;
-            color: var(--ink);
-            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
           }
-
-          body { padding: 32px 20px; }
 
           .page {
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            background: #fff;
-            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
-            position: relative;
-            overflow: hidden;
-          }
-
-          .page::before {
-            content: "";
-            display: block;
-            height: 10px;
-            background: linear-gradient(90deg, var(--brand) 0%, var(--brand-2) 100%);
-          }
-
-          .sheet { padding: 32px 36px 28px; }
-
-          .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 24px;
-            border-bottom: 1px solid var(--line);
-            padding-bottom: 20px;
-            margin-bottom: 24px;
-          }
-
-          .brand {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-          }
-
-          .brand-mark {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 18px;
-            letter-spacing: 0.06em;
-            flex-shrink: 0;
-          }
-
-          .brand h1 {
-            margin: 0;
-            font-size: 28px;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-          }
-
-          .brand p {
-            margin: 6px 0 0;
-            color: var(--muted);
-            font-size: 14px;
-          }
-
-          .doc-meta {
-            text-align: right;
-            min-width: 240px;
-          }
-
-          .doc-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 7px 12px;
-            border-radius: 999px;
-            background: var(--brand-soft);
-            color: var(--brand);
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 10px;
-          }
-
-          .doc-meta-row {
-            margin-top: 6px;
-            font-size: 14px;
-            color: var(--muted);
-          }
-
-          .section { margin-bottom: 22px; }
-
-          .section-title {
-            margin: 0 0 12px;
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--muted);
-          }
-
-          .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-          }
-
-          .info-card {
-            border: 1px solid var(--line);
-            background: var(--soft-2);
-            border-radius: 14px;
-            padding: 14px 16px;
-          }
-
-          .label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--muted);
-            font-weight: 700;
-          }
-
-          .value {
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--ink);
-            line-height: 1.35;
-          }
-
-          .prescription-box {
-            border: 1px solid #bfdbfe;
-            background: linear-gradient(180deg, #f8fbff 0%, #f3f8fd 100%);
-            border-radius: 18px;
-            padding: 18px;
-          }
-
-          .prescription-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-            margin-bottom: 14px;
-          }
-
-          .prescription-header h2 {
-            margin: 0;
-            font-size: 24px;
-            line-height: 1.15;
-          }
-
-          .prescription-sub {
-            margin: 6px 0 0;
-            color: var(--muted);
-            font-size: 14px;
-          }
-
-          .triage-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 999px;
-            padding: 8px 12px;
-            background: white;
-            border: 1px solid var(--line);
-            font-size: 13px;
-            color: var(--ink);
-            font-weight: 600;
-            white-space: nowrap;
-          }
-
-          table {
             width: 100%;
-            border-collapse: collapse;
-          }
-
-          .rx-table {
-            overflow: hidden;
-            border-radius: 14px;
-            border: 1px solid var(--line);
-            background: white;
-          }
-
-          .rx-table th {
-            text-align: left;
-            padding: 12px 14px;
-            background: #f3f6f9;
-            color: #475569;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-          }
-
-          .rx-table td {
-            padding: 14px;
-            border-top: 1px solid var(--line);
-            vertical-align: top;
-            font-size: 14px;
-          }
-
-          .rx-main {
-            font-size: 16px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 4px;
-          }
-
-          .rx-note {
-            margin-top: 14px;
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: white;
-            border: 1px dashed #cbd5e1;
-            color: #334155;
-            font-size: 14px;
-            line-height: 1.6;
-          }
-
-          .ia-box {
-            margin-top: 18px;
-            border-radius: 16px;
-            padding: 16px 18px;
-            border: 1px solid ${riscoIA?.riscoalto ? '#f3b4c4' : '#b7e4dd'};
-            background: ${riscoIA?.riscoalto ? 'var(--danger-soft)' : 'var(--brand-soft)'};
-          }
-
-          .ia-title {
-            margin: 0 0 8px;
-            font-size: 14px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: ${riscoIA?.riscoalto ? 'var(--danger)' : 'var(--brand)'};
-          }
-
-          .ia-status {
-            margin: 0 0 8px;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--ink);
-          }
-
-          .ia-text {
+            min-height: auto;
+            box-shadow: none;
             margin: 0;
-            color: #334155;
-            font-size: 14px;
-            line-height: 1.6;
-          }
-
-          .signature-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-            margin-top: 26px;
-          }
-
-          .signature-card {
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            padding: 18px 18px 42px;
-            background: white;
-            min-height: 120px;
-            position: relative;
-          }
-
-          .signature-line {
-            position: absolute;
-            left: 18px;
-            right: 18px;
-            bottom: 18px;
-            border-top: 1px solid #94a3b8;
-            padding-top: 8px;
-            font-size: 12px;
-            color: var(--muted);
-          }
-
-          .footer {
-            margin-top: 28px;
-            padding-top: 14px;
-            border-top: 1px solid var(--line);
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.6;
           }
 
           .actions {
-            width: 210mm;
-            margin: 16px auto 0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
+            display: none;
           }
 
-          .btn {
-            border: none;
-            border-radius: 12px;
-            padding: 12px 18px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+          @page {
+            size: A4;
+            margin: 10mm;
           }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <div class="sheet">
+          <header class="topbar">
+            <div class="brand">
+              <div class="brand-mark">RX</div>
+              <div>
+                <h1>${nomeHospital}</h1>
+                <p>Serviço de Urgência · Documento clínico de prescrição médica</p>
+              </div>
+            </div>
 
-          .btn-secondary {
-            background: #dfe5eb;
-            color: #0f172a;
-          }
+            <div class="doc-meta">
+              <div class="doc-badge">Prescrição Médica</div>
+              <div class="doc-meta-row"><strong>Data:</strong> ${dataEmissao}</div>
+              <div class="doc-meta-row"><strong>Hora:</strong> ${horaEmissao}</div>
+              <div class="doc-meta-row"><strong>Episódio:</strong> #${codEpisodio}</div>
+            </div>
+          </header>
 
-          .btn-primary {
-            background: linear-gradient(90deg, var(--brand) 0%, var(--brand-2) 100%);
-            color: white;
-          }
+          <section class="section">
+            <h3 class="section-title">Identificação do utente</h3>
+            <div class="info-grid">
+              <div class="info-card">
+                <span class="label">Nome completo</span>
+                <div class="value">${nomeUtente}</div>
+              </div>
+              <div class="info-card">
+  <span class="label">N.º do utente</span>
+  <div class="value">${getField(utente, 'num_utent', 'numutente', 'numutent')}</div>
+</div>
+              <div class="info-card">
+                <span class="label">Data de nascimento</span>
+                <div class="value">${dataNascimento}</div>
+              </div>
+              <div class="info-card">
+                <span class="label">Idade / Sexo</span>
+                <div class="value">${idade} anos · ${sexo}</div>
+              </div>
+            </div>
+          </section>
 
-          @media print {
-            body {
-              background: white;
-              padding: 0;
-            }
-
-            .page {
-              width: 100%;
-              min-height: auto;
-              box-shadow: none;
-              margin: 0;
-            }
-
-            .actions {
-              display: none;
-            }
-
-            @page {
-              size: A4;
-              margin: 10mm;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="page">
-          <div class="sheet">
-            <header class="topbar">
-              <div class="brand">
-                <div class="brand-mark">RX</div>
+          <section class="section">
+            <div class="prescription-box">
+              <div class="prescription-header">
                 <div>
-                  <h1>${nomeHospital}</h1>
-                  <p>Serviço de Urgência · Documento clínico de prescrição médica</p>
+                  <h2>Prescrições do episódio</h2>
+                  <p class="prescription-sub">
+                    Lista de prescrições registadas no contexto do episódio de urgência.
+                  </p>
                 </div>
+                <div class="triage-tag">Triagem: ${corTriagem}</div>
               </div>
 
-              <div class="doc-meta">
-                <div class="doc-badge">Prescrição Médica</div>
-                <div class="doc-meta-row"><strong>Data:</strong> ${dataEmissao}</div>
-                <div class="doc-meta-row"><strong>Hora:</strong> ${horaEmissao}</div>
-                <div class="doc-meta-row"><strong>Episódio:</strong> #${codEpisodio}</div>
+              <div class="rx-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Medicamento</th>
+                      <th>Dosagem</th>
+                      <th>Observações</th>
+                      <th>Validação IA</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${linhasPrescricoes}
+                  </tbody>
+                </table>
               </div>
-            </header>
 
-            <section class="section">
-              <h3 class="section-title">Identificação do utente</h3>
-              <div class="info-grid">
-                <div class="info-card">
-                  <span class="label">Nome completo</span>
-                  <div class="value">${nomeUtente}</div>
-                </div>
-                <div class="info-card">
-                  <span class="label">N.º do utente</span>
-                  <div class="value">${numeroUtente}</div>
-                </div>
-                <div class="info-card">
-                  <span class="label">Data de nascimento</span>
-                  <div class="value">${dataNascimento}</div>
-                </div>
-                <div class="info-card">
-                  <span class="label">Idade / Sexo</span>
-                  <div class="value">${idade} anos · ${sexo}</div>
-                </div>
+              <div class="rx-note">
+                <strong>Nota clínica:</strong> Este documento representa as prescrições registadas no sistema à data de emissão e deve ser interpretado no contexto do quadro clínico atual do utente, antecedentes, alergias conhecidas e avaliação médica presencial.
               </div>
-            </section>
+            </div>
+          </section>
 
-            <section class="section">
-              <div class="prescription-box">
-                <div class="prescription-header">
-                  <div>
-                    <h2>Detalhe da Prescrição</h2>
-                    <p class="prescription-sub">
-                      Emissão clínica validada pelo médico assistente no contexto do episódio de urgência.
-                    </p>
-                  </div>
-                  <div class="triage-tag">Triagem: ${corTriagem}</div>
+          <section class="section">
+            <h3 class="section-title">Validação e assinatura</h3>
+            <div class="signature-grid">
+              <div class="signature-card">
+                <span class="label">Médico responsável</span>
+                <div class="value">${medico}</div>
+                <div style="margin-top:8px; color:#64748b; font-size:14px;">
+                  Emitido eletronicamente pelo painel clínico
                 </div>
-
-                <div class="rx-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Medicamento</th>
-                        <th>Dosagem</th>
-                        <th>Frequência</th>
-                        <th>Observações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <div class="rx-main">${nomeMedicamento}</div>
-                          <div>Prescrição individual do episódio #${codEpisodio}</div>
-                        </td>
-                        <td>${dosagem}</td>
-                        <td>${frequencia}</td>
-                        <td>${observacoes}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="ia-box">
-                  <div class="ia-title">Validação clínica assistida por IA</div>
-                  <p class="ia-status">${estadoIA}</p>
-                  <p class="ia-text">${detalheIA}</p>
-                </div>
-
-                <div class="rx-note">
-                  <strong>Nota clínica:</strong> Este documento representa a prescrição registada no sistema à data de emissão e deve ser interpretado no contexto do quadro clínico atual do utente, antecedentes, alergias conhecidas e avaliação médica presencial.
-                </div>
+                <div class="signature-line">Assinatura / vinheta médica</div>
               </div>
-            </section>
 
-            <section class="section">
-              <h3 class="section-title">Validação e assinatura</h3>
-              <div class="signature-grid">
-                <div class="signature-card">
-                  <span class="label">Médico responsável</span>
-                  <div class="value">${medico}</div>
-                  <div style="margin-top:8px; color:#64748b; font-size:14px;">
-                    Emitido eletronicamente pelo painel clínico
-                  </div>
-                  <div class="signature-line">Assinatura / vinheta médica</div>
+              <div class="signature-card">
+                <span class="label">Confirmação de emissão</span>
+                <div class="value">${dataEmissao} · ${horaEmissao}</div>
+                <div style="margin-top:8px; color:#64748b; font-size:14px;">
+                  Documento preparado para impressão e arquivo clínico
                 </div>
+                <div class="signature-line">Carimbo / validação institucional</div>
+              </div>
+            </div>
+          </section>
 
-                <div class="signature-card">
-                  <span class="label">Confirmação de emissão</span>
-                  <div class="value">${dataEmissao} · ${horaEmissao}</div>
-                  <div style="margin-top:8px; color:#64748b; font-size:14px;">
-                    Documento preparado para impressão e arquivo clínico
-                  </div>
-                  <div class="signature-line">Carimbo / validação institucional</div>
-                </div>
-              </div>
-            </section>
-
-            <footer class="footer">
-              <div>
-                Documento gerado automaticamente no painel médico do hospital.
-              </div>
-              <div>
-                ${nomeHospital} · Prescrição clínica do episódio #${codEpisodio}
-              </div>
-            </footer>
-          </div>
+          <footer class="footer">
+            <div>
+              Documento gerado automaticamente no painel médico do hospital.
+            </div>
+            <div>
+              ${nomeHospital} · Prescrição clínica do episódio #${codEpisodio}
+            </div>
+          </footer>
         </div>
+      </div>
 
-        <div class="actions">
-          <button class="btn btn-secondary" onclick="window.close()">Fechar</button>
-          <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
-        </div>
-      </body>
-    </html>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="window.close()">Fechar</button>
+        <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
+      </div>
+    </body>
+  </html>
   `;
 
-    janela.document.open();
-    janela.document.write(html);
-    janela.document.close();
+      janela.document.open();
+      janela.document.write(html);
+      janela.document.close();
+    } catch (e) {
+      console.error('ERRO imprimirPrescricao', e);
+      mostrarToast('Erro ao preparar impressão.', 'error');
+    }
   };
-
 
 
   const renderInternamentos = () => {

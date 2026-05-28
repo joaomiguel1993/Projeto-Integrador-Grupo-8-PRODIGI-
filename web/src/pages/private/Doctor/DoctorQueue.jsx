@@ -24,14 +24,21 @@ export default function DoctorQueue({
   const listaBase = Array.isArray(episodiosOrdenados)
     ? episodiosOrdenados
     : Array.isArray(episodios)
-    ? episodios
-    : [];
+      ? episodios
+      : [];
 
   const textoFiltro = String(filtro || "").trim().toLowerCase();
 
   const listaAtual = listaBase.filter((ep) => {
     const estadoBruto = String(
-      readField(ep, "estado", "estadolocal", "estado_local", "estadoepisodio", "estado_episodio") || ""
+      readField(
+        ep,
+        "estado",
+        "estadolocal",
+        "estado_local",
+        "estadoepisodio",
+        "estado_episodio"
+      ) || ""
     )
       .toLowerCase()
       .replaceAll("_", "");
@@ -41,11 +48,24 @@ export default function DoctorQueue({
     ).toLowerCase();
 
     const corTriagem = String(
-      readField(ep, "cortriagem", "corTriagem", "cor_triagem") || ""
+      readField(
+        ep,
+        "cortriagem",
+        "corTriagem",
+        "cor_triagem",
+        "prioridade",
+        "cor"
+      ) || ""
     ).toLowerCase();
 
     const codEpisodio = String(
-      readField(ep, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc") || ""
+      readField(
+        ep,
+        "codepurgenc",
+        "codEpisodio",
+        "codepisodio",
+        "cod_ep_urgenc"
+      ) || ""
     ).toLowerCase();
 
     if (subMenuFila === "em_espera") {
@@ -82,6 +102,19 @@ export default function DoctorQueue({
       codEpisodio.includes(textoFiltro)
     );
   });
+
+  const calcularTempoDecorridoMin = (dataInicio) => {
+    if (!dataInicio) return null;
+
+    const inicioMs = new Date(dataInicio).getTime();
+    if (Number.isNaN(inicioMs)) return null;
+
+    const agoraMs = Date.now();
+    const diffMs = agoraMs - inicioMs;
+    const minutos = Math.floor(diffMs / 60000);
+
+    return minutos < 0 ? 0 : minutos;
+  };
 
   return (
     <div className="doctor-panel-card">
@@ -165,19 +198,59 @@ export default function DoctorQueue({
                   "nome_utente"
                 );
 
-                const corTriagem = readField(
+                const corTriagemRaw = readField(
                   ep,
                   "cortriagem",
                   "corTriagem",
-                  "cor_triagem"
+                  "cor_triagem",
+                  "prioridade",
+                  "cor"
                 );
 
-                const tempoEspera = readField(
+                const corTriagem = corTriagemRaw
+                  ? String(corTriagemRaw).charAt(0).toUpperCase() +
+                  String(corTriagemRaw).slice(1).toLowerCase()
+                  : "";
+
+                const tempoEsperaPrevisto = readField(
                   ep,
                   "tempoesperaprevisto",
                   "tempo_espera_previsto",
                   "tempoEsperaPrevisto"
                 );
+
+                const dataInicioTriagem = readField(
+                  ep,
+                  "datahorainicio",
+                  "data_hora_inicio",
+                  "datahoratriagem",
+                  "data_hora_triagem"
+                );
+
+                const tempoEsperaMostrar =
+                  tempoEsperaPrevisto || calcularTempoDecorridoMin(dataInicioTriagem);
+
+                if (index === 0) {
+                  console.log("EPISODIO FILA JSON:", JSON.stringify(ep, null, 2));
+                  console.log(
+                    "CHAVES EPISODIO JSON:",
+                    JSON.stringify(Object.keys(ep || {}), null, 2)
+                  );
+                  console.log(
+                    "COR CANDIDATOS JSON:",
+                    JSON.stringify(
+                      {
+                        cortriagem: ep?.cortriagem,
+                        corTriagem: ep?.corTriagem,
+                        cor_triagem: ep?.cor_triagem,
+                        prioridade: ep?.prioridade,
+                        cor: ep?.cor,
+                      },
+                      null,
+                      2
+                    )
+                  );
+                }
 
                 return (
                   <tr key={codEpisodio || `ep-${index}`}>
@@ -192,7 +265,11 @@ export default function DoctorQueue({
                         "—"
                       )}
                     </td>
-                    <td>{tempoEspera ? `${tempoEspera} min` : "—"}</td>
+                    <td>
+                      {tempoEsperaMostrar !== null && tempoEsperaMostrar !== ""
+                        ? `${tempoEsperaMostrar} min`
+                        : "—"}
+                    </td>
                     <td>
                       <div className="doctor-actions-inline">
                         <button
