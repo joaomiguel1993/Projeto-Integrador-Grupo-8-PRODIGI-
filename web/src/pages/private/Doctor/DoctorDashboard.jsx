@@ -510,6 +510,8 @@ const abrirEpisodio = async (ep) => {
   }
 };
 
+
+
 function SectionHeader({ title, subtitle }) {
   return (
     <div className="doctor-section-header">
@@ -771,9 +773,18 @@ export default function DoctorDashboard() {
 
   const submeterPrescricao = async () => {
     try {
-      const codEpisodio = getCodEpisodio(episodioSelecionado);
+      const codEpisodio =
+        getCodEpisodio(episodioSelecionado) ||
+        getField(
+          internamentoSelecionado,
+          "cod_ep_urgenc",
+          "codEpisodio",
+          "codepisodio",
+          "cod_epurgenc"
+        );
+
       if (!codEpisodio) {
-        mostrarToast('Episódio inválido.', 'error');
+        mostrarToast("Episódio inválido.", "error");
         return;
       }
 
@@ -781,30 +792,25 @@ export default function DoctorDashboard() {
       const idAto = atoSelecionado?.idato ?? atoSelecionado?.id_ato ?? null;
 
       if (!idAto) {
-        mostrarToast('Não existe ato clínico associado ao episódio.', 'error');
+        mostrarToast("Não existe ato clínico associado ao episódio.", "error");
         return;
       }
 
       if (!prescricao?.codmedicamento || !prescricao?.dosagem) {
-        mostrarToast('Seleciona medicamento e dosagem.', 'error');
+        mostrarToast("Seleciona medicamento e dosagem.", "error");
         return;
       }
 
       const body = {
-        id_ato: Number(idAto),
-        cod_medicamento: Number(prescricao.codmedicamento),
+        idato: Number(idAto),
+        codmedicamento: Number(prescricao.codmedicamento),
         dosagem: String(prescricao.dosagem).trim(),
         observacoes: prescricao.observacoes?.trim() || null,
       };
 
-      console.log('BODY PRESCRICAO', body);
-
-      const r = await fetch(`${API_URL}/prescricoes/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+      const r = await fetch(`${API_URL}/prescricoes`, {
+        method: "POST",
+        headers,
         body: JSON.stringify(body),
       });
 
@@ -887,8 +893,8 @@ export default function DoctorDashboard() {
       setRiscoIA(null);
       mostrarToast(`Prescrição de ${nomeMedicamento} registada com sucesso.`, 'success');
     } catch (e) {
-      console.error('ERRO submeterPrescricao', e);
-      mostrarToast('Erro ao prescrever.', 'error');
+      console.error("ERRO submeterPrescricao:", e);
+      mostrarToast("Erro ao prescrever.", "error");
     }
   };
 
@@ -1109,6 +1115,86 @@ export default function DoctorDashboard() {
     }
   };
 
+  const abrirInternamento = async (int) => {
+    if (!int) {
+      mostrarToast("Internamento inválido.", "error");
+      return;
+    }
+
+    try {
+      setInternamentoSelecionado(int);
+      setEpisodioSelecionado(null);
+      setActiveMenu("internamentos");
+
+      const numUtente = getField(
+        int,
+        "num_utent",
+        "numUtente",
+        "numutente",
+        "num_utente",
+        "codutente"
+      );
+
+      const codEpisodio = getField(
+        int,
+        "cod_ep_urgenc",
+        "codEpisodio",
+        "codepisodio",
+        "cod_epurgenc"
+      );
+
+      const [rUtente, rMedicacao, rAlergias, rAntecedentes, rAtos] = await Promise.all([
+        numUtente ? fetch(`${API_URL}/utentes/${numUtente}`, { headers }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, { headers }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/alergias/utente/${numUtente}`, { headers }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/historico/${numUtente}`, { headers }) : Promise.resolve(null),
+        codEpisodio ? fetch(`${API_URL}/atos/episodio/${codEpisodio}`, { headers }) : Promise.resolve(null),
+      ]);
+
+      if (rUtente?.ok) {
+        const dataUtente = await rUtente.json();
+        setUtente(dataUtente);
+      } else {
+        setUtente(null);
+      }
+
+      if (rMedicacao?.ok) {
+        const dataMedicacao = await rMedicacao.json();
+        setMedicacaoAtiva(Array.isArray(dataMedicacao) ? dataMedicacao : []);
+      } else {
+        setMedicacaoAtiva([]);
+      }
+
+      if (rAlergias?.ok) {
+        const dataAlergias = await rAlergias.json();
+        setAlergias(Array.isArray(dataAlergias) ? dataAlergias : []);
+      } else {
+        setAlergias([]);
+      }
+
+      if (rAntecedentes?.ok) {
+        const dataAntecedentes = await rAntecedentes.json();
+        setAntecedentes(dataAntecedentes);
+      } else {
+        setAntecedentes(null);
+      }
+      if (rAtos?.ok) {
+        const dataAtos = await rAtos.json();
+        const listaAtos = Array.isArray(dataAtos) ? dataAtos : [];
+        setAtos(listaAtos);
+        atosRef.current = listaAtos;
+      } else {
+        setAtos([]);
+        atosRef.current = [];
+      }
+      setAlertas([]);
+      setTabAtendimento("prescricao");
+    } catch (e) {
+      console.error("Erro ao abrir internamento:", e);
+      mostrarToast("Erro ao abrir internamento.", "error");
+    }
+  };
+
   const abrirEpisodio = async (ep) => {
 
     if (!ep) {
@@ -1201,15 +1287,13 @@ export default function DoctorDashboard() {
       }
 
       if (rAlertas.ok) {
-
         const a = await rAlertas.json();
-
         setAlertas(Array.isArray(a) ? a : []);
-
-      } else {
-
+      } else if (rAlertas.status === 404) {
         setAlertas([]);
-
+      } else {
+        console.error("Erro alertas:", rAlertas.status);
+        setAlertas([]);
       }
 
       if (rMedicacao.ok) {
@@ -1366,7 +1450,7 @@ export default function DoctorDashboard() {
     },
   ];
 
-  const submeterAlta = async () => {
+  const submeterDecisaoClinica = async () => {
     try {
       if (aSubmeterDecisao) return;
 
@@ -1475,6 +1559,68 @@ export default function DoctorDashboard() {
     }
   };
 
+  const submeterAltaInternamento = async () => {
+    try {
+      if (!internamentoSelecionado) {
+        mostrarToast("Internamento inválido.", "error");
+        return;
+      }
+
+      const codInternamento = getField(
+        internamentoSelecionado,
+        "codinternamento",
+        "cod_internamento",
+        "idinternamento",
+        "id_internamento"
+      );
+
+      if (!codInternamento) {
+        mostrarToast("Código do internamento inválido.", "error");
+        return;
+      }
+
+      const payload = {
+        tipoalta: altaInternamento.tipoalta || "clinica",
+        observacoes: altaInternamento.observacoes?.trim() || "",
+        dataalta: new Date().toISOString(),
+        estado: "concluido",
+      };
+
+      const r = await fetch(`${APIURL}/internamentos/${codInternamento}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      const responseText = await r.text();
+      console.log("RES PUT internamento status:", r.status);
+      console.log("RES PUT internamento body:", responseText);
+
+      if (!r.ok) {
+        throw new Error(`Erro ao registar alta do internamento (${r.status})`);
+      }
+
+      mostrarToast("Alta de internamento registada com sucesso.", "success");
+
+      setAltaInternamento({
+        tipoalta: "clinica",
+        observacoes: "",
+      });
+
+      setInternamentoSelecionado(null);
+      setUtente(null);
+      setMedicacaoAtiva([]);
+      setAlergias([]);
+      setAlertas([]);
+      setAntecedentes(null);
+
+      await carregarInternamentos();
+    } catch (e) {
+      console.error("ERRO submeterAltaInternamento:", e);
+      mostrarToast(e.message || "Erro ao registar alta do internamento.", "error");
+    }
+  };
+
   const submeterAltaRapida = async (ep) => {
 
     try {
@@ -1534,20 +1680,24 @@ export default function DoctorDashboard() {
     }
 
     const episodiosFiltrados = episodios.filter((ep) => {
-      const estado =
-        ep?.estado ||
-        ep?.estadolocal ||
-        ep?.estadoepisodio ||
-        ep?.estado_local ||
-        ep?.estado_episodio ||
-        '';
+      const estado = String(
+        ep?.estado || ep?.estadolocal || ep?.estadoepisodio || ""
+      ).toLowerCase();
 
-      if (subMenuFila === 'emespera') {
-        return estado !== 'terminado' && estado !== 'desistiu';
+      if (subMenuFila === "em_espera") {
+        return (
+          estado !== "terminado" &&
+          estado !== "desistiu" &&
+          estado !== "internado"
+        );
       }
 
-      if (subMenuFila === 'concluidos') {
-        return estado === 'terminado' || estado === 'desistiu';
+      if (subMenuFila === "atendimento") {
+        return estado === "emconsulta" || estado === "atendimento";
+      }
+
+      if (subMenuFila === "concluidos") {
+        return estado === "terminado" || estado === "desistiu";
       }
 
       return true;
@@ -2182,7 +2332,7 @@ export default function DoctorDashboard() {
               <select
                 className="doctor-field"
                 name="cod_medicamento"
-                value={Prescricao.codmedicamento || ""}
+                value={prescricao.codmedicamento || ""}
                 onChange={handlePrescricaoChange}
               >
                 <option value="">
@@ -2216,7 +2366,7 @@ export default function DoctorDashboard() {
                 className="doctor-field"
                 type="text"
                 name="dosagem"
-                value={Prescricao.dosagem || ""}
+                value={prescricao.dosagem || ""}
                 onChange={handlePrescricaoChange}
               />
             </div>
@@ -2228,7 +2378,7 @@ export default function DoctorDashboard() {
                 className="doctor-field"
                 type="text"
                 name="observacoes"
-                value={Prescricao.observacoes || ""}
+                value={prescricao.observacoes || ""}
                 onChange={handlePrescricaoChange}
               />
             </div>
@@ -2242,7 +2392,7 @@ export default function DoctorDashboard() {
               type="button"
               className="doctor-action-btn doctor-action-btn--secondary"
               onClick={async () => {
-                if (!Prescricao.codmedicamento) {
+                if (!prescricao.codmedicamento) {
                   mostrarToast("Seleciona um medicamento.", "error");
                   return;
                 }
@@ -2253,7 +2403,7 @@ export default function DoctorDashboard() {
                   const med = medicamentos.find(
                     (m, index) =>
                       String(getMedicamentoId(m, index)) ===
-                      String(Prescricao.cod_medicamento)
+                      String(prescricao.cod_medicamento)
                   );
 
                   const nomeMed = med
@@ -2302,7 +2452,7 @@ export default function DoctorDashboard() {
                   setAvaliacaoRisco(false);
                 }
               }}
-              disabled={!Prescricao.cod_medicamento || avaliacaoRisco}
+              disabled={!prescricao.cod_medicamento || avaliacaoRisco}
             >
               {avaliacaoRisco
                 ? "A avaliar..."
@@ -2423,10 +2573,10 @@ export default function DoctorDashboard() {
                 <button
                   type="button"
                   className="doctor-action-btn doctor-action-btn--primary"
-                  onClick={submeterAlta}
+                  onClick={submeterDecisaoClinica}
                   disabled={aSubmeterDecisao}
                 >
-                  {aSubmeterDecisao ? 'A guardar...' : acaoClinica === 'alta' ? 'Gravar alta' : 'Gravar internamento'}
+                  {aSubmeterDecisao ? "A guardar..." : "Gravar alta"}
                 </button>
               </div>
             </div>
@@ -2457,9 +2607,9 @@ export default function DoctorDashboard() {
                 <input
                   className="doctor-field"
                   type="text"
-                  value={alta.numerocama}
+                  value={alta.numero_cama}
                   onChange={(e) =>
-                    setAlta((prev) => ({ ...prev, numerocama: e.target.value }))
+                    setAlta((prev) => ({ ...prev, numero_cama: e.target.value }))
                   }
                 />
               </div>
@@ -2468,9 +2618,9 @@ export default function DoctorDashboard() {
                 <label>Motivo</label>
                 <select
                   className="doctor-field"
-                  value={alta.motivoint}
+                  value={alta.motivo_int}
                   onChange={(e) =>
-                    setAlta((prev) => ({ ...prev, motivoint: e.target.value }))
+                    setAlta((prev) => ({ ...prev, motivo_int: e.target.value }))
                   }
                 >
                   <option value="">Selecionar...</option>
@@ -2482,17 +2632,17 @@ export default function DoctorDashboard() {
                 </select>
               </div>
 
-              {alta.motivoint === 'Outro' && (
+              {alta.motivo_int === 'Outro' && (
                 <div className="doctor-form-grid-full">
                   <label>Outro motivo</label>
                   <input
                     className="doctor-field"
                     type="text"
-                    value={alta.motivointoutro}
+                    value={alta.motivo_int_outro}
                     onChange={(e) =>
                       setAlta((prev) => ({
                         ...prev,
-                        motivointoutro: e.target.value,
+                        motivo_int_outro: e.target.value,
                       }))
                     }
                   />
@@ -2515,10 +2665,10 @@ export default function DoctorDashboard() {
                 <button
                   type="button"
                   className="doctor-action-btn doctor-action-btn--primary"
-                  onClick={submeterAlta}
+                  onClick={submeterDecisaoClinica}
                   disabled={aSubmeterDecisao}
                 >
-                  {aSubmeterDecisao ? 'A guardar...' : acaoClinica === 'internamento' ? 'Gravar alta' : 'Gravar internamento'}
+                  {aSubmeterDecisao ? "A guardar..." : "Gravar internamento"}
                 </button>
               </div>
             </div>
@@ -3622,7 +3772,7 @@ export default function DoctorDashboard() {
                     <td>
                       <button
                         className="doctor-action-btn doctor-action-btn--primary"
-                        onClick={() => setInternamentoSelecionado(int)}
+                        onClick={() => abrirInternamento(int)}
                       >
                         Consultar
                       </button>
@@ -3695,7 +3845,7 @@ export default function DoctorDashboard() {
               <select
                 className="doctor-field"
                 name="codmedicamento"
-                value={Prescricao.codmedicamento}
+                value={prescricao.codmedicamento}
                 onChange={handlePrescricaoChange}
               >
                 <option value="">Selecione...</option>
@@ -3719,7 +3869,7 @@ export default function DoctorDashboard() {
                 className="doctor-field"
                 type="text"
                 name="dosagem"
-                value={Prescricao.dosagem}
+                value={prescricao.dosagem}
                 onChange={handlePrescricaoChange}
               />
             </div>
