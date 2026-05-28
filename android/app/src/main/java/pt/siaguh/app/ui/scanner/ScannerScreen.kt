@@ -1,6 +1,7 @@
 package pt.siaguh.app.ui.scanner
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -26,6 +27,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
+import androidx.compose.ui.res.stringResource
+import pt.siaguh.app.R
 import java.util.concurrent.Executors
 
 /**
@@ -68,22 +71,26 @@ fun ScannerScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(16.dp))
-        Text("Olá, $nomeUtilizador", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(
-            roleLabel(role),
+            text = stringResource(R.string.welcome_user, nomeUtilizador), 
+            fontSize = 16.sp, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            roleLabel(role, context),
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
         Text(
-            "Scan QR da Pulseira",
+            text = stringResource(R.string.scan_title),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Text(
-            "Aponta a câmara para o QR code da pulseira",
+            text = stringResource(R.string.scan_instructions),
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -113,7 +120,7 @@ fun ScannerScreen(
                 }
             } else {
                 Text(
-                    "Sem permissão de câmara",
+                    text = stringResource(R.string.camera_no_permission),
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(16.dp)
@@ -122,13 +129,17 @@ fun ScannerScreen(
         }
 
         Spacer(Modifier.height(24.dp))
-        Text("Ou introduz manualmente:", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            text = stringResource(R.string.manual_input_label), 
+            fontSize = 13.sp, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
             value = inputCodEpisodio,
             onValueChange = { inputCodEpisodio = it.filter { c -> c.isDigit() }; erro = null },
-            label = { Text("Cód. Episódio") },
+            label = { Text(stringResource(R.string.label_episode_code)) },
             singleLine = true,
             isError = erro != null,
             supportingText = erro?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -140,18 +151,18 @@ fun ScannerScreen(
         Button(
             onClick = {
                 val num = inputCodEpisodio.toIntOrNull()
-                if (num == null || num <= 0) erro = "Código de episódio inválido."
+                if (num == null || num <= 0) erro = context.getString(R.string.error_invalid_episode)
                 else onUtenteScanned(num)
             },
             modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
-            Text("Consultar Episódio", fontSize = 16.sp)
+            Text(stringResource(R.string.action_consult_episode), fontSize = 16.sp)
         }
 
         Spacer(Modifier.weight(1f))
 
         TextButton(onClick = onLogout) {
-            Text("Terminar Sessão", color = MaterialTheme.colorScheme.error)
+            Text(stringResource(R.string.action_logout), color = MaterialTheme.colorScheme.error)
         }
         Spacer(Modifier.height(16.dp))
     }
@@ -231,10 +242,10 @@ private fun processImageProxy(
     }
 }
 
-private fun roleLabel(role: String) = when (role) {
-    "medico"       -> "Médico"
-    "enfermeiro"   -> "Enfermeiro"
-    "admin"        -> "Administrador"
-    "rececionista" -> "Rececionista"
+private fun roleLabel(role: String, context: Context) = when (role.lowercase()) {
+    "medico"       -> context.getString(R.string.role_medico)
+    "enfermeiro"   -> context.getString(R.string.role_enfermeiro)
+    "admin"        -> context.getString(R.string.role_admin)
+    "rececionista" -> context.getString(R.string.role_rececionista)
     else           -> role
 }
