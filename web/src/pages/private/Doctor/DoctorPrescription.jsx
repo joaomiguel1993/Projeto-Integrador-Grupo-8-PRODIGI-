@@ -1,3 +1,9 @@
+// ============================================================
+// DoctorPrescription.jsx
+// Correções aplicadas:
+//   - Removido botão e prop imprimirPrescricao
+// ============================================================
+
 export default function DoctorPrescription({
   medicacaoAtiva,
   enriquecerMedicacaoAtiva,
@@ -13,7 +19,6 @@ export default function DoctorPrescription({
   avaliacaoRisco,
   avaliarRiscoIAFn,
   submeterPrescricao,
-  imprimirPrescricao,
 }) {
   const medicacaoAtivaEnriquecida = enriquecerMedicacaoAtiva(medicacaoAtiva);
 
@@ -80,9 +85,9 @@ export default function DoctorPrescription({
 
               {Array.isArray(medicamentos) &&
                 medicamentos.map((m, index) => {
-                  const medId = getMedicamentoId(m, index);
-                  const medNome = getMedicamentoNome(m, index);
-                  const principio = m?.principioativo || m?.principio_ativo || '';
+                  const medId      = getMedicamentoId(m, index);
+                  const medNome    = getMedicamentoNome(m, index);
+                  const principio  = m?.principioativo || m?.principio_ativo || '';
 
                   return (
                     <option key={`med-${medId}-${index}`} value={medId}>
@@ -128,8 +133,9 @@ export default function DoctorPrescription({
           <div className="doctor-risk-box">
             {riscoIA ? (
               <div
-                className={`doctor-risk-result ${riscoIA?.risco === 1 || riscoIA?.riscoalto ? 'is-danger' : 'is-safe'
-                  }`}
+                className={`doctor-risk-result ${
+                  riscoIA?.risco === 1 || riscoIA?.riscoalto ? 'is-danger' : 'is-safe'
+                }`}
                 style={{ marginBottom: '0.75rem' }}
               >
                 <strong>
@@ -156,7 +162,7 @@ export default function DoctorPrescription({
           </div>
         )}
 
-        <div className="doctor-actions-inline" style={{ marginTop: '1rem', flexWrap: 'wrap' }}>
+        <div className="doctor-actions-inline" style={{ marginTop: '1rem' }}>
           <button
             type="button"
             className="doctor-action-btn doctor-action-btn--primary"
@@ -164,14 +170,6 @@ export default function DoctorPrescription({
             disabled={!prescricao.codmedicamento || !prescricao.dosagem}
           >
             Registar prescrição
-          </button>
-
-          <button
-            type="button"
-            className="doctor-action-btn doctor-action-btn--secondary"
-            onClick={imprimirPrescricao}
-          >
-            Imprimir prescrição
           </button>
         </div>
       </section>

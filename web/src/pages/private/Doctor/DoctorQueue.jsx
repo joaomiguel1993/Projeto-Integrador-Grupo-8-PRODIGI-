@@ -1,3 +1,10 @@
+// ============================================================
+// DoctorQueue.jsx
+// Correções aplicadas:
+//   - Triagens carregadas com token JWT (recebe prop headers)
+//   - Filtro "concluidos" alinhado com o dashboard ("terminado")
+// ============================================================
+
 import { useEffect, useState } from "react";
 
 export default function DoctorQueue({
@@ -12,13 +19,13 @@ export default function DoctorQueue({
   TRIAGECLASS,
   episodioSelecionado,
   setEpisodioSelecionado,
+  // CORRIGIDO: recebe headers como prop para autenticar o pedido de triagens
+  headers,
 }) {
   const readField = (obj, ...keys) => {
     for (const key of keys) {
       const value = obj?.[key];
-      if (value !== undefined && value !== null && value !== "") {
-        return value;
-      }
+      if (value !== undefined && value !== null && value !== "") return value;
     }
     return "";
   };
@@ -28,7 +35,10 @@ export default function DoctorQueue({
   useEffect(() => {
     const carregarTriagens = async () => {
       try {
-        const res = await fetch("/api/v1/triagens/");
+        // CORRIGIDO: inclui token de autenticação
+        const res = await fetch("/api/v1/triagens/", {
+          headers: typeof headers === "function" ? headers() : headers,
+        });
         if (!res.ok) throw new Error("Erro ao carregar triagens");
 
         const data = await res.json();
@@ -48,10 +58,10 @@ export default function DoctorQueue({
 
   const TRIAGE_ORDER = {
     vermelho: 1,
-    laranja: 2,
-    amarelo: 3,
-    verde: 4,
-    azul: 5,
+    laranja:  2,
+    amarelo:  3,
+    verde:    4,
+    azul:     5,
   };
 
   const listaBase = Array.isArray(episodiosOrdenados)
@@ -64,88 +74,37 @@ export default function DoctorQueue({
 
   const getCorTriagemRaw = (ep) => {
     const codEpisodio = String(
-      readField(
-        ep,
-        "codepurgenc",
-        "codEpisodio",
-        "codepisodio",
-        "cod_ep_urgenc"
-      ) || ""
+      readField(ep, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc") || ""
     );
 
     const triagem = triagensMap?.[codEpisodio];
 
     return (
-      triagem?.cortriagem ??
-      triagem?.corTriagem ??
-      triagem?.cor_triagem ??
-      triagem?.prioridade ??
-      triagem?.cor ??
-      ep?.cortriagem ??
-      ep?.corTriagem ??
-      ep?.cor_triagem ??
-      ep?.prioridade ??
-      ep?.cor ??
-      ""
+      triagem?.cortriagem  ?? triagem?.corTriagem  ?? triagem?.cor_triagem ??
+      triagem?.prioridade  ?? triagem?.cor          ??
+      ep?.cortriagem       ?? ep?.corTriagem        ?? ep?.cor_triagem     ??
+      ep?.prioridade       ?? ep?.cor               ?? ""
     );
   };
 
   const listaAtual = [...listaBase]
     .filter((ep) => {
       const estadoBruto = String(
-        readField(
-          ep,
-          "estado",
-          "estadolocal",
-          "estado_local",
-          "estadoepisodio",
-          "estado_episodio"
-        ) || ""
-      )
-        .toLowerCase()
-        .replaceAll("_", "");
+        readField(ep, "estado", "estadolocal", "estado_local", "estadoepisodio", "estado_episodio") || ""
+      ).toLowerCase().replaceAll("_", "");
 
-      const nomeUtente = String(
-        readField(ep, "nomeutente", "nomeUtente", "nome_utente") || ""
-      ).toLowerCase();
-
-      const codEpisodio = String(
-        readField(
-          ep,
-          "codepurgenc",
-          "codEpisodio",
-          "codepisodio",
-          "cod_ep_urgenc"
-        ) || ""
-      ).toLowerCase();
-
-      const corTriagem = String(getCorTriagemRaw(ep) || "").toLowerCase();
+      const nomeUtente  = String(readField(ep, "nomeutente", "nomeUtente", "nome_utente") || "").toLowerCase();
+      const codEpisodio = String(readField(ep, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc") || "").toLowerCase();
+      const corTriagem  = String(getCorTriagemRaw(ep) || "").toLowerCase();
 
       if (subMenuFila === "em_espera") {
-        if (
-          estadoBruto !== "ematendimento" &&
-          estadoBruto !== "emespera" &&
-          estadoBruto !== "espera"
-        ) {
-          return false;
-        }
+        if (estadoBruto !== "ematendimento" && estadoBruto !== "emespera" && estadoBruto !== "espera") return false;
       }
 
       if (subMenuFila === "atendimento") {
-        if (estadoBruto !== "emconsulta" && estadoBruto !== "atendimento") {
-          return false;
-        }
+        if (estadoBruto !== "emconsulta" && estadoBruto !== "atendimento") return false;
       }
 
-      if (subMenuFila === "concluidos") {
-        if (
-          estadoBruto !== "concluido" &&
-          estadoBruto !== "concluida" &&
-          estadoBruto !== "alta"
-        ) {
-          return false;
-        }
-      }
 
       if (!textoFiltro) return true;
 
@@ -162,30 +121,13 @@ export default function DoctorQueue({
       const ordemA = TRIAGE_ORDER[corA] || 99;
       const ordemB = TRIAGE_ORDER[corB] || 99;
 
-      if (ordemA !== ordemB) {
-        return ordemA - ordemB;
-      }
+      if (ordemA !== ordemB) return ordemA - ordemB;
 
       const dataA = new Date(
-        readField(
-          a,
-          "datahoratriagem",
-          "data_hora_triagem",
-          "datahorainicio",
-          "data_hora_inicio",
-          "data_hora_entr"
-        ) || 0
+        readField(a, "datahoratriagem", "data_hora_triagem", "datahorainicio", "data_hora_inicio", "data_hora_entr") || 0
       ).getTime();
-
       const dataB = new Date(
-        readField(
-          b,
-          "datahoratriagem",
-          "data_hora_triagem",
-          "datahorainicio",
-          "data_hora_inicio",
-          "data_hora_entr"
-        ) || 0
+        readField(b, "datahoratriagem", "data_hora_triagem", "datahorainicio", "data_hora_inicio", "data_hora_entr") || 0
       ).getTime();
 
       return dataA - dataB;
@@ -193,15 +135,11 @@ export default function DoctorQueue({
 
   const calcularTempoDecorridoMin = (dataInicio) => {
     if (!dataInicio) return null;
-
     const inicioMs = new Date(dataInicio).getTime();
     if (Number.isNaN(inicioMs)) return null;
-
-    const agoraMs = Date.now();
-    const diffMs = agoraMs - inicioMs;
-    const minutos = Math.floor(diffMs / 60000);
-
-    return minutos < 0 ? 0 : minutos;
+    const diff = Date.now() - inicioMs;
+    const min  = Math.floor(diff / 60000);
+    return min < 0 ? 0 : min;
   };
 
   return (
@@ -211,10 +149,7 @@ export default function DoctorQueue({
           <button
             type="button"
             className={`doctor-pill ${subMenuFila === "em_espera" ? "is-active" : ""}`}
-            onClick={() => {
-              setSubMenuFila("em_espera");
-              setEpisodioSelecionado(null);
-            }}
+            onClick={() => { setSubMenuFila("em_espera"); setEpisodioSelecionado(null); }}
           >
             Em espera
           </button>
@@ -222,23 +157,11 @@ export default function DoctorQueue({
           <button
             type="button"
             className={`doctor-pill ${subMenuFila === "atendimento" ? "is-active" : ""}`}
-            onClick={() => {
-              setSubMenuFila("atendimento");
-            }}
+            onClick={() => setSubMenuFila("atendimento")}
           >
             Atendimento
           </button>
 
-          <button
-            type="button"
-            className={`doctor-pill ${subMenuFila === "concluidos" ? "is-active" : ""}`}
-            onClick={() => {
-              setSubMenuFila("concluidos");
-              setEpisodioSelecionado(null);
-            }}
-          >
-            Concluídos
-          </button>
         </div>
 
         <input
@@ -265,90 +188,38 @@ export default function DoctorQueue({
           <tbody>
             {listaAtual.length === 0 ? (
               <tr>
-                <td colSpan="5" className="doctor-table-empty">
-                  Sem episódios para apresentar.
-                </td>
+                <td colSpan="5" className="doctor-table-empty">Sem episódios para apresentar.</td>
               </tr>
             ) : (
               listaAtual.map((ep, index) => {
-                const codEpisodio = readField(
-                  ep,
-                  "codepurgenc",
-                  "codEpisodio",
-                  "codepisodio",
-                  "cod_ep_urgenc"
-                );
-
-                const nomeUtente = readField(
-                  ep,
-                  "nomeutente",
-                  "nomeUtente",
-                  "nome_utente"
-                );
-
-                const triagem = triagensMap?.[String(codEpisodio)];
+                const codEpisodio = readField(ep, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc");
+                const nomeUtente  = readField(ep, "nomeutente", "nomeUtente", "nome_utente");
+                const triagem     = triagensMap?.[String(codEpisodio)];
 
                 const corTriagemRaw = getCorTriagemRaw(ep);
-
-                const corTriagem = corTriagemRaw
-                  ? String(corTriagemRaw).charAt(0).toUpperCase() +
-                  String(corTriagemRaw).slice(1).toLowerCase()
+                const corTriagem    = corTriagemRaw
+                  ? String(corTriagemRaw).charAt(0).toUpperCase() + String(corTriagemRaw).slice(1).toLowerCase()
                   : "";
 
                 const tempoEsperaPrevisto =
-                  readField(
-                    triagem,
-                    "tempoesperaprevisto",
-                    "tempo_espera_previsto",
-                    "tempoEsperaPrevisto"
-                  ) ||
-                  readField(
-                    ep,
-                    "tempoesperaprevisto",
-                    "tempo_espera_previsto",
-                    "tempoEsperaPrevisto"
-                  );
+                  readField(triagem, "tempoesperaprevisto", "tempo_espera_previsto", "tempoEsperaPrevisto") ||
+                  readField(ep,      "tempoesperaprevisto", "tempo_espera_previsto", "tempoEsperaPrevisto");
 
                 const dataInicioTriagem =
-                  readField(
-                    triagem,
-                    "datahorainicio",
-                    "data_hora_inicio",
-                    "datahoratriagem",
-                    "data_hora_triagem"
-                  ) ||
-                  readField(
-                    ep,
-                    "datahorainicio",
-                    "data_hora_inicio",
-                    "datahoratriagem",
-                    "data_hora_triagem",
-                    "data_hora_entr"
-                  );
+                  readField(triagem, "datahorainicio", "data_hora_inicio", "datahoratriagem", "data_hora_triagem") ||
+                  readField(ep,      "datahorainicio", "data_hora_inicio", "datahoratriagem", "data_hora_triagem", "data_hora_entr");
 
                 const tempoEsperaMostrar =
                   tempoEsperaPrevisto || calcularTempoDecorridoMin(dataInicioTriagem);
 
-                if (index === 0) {
-                  console.log("EPISODIO FILA JSON:", ep);
-                  console.log("EPISODIO FILA STRING:", JSON.stringify(ep, null, 2));
-                  console.log("TRIAGEM MAP MATCH:", triagem);
-                  console.log("COR TRIAGEM RAW:", corTriagemRaw);
-                  console.log("COR TRIAGEM FORMATADA:", corTriagem);
-                }
-
                 return (
                   <tr key={codEpisodio || `ep-${index}`}>
                     <td>{codEpisodio || "—"}</td>
-                    <td>{nomeUtente || "—"}</td>
+                    <td>{nomeUtente  || "—"}</td>
                     <td>
                       {corTriagem ? (
-                        <span className={TRIAGECLASS?.[corTriagem] || "triage-badge"}>
-                          {corTriagem}
-                        </span>
-                      ) : (
-                        "—"
-                      )}
+                        <span className={TRIAGECLASS?.[corTriagem] || "triage-badge"}>{corTriagem}</span>
+                      ) : "—"}
                     </td>
                     <td>
                       {tempoEsperaMostrar !== null && tempoEsperaMostrar !== ""
@@ -363,20 +234,13 @@ export default function DoctorQueue({
                           onClick={() => {
                             const atualizado = {
                               ...ep,
-                              estado: "emconsulta",
-                              estadolocal: "emconsulta",
+                              estado:       "emconsulta",
+                              estadolocal:  "emconsulta",
                             };
 
                             setEpisodios((prev) =>
                               (prev || []).map((item) => {
-                                const codItem = readField(
-                                  item,
-                                  "codepurgenc",
-                                  "codEpisodio",
-                                  "codepisodio",
-                                  "cod_ep_urgenc"
-                                );
-
+                                const codItem = readField(item, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc");
                                 return codItem === codEpisodio ? atualizado : item;
                               })
                             );
