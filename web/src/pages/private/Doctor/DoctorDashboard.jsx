@@ -8,12 +8,24 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import Toast, { useToast } from '../../../components/ui/Toast';
 import DoctorQueue from './DoctorQueue';
 import DoctorPrescription from './DoctorPrescription';
-import DoctorAlta from './DoctorAlta';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_URL = `${API_BASE}/api/v1`;
 
 const SERVICOS = ['Cardiologia', 'Medicina', 'Ortopedia', 'Cirurgia'];
+
+const PREFIXO_SERVICO = {
+  'Cardiologia': 'CAR',
+  'Medicina':    'MED',
+  'Ortopedia':   'ORT',
+  'Cirurgia':    'CIR',
+};
+
+const gerarNumeroCama = (servico) => {
+  const prefixo = PREFIXO_SERVICO[servico] || 'GER';
+  const numero  = String(Math.floor(Math.random() * 50) + 1).padStart(2, '0');
+  return `${prefixo}-${numero}`;
+};
 const MOTIVOS_INTERNAMENTO = [
   'Insuficiência cardíaca', 'Pneumonia', 'Fratura óssea', 'Pós-operatório',
   'Monitorização clínica', 'AVC', 'Sépsis', 'Descompensação diabética',
@@ -187,6 +199,7 @@ export default function DoctorDashboard() {
   const atosRef                                         = useRef([]);
   const [riscoIA, setRiscoIA]                           = useState(null);
   const [avaliacaoRisco, setAvaliacaoRisco]             = useState(false);
+  const [aSubmeterAlta, setASubmeterAlta]               = useState(false);
   const [alta, setAlta]                                 = useState({
     destino: 'alta', observacoes: '', servico: '', numero_cama: '',
     motivo_int: '', motivo_int_outro: '',
@@ -579,7 +592,7 @@ export default function DoctorDashboard() {
             alta.motivo_int === 'Outro'
               ? alta.motivo_int_outro || 'Outro'
               : alta.motivo_int,
-          numero_cama: alta.numero_cama || null,
+          numero_cama: gerarNumeroCama(alta.servico),
           servico:     alta.servico     || null,
           tipo_alta:   null,
         };
@@ -958,6 +971,135 @@ export default function DoctorDashboard() {
   };
 
 
+
+  const renderTabDecisao = () => {
+    const getCodEp = () =>
+      episodioSelecionado?.cod_ep_urgenc ??
+      episodioSelecionado?.codepurgenc   ??
+      episodioSelecionado?.cod_epurgenc  ??
+      null;
+
+    const submeterAlta = async () => {
+      const codEp = getCodEp();
+      if (!codEp) { mostrarToast('Episódio inválido.', 'erro'); return; }
+      setASubmeterAlta(true);
+      try {
+        const agora = new Date().toISOString();
+        const resEpisodio = await fetch(`${API_URL}/episodios/${codEp}`, {
+          method: 'PUT', headers: headers(),
+          body: JSON.stringify({ estado: 'terminado', data_hora_saida: agora }),
+        });
+        if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para alta.');
+        const resAto = await fetch(`${API_URL}/atos/`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ cod_ep_urgenc: codEp, tipo: 'alta', descricao: alta.observacoes || 'Alta registada.', data_hora_inicio: agora, data_hora_fim: agora }),
+        });
+        if (!resAto.ok) throw new Error('Falha ao registar ato de alta.');
+        setEpisodios((prev) => (prev || []).map((ep) => ep?.cod_ep_urgenc === codEp ? { ...ep, estado: 'terminado', data_hora_saida: agora } : ep));
+        setSubMenuFila('em_espera');
+        setEpisodioSelecionado(null);
+        setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '' });
+        setTipoDecisao('alta');
+        mostrarToast('Alta registada com sucesso.', 'sucesso');
+      } catch (error) {
+        mostrarToast(error.message || 'Erro ao registar alta.', 'erro');
+      } finally {
+        setASubmeterAlta(false);
+      }
+    };
+
+    const submeterInternamento = async () => {
+      const codEp = getCodEp();
+      if (!codEp) { mostrarToast('Episódio inválido.', 'erro'); return; }
+      if (!alta.servico) { mostrarToast('Preencha o serviço de internamento.', 'erro'); return; }
+      if (!alta.motivo_int) { mostrarToast('Preencha o motivo do internamento.', 'erro'); return; }
+      setASubmeterAlta(true);
+      try {
+        const agora = new Date().toISOString();
+        const resInternamento = await fetch(`${API_URL}/internamentos/`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({
+            cod_ep_urgenc: codEp, id_func: null, data_hora_int: agora,
+            data_hora_consulta: null, data_hora_alta: null,
+            motivo_int: alta.motivo_int === 'Outro' ? alta.motivo_int_outro || 'Outro' : alta.motivo_int,
+            numero_cama: gerarNumeroCama(alta.servico),
+            servico: alta.servico || null, tipo_alta: null,
+          }),
+        });
+        if (!resInternamento.ok) throw new Error('Falha ao criar internamento.');
+        const resEpisodio = await fetch(`${API_URL}/episodios/${codEp}`, {
+          method: 'PUT', headers: headers(),
+          body: JSON.stringify({ estado: 'internado' }),
+        });
+        if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para internado.');
+        const resAto = await fetch(`${API_URL}/atos/`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ cod_ep_urgenc: codEp, tipo: 'internamento', descricao: alta.observacoes || 'Encaminhado para internamento.', data_hora_inicio: agora, data_hora_fim: agora }),
+        });
+        if (!resAto.ok) throw new Error('Falha ao registar ato de internamento.');
+        setEpisodios((prev) => (prev || []).map((ep) => ep?.cod_ep_urgenc === codEp ? { ...ep, estado: 'internado' } : ep));
+        setSubMenuFila('em_espera');
+        setEpisodioSelecionado(null);
+        setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '' });
+        setTipoDecisao('alta');
+        await carregarInternamentos();
+        mostrarToast('Internamento registado com sucesso.', 'sucesso');
+      } catch (error) {
+        mostrarToast(error.message || 'Erro ao registar internamento.', 'erro');
+      } finally {
+        setASubmeterAlta(false);
+      }
+    };
+
+    return (
+      <div>
+        <SectionHeader title="Decisão clínica" subtitle="Alta ou internamento" />
+        <div className="doctor-toggle-row">
+          <button type="button" className={`doctor-pill ${tipoDecisao === 'alta' ? 'is-active' : ''}`} onClick={() => setTipoDecisao('alta')}>Alta</button>
+          <button type="button" className={`doctor-pill ${tipoDecisao === 'internamento' ? 'is-active' : ''}`} onClick={() => setTipoDecisao('internamento')}>Internamento</button>
+        </div>
+        <div className="doctor-form-grid">
+          {tipoDecisao === 'internamento' && (
+            <>
+              <div>
+                <label>Serviço</label>
+                <select className="doctor-field" value={alta.servico} onChange={(e) => setAlta((prev) => ({ ...prev, servico: e.target.value }))}>
+                  <option value="">Selecione...</option>
+                  {SERVICOS.map((s, i) => <option key={`servico-${i}`} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="doctor-form-grid__full">
+                <label>Motivo</label>
+                <select className="doctor-field" value={alta.motivo_int} onChange={(e) => setAlta((prev) => ({ ...prev, motivo_int: e.target.value }))}>
+                  <option value="">Selecione...</option>
+                  {MOTIVOS_INTERNAMENTO.map((m, i) => <option key={`motivo-${i}`} value={m}>{m}</option>)}
+                </select>
+              </div>
+              {alta.motivo_int === 'Outro' && (
+                <div className="doctor-form-grid__full">
+                  <label>Especificar motivo</label>
+                  <input className="doctor-field" type="text" value={alta.motivo_int_outro} onChange={(e) => setAlta((prev) => ({ ...prev, motivo_int_outro: e.target.value }))} />
+                </div>
+              )}
+            </>
+          )}
+          <div className="doctor-form-grid__full">
+            <label>Observações</label>
+            <textarea className="doctor-field" rows="4" value={alta.observacoes} onChange={(e) => setAlta((prev) => ({ ...prev, observacoes: e.target.value }))} />
+          </div>
+        </div>
+        <button
+          type="button"
+          className="doctor-action-btn doctor-action-btn--primary"
+          disabled={aSubmeterAlta}
+          onClick={() => tipoDecisao === 'internamento' ? submeterInternamento() : submeterAlta()}
+        >
+          {aSubmeterAlta ? 'A guardar...' : tipoDecisao === 'internamento' ? 'Enviar para internamento' : 'Gravar alta'}
+        </button>
+      </div>
+    );
+  };
+
   const renderAtendimento = () => {
     const tabs = [
       ['vitais',    'Dados Vitais'],
@@ -1013,20 +1155,7 @@ export default function DoctorDashboard() {
             />
           )}
 
-          {tabAtendimento === 'decisao' && (
-            <DoctorAlta
-              episodioSelecionado={episodioSelecionado}
-              setEpisodioSelecionado={setEpisodioSelecionado}
-              setEpisodios={setEpisodios}
-              setSubMenuFila={setSubMenuFila}
-              alta={alta}
-              setAlta={setAlta}
-              SectionHeader={SectionHeader}
-              mostrarToast={mostrarToast}
-              headers={headers}
-              onInternamentoCriado={carregarInternamentos}
-            />
-          )}
+          {tabAtendimento === 'decisao' && renderTabDecisao()}
         </div>
       </div>
     );
@@ -1067,7 +1196,10 @@ export default function DoctorDashboard() {
     );
   };
 
-  const renderFichaInternamento = () => (
+  const renderFichaInternamento = () => {
+    const medicacaoAtivaEnriquecida = enriquecerMedicacaoAtiva(medicacaoAtiva, medicamentos);
+
+    return (
     <div className="doctor-panel-card doctor-panel-card--wide">
       <div className="doctor-patient-banner">
         <div>
@@ -1090,7 +1222,23 @@ export default function DoctorDashboard() {
         </div>
 
         <div className="doctor-subcard">
-          <SectionHeader title="Prescrever medicação" />
+          <SectionHeader title="Prescrever medicação" subtitle="Medicação ativa e nova prescrição" />
+
+          {/* Medicação ativa */}
+          {medicacaoAtivaEnriquecida.length === 0 ? (
+            <div className="doctor-empty-box" style={{ marginBottom: '1rem' }}>Sem medicação ativa registada.</div>
+          ) : (
+            <div className="doctor-alert-list" style={{ marginBottom: '1rem' }}>
+              {medicacaoAtivaEnriquecida.map((m, i) => (
+                <div key={`med-int-ativa-${i}`} className="doctor-med-item">
+                  <strong>{m.nomeApresentacao || `Medicamento ${i + 1}`}</strong>
+                  <span>{m?.dosagem ? `Dosagem: ${m.dosagem}` : 'Sem dosagem registada'}{m?.observacoes ? ` · ${m.observacoes}` : ''}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Formulário de prescrição */}
           <div className="doctor-form-grid">
             <div className="doctor-form-grid__full">
               <label>Medicamento</label>
@@ -1099,7 +1247,12 @@ export default function DoctorDashboard() {
                 {Array.isArray(medicamentos) && medicamentos.map((m, index) => {
                   const medId   = getMedicamentoId(m, index);
                   const medNome = getMedicamentoNome(m, index);
-                  return <option key={`med-int-${medId}-${index}`} value={medId}>{medNome}</option>;
+                  const principio = m?.principioativo || m?.principio_ativo || '';
+                  return (
+                    <option key={`med-int-${medId}-${index}`} value={medId}>
+                      {principio && principio !== medNome ? `${medNome} — ${principio}` : medNome}
+                    </option>
+                  );
                 })}
               </select>
             </div>
@@ -1107,20 +1260,65 @@ export default function DoctorDashboard() {
               <label>Dosagem</label>
               <input className="doctor-field" type="text" name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} />
             </div>
+            <div className="doctor-form-grid__full">
+              <label>Observações</label>
+              <input className="doctor-field" type="text" name="observacoes" value={prescricao.observacoes} onChange={handlePrescricaoChange} />
+            </div>
           </div>
-          <button className="doctor-action-btn doctor-action-btn--primary" onClick={submeterPrescricao}>Prescrever</button>
+
+          {/* Avaliação IA de alergias */}
+          {alergias.length > 0 ? (
+            <div className="doctor-risk-box" style={{ margin: '0.75rem 0' }}>
+              {riscoIA && (
+                <div
+                  className={`doctor-risk-result ${riscoIA?.risco === 1 || riscoIA?.riscoalto ? 'is-danger' : 'is-safe'}`}
+                  style={{ marginBottom: '0.75rem' }}
+                >
+                  <strong>
+                    {riscoIA?.risco === 1 || riscoIA?.riscoalto
+                      ? 'Utente com risco/alergia para a medicação selecionada'
+                      : 'Sem alergia conhecida para a medicação selecionada'}
+                  </strong>
+                  <span>{riscoIA?.mensagem || riscoIA?.explicacao || 'Avaliação concluída.'}</span>
+                </div>
+              )}
+              <button
+                type="button"
+                className="doctor-action-btn doctor-action-btn--secondary"
+                onClick={avaliarRiscoIAFn}
+                disabled={avaliacaoRisco || !prescricao.codmedicamento}
+              >
+                {avaliacaoRisco ? 'A avaliar...' : 'Ajuda IA: avaliar alergias e risco'}
+              </button>
+            </div>
+          ) : (
+            <div className="doctor-empty-box" style={{ margin: '0.75rem 0' }}>
+              O utente não tem alergias registadas para validação automática.
+            </div>
+          )}
+
+          <div className="doctor-actions-inline" style={{ marginTop: '0.5rem' }}>
+            <button
+              className="doctor-action-btn doctor-action-btn--primary"
+              onClick={submeterPrescricao}
+              disabled={!prescricao.codmedicamento || !prescricao.dosagem}
+            >
+              Prescrever
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="doctor-subcard">
+      {/* Alta de internamento — dentro do doctor-panel-card */}
+      <div className="doctor-subcard" style={{ marginTop: '1rem' }}>
         <SectionHeader title="Registar alta de internamento" />
         <div className="doctor-form-grid">
           <div>
             <label>Tipo de Alta</label>
+            {/* CORRIGIDO: Transferência removida — processo simplificado */}
             <select className="doctor-field" value={altaInternamento.tipo_alta} onChange={(e) => setAltaInternamento((p) => ({ ...p, tipo_alta: e.target.value }))}>
               <option value="clinica">Alta Clínica</option>
               <option value="voluntaria">Alta Voluntária</option>
-              <option value="transferencia">Transferência</option>
               <option value="obito">Óbito</option>
             </select>
           </div>
@@ -1132,7 +1330,8 @@ export default function DoctorDashboard() {
         <button className="doctor-action-btn doctor-action-btn--primary" onClick={submeterAltaInternamento}>Registar alta</button>
       </div>
     </div>
-  );
+    );
+  };
 
   // ── JSX principal ──────────────────────────────────────────
 
