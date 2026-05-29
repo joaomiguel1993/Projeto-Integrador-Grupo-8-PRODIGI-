@@ -879,7 +879,7 @@ O sistema possui uma área pública sem autenticação.
 - Hospitais disponíveis.
 - FAQ.
 - Login.
-- Registo.
+
 
 ### 🖼️ Screenshots da Web
 
