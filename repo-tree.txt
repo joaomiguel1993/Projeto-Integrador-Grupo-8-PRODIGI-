@@ -1,0 +1,391 @@
+.
+├── .dockerignore
+├── .env
+├── .env.example
+├── .gitignore
+├── android
+│   ├── .gitkeep
+│   ├── app
+│   │   ├── .gitignore
+│   │   ├── build.gradle.kts
+│   │   ├── proguard-rules.pro
+│   │   └── src
+│   │       ├── androidTest
+│   │       │   └── java
+│   │       │       └── pt
+│   │       │           └── siaguh
+│   │       │               └── app
+│   │       │                   └── ExampleInstrumentedTest.kt
+│   │       ├── main
+│   │       │   ├── AndroidManifest.xml
+│   │       │   ├── ic_launcher-playstore.png
+│   │       │   ├── java
+│   │       │   │   └── pt
+│   │       │   │       └── siaguh
+│   │       │   │           └── app
+│   │       │   │               ├── MainActivity.kt
+│   │       │   │               ├── data
+│   │       │   │               │   ├── api
+│   │       │   │               │   │   ├── RetrofitClient.kt
+│   │       │   │               │   │   └── SiaguhApiService.kt
+│   │       │   │               │   ├── model
+│   │       │   │               │   │   └── Models.kt
+│   │       │   │               │   └── repository
+│   │       │   │               │       ├── AuthRepository.kt
+│   │       │   │               │       └── UtenteRepository.kt
+│   │       │   │               ├── ui
+│   │       │   │               │   ├── Navigation.kt
+│   │       │   │               │   ├── login
+│   │       │   │               │   │   ├── LoginScreen.kt
+│   │       │   │               │   │   └── LoginViewModel.kt
+│   │       │   │               │   ├── main
+│   │       │   │               │   │   └── MainScreen.kt
+│   │       │   │               │   ├── paciente
+│   │       │   │               │   │   ├── PacienteScreen.kt
+│   │       │   │               │   │   └── PacienteViewModel.kt
+│   │       │   │               │   ├── scanner
+│   │       │   │               │   │   └── ScannerScreen.kt
+│   │       │   │               │   └── theme
+│   │       │   │               │       ├── Color.kt
+│   │       │   │               │       ├── Theme.kt
+│   │       │   │               │       └── Type.kt
+│   │       │   │               └── util
+│   │       │   │                   ├── Result.kt
+│   │       │   │                   └── TokenManager.kt
+│   │       │   └── res
+│   │       │       ├── drawable
+│   │       │       │   ├── ic_launcher_background.xml
+│   │       │       │   ├── ic_launcher_foreground.xml
+│   │       │       │   └── logo_siaguh.png
+│   │       │       ├── mipmap-anydpi-v26
+│   │       │       │   ├── ic_launcher.xml
+│   │       │       │   └── ic_launcher_round.xml
+│   │       │       ├── mipmap-hdpi
+│   │       │       │   ├── ic_launcher.webp
+│   │       │       │   ├── ic_launcher_foreground.webp
+│   │       │       │   └── ic_launcher_round.webp
+│   │       │       ├── mipmap-mdpi
+│   │       │       │   ├── ic_launcher.webp
+│   │       │       │   ├── ic_launcher_foreground.webp
+│   │       │       │   └── ic_launcher_round.webp
+│   │       │       ├── mipmap-xhdpi
+│   │       │       │   ├── ic_launcher.webp
+│   │       │       │   ├── ic_launcher_foreground.webp
+│   │       │       │   └── ic_launcher_round.webp
+│   │       │       ├── mipmap-xxhdpi
+│   │       │       │   ├── ic_launcher.webp
+│   │       │       │   ├── ic_launcher_foreground.webp
+│   │       │       │   └── ic_launcher_round.webp
+│   │       │       ├── mipmap-xxxhdpi
+│   │       │       │   ├── ic_launcher.webp
+│   │       │       │   ├── ic_launcher_foreground.webp
+│   │       │       │   └── ic_launcher_round.webp
+│   │       │       ├── values
+│   │       │       │   ├── colors.xml
+│   │       │       │   ├── strings.xml
+│   │       │       │   └── themes.xml
+│   │       │       └── xml
+│   │       │           ├── backup_rules.xml
+│   │       │           └── data_extraction_rules.xml
+│   │       └── test
+│   │           └── java
+│   │               └── pt
+│   │                   └── siaguh
+│   │                       └── app
+│   │                           └── ExampleUnitTest.kt
+│   ├── build.gradle.kts
+│   ├── gradle
+│   │   ├── gradle-daemon-jvm.properties
+│   │   ├── libs.versions.toml
+│   │   └── wrapper
+│   │       ├── gradle-wrapper.jar
+│   │       └── gradle-wrapper.properties
+│   ├── gradle.properties
+│   ├── gradlew
+│   ├── gradlew.bat
+│   └── settings.gradle.kts
+├── backend
+│   ├── .gitkeep
+│   ├── __init__.py
+│   ├── auth
+│   │   └── security.py
+│   ├── dao
+│   │   ├── __init__.py
+│   │   ├── alergias_dao.py
+│   │   ├── alerta_dao.py
+│   │   ├── antecedentes_dao.py
+│   │   ├── atos_dao.py
+│   │   ├── episodios_dao.py
+│   │   ├── hospitais_dao.py
+│   │   ├── internamentos_dao.py
+│   │   ├── logs_dao.py
+│   │   ├── medicacaoativa_dao.py
+│   │   ├── medicamentos_dao.py
+│   │   ├── predicao_ia_dao.py
+│   │   ├── prescricoes_dao.py
+│   │   ├── profissionais_dao.py
+│   │   ├── trabalha_dao.py
+│   │   ├── triagens_dao.py
+│   │   ├── utenteantecedente_dao.py
+│   │   ├── utentes_dao.py
+│   │   └── utilizadores_dao.py
+│   ├── db.py
+│   ├── main.py
+│   ├── repositories
+│   │   ├── __init__.py
+│   │   ├── alergias_repository.py
+│   │   ├── alerta_repository.py
+│   │   ├── antecedentes_repository.py
+│   │   ├── atos_repository.py
+│   │   ├── episodios_repository.py
+│   │   ├── hospitais_repository.py
+│   │   ├── internamentos_repository.py
+│   │   ├── medicacaoativa_repository.py
+│   │   ├── medicamentos_repository.py
+│   │   ├── predicao_ia_repository.py
+│   │   ├── prescricoes_repository.py
+│   │   ├── profissionais_repository.py
+│   │   ├── trabalha_repository.py
+│   │   ├── triagens_repository.py
+│   │   ├── utenteantecedente_repository.py
+│   │   ├── utentes_repository.py
+│   │   └── utilizadores_repository.py
+│   ├── requirements.txt
+│   ├── routers
+│   │   ├── __init__.py
+│   │   ├── alergia.py
+│   │   ├── alerta.py
+│   │   ├── antecedentes.py
+│   │   ├── ato.py
+│   │   ├── auth.py
+│   │   ├── episodios.py
+│   │   ├── hospital.py
+│   │   ├── internamento.py
+│   │   ├── logs.py
+│   │   ├── medicacaoativa.py
+│   │   ├── medicamento.py
+│   │   ├── painel_router.py
+│   │   ├── prescricao.py
+│   │   ├── profissionais.py
+│   │   ├── trabalha.py
+│   │   ├── triagem.py
+│   │   ├── utenteantecedente.py
+│   │   ├── utentes.py
+│   │   └── utilizadores.py
+│   ├── schemas
+│   │   ├── __init__.py
+│   │   ├── alergia.py
+│   │   ├── alerta.py
+│   │   ├── antecedente.py
+│   │   ├── ato.py
+│   │   ├── episodio.py
+│   │   ├── hospital.py
+│   │   ├── internamento.py
+│   │   ├── medicacaoativa.py
+│   │   ├── medicamento.py
+│   │   ├── predicao_ia.py
+│   │   ├── prescricao.py
+│   │   ├── profissional.py
+│   │   ├── trabalha.py
+│   │   ├── triagem.py
+│   │   ├── utente.py
+│   │   ├── utenteantecedente.py
+│   │   └── utilizador.py
+│   ├── scripts
+│   │   └── update_passwords.py
+│   ├── services
+│   │   ├── ai_espera_service.py
+│   │   ├── ai_prescricao_service.py
+│   │   ├── ai_triagem_service.py
+│   │   ├── alergias_service.py
+│   │   ├── alerta_service.py
+│   │   ├── antecedentes_service.py
+│   │   ├── atos_service.py
+│   │   ├── episodios_service.py
+│   │   ├── hospitais_service.py
+│   │   ├── internamentos_service.py
+│   │   ├── medicacaoativa_service.py
+│   │   ├── medicamentos_service.py
+│   │   ├── model_registry.py
+│   │   ├── painel_service.py
+│   │   ├── predicao_ia_service.py
+│   │   ├── prescricoes_service.py
+│   │   ├── profissionais_service.py
+│   │   ├── trabalha_service.py
+│   │   ├── triagens_service.py
+│   │   ├── utenteantecedente_service.py
+│   │   ├── utentes_service.py
+│   │   └── utilizadores_service.py
+│   ├── SQL
+│   │   ├── CreateTableComplete.sql
+│   │   ├── createTables.sql
+│   │   ├── passwordsnew.txt
+│   │   ├── PopulateCreaTablCompl.sql
+│   │   └── populateDB.sql
+│   └── __init__.py
+├── diagrama.html
+├── docker-compose.yml
+├── Dockerfile
+├── estrutura.txt
+├── ia
+│   ├── .gitkeep
+│   ├── Dockerfile
+│   ├── Instalation guide.txt
+│   ├── main_ai.py
+│   ├── requirements.txt
+│   ├── data
+│   │   ├── processed
+│   │   │   ├── encoders_triagem.joblib
+│   │   │   └── encoders_wait_time.joblib
+│   │   └── raw
+│   │       ├── medicine_risk_Dataset.csv
+│   │       ├── Triage_Dataset.csv
+│   │       └── Wait_Time_Dataset.csv
+│   ├── models
+│   │   ├── randomforest_medicine_risk.joblib
+│   │   ├── xgboost_triagem.joblib
+│   │   └── xgboost_wait_time.joblib
+│   └── src
+│       ├── __init__.py
+│       ├── gerar_dados_medicine_risk.py
+│       ├── gerar_dados_triagem.py
+│       ├── gerar_dados_wait_time.py
+│       ├── painel_wait_time.py
+│       ├── predict_medicine_risk.py
+│       ├── predict_triagem.py
+│       ├── predict_wait_time.py
+│       ├── preprocess_triagem.py
+│       ├── preprocess_wait_time.py
+│       ├── train_medicine_risk.py
+│       ├── train_triagem.py
+│       ├── train_wait_time.py
+│       └── voz_nlp.py
+├── package-lock.json
+├── package.json
+├── README.md
+├── repo-tree.txt
+├── SIAGUH.apk
+├── triagens.json
+├── web
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── password
+│   ├── public
+│   │   └── favicon.svg
+│   ├── README.md
+│   ├── src
+│   │   ├── app
+│   │   │   ├── App.jsx
+│   │   │   ├── providers.jsx
+│   │   │   └── router.jsx
+│   │   ├── components
+│   │   │   ├── guards
+│   │   │   │   ├── ProtectedRoute.jsx
+│   │   │   │   └── RoleRoute.jsx
+│   │   │   ├── layout
+│   │   │   │   ├── AuthLayout.jsx
+│   │   │   │   ├── Breadcrumbs.jsx
+│   │   │   │   ├── FooterLayout.jsx
+│   │   │   │   ├── HeaderPrivate.jsx
+│   │   │   │   ├── HeaderPublic.jsx
+│   │   │   │   └── PublicLayout.jsx
+│   │   │   └── ui
+│   │   │       └── Toast.jsx
+│   │   ├── constants
+│   │   │   └── roles.js
+│   │   ├── contexts
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── LanguageContext.jsx
+│   │   ├── imagens
+│   │   │   ├── avatar-default.png
+│   │   │   ├── FCUL-Branco.png
+│   │   │   ├── Info1.png
+│   │   │   ├── Info2.png
+│   │   │   ├── Info3.png
+│   │   │   ├── Info4.png
+│   │   │   ├── Info5.png
+│   │   │   ├── ISEL-Branco.png
+│   │   │   ├── Logo.png
+│   │   │   ├── Logo100fundo.png
+│   │   │   ├── Politecnicodelisboa-Branco.png
+│   │   │   ├── PRODIGI-Branco.png
+│   │   │   ├── RepublicaPortuguesaPRR-Branco.png
+│   │   │   ├── Tecnico-Branco.png
+│   │   │   └── Ulisboa-Branco.png
+│   │   ├── locals
+│   │   │   ├── en.js
+│   │   │   └── pt.js
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   ├── auth
+│   │   │   │   └── SemPermissao.jsx
+│   │   │   ├── private
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── Doctor
+│   │   │   │   │   ├── DoctorAlta.jsx
+│   │   │   │   │   ├── DoctorDashboard.jsx
+│   │   │   │   │   ├── DoctorPrescription.jsx
+│   │   │   │   │   ├── DoctorQueue.jsx
+│   │   │   │   │   └── DoctorVitals.jsx
+│   │   │   │   ├── NurseDashboard.jsx
+│   │   │   │   ├── Perfil.jsx
+│   │   │   │   └── ReceptionistDashboard.jsx
+│   │   │   └── public
+│   │   │       ├── About.jsx
+│   │   │       ├── Accessibility.jsx
+│   │   │       ├── FAQ.jsx
+│   │   │       ├── Home.jsx
+│   │   │       ├── HospitalDetalhe.jsx
+│   │   │       ├── Login.jsx
+│   │   │       └── PrivacyPolicy.jsx
+│   │   ├── services
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   ├── hospitais.js
+│   │   │   └── profissionais.js
+│   │   └── styles
+│   │       ├── base
+│   │       │   ├── global.css
+│   │       │   ├── reset.css
+│   │       │   └── variables.css
+│   │       ├── components
+│   │       │   ├── a11y.css
+│   │       │   ├── animations.css
+│   │       │   ├── breadcrumbs.css
+│   │       │   ├── buttons.css
+│   │       │   ├── controls.css
+│   │       │   ├── dropdown.css
+│   │       │   ├── edit-header.css
+│   │       │   ├── footer.css
+│   │       │   ├── forms.css
+│   │       │   ├── hero.css
+│   │       │   ├── hospital-card.css
+│   │       │   ├── info-section.css
+│   │       │   ├── panel.css
+│   │       │   ├── summary-bar.css
+│   │       │   ├── tables.css
+│   │       │   └── toolbar.css
+│   │       ├── layout
+│   │       │   ├── footer.css
+│   │       │   ├── header-private.css
+│   │       │   ├── header-public.css
+│   │       │   ├── layout.css
+│   │       │   ├── responsive.css
+│   │       │   └── sidebar.css
+│   │       ├── main.css
+│   │       └── pages
+│   │           ├── about.css
+│   │           ├── accessibility.css
+│   │           ├── admin.css
+│   │           ├── doctor-dashboard.css
+│   │           ├── faq.css
+│   │           ├── home.css
+│   │           ├── hospital-detalhe.css
+│   │           ├── login.css
+│   │           ├── nurse-dashboard.css
+│   │           ├── perfil.css
+│   │           ├── privacypolicy.css
+│   │           └── receptionist-dashboard.css
+│   ├── tailwind.config.js
+│   └── vite.config.js
