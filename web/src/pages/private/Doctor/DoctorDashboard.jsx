@@ -410,10 +410,24 @@ export default function DoctorDashboard() {
       setEpisodioSelecionado(null);
       setActiveMenu('internamentos');
 
-      const numUtente   = getField(int, 'num_utent', 'numUtente', 'numutente', 'num_utente', 'codutente');
       const codEpisodio = getField(int, 'cod_ep_urgenc', 'codEpisodio', 'codepisodio', 'cod_epurgenc');
 
-      // CORRIGIDO: headers: headers() em vez de { headers }
+      // Obter episódio primeiro para extrair numUtente — InternamentoOut não tem num_utent
+      let numUtente = getField(int, 'num_utent', 'numUtente', 'numutente', 'num_utente', 'codutente');
+      if (!numUtente || numUtente === '—') {
+        if (codEpisodio && codEpisodio !== '—') {
+          try {
+            const rEp = await fetch(`${API_URL}/episodios/${codEpisodio}`, { headers: headers() });
+            if (rEp.ok) {
+              const epData = await rEp.json();
+              numUtente =
+                epData?.num_utent ?? epData?.numutent ?? epData?.cod_utente ??
+                epData?.codutente ?? epData?.utente_id ?? null;
+            }
+          } catch { numUtente = null; }
+        }
+      }
+
       const [rUtente, rMedicacao, rAlergias, rAntecedentes, rAtos] = await Promise.all([
         numUtente   ? fetch(`${API_URL}/utentes/${numUtente}`,                  { headers: headers() }) : Promise.resolve(null),
         numUtente   ? fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`,   { headers: headers() }) : Promise.resolve(null),
