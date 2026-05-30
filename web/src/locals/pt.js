@@ -12,7 +12,7 @@ export const TEXTOS_PT = {
     botaoOuvir: "Ouvir Texto",
     botaoParar: "Parar Leitura",
     tempoLeitura: "min de leitura",
-    ariaSidebar: "Navegação lateral do sistema",
+    areaSidebar: "Navegação lateral do sistema",
     ariaToggleSidebar: "Alternar menu lateral",
     ariaPerfil: "Ver meu perfil"
   },
@@ -77,7 +77,6 @@ export const TEXTOS_PT = {
   // ==========================================
   // 5. PAINEL DE ADMINISTRAÇÃO
   // ==========================================
-
   admin: {
     tituloPainel: 'Painel de Administração',
     roleAdmin: 'Admin',
@@ -127,7 +126,7 @@ export const TEXTOS_PT = {
     lblGerirHospitaisAssociados: 'Gerir hospitais associados',
     lblPesquisarLogs: 'Pesquisar (Ação, Detalhe, Utilizador)',
 
-    colData: 'Data',
+    colData: 'Date',
     colAcao: 'Ação',
     colDetalhe: 'Detalhe',
 
@@ -160,10 +159,8 @@ export const TEXTOS_PT = {
     sucessoCriarHosp: 'Hospital criado com sucesso.',
     sucessoEditarHosp: 'Hospital atualizado com sucesso.',
 
-    pesquisarHospital: "Search hospital",
-    filtrarHospitais: "Filter hospitals",
-    hospitaisDisponiveis: "Available hospitals",
-    hospitaisSelecionados: "Selected hospitals"
+    pesquisarHospital: "Pesquisar hospital",
+    filtrarHospitais: "Filtrar hospitais"
   },
 
   // ==========================================
@@ -184,7 +181,7 @@ export const TEXTOS_PT = {
     tituloBreadcrumb: "Sobre Nós",
     heroTituloPrincipal: "Sobre o Projeto",
     heroTituloDestaque: "Integrador",
-    heroSubtitulo: "Grupo 8: Inovação, Companheirismo e Excelência Técnica.",
+    heroSubtitulo: "Grupo 8: Inovação, Companheirismo e Excelência Técnico.",
     tituloEquipa: "A Equipa por trás do Projeto SIAGUH",
     ariaHero: "Apresentação inicial do projeto",
     ariaHistoria: "História e desenvolvimento do projeto",
@@ -238,7 +235,7 @@ export const TEXTOS_PT = {
     evidenciasTexto: "O Grupo 8 implementou uma arquitetura modular no backend (FastAPI) e frontend para garantir que futuras atualizações de acessibilidade possam ser integradas sem comprometer a escalabilidade do sistema.",
     denunciaTitulo: "V. Denúncia de Situações de Discriminação",
     denunciaTexto: "Sempre que uma pessoa com deficiência seja objeto de um tratamento menos favorável que consubstancie uma prática discriminatória, pode apresentar queixa nos termos da legislação vigente. O Instituto Nacional para a Reabilitação (INR, I.P.) disponibiliza os canais competentes para o efeito.",
-    notaRodape: "A presente Declaração foi criada para o Projeto Integrador PRODIGI (Grupo 8 - 2026) em conformidade com o Decreto-Lei n.º 83/2018, de 19 de outubro.",
+    notaRodape: "A presente Declaração foi criada para o Projeto Integrador PRODIGI (Grupo 8 - 2026) in conformidade com o Decreto-Lei n.º 83/2018, de 19 de outubro.",
     seccaoIntro: "Declaração de Acessibilidade e Usabilidade. O Grupo 8 Sapos compromete-se a disponibilizar o sítio Web do sistema PRODIGI, Sistema de Gestão Hospitalar, em conformidade com a legislação vigente.",
     seccao1Voz: "Secção 1. Estado de conformidade. O sítio Web PRODIGI está plenamente conforme.",
     seccao2Voz: "Secção 2. Elaboração da presente declaração. Esta declaração foi atualizada em abril de 2026.",
@@ -282,7 +279,7 @@ export const TEXTOS_PT = {
   home: {
     labelIntro: "Introdução",
     tituloPrincipal: "SIAGUH — Sistema Integrado de Apoio à Gestão de Urgências Hospitalares",
-    subtituloPrincipal: "Plataforma de apoio à gestão hospitalar, urgências, internamentos e organização dos profissionais de saúde.",
+    subtituloPrincipal: "Plataforma de apoio à gestão hospitalar, urgências, internamentos e organization dos profissionais de saúde.",
     labelProjeto: "Projeto",
     valorProjeto: "Grupo 8 · PRODIGI",
     labelArea: "Área",
@@ -304,6 +301,43 @@ export const TEXTOS_PT = {
     ariaCarrossel: "Destaques informativos do sistema",
     altSlide: "Informação de destaque número",
     ariaIrParaSlide: "Ir para o slide",
+    heroEyebrow: "Portal de saúde",
+    heroTitle: "Tempos de espera e informação de saúde num único lugar.",
+    heroDescription: "Acompanhe hospitais, consulte previsões em tempo real e encontre rapidamente a informação mais relevante, com uma experiência clara, moderna e profissional.",
+    btnConsultarHospitais: "Consultar hospitais",
+    btnVerInformacoes: "Ver informações",
+    liveStatus: "Tempo real",
+    liveSubStatus: "Atualizado automaticamente",
+    statProjetoLabel: "Projeto",
+    statProjetoNote: "Sistema integrado de gestão e apoio ao utente.",
+    statAreaLabel: "Área",
+    statAreaValue: "Saúde",
+    statAreaNote: "Informação útil para decisões rápidas e seguras.",
+    statTecnologiaLabel: "Tecnologia",
+    statTecnologiaNote: "Previsões de espera e visualização em tempo real.",
+    statAtualizacaoLabel: "Atualização",
+    statAtualizacaoValue: "Automática",
+    statMediaEstimada: "Média estimada atual:",
+    trustTempoRealTitle: "Tempo real",
+    trustTempoRealText: "Consulta rápida com atualização contínua.",
+    trustIaTitle: "IA preditiva",
+    trustIaText: "Estimativas orientadas por dados.",
+    trustCoberturaTitle: "Cobertura",
+    trustCoberturaText: "Hospitais ativos:",
+    trustConfiancaTitle: "Confiança",
+    trustConfiancaText: "Layout limpo, claro e centrado no utente.",
+    seccaoHospitaisTitle: "Hospitais",
+    seccaoHospitaisSubtitle: "Resultados organizados para leitura rápida, com acesso imediato aos detalhes.",
+    placeholderPesquisa: "Pesquisar hospital...",
+    nenhumHospitalEncontrado: "Nenhum hospital encontrado.",
+    seccaoInfoTitle: "Informações adicionais",
+    altImagemAdicional: "Informação adicional",
+    ariaSlide: "Slide",
+    statusAtivo: "Ativo",
+    statusIndisponivel: "Indisponível",
+    unidadeMinutos: "min",
+    erroSincronizacao: "Não foi possível estabelecer ligação com o servidor do SIAGUH. Garanta que o backend está ativo e autenticado.",
+    ariaVerDetalhes: "Ver detalhes"
   },
 
   // ==========================================
@@ -323,6 +357,15 @@ export const TEXTOS_PT = {
     erroDestino: "Não foi possível determinar a página de destino.",
     ariaVoltar: "Voltar para a página inicial",
     ariaPassoHospital: "Credenciais corretas. Agora, selecione um hospital da lista abaixo.",
+    brandTitle: "Gestão inteligente para urgências hospitalares.",
+    brandDescription: "Acede à plataforma para gerir atendimento, triagem, episódios clínicos e operação hospitalar com maior rapidez e controlo.",
+    chipLiveTitle: "Tempo real",
+    chipLiveText: "Filas, estados e contexto hospitalar centralizado.",
+    chipRolesTitle: "Acesso por perfil",
+    chipRolesText: "Fluxos dedicados para administração, receção, enfermagem e medicina.",
+    labelPasso1: "Passo 1 de 2",
+    labelPasso2: "Passo 2 de 2",
+    termoHospital: "Hospital"
   },
 
   // ==========================================
@@ -334,8 +377,8 @@ export const TEXTOS_PT = {
     notaLabel: "Nota:",
     notaTexto: "Este sistema foi desenvolvido para fins académicos pelo Grupo 8 (João Martins, João Sacramento, Luís Franco e Pedro Antunes).",
     s1Titulo: "1. Enquadramento Geral",
-    s1Texto1: "Esta Política de Privacidade aplica-se ao",
-    s1Texto2: "incluindo o portal web, aplicação móvel Android e sistemas de triagem, desenvolvidos pelo Grupo 8, no âmbito do Projeto Integrador de 2026.",
+    s1Texto1: "Esta Política de Privacidade aplica-se ao ",
+    s1Texto2: " incluindo o portal web, aplicação móvel Android e sistemas de triagem, desenvolvidos pelo Grupo 8, no âmbito do Projeto Integrador de 2026.",
     s2Titulo: "2. Responsável pelo Tratamento e Encarregado de Proteção de Dados",
     s2Texto: "A entidade responsável pelo tratamento de dados é o Grupo 8, com supervisão académica no âmbito do projeto PRODIGI/SIAGUH.",
     s3Titulo: "3. Dados Pessoais Tratados",
@@ -350,7 +393,7 @@ export const TEXTOS_PT = {
     s4Intro: "O tratamento de dados no SIAGUH, fundamenta-se na gestão e prestação de cuidados de saúde.",
     lblTriagem: "Triagem Clínica:",
     txtTriagem: "Utilização de IA para sugestão da cor da pulseira.",
-    lblDecisao: "Apoio à Decisao:",
+    lblDecisao: "Apoio à Decisão:",
     txtDecisao: "Previsão de tempos de espera e gestão de camas.",
     lblSeguranca: "Segurança:",
     txtSeguranca: "Autenticação de profissionais via JWT.",
@@ -409,6 +452,9 @@ export const TEXTOS_PT = {
     placeholderPassword: "(Deixar em branco para manter)"
   },
 
+  // ==========================================
+  // 14. PAINEL: MÉDICO
+  // ==========================================
   doctor: {
     tituloPainel: 'Dashboard Médico',
     descricaoPainel: 'Prioridade, detalhe clínico completo, prescrição e decisão final.',
@@ -460,6 +506,9 @@ export const TEXTOS_PT = {
     confirmar: 'Confirmar',
   },
 
+  // ==========================================
+  // 15. PAINEL: ENFERMEIRO
+  // ==========================================
   nurse: {
     tituloPainel: 'Dashboard Enfermeiro',
     descricaoPainel: 'Fila de episódios, contexto clínico e triagem assistida.',
@@ -501,6 +550,9 @@ export const TEXTOS_PT = {
     gravarTriagem: 'Gravar triagem',
   },
 
+  // ==========================================
+  // 16. PAINEL: RECECIONISTA
+  // ==========================================
   receptionist: {
     tituloPainel: 'Dashboard Rececionista',
     descricaoPainel: 'Gestão de utentes e episódios de urgência.',
@@ -546,90 +598,27 @@ export const TEXTOS_PT = {
     ariaPerfil: "Ver meu perfil"
   },
 
- // Adicionar ao teu ficheiro pt.js:
-home: {
-  heroEyebrow: "Portal de saúde",
-  heroTitle: "Tempos de espera e informação de saúde num único lugar.",
-  heroDescription: "Acompanhe hospitais, consulte previsões em tempo real e encontre rapidamente a informação mais relevante, com uma experiência clara, moderna e profissional.",
-  btnConsultarHospitais: "Consultar hospitais",
-  btnVerInformacoes: "Ver informações",
-  liveStatus: "Tempo real",
-  liveSubStatus: "Atualizado automaticamente",
-  statProjetoLabel: "Projeto",
-  statProjetoNote: "Sistema integrado de gestão e apoio ao utente.",
-  statAreaLabel: "Área",
-  statAreaValue: "Saúde",
-  statAreaNote: "Informação útil para decisões rápidas e seguras.",
-  statTecnologiaLabel: "Tecnologia",
-  statTecnologiaNote: "Previsões de espera e visualização em tempo real.",
-  statAtualizacaoLabel: "Atualização",
-  statAtualizacaoValue: "Automática",
-  statMediaEstimada: "Média estimada atual:",
-  trustTempoRealTitle: "Tempo real",
-  trustTempoRealText: "Consulta rápida com atualização contínua.",
-  trustIaTitle: "IA preditiva",
-  trustIaText: "Estimativas orientadas por dados.",
-  trustCoberturaTitle: "Cobertura",
-  trustCoberturaText: "Hospitais ativos:",
-  trustConfiancaTitle: "Confiança",
-  trustConfiancaText: "Layout limpo, claro e centrado no utente.",
-  seccaoHospitaisTitle: "Hospitais",
-  seccaoHospitaisSubtitle: "Resultados organizados para leitura rápida, com acesso imediato aos detalhes.",
-  placeholderPesquisa: "Pesquisar hospital...",
-  nenhumHospitalEncontrado: "Nenhum hospital encontrado.",
-  seccaoInfoTitle: "Informações adicionais",
-  altImagemAdicional: "Informação adicional",
-  ariaSlide: "Slide",
-  statusAtivo: "Ativo",
-  statusIndisponivel: "Indisponível",
-  labelEspera: "Tempo de espera",
-  unidadeMinutos: "min",
-  erroSincronizacao: "Não foi possível estabelecer ligação com o servidor do SIAGUH. Garanta que o backend está ativo e autenticado.",
-  ariaVerDetalhes: "Ver detalhes"
-},
-
-hospitalDetalhe: {
-  erroCarregamento: "Não foi possível carregar os dados detalhados deste hospital.",
-  naoEncontrado: "Hospital não encontrado.",
-  semLocalizacaoDefinida: "Informação de localização disponível na ficha do hospital.",
-  tituloInfoGeral: "Informação geral",
-  linkGoogleMaps: "Abrir no Google Maps ↗",
-  labelEmail: "Email",
-  labelTelefone: "Telefone",
-  labelMorada: "Morada",
-  valorNaoDisponivel: "Não disponível",
-  tituloTriagem: "Tempos de espera por triagem",
-  triagemVermelho: "Vermelho",
-  triagemLaranja: "Laranja",
-  triagemAmarelo: "Amarelo",
-  triagemVerde: "Verde",
-  triagemAzul: "Azul",
-  tituloLocalizacao: "Localização",
-  iframeMapaDe: "Mapa de",
-  btnVerRota: "Ver rota no Google Maps →"
-},
-
-login: {
-  erroRole: "Perfil de acesso não identificado.",
-  erroHospitais: "Nenhum hospital associado a este utilizador.",
-  erroDestino: "Erro ao encaminhar utilizador para o painel clínico.",
-  erroLogin: "Credenciais inválidas ou erro de rede.",
-  ariaPassoHospital: "Passo dois: Selecione o hospital de serviço.",
-  ariaVoltar: "Voltar para o ecrã público inicial",
-  brandTitle: "Gestão inteligente para urgências hospitalares.",
-  brandDescription: "Acede à plataforma para gerir atendimento, triagem, episódios clínicos e operação hospitalar com maior rapidez e controlo.",
-  chipLiveTitle: "Tempo real",
-  chipLiveText: "Filas, estados e contexto hospitalar centralizado.",
-  chipRolesTitle: "Acesso por perfil",
-  chipRolesText: "Fluxos dedicados para administração, receção, enfermagem e medicina.",
-  labelPasso1: "Passo 1 de 2",
-  tituloLogin: "Autenticação Profissional",
-  subtituloLogin: "Introduza os seus dados para aceder ao painel operacional.",
-  btnEntrar: "Entrar",
-  labelPasso2: "Passo 2 de 2",
-  tituloHospital: "Unidade de Serviço",
-  subtituloHospital: "Selecione o hospital onde se encontra em funções de serviço clínico.",
-  termoHospital: "Hospital"
-}
-
+  // ==========================================
+  // 17. DETALHE DO HOSPITAL
+  // ==========================================
+  hospitalDetalhe: {
+    erroCarregamento: "Não foi possível carregar os dados detalhados deste hospital.",
+    naoEncontrado: "Hospital não encontrado.",
+    semLocalizacaoDefinida: "Informação de localização disponível na ficha do hospital.",
+    tituloInfoGeral: "Informação geral",
+    linkGoogleMaps: "Abrir no Google Maps ↗",
+    labelEmail: "Email",
+    labelTelefone: "Telefone",
+    labelMorada: "Morada",
+    valorNaoDisponivel: "Não disponível",
+    tituloTriagem: "Tempos de espera por triagem",
+    triagemVermelho: "Vermelho",
+    triagemLaranja: "Laranja",
+    triagemAmarelo: "Amarelo",
+    triagemVerde: "Verde",
+    triagemAzul: "Azul",
+    tituloLocalizacao: "Localização",
+    iframeMapaDe: "Mapa de",
+    btnVerRota: "Ver rota no Google Maps →"
+  }
 };
