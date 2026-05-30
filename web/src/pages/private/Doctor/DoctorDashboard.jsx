@@ -206,7 +206,7 @@ export default function DoctorDashboard() {
   const [aSubmeterAlta, setASubmeterAlta]               = useState(false);
   const [alta, setAlta]                                 = useState({
     destino: 'alta', observacoes: '', servico: '', numero_cama: '',
-    motivo_int: '', motivo_int_outro: '',
+    motivo_int: '', motivo_int_outro: '', tipo_alta: 'clinica',
   });
 
   // CORRIGIDO: tipoDecisao para a tab de decisão clínica (F1)
@@ -782,7 +782,7 @@ export default function DoctorDashboard() {
         'success'
       );
 
-      setAlta({ destino: 'alta', observacoes: '', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '' });
+      setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '', tipo_alta: 'clinica' });
       setAcaoClinica('');
       setEpisodioSelecionado(null);
       setUtente(null);
@@ -1133,13 +1133,19 @@ export default function DoctorDashboard() {
         if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para alta.');
         const resAto = await fetch(`${API_URL}/atos/`, {
           method: 'POST', headers: headers(),
-          body: JSON.stringify({ cod_ep_urgenc: codEp, tipo: 'alta', descricao: alta.observacoes || 'Alta registada.', data_hora_inicio: agora, data_hora_fim: agora }),
+          body: JSON.stringify({
+            cod_ep_urgenc: codEp,
+            tipo: alta.tipo_alta || 'clinica',
+            descricao: alta.observacoes || 'Alta registada.',
+            data_hora_inicio: agora,
+            data_hora_fim: agora,
+          }),
         });
         if (!resAto.ok) throw new Error('Falha ao registar ato de alta.');
         setEpisodios((prev) => (prev || []).map((ep) => ep?.cod_ep_urgenc === codEp ? { ...ep, estado: 'terminado', data_hora_saida: agora } : ep));
         setSubMenuFila('em_espera');
         setEpisodioSelecionado(null);
-        setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '' });
+        setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '', tipo_alta: 'clinica' });
         setTipoDecisao('alta');
         mostrarToast('Alta registada com sucesso.', 'sucesso');
       } catch (error) {
@@ -1223,6 +1229,20 @@ export default function DoctorDashboard() {
                 </div>
               )}
             </>
+          )}
+          {tipoDecisao === 'alta' && (
+            <div className="doctor-form-grid__full">
+              <label>Tipo de Alta</label>
+              <select
+                className="doctor-field"
+                value={alta.tipo_alta || 'clinica'}
+                onChange={(e) => setAlta((prev) => ({ ...prev, tipo_alta: e.target.value }))}
+              >
+                <option value="clinica">Alta Clínica</option>
+                <option value="voluntaria">Alta Voluntária</option>
+                <option value="obito">Óbito</option>
+              </select>
+            </div>
           )}
           <div className="doctor-form-grid__full">
             <label>Observações</label>
