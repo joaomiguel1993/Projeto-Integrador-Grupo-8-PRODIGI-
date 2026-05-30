@@ -87,13 +87,9 @@ export default function DoctorPrescription({
                 medicamentos.map((m, index) => {
                   const medId      = getMedicamentoId(m, index);
                   const medNome    = getMedicamentoNome(m, index);
-                  const principio  = m?.principioativo || m?.principio_ativo || '';
-
                   return (
                     <option key={`med-${medId}-${index}`} value={medId}>
-                      {principio && principio !== medNome
-                        ? `${medNome} — ${principio}`
-                        : medNome}
+                      {medNome}
                     </option>
                   );
                 })}

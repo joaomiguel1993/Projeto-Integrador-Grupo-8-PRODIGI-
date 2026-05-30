@@ -70,11 +70,12 @@ const getCodEpisodio = (obj) =>
 
 const getMedicamentoNome = (m, index = 0) => {
   if (!m) return `Medicamento ${String(index + 1).padStart(3, '0')}`;
+  // Priorizar princípio ativo em vez do nome comercial
   const nome =
+    m?.principioativo ?? m?.principio_ativo ?? m?.farmaco ??
     m?.nome ?? m?.nome_medicamento ?? m?.nomemedicamento ?? m?.medicamento_nome ??
     m?.nomeMedicamento ?? m?.designacao ?? m?.designacao_comercial ?? m?.descricao ??
-    m?.medicamento ?? m?.nomecomercial ?? m?.principioativo ?? m?.principio_ativo ??
-    m?.farmaco ?? m?.denominacao ?? '';
+    m?.medicamento ?? m?.nomecomercial ?? m?.denominacao ?? '';
   return String(nome).trim() || `Medicamento ${String(index + 1).padStart(3, '0')}`;
 };
 
@@ -90,17 +91,18 @@ const enriquecerMedicacaoAtiva = (lista = [], medicamentos = []) =>
       (med) => String(getMedicamentoId(med)) === itemId
     );
 
+    // Priorizar princípio ativo em vez do nome comercial
     const nomeApresentacao =
+      item?.principioativo || item?.principio_ativo ||
       item?.nomeApresentacao || item?.nome || item?.nome_medicamento ||
       item?.nomemedicamento || item?.medicamento_nome || item?.nomeMedicamento ||
       item?.designacao || item?.designacao_comercial || item?.descricao ||
-      item?.medicamento || item?.nomecomercial || item?.principioativo ||
-      item?.principio_ativo ||
+      item?.medicamento || item?.nomecomercial ||
+      medicamentoCatalogo?.principioativo || medicamentoCatalogo?.principio_ativo ||
       medicamentoCatalogo?.nome || medicamentoCatalogo?.nome_medicamento ||
       medicamentoCatalogo?.nomemedicamento || medicamentoCatalogo?.medicamento_nome ||
       medicamentoCatalogo?.designacao || medicamentoCatalogo?.designacao_comercial ||
-      medicamentoCatalogo?.descricao || medicamentoCatalogo?.principioativo ||
-      medicamentoCatalogo?.principio_ativo ||
+      medicamentoCatalogo?.descricao ||
       getMedicamentoNome(medicamentoCatalogo, index);
 
     return { ...item, nomeApresentacao };
@@ -506,6 +508,7 @@ export default function DoctorDashboard() {
       );
 
       const nomeMedicamento =
+        medicamentoSelecionado?.principioativo || medicamentoSelecionado?.principio_ativo ||
         medicamentoSelecionado?.nome || medicamentoSelecionado?.nomemedicamento ||
         medicamentoSelecionado?.designacao || medicamentoSelecionado?.descricao ||
         getMedicamentoNome(medicamentoSelecionado) || 'Medicamento';
@@ -522,6 +525,37 @@ export default function DoctorDashboard() {
       };
 
       setMedicacaoAtiva((prev) => [novaMedicacao, ...(Array.isArray(prev) ? prev : [])]);
+
+      // Alimentar medicação ativa com a prescrição acabada de criar
+      const numUtente =
+        utente?.num_utent ?? utente?.numutent ?? utente?.num_utente ??
+        episodioSelecionado?.num_utent ?? episodioSelecionado?.numutent ??
+        internamentoSelecionado?.num_utent ?? internamentoSelecionado?.numutent ?? null;
+
+      if (numUtente) {
+        try {
+          await fetch(`${API_URL}/medicacao-ativa/`, {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({
+              num_utent:       Number(numUtente),
+              cod_medicamento: Number(prescricao.codmedicamento),
+              data_inicio:     new Date().toISOString().split('T')[0], // date only — schema espera date não datetime
+              data_fim:        null,
+              dosagem:         String(prescricao.dosagem).trim(),
+            }),
+          });
+          // Recarregar medicação ativa para reflectir a nova entrada
+          const rMed = await fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, { headers: headers() });
+          if (rMed.ok) {
+            const mData = await rMed.json();
+            setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
+          }
+        } catch (eMed) {
+          console.warn('Aviso: não foi possível atualizar medicação ativa:', eMed);
+          mostrarToast('Prescrição gravada, mas não foi possível atualizar a medicação ativa.', 'aviso');
+        }
+      }
 
       setPrescricao({ codmedicamento: '', dosagem: '', observacoes: '' });
       setRiscoIA(null);
