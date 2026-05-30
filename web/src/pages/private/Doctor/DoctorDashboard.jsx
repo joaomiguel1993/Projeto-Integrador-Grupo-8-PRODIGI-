@@ -1246,12 +1246,7 @@ export default function DoctorDashboard() {
             <h1 className="doctor-episode-title">Episódio #{codEpisodio}</h1>
             <p className="doctor-episode-subtitle">UCIP · Urgência Central</p>
           </div>
-          <div className="doctor-episode-header__right">
-            <div className="doctor-episode-date-card">
-              <span className="doctor-episode-date-label">Data de entrada</span>
-              <strong className="doctor-episode-date-value">{dataEntrada}</strong>
-            </div>
-          </div>
+
         </div>
 
         <div className="doctor-tabs-row">
