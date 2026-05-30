@@ -724,10 +724,8 @@ export default function DoctorDashboard() {
       if (!codInternamento) { mostrarToast('Código do internamento inválido.', 'erro'); return; }
 
       const payload = {
-        tipoalta:    altaInternamento.tipo_alta || 'clinica',
-        observacoes: altaInternamento.observacoes?.trim() || '',
-        dataalta:    new Date().toISOString(),
-        estado:      'concluido',
+        tipo_alta:    altaInternamento.tipo_alta || 'clinica',
+        data_hora_alta: new Date().toISOString(),
       };
 
       // CORRIGIDO: API_URL (não APIURL) + headers: headers()
