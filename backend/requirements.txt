@@ -13,3 +13,5 @@ scikit-learn
 xgboost
 pandas
 httpx
+PyJWT[crypto]
+passlib[bcrypt]

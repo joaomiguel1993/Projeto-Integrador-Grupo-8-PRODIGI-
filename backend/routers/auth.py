@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from backend.auth.security import hash_password, verify_password
 from backend.db import get_connection
 from backend.dao.logs_dao import insert_log
+from backend.auth.jwt_utils import create_access_token, create_refresh_token
 
 
 router = APIRouter(prefix="/v1/auth", tags=["Auth"])
@@ -144,6 +145,9 @@ def login(data: LoginRequest, request: Request):
                     "localizacao": row[2],
                 })
 
+        access_token  = create_access_token({"sub": username, "role": role, "idfunc": idfunc})
+        refresh_token = create_refresh_token({"sub": username})
+
         insert_log(
             username=username,
             acao="LOGIN",
@@ -152,12 +156,14 @@ def login(data: LoginRequest, request: Request):
         )
 
         return {
-            "message": "Login efetuado com sucesso.",
-            "username": username,
-            "nome": nome,
-            "role": role,
-            "idfunc": idfunc,
-            "hospitais": hospitais,
+            "message":      "Login efetuado com sucesso.",
+            "access_token": access_token,
+            "token_type":   "bearer",
+            "username":     username,
+            "nome":         nome,
+            "role":         role,
+            "idfunc":       idfunc,
+            "hospitais":    hospitais,
         }
 
     except HTTPException:

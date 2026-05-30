@@ -51,6 +51,10 @@ export default function Login() {
       sessionStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
       sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data?.user || data));
 
+      if (data?.access_token) {
+        sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+      }
+
       if (role === ROLES.ADMIN) {
         navigate('/admin', { replace: true });
         return;
