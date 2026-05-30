@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listarHospitais } from '../../services/hospitais';
+import { apiFetch } from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import '../../styles/main.css';
 
@@ -22,9 +22,10 @@ function waitColor(mins) {
 async function consultarIACompleta(hospital) {
   try {
     const id = hospital.id_hosp ?? hospital.id;
-    const response = await fetch(`http://localhost:8000/api/v1/predict/tempos-espera/${id}`);
-    if (!response.ok) return null;
-    const data = await response.json();
+    // CORREÇÃO: Utiliza o apiFetch global para garantir que o prefixo "/api" e tokens JWT são anexados
+    const data = await apiFetch(`/api/v1/predict/tempos-espera/${id}`);
+    if (!data || !data.tempos_espera) return null;
+    
     const t = data.tempos_espera;
     return {
       Critical: t.vermelho?.minutos,
@@ -124,8 +125,16 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
-        const data = await listarHospitais();
+        
+        // CORREÇÃO: Chamada direta via apiFetch apontando para o endpoint unificado do main.py
+        const data = await apiFetch('/api/v1/hospitais/');
         const listaBase = Array.isArray(data) ? data : data?.data ?? [];
+        
+        if (!data || listaBase.length === 0) {
+          setHospitais([]);
+          return;
+        }
+
         const listaComIA = await Promise.all(
           listaBase.map(async (h) => ({
             ...h,
@@ -133,8 +142,8 @@ export default function Home() {
           }))
         );
         setHospitais(listaComIA);
-      } catch {
-        setError('Erro ao sincronizar com servidor de IA.');
+      } catch (err) {
+        setError('Não foi possível estabelecer ligação com o servidor do SIAGUH. Garanta que o backend está ativo e autenticado.');
       } finally {
         setLoading(false);
       }
@@ -327,7 +336,6 @@ export default function Home() {
         <div className="container">
           <div className="home-info__header">
             <h2 className="home-hospitals__title">Informações adicionais</h2>
-            {/* A frase de conteúdo de apoio foi removida daqui */}
           </div>
 
           <div className="info-carousel__wrapper">

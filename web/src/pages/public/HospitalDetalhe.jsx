@@ -1,6 +1,7 @@
 // src/pages/public/HospitalDetalhe.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { apiFetch } from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import '../../styles/main.css';
 
@@ -19,14 +20,14 @@ function buildGoogleMapsUrl(hospital) {
   const query = encodeURIComponent(
     hospital?.morada || hospital?.localizacao || hospital?.nome || 'Hospital'
   );
-  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+  return `https://maps.google.com/?q=${query}`;
 }
 
 function buildEmbedUrl(hospital) {
   const query = encodeURIComponent(
     hospital?.morada || hospital?.localizacao || hospital?.nome || 'Hospital'
   );
-  return `https://www.google.com/maps?q=${query}&z=15&output=embed`;
+  return `https://maps.google.com/maps?q=${query}&z=15&output=embed`;
 }
 
 function TriageCard({ label, value, tone }) {
@@ -53,15 +54,13 @@ export default function HospitalDetalhe() {
         setLoading(true);
         setErro('');
 
-        const [respHosp, respPainel] = await Promise.all([
-          fetch(`http://localhost:8000/api/v1/hospitais/${id}`),
-          fetch(`http://localhost:8000/api/v1/predict/tempos-espera/${id}`),
+        // CORREÇÃO: Consome via apiFetch injetando prefixos e dependências JWT necessárias do main.py
+        const [dataHosp, dataPainel] = await Promise.all([
+          apiFetch(`/api/v1/hospitais/${id}`),
+          apiFetch(`/api/v1/predict/tempos-espera/${id}`).catch(() => null),
         ]);
 
-        if (!respHosp.ok) throw new Error('Erro ao carregar hospital');
-
-        const dataHosp   = await respHosp.json();
-        const dataPainel = respPainel.ok ? await respPainel.json() : null;
+        if (!dataHosp) throw new Error('Erro ao carregar hospital');
 
         setHospital({
           ...dataHosp,
@@ -71,8 +70,8 @@ export default function HospitalDetalhe() {
           espera_verde:    dataPainel?.tempos_espera?.verde?.minutos    ?? null,
           espera_azul:     dataPainel?.tempos_espera?.azul?.minutos     ?? null,
         });
-      } catch {
-        setErro('Não foi possível carregar os dados do hospital.');
+      } catch (err) {
+        setErro('Não foi possível carregar os dados detalhados deste hospital.');
       } finally {
         setLoading(false);
       }
@@ -114,11 +113,9 @@ export default function HospitalDetalhe() {
 
   return (
     <main className="hosp-detail" role="main">
-
       {/* ── HERO ── */}
       <section className="hosp-detail__hero">
         <div className="container hosp-detail__hero-inner">
-
           <button
             type="button"
             className="btn-back"
@@ -147,17 +144,14 @@ export default function HospitalDetalhe() {
               </strong>
             </div>
           </div>
-
         </div>
       </section>
 
       {/* ── CONTEÚDO ── */}
       <section className="hosp-detail__content">
         <div className="container hosp-detail__grid">
-
           {/* Coluna principal */}
           <div className="hosp-detail__main">
-
             {/* Informação geral */}
             <div className="hosp-card">
               <div className="hosp-card__header">
@@ -208,7 +202,6 @@ export default function HospitalDetalhe() {
                 <TriageCard label="Azul"     value={hospital.espera_azul}     tone="blue"   />
               </div>
             </div>
-
           </div>
 
           {/* Sidebar: mapa */}
@@ -241,10 +234,8 @@ export default function HospitalDetalhe() {
               </a>
             </div>
           </aside>
-
         </div>
       </section>
-
     </main>
   );
 }
