@@ -92,6 +92,8 @@ API_PREFIX = "/api"
 
 # Rotas públicas — sem autenticação
 app.include_router(auth.router, prefix=API_PREFIX)
+app.include_router(hospital.router, prefix=API_PREFIX)
+app.include_router(painel_router.router, prefix=API_PREFIX)
 
 # Rotas protegidas — requerem token JWT válido
 _jwt = [Depends(get_current_user)]
@@ -103,7 +105,6 @@ app.include_router(internamento.router,      prefix=API_PREFIX, dependencies=_jw
 app.include_router(profissionais.router,     prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(ato.router,               prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(prescricao.router,        prefix=API_PREFIX, dependencies=_jwt)
-app.include_router(hospital.router,          prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(medicamento.router,       prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(utilizadores.router,      prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(trabalha.router,          prefix=API_PREFIX, dependencies=_jwt)
@@ -112,4 +113,3 @@ app.include_router(medicacaoativa.router,    prefix=API_PREFIX, dependencies=_jw
 app.include_router(utenteantecedente.router, prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(logs.router,              prefix=API_PREFIX, dependencies=_jwt)
 app.include_router(alergia.router,           prefix=API_PREFIX, dependencies=_jwt)
-app.include_router(painel_router.router,     prefix=API_PREFIX, dependencies=_jwt)
