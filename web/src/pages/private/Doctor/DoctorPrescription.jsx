@@ -19,6 +19,7 @@ export default function DoctorPrescription({
   avaliacaoRisco,
   avaliarRiscoIAFn,
   submeterPrescricao,
+  onEliminarMedicacao,
 }) {
   const medicacaoAtivaEnriquecida = enriquecerMedicacaoAtiva(medicacaoAtiva);
 
@@ -35,12 +36,22 @@ export default function DoctorPrescription({
         ) : (
           <div className="doctor-alert-list">
             {medicacaoAtivaEnriquecida.map((m, i) => (
-              <div key={`med-ativa-${i}`} className="doctor-med-item">
-                <strong>{m.nomeApresentacao || `Medicamento ${i + 1}`}</strong>
-                <span>
-                  {m?.dosagem ? `Dosagem: ${m.dosagem}` : 'Sem dosagem registada'}
-                  {m?.observacoes ? ` · ${m.observacoes}` : ''}
+              <div key={`med-ativa-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0.6rem 1rem', borderBottom: '1px solid #e5e7eb', width: '100%', boxSizing: 'border-box' }}>
+                <span style={{ flex: '1 1 0', fontWeight: 600, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nomeApresentacao || `Medicamento ${i + 1}`}</span>
+                <span style={{ flex: '1 1 0', color: '#6b7280', fontSize: '0.9rem', textAlign: 'center' }}>
+                  {m?.dosagem || '—'}
                 </span>
+                <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center' }}>
+                  {typeof onEliminarMedicacao === 'function' && (
+                    <button
+                      type="button"
+                      style={{ fontSize: '0.8rem', padding: '4px 12px', background: 'none', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', color: '#dc2626', whiteSpace: 'nowrap' }}
+                      onClick={() => onEliminarMedicacao(m)}
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -61,7 +72,9 @@ export default function DoctorPrescription({
               <div key={i} className="doctor-alert-item">
                 <strong>{a?.nome || a?.descricao || `Antecedente ${i + 1}`}</strong>
                 {a?.tipo ? ` — ${a.tipo}` : ''}
-                {a?.dataregisto || a?.data_registo ? ` (${new Date(a.dataregisto || a.data_registo).toLocaleDateString('pt-PT')})` : ''}
+                {(a?.dataregisto || a?.data_registo)
+                  ? ` (${new Date(a.dataregisto || a.data_registo).toLocaleDateString('pt-PT')})`
+                  : ''}
               </div>
             ))}
           </div>

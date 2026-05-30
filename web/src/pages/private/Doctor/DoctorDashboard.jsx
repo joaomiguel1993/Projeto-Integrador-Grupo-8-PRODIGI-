@@ -570,6 +570,37 @@ export default function DoctorDashboard() {
 
   // ── Avaliação de risco IA ──────────────────────────────────
 
+  const eliminarMedicacao = async (med) => {
+    const codMedicacaoAtiva =
+      med?.cod_medicacao_ativa ?? med?.codmedicacaoativa ?? med?.id ?? null;
+
+    if (!codMedicacaoAtiva) {
+      mostrarToast('Não foi possível identificar a prescrição.', 'erro');
+      return;
+    }
+
+    try {
+      const r = await fetch(`${API_URL}/medicacao-ativa/${codMedicacaoAtiva}`, {
+        method: 'DELETE',
+        headers: headers(),
+      });
+
+      if (!r.ok) throw new Error(`Erro ao eliminar (${r.status})`);
+
+      setMedicacaoAtiva((prev) =>
+        (prev || []).filter((m) => {
+          const cod = m?.cod_medicacao_ativa ?? m?.codmedicacaoativa ?? m?.id;
+          return String(cod) !== String(codMedicacaoAtiva);
+        })
+      );
+
+      mostrarToast('Prescrição eliminada com sucesso.', 'sucesso');
+    } catch (e) {
+      console.error('ERRO eliminarMedicacao:', e);
+      mostrarToast(e.message || 'Erro ao eliminar prescrição.', 'erro');
+    }
+  };
+
   const avaliarRiscoIAFn = async () => {
     if (!prescricao?.codmedicamento) {
       mostrarToast('Seleciona um medicamento.', 'erro');
@@ -1249,6 +1280,7 @@ export default function DoctorDashboard() {
               avaliacaoRisco={avaliacaoRisco}
               avaliarRiscoIAFn={avaliarRiscoIAFn}
               submeterPrescricao={submeterPrescricao}
+              onEliminarMedicacao={eliminarMedicacao}
             />
           )}
 
