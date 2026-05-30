@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from backend.repositories import utilizadores_repository
 from backend.dao.logs_dao import insert_log
+from backend.auth.security import hash_password
 
 def listar_utilizadores():
     return utilizadores_repository.listar_utilizadores()
@@ -22,6 +23,8 @@ def obter_utilizador_por_username(username: str):
 
 def criar_utilizador(data: dict):
     try:
+        if "password" in data and data["password"]:
+            data["password"] = hash_password(data["password"])
         resultado = utilizadores_repository.criar_utilizador(data)
         if resultado is None:
             raise HTTPException(status_code=400, detail="Não foi possível criar o utilizador.")
@@ -34,6 +37,8 @@ def criar_utilizador(data: dict):
 
 def atualizar_utilizador(id_func: int, data: dict):
     try:
+        if "password" in data and data["password"]:
+            data["password"] = hash_password(data["password"])
         resultado = utilizadores_repository.atualizar_utilizador(id_func, data)
         if resultado is None:
             raise HTTPException(status_code=404, detail="Utilizador não encontrado.")
