@@ -998,7 +998,7 @@ export default function NurseDashboard() {
           </div>
           <button type="button" className="admin-logout-button" onClick={fazerLogout}>
             <SvgExit />
-            <span className="link-text">{textos?.geral?.sair || 'Sair'}</span>
+            <span className="link-text">{textos?.geral?.sair || 'Terminar Sessão'}</span>
           </button>
         </div>
       </aside>

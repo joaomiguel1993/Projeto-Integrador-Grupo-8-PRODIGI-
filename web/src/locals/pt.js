@@ -71,7 +71,7 @@ export const TEXTOS_PT = {
     nao: "Não",
     utilizador: "Utilizador",
     acoes: "Ações",
-    sair: "Sair"
+    sair: "Terminar Sessão"
   },
 
   // ==========================================

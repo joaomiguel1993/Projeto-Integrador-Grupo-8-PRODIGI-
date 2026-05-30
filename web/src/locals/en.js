@@ -65,7 +65,8 @@ export const TEXTOS_EN = {
     semResultados: "No results.",
     aCarregar: "Loading...",
     sim: "Yes",
-    nao: "No"
+    nao: "No",
+    sair: "Sign Out" 
   },
 
   // ==========================================
