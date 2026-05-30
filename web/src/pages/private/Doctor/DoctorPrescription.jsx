@@ -36,7 +36,7 @@ export default function DoctorPrescription({
         ) : (
           <div className="doctor-alert-list">
             {medicacaoAtivaEnriquecida.map((m, i) => (
-              <div key={`med-ativa-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0.6rem 1rem', borderBottom: '1px solid #e5e7eb', width: '100%', boxSizing: 'border-box' }}>
+              <div key={`med-ativa-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0.6rem 1rem', border: '1px solid #d1d5db', borderRadius: '8px', width: '100%', boxSizing: 'border-box', marginBottom: '0.5rem', background: '#fff' }}>
                 <span style={{ flex: '1 1 0', fontWeight: 600, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nomeApresentacao || `Medicamento ${i + 1}`}</span>
                 <span style={{ flex: '1 1 0', color: '#6b7280', fontSize: '0.9rem', textAlign: 'center' }}>
                   {m?.dosagem || '—'}

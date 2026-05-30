@@ -1359,9 +1359,20 @@ export default function DoctorDashboard() {
           ) : (
             <div className="doctor-alert-list" style={{ marginBottom: '1rem' }}>
               {medicacaoAtivaEnriquecida.map((m, i) => (
-                <div key={`med-int-ativa-${i}`} className="doctor-med-item">
-                  <strong>{m.nomeApresentacao || `Medicamento ${i + 1}`}</strong>
-                  <span>{m?.dosagem ? `Dosagem: ${m.dosagem}` : 'Sem dosagem registada'}{m?.observacoes ? ` · ${m.observacoes}` : ''}</span>
+                <div key={`med-int-ativa-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0.6rem 1rem', border: '1px solid #d1d5db', borderRadius: '8px', width: '100%', boxSizing: 'border-box', marginBottom: '0.5rem', background: '#fff' }}>
+                  <span style={{ flex: '1 1 0', fontWeight: 600, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nomeApresentacao || `Medicamento ${i + 1}`}</span>
+                  <span style={{ flex: '1 1 0', color: '#6b7280', fontSize: '0.9rem', textAlign: 'center' }}>
+                    {m?.dosagem || '—'}
+                  </span>
+                  <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      type="button"
+                      style={{ fontSize: '0.8rem', padding: '4px 12px', background: 'none', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', color: '#dc2626', whiteSpace: 'nowrap' }}
+                      onClick={() => eliminarMedicacao(m)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
