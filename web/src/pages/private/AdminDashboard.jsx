@@ -477,7 +477,17 @@ export default function AdminDashboard() {
       .map((parte) => parte[0]?.toUpperCase() || '')
       .join('');
 
-  const fazerLogout = () => {
+  const fazerLogout = async () => {
+    try {
+      await apiFetch('/api/v1/logs/', {
+        method: 'POST',
+        body: JSON.stringify({
+          acao: 'LOGOUT',
+          detalhe: 'Sessão terminada pelo utilizador.',
+        }),
+      });
+    } catch { }
+
     sessionStorage.removeItem('user');
     Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
     navigate('/');

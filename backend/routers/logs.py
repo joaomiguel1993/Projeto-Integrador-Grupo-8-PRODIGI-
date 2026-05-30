@@ -1,10 +1,17 @@
 # routers/logs.py
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
-from backend.dao.logs_dao import select_all_logs
+from pydantic import BaseModel
+from typing import Optional
+from backend.dao.logs_dao import select_all_logs, insert_log
 import io
 
 router = APIRouter(prefix="/v1/logs", tags=["Logs"])
+
+
+class LogCreate(BaseModel):
+    acao: str
+    detalhe: Optional[str] = None
 
 
 @router.get("/")
@@ -12,10 +19,18 @@ def get_logs():
     return select_all_logs()
 
 
+@router.post("/", status_code=201)
+def criar_log(data: LogCreate, request: Request):
+    username = request.headers.get('X-Username') or data.username or 'sistema'
+    ip = request.client.host if request.client else None
+    insert_log(username=username, acao=data.acao, detalhe=data.detalhe, ip=ip)
+    return {"ok": True}
+
+
 @router.get("/export/excel")
 def export_logs_excel():
     try:
-        from openpyxl import Workbook  # import aqui dentro — não crasha ao arrancar
+        from openpyxl import Workbook
     except ImportError:
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail="openpyxl não está instalado no servidor.")
