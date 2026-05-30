@@ -35,7 +35,7 @@ def criar_hospital(
     result = hospitais_service.criar_hospital(data.model_dump())
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="CRIAR_HOSPITAL",
         detalhe=f"Hospital {data.model_dump().get('nome')} criado.",
         ip=get_client_ip(request),
@@ -57,7 +57,7 @@ def atualizar_hospital(
     )
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="EDITAR_HOSPITAL",
         detalhe=f"Hospital ID {id_hosp} atualizado.",
         ip=get_client_ip(request),
@@ -75,7 +75,7 @@ def remover_hospital(
     result = hospitais_service.remover_hospital(id_hosp)
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="REMOVER_HOSPITAL",
         detalhe=f"Hospital ID {id_hosp} removido.",
         ip=get_client_ip(request),

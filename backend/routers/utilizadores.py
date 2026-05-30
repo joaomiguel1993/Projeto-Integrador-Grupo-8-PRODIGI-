@@ -44,7 +44,7 @@ def criar_utilizador(
     result = utilizadores_service.criar_utilizador(data.model_dump())
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="CRIAR_UTILIZADOR",
         detalhe=f"Utilizador {data.model_dump().get('username')} criado.",
         ip=get_client_ip(request),
@@ -66,7 +66,7 @@ def atualizar_utilizador(
     )
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="EDITAR_UTILIZADOR",
         detalhe=f"Utilizador ID {id_func} atualizado.",
         ip=get_client_ip(request),
@@ -84,7 +84,7 @@ def remover_utilizador(
     result = utilizadores_service.remover_utilizador(id_func)
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="REMOVER_UTILIZADOR",
         detalhe=f"Utilizador ID {id_func} removido.",
         ip=get_client_ip(request),

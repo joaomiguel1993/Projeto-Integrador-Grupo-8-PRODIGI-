@@ -39,7 +39,7 @@ def criar_profissional(
     result = profissionais_service.criar_profissional(data.model_dump())
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="CRIAR_FUNCIONARIO",
         detalhe=f"Funcionário ID {data.model_dump().get('idfunc')} criado.",
         ip=get_client_ip(request),
@@ -61,7 +61,7 @@ def atualizar_profissional(
     )
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="EDITAR_FUNCIONARIO",
         detalhe=f"Funcionário ID {id_func} atualizado.",
         ip=get_client_ip(request),
@@ -79,7 +79,7 @@ def remover_profissional(
     result = profissionais_service.remover_profissional(id_func)
 
     insert_log(
-        username=current_user["username"],
+        username=current_user.get("username") or current_user.get("sub", "sistema"),
         acao="REMOVER_FUNCIONARIO",
         detalhe=f"Funcionário ID {id_func} removido.",
         ip=get_client_ip(request),
