@@ -5,6 +5,7 @@ import '../../styles/main.css';
 import FooterLayout from '../../components/layout/FooterLayout';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
+import { apiFetch } from '../../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -385,7 +386,13 @@ export default function ReceptionistDashboard() {
     );
   };
 
-  const fazerLogout = () => {
+  const fazerLogout = async () => {
+    try {
+      await apiFetch('/api/v1/auth/logout', {
+        method: 'POST',
+      });
+    } catch { }
+
     sessionStorage.clear();
     navigate('/login', { replace: true });
   };

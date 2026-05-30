@@ -478,15 +478,11 @@ export default function AdminDashboard() {
       .join('');
 
   const fazerLogout = async () => {
-    try {
-      await apiFetch('/api/v1/logs/', {
-        method: 'POST',
-        body: JSON.stringify({
-          acao: 'LOGOUT',
-          detalhe: 'Sessão terminada pelo utilizador.',
-        }),
-      });
-    } catch { }
+  try {
+    await apiFetch('/api/v1/auth/logout', {
+      method: 'POST',
+    });
+  } catch { }
 
     sessionStorage.removeItem('user');
     Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
@@ -2512,8 +2508,7 @@ export default function AdminDashboard() {
             <option value="">{ta('todasAcoes', 'Todas')}</option>
             <option value="login">Login</option>
             <option value="criar-utilizador">{ta('criarUtilizador', 'Criar utilizador')}</option>
-            <option value="editar-utilizad
-            or">{ta('editarUtilizador', 'Editar utilizador')}</option>
+            <option value="editar-utilizador">{ta('editarUtilizador', 'Editar utilizador')}</option>
             <option value="criar-hospital">{ta('criarHospital', 'Criar hospital')}</option>
             <option value="editar-hospital">{ta('editarHospital', 'Editar hospital')}</option>
           </select>

@@ -7,7 +7,7 @@ from backend.schemas.utilizador import (
     UtilizadorOut,
 )
 from backend.services import utilizadores_service
-from backend.routers.auth import get_current_user
+from backend.auth.jwt_utils import get_current_user
 from backend.dao.logs_dao import insert_log
 
 

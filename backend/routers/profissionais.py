@@ -7,7 +7,7 @@ from backend.schemas.profissional import (
     ProfissionalOut,
 )
 from backend.services import profissionais_service
-from backend.routers.auth import get_current_user
+from backend.auth.jwt_utils import get_current_user
 from backend.dao.logs_dao import insert_log
 
 

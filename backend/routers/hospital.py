@@ -3,7 +3,7 @@ from typing import List
 
 from backend.schemas.hospital import HospitalCreate, HospitalUpdate, HospitalOut
 from backend.services import hospitais_service
-from backend.routers.auth import get_current_user
+from backend.auth.jwt_utils import get_current_user
 from backend.dao.logs_dao import insert_log
 
 

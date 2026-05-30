@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Response
 from typing import Dict
 from pydantic import BaseModel, Field
 from backend.auth.security import hash_password, verify_password
 from backend.db import get_connection
 from backend.dao.logs_dao import insert_log
-from backend.auth.jwt_utils import create_access_token, create_refresh_token
+from backend.auth.jwt_utils import create_access_token, create_refresh_token, decode_token
 
 
 router = APIRouter(prefix="/v1/auth", tags=["Auth"])
@@ -14,12 +14,6 @@ def get_client_ip(request: Request) -> str:
     if hasattr(request, "client") and request.client is not None:
         return request.client.host
     return "127.0.0.1"  # fallback
-
-
-def get_current_user(request: Request) -> Dict[str, str]:
-    # Para o teu projeto de aula, vamos usar um mock simples
-    # Em prod com JWT, substitui por Depends(oauth2_scheme)
-    return {"username": "admin.teste"}
 
 
 class RegisterRequest(BaseModel):
@@ -95,7 +89,7 @@ def register(data: RegisterRequest, request: Request):
 
 
 @router.post("/login")
-def login(data: LoginRequest, request: Request):
+def login(data: LoginRequest, request: Request, response: Response):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -155,6 +149,15 @@ def login(data: LoginRequest, request: Request):
             ip=get_client_ip(request),
         )
 
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            samesite="strict",
+            max_age=60 * 60 * 24 * 7,  # 7 dias
+            secure=False,  # True em produção com HTTPS
+        )
+
         return {
             "message":      "Login efetuado com sucesso.",
             "access_token": access_token,
@@ -173,3 +176,41 @@ def login(data: LoginRequest, request: Request):
     finally:
         cur.close()
         conn.close()
+
+@router.post("/refresh")
+def refresh(request: Request, response: Response):
+    refresh_token = request.cookies.get("refresh_token")
+
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Refresh token não encontrado.")
+
+    payload = decode_token(refresh_token)
+
+    if payload.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Token inválido.")
+
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=401, detail="Token inválido.")
+
+    access_token = create_access_token({"sub": username})
+
+    return {
+        "access_token": access_token,
+        "token_type":   "bearer",
+    }
+
+
+@router.post("/logout")
+def logout(response: Response, request: Request):
+    username = request.headers.get("X-Username", "sistema")
+
+    insert_log(
+        username=username,
+        acao="LOGOUT",
+        detalhe="Sessão terminada pelo utilizador.",
+        ip=get_client_ip(request),
+    )
+
+    response.delete_cookie("refresh_token")
+    return {"message": "Sessão terminada com sucesso."}

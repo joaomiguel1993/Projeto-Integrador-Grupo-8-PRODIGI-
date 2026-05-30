@@ -8,6 +8,8 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import Toast, { useToast } from '../../../components/ui/Toast';
 import DoctorQueue from './DoctorQueue';
 import DoctorPrescription from './DoctorPrescription';
+import { apiFetch } from '../../../services/api';
+import { STORAGE_KEYS } from '../../../constants/roles';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_URL = `${API_BASE}/api/v1`;
@@ -333,6 +335,17 @@ export default function DoctorDashboard() {
       console.error(e);
       setMedicamentos([]);
     }
+  };
+
+  const fazerLogout = async () => {
+    try {
+      await apiFetch('/api/v1/auth/logout', {
+        method: 'POST',
+      });
+    } catch { }
+
+    sessionStorage.clear();
+    navigate('/login', { replace: true });
   };
 
   // ── Handlers ───────────────────────────────────────────────
@@ -1500,7 +1513,7 @@ export default function DoctorDashboard() {
           ))}
         </nav>
         <div className="doctor-layout-sidebar__footer">
-          <button type="button" className="doctor-layout-logout" onClick={() => navigate('/login')} title={isSidebarCollapsed ? 'Terminar sessão' : undefined}>
+          <button type="button" className="doctor-layout-logout" onClick={fazerLogout} title={isSidebarCollapsed ? 'Terminar sessão' : undefined}>
             <span className="doctor-layout-sidebar__icon"><IconExit /></span>
             {!isSidebarCollapsed && <span>Terminar sessão</span>}
           </button>

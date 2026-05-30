@@ -7,6 +7,7 @@ import Breadcrumbs from '../../components/layout/Breadcrumbs.jsx';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
 import Toast, { useToast } from '../../components/ui/Toast';
+import { apiFetch } from '../../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
@@ -434,12 +435,15 @@ export default function NurseDashboard() {
     }
   };
 
-  const fazerLogout = () => {
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('userRole');
+  const fazerLogout = async () => {
+    try {
+      await apiFetch('/api/v1/auth/logout', {
+        method: 'POST',
+      });
+    } catch { }
+
     sessionStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('access_token');
+    Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
     navigate('/login', { replace: true });
   };
 
