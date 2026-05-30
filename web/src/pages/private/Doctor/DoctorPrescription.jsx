@@ -8,7 +8,7 @@ export default function DoctorPrescription({
   medicacaoAtiva,
   enriquecerMedicacaoAtiva,
   SectionHeader,
-  alertas,
+  antecedentes,
   medicamentos,
   getMedicamentoId,
   getMedicamentoNome,
@@ -49,17 +49,19 @@ export default function DoctorPrescription({
 
       <section className="doctor-subcard">
         <SectionHeader
-          title="Alertas"
+          title="Antecedentes"
           subtitle="Atenção clínica, alergias e observações críticas"
         />
 
-        {alertas.length === 0 ? (
-          <div className="doctor-empty-box">Sem alertas críticos registados.</div>
+        {!antecedentes || (Array.isArray(antecedentes) ? antecedentes.length === 0 : Object.keys(antecedentes).length === 0) ? (
+          <div className="doctor-empty-box">Sem antecedentes registados.</div>
         ) : (
           <div className="doctor-alert-list">
-            {alertas.map((a, i) => (
+            {(Array.isArray(antecedentes) ? antecedentes : Object.values(antecedentes)).map((a, i) => (
               <div key={i} className="doctor-alert-item">
-                {a.descricao || a.mensagem || a.alerta}
+                <strong>{a?.nome || a?.descricao || `Antecedente ${i + 1}`}</strong>
+                {a?.tipo ? ` — ${a.tipo}` : ''}
+                {a?.dataregisto || a?.data_registo ? ` (${new Date(a.dataregisto || a.data_registo).toLocaleDateString('pt-PT')})` : ''}
               </div>
             ))}
           </div>

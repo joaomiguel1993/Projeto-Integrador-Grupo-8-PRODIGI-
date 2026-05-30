@@ -361,14 +361,14 @@ export default function DoctorDashboard() {
     setRiscoIA(null);
 
     try {
-      const [rUtente, rTriagem, rAlertas, rMedicacao, rAtos, rAlergias] =
+      const [rUtente, rTriagem, rMedicacao, rAtos, rAlergias, rAntecedentes] =
         await Promise.all([
-          fetch(`${API_URL}/utentes/${numUtente}`,              { headers: headers() }),
-          fetch(`${API_URL}/triagens/${codEpisodio}`,           { headers: headers() }),
-          fetch(`${API_URL}/alertas/utente/${numUtente}`,       { headers: headers() }),
-          fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, { headers: headers() }),
-          fetch(`${API_URL}/atos/episodio/${codEpisodio}`,      { headers: headers() }),
-          fetch(`${API_URL}/alergias/utente/${numUtente}`,      { headers: headers() }),
+          fetch(`${API_URL}/utentes/${numUtente}`,                    { headers: headers() }),
+          fetch(`${API_URL}/triagens/${codEpisodio}`,                 { headers: headers() }),
+          fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`,     { headers: headers() }),
+          fetch(`${API_URL}/atos/episodio/${codEpisodio}`,            { headers: headers() }),
+          fetch(`${API_URL}/alergias/utente/${numUtente}`,            { headers: headers() }),
+          fetch(`${API_URL}/utente-antecedentes/utente/${numUtente}`, { headers: headers() }),
         ]);
 
       if (rUtente.ok)    { setUtente(await rUtente.json()); }
@@ -376,9 +376,6 @@ export default function DoctorDashboard() {
 
       if (rTriagem.ok)   { setDadosTriagem(await rTriagem.json()); }
       else               { setDadosTriagem(null); }
-
-      if (rAlertas.ok)   { const a = await rAlertas.json(); setAlertas(Array.isArray(a) ? a : []); }
-      else               { setAlertas([]); }
 
       if (rMedicacao.ok) { const m = await rMedicacao.json(); setMedicacaoAtiva(Array.isArray(m) ? m : []); }
       else               { setMedicacaoAtiva([]); }
@@ -395,6 +392,11 @@ export default function DoctorDashboard() {
 
       if (rAlergias.ok)  { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); }
       else               { setAlergias([]); }
+
+      if (rAntecedentes.ok) { setAntecedentes(await rAntecedentes.json()); }
+      else                  { setAntecedentes(null); }
+
+      setAlertas([]);
 
     } catch (e) {
       console.error(e);
@@ -723,8 +725,10 @@ export default function DoctorDashboard() {
 
       if (!codInternamento) { mostrarToast('Código do internamento inválido.', 'erro'); return; }
 
+      // CORRIGIDO: chaves alinhadas com InternamentoUpdate (tipo_alta, data_hora_alta)
+      // estado não existe no schema — a alta é identificada pela presença de data_hora_alta
       const payload = {
-        tipo_alta:    altaInternamento.tipo_alta || 'clinica',
+        tipo_alta:      altaInternamento.tipo_alta || 'clinica',
         data_hora_alta: new Date().toISOString(),
       };
 
@@ -1187,7 +1191,7 @@ export default function DoctorDashboard() {
               medicacaoAtiva={medicacaoAtiva}
               enriquecerMedicacaoAtiva={(lista) => enriquecerMedicacaoAtiva(lista, medicamentos)}
               SectionHeader={SectionHeader}
-              alertas={alertas}
+              antecedentes={antecedentes}
               medicamentos={medicamentos}
               getMedicamentoId={getMedicamentoId}
               getMedicamentoNome={getMedicamentoNome}
