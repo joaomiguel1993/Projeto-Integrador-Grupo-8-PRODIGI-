@@ -1236,7 +1236,7 @@ export default function DoctorDashboard() {
     ];
 
     const codEpisodio  = episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codepurgenc || '—';
-    const dataEntrada  = dadosTriagem?.datahorainicio ? new Date(dadosTriagem.datahorainicio).toLocaleString('pt-PT') : '—';
+    const dataEntrada  = dadosTriagem?.data_hora_inicio ? new Date(dadosTriagem.data_hora_inicio).toLocaleString('pt-PT') : '—';
 
     return (
       <div className="doctor-attendance-page">
