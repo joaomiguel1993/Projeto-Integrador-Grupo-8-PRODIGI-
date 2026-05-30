@@ -622,11 +622,25 @@ export default function AdminDashboard() {
     if (tipoAcao) {
       const nAcao = normalizar(tipoAcao);
       const mapAcao = {
-        login: /login/i,
-        'criar-utilizador': /criar.*utilizador/i,
-        'editar-utilizador': /editar.*utilizador/i,
-        'criar-hospital': /criar.*hospital/i,
-        'editar-hospital': /editar.*hospital/i,
+        'login':               /^login$/i,
+        'logout':              /^logout$/i,
+        'criar-utilizador':    /criar_utilizador/i,
+        'editar-utilizador':   /editar_utilizador/i,
+        'criar-hospital':      /criar_hospital/i,
+        'editar-hospital':     /editar_hospital/i,
+        'criar-funcionario':   /criar_funcionario/i,
+        'editar-funcionario':  /editar_funcionario/i,
+        'gravar-triagem':      /gravar_triagem/i,
+        'atualizar-triagem':   /atualizar_triagem/i,
+        'criar-episodio':      /criar_episodio/i,
+        'atualizar-episodio':  /atualizar_episodio/i,
+        'criar-internamento':  /criar_internamento/i,
+        'alta-internamento':   /alta_internamento/i,
+        'criar-prescricao':    /criar_prescricao/i,
+        'remover-prescricao':  /remover_prescricao/i,
+        'criar-ato':           /criar_ato/i,
+        'criar-medicacao':     /criar_medicacao/i,
+        'remover-medicacao':   /remover_medicacao/i,
       };
 
       const regex = mapAcao[nAcao];
@@ -2507,10 +2521,24 @@ export default function AdminDashboard() {
           <select value={tipoAcao} onChange={(e) => setTipoAcao(e.target.value)}>
             <option value="">{ta('todasAcoes', 'Todas')}</option>
             <option value="login">Login</option>
-            <option value="criar-utilizador">{ta('criarUtilizador', 'Criar utilizador')}</option>
-            <option value="editar-utilizador">{ta('editarUtilizador', 'Editar utilizador')}</option>
-            <option value="criar-hospital">{ta('criarHospital', 'Criar hospital')}</option>
-            <option value="editar-hospital">{ta('editarHospital', 'Editar hospital')}</option>
+            <option value="logout">Logout</option>
+            <option value="criar-utilizador">Criar utilizador</option>
+            <option value="editar-utilizador">Editar utilizador</option>
+            <option value="criar-hospital">Criar hospital</option>
+            <option value="editar-hospital">Editar hospital</option>
+            <option value="criar-funcionario">Criar funcionário</option>
+            <option value="editar-funcionario">Editar funcionário</option>
+            <option value="gravar-triagem">Gravar triagem</option>
+            <option value="atualizar-triagem">Atualizar triagem</option>
+            <option value="criar-episodio">Criar episódio</option>
+            <option value="atualizar-episodio">Atualizar episódio</option>
+            <option value="criar-internamento">Criar internamento</option>
+            <option value="alta-internamento">Alta de internamento</option>
+            <option value="criar-prescricao">Criar prescrição</option>
+            <option value="remover-prescricao">Remover prescrição</option>
+            <option value="criar-ato">Criar ato clínico</option>
+            <option value="criar-medicacao">Criar medicação ativa</option>
+            <option value="remover-medicacao">Remover medicação ativa</option>
           </select>
         </div>
       </div>
