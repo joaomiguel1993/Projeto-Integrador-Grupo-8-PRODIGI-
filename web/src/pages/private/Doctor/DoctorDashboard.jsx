@@ -571,7 +571,6 @@ export default function DoctorDashboard() {
   // ── Avaliação de risco IA ──────────────────────────────────
 
   const avaliarRiscoIAFn = async () => {
-    // CORRIGIDO: usa prescricao.codmedicamento (não cod_medicamento)
     if (!prescricao?.codmedicamento) {
       mostrarToast('Seleciona um medicamento.', 'erro');
       return;
@@ -580,22 +579,70 @@ export default function DoctorDashboard() {
     setAvaliacaoRisco(true);
 
     try {
+      const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
+
+      // Obter dados do medicamento selecionado
       const med = medicamentos.find(
         (m) => String(getMedicamentoId(m)) === String(prescricao.codmedicamento)
       );
-      const nomeMed = med ? getMedicamentoNome(med) : 'Medicamento';
+      const nomeMed      = med ? getMedicamentoNome(med) : 'Medicamento';
+      const classeMed    = med?.classe_terapeutica_id ?? med?.classeterapeuticaid ?? 1;
 
-      const existeAlergia = alergias.some((a) => {
+      // Verificar alergia à classe do medicamento
+      const temAlergia = alergias.some((a) => {
         const txt = String(a?.descricao || a?.substancia || a?.alergia || '').toLowerCase();
         return txt.includes(nomeMed.toLowerCase());
       });
 
-      const resultado = existeAlergia
-        ? { risco: 1, riscoalto: true,  mensagem: 'Possível alergia detetada.',       explicacao: `O utente pode ter alergia a ${nomeMed}.` }
-        : { risco: 0, riscoalto: false, mensagem: 'Sem risco conhecido.',             explicacao: `Não foram encontradas alergias registadas para ${nomeMed}.` };
+      // Verificar gravidade da alergia (0=Nenhuma até 4=Muito Grave)
+      const gravidadeAlergia = temAlergia ? 2 : 0;
+
+      // Verificar interação ativa — se já toma medicamento da mesma classe
+      const temInteracao = medicacaoAtiva.some((m) => {
+        const medAtivo = medicamentos.find(
+          (med) => String(getMedicamentoId(med)) === String(
+            m?.codmedicamento ?? m?.cod_medicamento ?? m?.id ?? ''
+          )
+        );
+        return medAtivo?.classe_terapeutica_id === classeMed;
+      });
+
+      // Calcular idade do utente
+      const idade = utente?.data_nasc
+        ? Math.floor((Date.now() - new Date(utente.data_nasc).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+        : 50;
+
+      // Chamar modelo de IA real
+      const res = await fetch(`${API_IA}/predict/v1/medicine-risk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Classe_Novo_Med:    classeMed,
+          Tem_Alergia_Classe: temAlergia ? 1 : 0,
+          Gravidade_Alergia:  gravidadeAlergia,
+          Tem_Interacao_Ativa: temInteracao ? 1 : 0,
+          Idade_Utente:       idade,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`Erro no modelo IA (${res.status})`);
+
+      const data = await res.json();
+
+      const resultado = {
+        risco:     data.risco,
+        riscoalto: data.risco === 1,
+        mensagem:  data.risco === 1
+          ? `Risco elevado — ${nomeMed} (prob. ${(data.probabilidade * 100).toFixed(1)}%)`
+          : `Sem risco identificado — ${nomeMed} (prob. ${(data.probabilidade * 100).toFixed(1)}%)`,
+        explicacao: [
+          temAlergia    ? 'Alergia à classe detetada.' : null,
+          temInteracao  ? 'Interação com medicação ativa.' : null,
+        ].filter(Boolean).join(' ') || 'Sem fatores de risco identificados.',
+      };
 
       setRiscoIA(resultado);
-      mostrarToast('Avaliação concluída.', 'sucesso');
+      mostrarToast('Avaliação IA concluída.', 'sucesso');
     } catch (e) {
       console.error(e);
       mostrarToast('Erro na avaliação IA.', 'erro');
