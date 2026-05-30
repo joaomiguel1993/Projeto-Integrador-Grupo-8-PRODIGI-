@@ -988,7 +988,7 @@ export default function AdminDashboard() {
         method: 'PUT',
         body: JSON.stringify({
           nome: utilizadorEditando.nome,
-          tipo_func: utilizadorEditando.role,
+          tipo_func: utilizadorEditando.role || utilizadorEditando.tipo_func || 'admin',
           sexo: utilizadorEditando.sexo,
         }),
       });
@@ -1889,8 +1889,8 @@ export default function AdminDashboard() {
                 <label htmlFor="edit-func-role">{ta('lblFuncao', 'Role')}</label>
                 <select
                   id="edit-func-role"
-                  name="tipofunc"
-                  value={funcionarioEditando.tipofunc || ''}
+                  name="tipo_func"
+                  value={funcionarioEditando.tipo_func || ''}
                   onChange={handleEditarFuncChange}
                 >
                   <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>

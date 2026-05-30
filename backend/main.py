@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 from backend.auth.jwt_utils import get_current_user
+from backend.auth.security import hash_password
+from backend.db import get_connection
 
 from backend.routers import (
     utentes, episodios, triagem, internamento, profissionais,
@@ -44,6 +46,43 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={"detail": exc.detail},
         headers=headers,
     )
+
+
+def corrigir_passwords_texto_simples():
+    """Corrige passwords guardadas em texto simples — migração automática pós-JWT."""
+    utilizadores_teste = [
+        ("admin.teste",      "Admin123!"),
+        ("rececao.teste",    "Rececao123!"),
+        ("enfermeiro.teste", "Enf123!"),
+        ("medico.teste",     "Med123!"),
+    ]
+
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        for username, password in utilizadores_teste:
+            cur.execute("SELECT password FROM utilizador WHERE username = %s;", (username,))
+            row = cur.fetchone()
+            if row:
+                password_db = row[0]
+                if not password_db.startswith("$2b$"):
+                    novo_hash = hash_password(password)
+                    cur.execute(
+                        "UPDATE utilizador SET password = %s WHERE username = %s;",
+                        (novo_hash, username)
+                    )
+                    print(f"[MIGRAÇÃO] Password de {username} corrigida.")
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"[MIGRAÇÃO] Erro ao corrigir passwords: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
+
+corrigir_passwords_texto_simples()
+
 
 @app.get("/v1", tags=["Home"])
 def home():
