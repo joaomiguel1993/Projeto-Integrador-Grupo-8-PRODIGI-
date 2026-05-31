@@ -162,20 +162,31 @@ export default function NurseDashboard() {
 
   // Usa /api/v1/episodios/ para carregar TODOS os episódios
   // (as tabs filtram por estado no frontend)
-  const carregarEpisodios = async () => {
-    setLoading(true);
-    try {
-      const res = await authFetch(`${API_URL}/api/v1/episodios/`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
-      setEpisodios(Array.isArray(data) ? data : []);
-    } catch (e) {
-      mostrarToast(e.message, 'erro');
-      setEpisodios([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const carregarEpisodios = async () => {
+      setLoading(true);
+      try {
+        const hospitalId =
+          utilizadorLogado?.hospitais?.[0]?.idhosp ||
+          utilizadorLogado?.hospitais?.[0]?.id_hosp ||
+          utilizadorLogado?.hospitais?.[0]?.id;
+
+        if (!hospitalId) {
+          mostrarToast('Hospital não encontrado.', 'erro');
+          setEpisodios([]);
+          return;
+        }
+
+        const res = await authFetch(`${API_URL}/api/v1/episodios/hospital/${hospitalId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
+        setEpisodios(Array.isArray(data) ? data : []);
+      } catch (e) {
+        mostrarToast(e.message, 'erro');
+        setEpisodios([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const mapEstado = {
     sem: (ep) => {
@@ -188,7 +199,7 @@ export default function NurseDashboard() {
     },
     triados: (ep) => {
       const estado = normalizar(ep?.estado);
-      return estado === 'em_atendimento' || estado === 'internado' || estado.includes('triad') || estado.includes('conclu');
+      return estado === 'em_atendimento' || estado.includes('triad') || estado.includes('conclu');
     },
     desistencias: (ep) => {
       const estado = normalizar(ep?.estado);
@@ -335,10 +346,18 @@ export default function NurseDashboard() {
         consciencia: triagem.consciencia !== '' ? triagem.consciencia : null,
       };
 
-      const res = await authFetch(`${API_URL}/api/v1/triagens/`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+      const triagemExistente = await authFetch(`${API_URL}/api/v1/triagens/${codEp}`);
+      const jaExiste = triagemExistente.ok;
+
+      const res = await authFetch(
+        jaExiste
+          ? `${API_URL}/api/v1/triagens/${codEp}`
+          : `${API_URL}/api/v1/triagens/`,
+        {
+          method: jaExiste ? 'PUT' : 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao gravar triagem.');
