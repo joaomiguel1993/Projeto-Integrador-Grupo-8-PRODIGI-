@@ -1,47 +1,64 @@
-#CT02 (Ciclo de Vida do Paciente)
-#O teu teste vai:
-#Criar um episódio.
-#Fazer a triagem.
-#Criar um ato médico.
-#Dar alta.
-#Em cada etapa, ele pergunta à API: "Qual é o estado deste episódio?" e compara com o que tu esperas.
-
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from backend.main import app
+from backend.auth.jwt_utils import get_current_user
 
-@pytest.mark.asyncio
+
+def override_get_current_user():
+    return {
+        "id": 1,
+        "username": "teste",
+        "role": "admin",
+    }
+
+
+@pytest.mark.anyio
 async def test_ciclo_vida_paciente():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        
-        # 1. ADMISSÃO
-        response = await ac.post("/api/v1/episodios", json={"nif": "123456789", "id_hosp": 1})
-        assert response.status_code == 200
-        episodio_id = response.json()["id"]
-        
-        # Verifica se está "Em Espera"
-        resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-        assert resp.json()["estado"] == "Em Espera"
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
-        # 2. TRIAGEM
-        await ac.post("/api/v1/triagens", json={"episodio_id": episodio_id, "cor": "Verde"})
-        
-        # Verifica se mudou para "Em Atendimento"
-        resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-        assert resp.json()["estado"] == "Em Atendimento"
+    transport = ASGITransport(app=app)
 
-        # 3. ATO CLÍNICO
-        await ac.post("/api/v1/atos", json={"episodio_id": episodio_id, "descricao": "Consulta de rotina"})
-        
-        # Verifica se continua "Em Atendimento"
-        resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-        assert resp.json()["estado"] == "Em Atendimento"
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            response = await ac.post(
+                "/api/v1/episodios/",
+                json={"num_utent": 123456789, "id_hosp": 1},
+            )
+            assert response.status_code == 200, response.text
+            episodio_id = response.json()["id"]
 
-        # 4. ALTA
-        await ac.post("/api/v1/altas", json={"episodio_id": episodio_id, "tipo": "Alta Médica"})
-        
-        # Verifica se mudou para "Alta"
-        resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-        assert resp.json()["estado"] == "Alta"
-        
-        print("Ciclo de vida validado com sucesso!")
+            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
+            assert resp.status_code == 200, resp.text
+            assert resp.json()["estado"] == "Em Espera"
+
+            response = await ac.post(
+                "/api/v1/triagens/",
+                json={"episodio_id": episodio_id, "cor": "Verde"},
+            )
+            assert response.status_code in [200, 201], response.text
+
+            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
+            assert resp.status_code == 200, resp.text
+            assert resp.json()["estado"] == "Em Atendimento"
+
+            response = await ac.post(
+                "/api/v1/atos/",
+                json={"episodio_id": episodio_id, "descricao": "Consulta de rotina"},
+            )
+            assert response.status_code in [200, 201], response.text
+
+            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
+            assert resp.status_code == 200, resp.text
+            assert resp.json()["estado"] == "Em Atendimento"
+
+            response = await ac.post(
+                "/api/v1/altas/",
+                json={"episodio_id": episodio_id, "tipo": "Alta Médica"},
+            )
+            assert response.status_code in [200, 201], response.text
+
+            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
+            assert resp.status_code == 200, resp.text
+            assert resp.json()["estado"] == "Alta"
+    finally:
+        app.dependency_overrides = {}

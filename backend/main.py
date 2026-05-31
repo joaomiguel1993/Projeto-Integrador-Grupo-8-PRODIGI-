@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Depends, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -81,7 +82,8 @@ def corrigir_passwords_texto_simples():
         conn.close()
 
 
-corrigir_passwords_texto_simples()
+if os.getenv("RUN_STARTUP_TASKS", "true").lower() == "true":
+    corrigir_passwords_texto_simples()
 
 
 @app.get("/v1", tags=["Home"])
