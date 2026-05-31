@@ -416,11 +416,7 @@ export default function AdminDashboard() {
   const [funcionarioAutenticadoNome, setFuncionarioAutenticadoNome] = useState(ta('tituloPainel', 'Administrator Panel'));
   const [fotoUtilizador, setFotoUtilizador] = useState('');
 
-  const breadcrumbsLinks = [
-    { name: tt('inicio', 'Início'), path: '/' },
-    { name: ta('tituloPainel', 'Administrator Panel'), path: '/admin' },
-  ];
-
+ 
   const resetMensagens = () => {
     setMensagemUser(''); setErroUser('');
     setMensagemFunc(''); setErroFunc('');
@@ -1593,10 +1589,8 @@ export default function AdminDashboard() {
     return (
       <section className="admin-panel-section">
         <div className="admin-edit-header">
-          <div className="admin-edit-header__title-wrap">
-            <span className="admin-edit-header__eyebrow">Utilizadores</span>
-            <h2 className="admin-edit-header__title">{ta('menuUtilizadores', 'Users')}</h2>
-            <p className="admin-edit-header__subtitle">{ta('descUtilizadores', 'Manage access accounts, pending accounts and blocked users.')}</p>
+         <div className="admin-content-top">
+            <h2>Painel do administrador</h2>
           </div>
         </div>
 
@@ -2745,22 +2739,10 @@ export default function AdminDashboard() {
 
         <div className="admin-content-wrapper">
           <div className="admin-content-inner">
-            <div className="admin-page-breadcrumbs">
-              {breadcrumbsLinks.map((item, index) => (
-                <button
-                  key={`${item.name}-${index}`}
-                  type="button"
-                  className={`admin-page-breadcrumbs__item ${index === breadcrumbsLinks.length - 1 ? 'is-current' : ''}`}
-                  onClick={() => item.path && navigate(item.path)}
-                >
-                  {index > 0 && <span className="admin-page-breadcrumbs__separator">/</span>}
-                  <span>{item.name}</span>
-                </button>
-              ))}
-            </div>
+            
 
             <div className="admin-content__body">{renderCenter()}</div>
-          </div>
+                      </div>
 
           <FooterLayout />
         </div>

@@ -97,6 +97,13 @@ export default function ReceptionistDashboard() {
   const [utenteSelecionado, setUtenteSelecionado] = useState(null);
   const [novoUtente, setNovoUtente] = useState(emptyUtente);
 
+   const nomeHospital =
+    hospitalAtivo?.nome ||
+    hospitalAtivo?.Nome ||
+    hospitalAtivo?.designacao ||
+    hospitalAtivo?.designacao_hospital ||
+    'Dashboard Rececionista';
+  
   const utilizadorLogado = useMemo(() => {
     const possibleKeys = [
       STORAGE_KEYS?.USER,
@@ -981,11 +988,13 @@ export default function ReceptionistDashboard() {
         </div>
       </aside>
 
-      <section className="admin-content-wrapper" role="region" aria-labelledby="dashboard-title">
-        <div className="admin-content-inner">
-          <div className="admin-content-top">
-            <h1 id="dashboard-title">{textos?.receptionist?.tituloPainel || 'Painel do rececionista'}</h1>
-            <p>{textos?.receptionist?.descricaoPainel || 'Gerir utentes e dar entrada no hospital.'}</p>
+
+
+      <section className="admin-content-wrapper">
+        <div className="admin-panel-section">
+          <div className="admin-panel-section">
+            <h1>Painel do rececionista</h1>
+            <h3>{nomeHospital}</h3>
           </div>
           <div className="admin-content-body">
             {erro && <p className="admin-form__error" role="alert">{erro}</p>}

@@ -1005,10 +1005,10 @@ export default function NurseDashboard() {
 
       <section className="admin-content-wrapper">
         <div className="admin-content-inner">
-          <h1>Painel do enfermeiro</h1>
+          
           <div className="admin-content-top">
-            <h1>{nomeHospital}</h1>
-            <p>{textos?.nurse?.descricaoPainel || 'Fila de episódios, contexto clínico e triagem assistida.'}</p>
+            <h1>Painel do enfermeiro</h1>
+            <p>{nomeHospital}</p>
           </div>
           <div className="admin-content-body">
             {mainMenu === 'sala' && renderSalaDeEspera()}
