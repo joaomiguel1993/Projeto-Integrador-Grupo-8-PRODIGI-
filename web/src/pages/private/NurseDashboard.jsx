@@ -633,21 +633,31 @@ export default function NurseDashboard() {
 
       {episodioSelecionado ? (
         <div className="admin-table-card">
-          <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <p style={{ margin: 0, fontWeight: 600, fontSize: '1rem' }}>
-              {utente?.nome || episodioSelecionado?.nome_utente || `Utente #${episodioSelecionado?.num_utent}`}
-            </p>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary, #666)' }}>
-              Episódio #{obterCodEpisodio(episodioSelecionado)}
-              {' · '}
-              Entrada:{' '}
-              {episodioSelecionado?.data_hora_entr
-                ? new Date(episodioSelecionado.data_hora_entr).toLocaleString('pt-PT')
-                : '—'}
-              {episodioSelecionado?.data_nasc_utente
-                ? ` · ${calcularIdade(episodioSelecionado.data_nasc_utente)} anos`
-                : ''}
-            </p>
+          <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ margin: 0, fontWeight: 600, fontSize: '1rem' }}>
+                {utente?.nome || episodioSelecionado?.nome_utente || `Utente #${episodioSelecionado?.num_utent}`}
+              </p>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary, #666)' }}>
+                Episódio #{obterCodEpisodio(episodioSelecionado)}
+                {' · '}
+                Entrada:{' '}
+                {episodioSelecionado?.data_hora_entr
+                  ? new Date(episodioSelecionado.data_hora_entr).toLocaleString('pt-PT')
+                  : '—'}
+                {episodioSelecionado?.data_nasc_utente
+                  ? ` · ${calcularIdade(episodioSelecionado.data_nasc_utente)} anos`
+                  : ''}
+              </p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${obterCodEpisodio(episodioSelecionado)}`}
+                alt={`QR Code episódio #${obterCodEpisodio(episodioSelecionado)}`}
+                width={80}
+                height={80}
+              />
+            </div>
           </div>
 
           <form className="admin-form" onSubmit={gravarTriagem} style={{ padding: '0 24px 18px' }}>
