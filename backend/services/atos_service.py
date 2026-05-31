@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from backend.repositories import atos_repository
+from backend.repositories import atos_repository, episodios_repository
 
 
 def listar_atos():
@@ -19,6 +19,14 @@ def listar_atos_por_episodio(cod_ep_urgenc: int):
 
 def criar_ato(data: dict):
     try:
+        cod_ep = data.get("cod_ep_urgenc")
+        episodio = episodios_repository.obter_episodio_por_id(cod_ep)
+        if episodio and episodio.get("estado") in ("terminado", "desistiu"):
+            raise HTTPException(
+                status_code=400,
+                detail="Operação inválida: episódio encerrado."
+            )
+
         resultado = atos_repository.criar_ato(data)
         if resultado is None:
             raise HTTPException(status_code=400, detail="Não foi possível criar o ato.")
