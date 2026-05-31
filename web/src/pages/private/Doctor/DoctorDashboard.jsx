@@ -1628,7 +1628,19 @@ export default function DoctorDashboard() {
             <h3 className="doctor-patient-banner__name">{internamentoSelecionado?.nome_utente || '—'}</h3>
             <p className="doctor-patient-banner__meta">{textos?.doctor?.internamento || "Internamento"} #{internamentoSelecionado?.cod_internamento}</p>
           </div>
+          {internamentoSelecionado?.cod_ep_urgenc && (
+            <div style={{ textAlign: 'center' }}>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${internamentoSelecionado.cod_ep_urgenc}`}
+                alt={`QR Code episódio #${internamentoSelecionado.cod_ep_urgenc}`}
+                width={100}
+                height={100}
+              />
+            </div>
+          )}
         </div>
+
+
 
         <div className="doctor-internamento-grid">
           <div className="doctor-subcard">

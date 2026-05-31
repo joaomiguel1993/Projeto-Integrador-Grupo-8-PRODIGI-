@@ -1,0 +1,6 @@
+testar o CT02 (Ciclo de Vida do Paciente)
+
+pip install pyjwt
+pip install pytest pytest-asyncio httpx
+pytest test_fluxo_paciente.py
+
