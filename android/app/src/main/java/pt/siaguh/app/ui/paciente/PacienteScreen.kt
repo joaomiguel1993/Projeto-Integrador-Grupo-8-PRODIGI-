@@ -55,12 +55,24 @@ fun PacienteScreen(
                 }
                 uiState.errorMessage != null && !uiState.isEditingTriagem -> {
                     Column(
-                        modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(uiState.errorMessage!!, color = MaterialTheme.colorScheme.error)
-                        Spacer(Modifier.height(16.dp))
-                        Button(onClick = onBack) { Text(stringResource(R.string.action_back)) }
+                        Text(
+                            text = uiState.errorMessage!!, 
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(Modifier.height(24.dp))
+                        Button(
+                            onClick = onBack,
+                            modifier = Modifier.width(150.dp)
+                        ) { 
+                            Text(stringResource(R.string.action_back)) 
+                        }
                     }
                 }
                 uiState.utente != null -> {

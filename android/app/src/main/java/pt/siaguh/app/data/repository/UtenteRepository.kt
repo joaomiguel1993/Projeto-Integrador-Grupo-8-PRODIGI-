@@ -46,10 +46,22 @@ class UtenteRepository(private val api: SiaguhApiService) {
     private suspend fun <T> safeCall(call: suspend () -> retrofit2.Response<T>): Result<T> {
         return try {
             val response = call()
-            if (response.isSuccessful) Result.Success(response.body()!!)
-            else Result.Error("Erro ${response.code()}.")
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) Result.Success(body)
+                else Result.Error("Servidor devolveu dados vazios.")
+            } else {
+                val msg = when (response.code()) {
+                    404 -> "O registo solicitado não foi encontrado."
+                    401 -> "Sessão expirada. Por favor, faça login novamente."
+                    403 -> "Não tem permissão para aceder a estes dados."
+                    500 -> "Erro interno do servidor. Tente mais tarde."
+                    else -> "Erro ${response.code()} ao comunicar com o servidor."
+                }
+                Result.Error(msg)
+            }
         } catch (e: Exception) {
-            Result.Error("Sem ligação ao servidor.")
+            Result.Error("Sem ligação ao servidor. Verifique a sua internet.")
         }
     }
 }
