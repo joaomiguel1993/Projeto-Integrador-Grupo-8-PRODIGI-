@@ -14,11 +14,13 @@ import pt.siaguh.app.util.Result
 
 data class PacienteUiState(
     val isLoading: Boolean = false,
+    val isUpdating: Boolean = false,
     val errorMessage: String? = null,
     val utente: Utente? = null,
     val antecedentes: List<Antecedente> = emptyList(),
     val episodio: Episodio? = null,
-    val triagem: Triagem? = null
+    val triagem: Triagem? = null,
+    val isEditingTriagem: Boolean = false
 )
 
 class PacienteViewModel(private val repository: UtenteRepository) : ViewModel() {
@@ -62,6 +64,30 @@ class PacienteViewModel(private val repository: UtenteRepository) : ViewModel() 
                 episodio = episodio,
                 triagem = if (triagemResult is Result.Success) triagemResult.data else null
             )
+        }
+    }
+
+    fun setEditingTriagem(editing: Boolean) {
+        _uiState.value = _uiState.value.copy(isEditingTriagem = editing)
+    }
+
+    fun updateTriagem(novaTriagem: Triagem) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isUpdating = true, errorMessage = null)
+            val result = repository.updateTriagem(novaTriagem.codepurgenc, novaTriagem)
+            
+            if (result is Result.Success) {
+                _uiState.value = _uiState.value.copy(
+                    isUpdating = false,
+                    isEditingTriagem = false,
+                    triagem = result.data
+                )
+            } else if (result is Result.Error) {
+                _uiState.value = _uiState.value.copy(
+                    isUpdating = false,
+                    errorMessage = result.message
+                )
+            }
         }
     }
 

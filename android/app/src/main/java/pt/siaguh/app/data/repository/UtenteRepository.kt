@@ -39,6 +39,10 @@ class UtenteRepository(private val api: SiaguhApiService) {
         api.getTriagem(codEpUrgenc)
     }
 
+    suspend fun updateTriagem(codEpUrgenc: Int, triagem: Triagem): Result<Triagem> = safeCall {
+        api.updateTriagem(codEpUrgenc, triagem)
+    }
+
     private suspend fun <T> safeCall(call: suspend () -> retrofit2.Response<T>): Result<T> {
         return try {
             val response = call()

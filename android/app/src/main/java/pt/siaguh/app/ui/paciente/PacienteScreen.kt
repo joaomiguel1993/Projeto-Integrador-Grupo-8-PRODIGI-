@@ -4,9 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,7 +53,7 @@ fun PacienteScreen(
                 uiState.isLoading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
-                uiState.errorMessage != null -> {
+                uiState.errorMessage != null && !uiState.isEditingTriagem -> {
                     Column(
                         modifier = Modifier.align(Alignment.Center).padding(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -60,7 +64,13 @@ fun PacienteScreen(
                     }
                 }
                 uiState.utente != null -> {
-                    PacienteContent(uiState = uiState, userRole = userRole)
+                    PacienteContent(
+                        uiState = uiState, 
+                        userRole = userRole,
+                        onEditTriagem = { viewModel.setEditingTriagem(true) },
+                        onSaveTriagem = { viewModel.updateTriagem(it) },
+                        onCancelEdit = { viewModel.setEditingTriagem(false) }
+                    )
                 }
             }
         }
@@ -68,7 +78,13 @@ fun PacienteScreen(
 }
 
 @Composable
-private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
+private fun PacienteContent(
+    uiState: PacienteUiState, 
+    userRole: String,
+    onEditTriagem: () -> Unit,
+    onSaveTriagem: (Triagem) -> Unit,
+    onCancelEdit: () -> Unit
+) {
     val utente = uiState.utente!!
     val isRececionista = userRole.lowercase() == "rececionista"
 
@@ -139,21 +155,135 @@ private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
         // Triagem detalhada - Ocultar para rececionista
         if (!isRececionista) {
             uiState.triagem?.let { tr ->
-                SeccaoCard(titulo = stringResource(R.string.section_triage)) {
-                    tr.sintomas?.let { InfoLinha(stringResource(R.string.label_symptoms), it) }
-                    tr.temperatura?.let { InfoLinha(stringResource(R.string.label_temperature), "${it}°C") }
-                    tr.freqcard?.let { InfoLinha(stringResource(R.string.label_heart_rate), "$it bpm") }
-                    tr.freqresp?.let { InfoLinha(stringResource(R.string.label_respiratory_rate), "$it rpm") }
-                    tr.spo2?.let { InfoLinha(stringResource(R.string.label_spo2), "${it}%") }
-                    if (tr.sistolica != null && tr.diastolica != null) {
-                        InfoLinha(stringResource(R.string.label_blood_pressure), "${tr.sistolica}/${tr.diastolica} mmHg")
-                    }
-                    tr.datahorainicio?.let { InfoLinha(stringResource(R.string.label_triage_start), it.take(16).replace("T", " ")) }
-                    tr.idfunc?.let { InfoLinha(stringResource(R.string.label_employee_id), it.toString()) }
-                }
+                SeccaoCardTriagem(
+                    triagem = tr,
+                    isEditing = uiState.isEditingTriagem,
+                    isUpdating = uiState.isUpdating,
+                    isEpisodeEnded = uiState.episodio?.datahorasaida != null,
+                    error = uiState.errorMessage,
+                    onEdit = onEditTriagem,
+                    onSave = onSaveTriagem,
+                    onCancel = onCancelEdit
+                )
             }
         }
     }
+}
+
+@Composable
+private fun SeccaoCardTriagem(
+    triagem: Triagem,
+    isEditing: Boolean,
+    isUpdating: Boolean,
+    isEpisodeEnded: Boolean,
+    error: String?,
+    onEdit: () -> Unit,
+    onSave: (Triagem) -> Unit,
+    onCancel: () -> Unit
+) {
+    var temp by remember(triagem) { mutableStateOf(triagem.temperatura?.toString() ?: "") }
+    var fc by remember(triagem) { mutableStateOf(triagem.freqcard?.toString() ?: "") }
+    var fr by remember(triagem) { mutableStateOf(triagem.freqresp?.toString() ?: "") }
+    var spo2 by remember(triagem) { mutableStateOf(triagem.spo2?.toString() ?: "") }
+    var sis by remember(triagem) { mutableStateOf(triagem.sistolica?.toString() ?: "") }
+    var dia by remember(triagem) { mutableStateOf(triagem.diastolica?.toString() ?: "") }
+    var sintomas by remember(triagem) { mutableStateOf(triagem.sintomas ?: "") }
+
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.section_triage), fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                if (!isEditing && !isEpisodeEnded) {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            HorizontalDivider(modifier = Modifier.padding(bottom = 10.dp))
+
+            if (isEditing) {
+                EditField(label = stringResource(R.string.label_symptoms), value = sintomas, onValueChange = { sintomas = it })
+                EditField(label = stringResource(R.string.label_temperature), value = temp, onValueChange = { temp = it }, isNumber = true)
+                EditField(label = stringResource(R.string.label_heart_rate), value = fc, onValueChange = { fc = it }, isNumber = true)
+                EditField(label = stringResource(R.string.label_respiratory_rate), value = fr, onValueChange = { fr = it }, isNumber = true)
+                EditField(label = stringResource(R.string.label_spo2), value = spo2, onValueChange = { spo2 = it }, isNumber = true)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        EditField(label = "Sistólica", value = sis, onValueChange = { sis = it }, isNumber = true)
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        EditField(label = "Diastólica", value = dia, onValueChange = { dia = it }, isNumber = true)
+                    }
+                }
+
+                if (error != null) {
+                    Text(error, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = onCancel, enabled = !isUpdating) {
+                        Text("Cancelar")
+                    }
+                    Button(
+                        onClick = {
+                            val nova = triagem.copy(
+                                sintomas = sintomas,
+                                temperatura = temp.toDoubleOrNull(),
+                                freqcard = fc.toIntOrNull(),
+                                freqresp = fr.toIntOrNull(),
+                                spo2 = spo2.toDoubleOrNull(),
+                                sistolica = sis.toIntOrNull(),
+                                diastolica = dia.toIntOrNull()
+                            )
+                            onSave(nova)
+                        },
+                        enabled = !isUpdating,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        if (isUpdating) {
+                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                        } else {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Guardar")
+                        }
+                    }
+                }
+            } else {
+                triagem.sintomas?.let { InfoLinha(stringResource(R.string.label_symptoms), it) }
+                triagem.temperatura?.let { InfoLinha(stringResource(R.string.label_temperature), "${it}°C") }
+                triagem.freqcard?.let { InfoLinha(stringResource(R.string.label_heart_rate), "$it bpm") }
+                triagem.freqresp?.let { InfoLinha(stringResource(R.string.label_respiratory_rate), "$it rpm") }
+                triagem.spo2?.let { InfoLinha(stringResource(R.string.label_spo2), "${it}%") }
+                if (triagem.sistolica != null && triagem.diastolica != null) {
+                    InfoLinha(stringResource(R.string.label_blood_pressure), "${triagem.sistolica}/${triagem.diastolica} mmHg")
+                }
+                triagem.datahorainicio?.let { InfoLinha(stringResource(R.string.label_triage_start), it.take(16).replace("T", " ")) }
+                triagem.idfunc?.let { InfoLinha(stringResource(R.string.label_employee_id), it.toString()) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditField(label: String, value: String, onValueChange: (String) -> Unit, isNumber: Boolean = false) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, fontSize = 12.sp) },
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
+        keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
+        singleLine = !label.contains("Sintomas")
+    )
 }
 
 @Composable

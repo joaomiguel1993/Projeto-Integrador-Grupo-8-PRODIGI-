@@ -65,4 +65,5 @@
     <string name="triage_not_so_urgent">POUCO URGENTE</string>
     <string name="triage_non_urgent">NÃO URGENTE</string>
     <string name="label_wristband">PULSEIRA</string>
+    <string name="section_triage_Dados">Dados Clínicos</string>
 </resources>

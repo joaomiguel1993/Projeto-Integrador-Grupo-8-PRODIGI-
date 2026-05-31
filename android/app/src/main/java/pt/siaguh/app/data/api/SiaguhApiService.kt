@@ -30,4 +30,7 @@ interface SiaguhApiService {
     // Triagem
     @GET("api/v1/triagens/{cod_ep_urgenc}")
     suspend fun getTriagem(@Path("cod_ep_urgenc") codEpUrgenc: Int): Response<Triagem>
+
+    @PUT("api/v1/triagens/{cod_ep_urgenc}")
+    suspend fun updateTriagem(@Path("cod_ep_urgenc") codEpUrgenc: Int, @Body triagem: Triagem): Response<Triagem>
 }
