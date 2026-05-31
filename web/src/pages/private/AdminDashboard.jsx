@@ -534,13 +534,84 @@ export default function AdminDashboard() {
     }
   };
 
+  const exportarRelatorioExcel = (dados) => {
+    try {
+      if (!dados || !dados.length) {
+        alert("Não existem dados para exportar.");
+        return;
+      }
+
+      const formatarData = (valor) => {
+        if (!valor) return "";
+        const d = new Date(valor);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("pt-PT");
+      };
+
+      const formatarHora = (valor) => {
+        if (!valor) return "";
+        const d = new Date(valor);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleTimeString("pt-PT", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      };
+
+      const dadosFormatados = dados.map((item) => {
+        const dataBase =
+          item.data_hora ??
+          item.dataHora ??
+          item.datahora ??
+          item.timestamp ??
+          item.created_at ??
+          item.updated_at ??
+          item.data ??
+          item.hora_data ??
+          item.datetime ??
+          item.date ??
+          item.dt_criacao ??
+          item.data_criacao ??
+          item.criado_em ??
+          item.createdAt ??
+          "";
+
+        return {
+          Utilizador: item.utilizador ?? item.username ?? item.nome ?? "",
+          Ação: item.acao ?? item.tipo ?? item.estado ?? "",
+          Detalhe: item.detalhe ?? item.descricao ?? item.mensagem ?? item.observacao ?? "",
+          Data: formatarData(dataBase),
+          Hora: formatarHora(dataBase),
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(dadosFormatados);
+      const workbook = XLSX.utils.book_new();
+
+      worksheet["!cols"] = [
+        { wch: 25 },
+        { wch: 25 },
+        { wch: 50 },
+        { wch: 15 },
+        { wch: 12 },
+      ];
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Relatorio");
+      XLSX.writeFile(workbook, "relatorio.xlsx");
+    } catch (error) {
+      console.error("Erro ao exportar relatório Excel:", error);
+      alert("Não foi possível exportar o relatório Excel.");
+    }
+  };
+
   const carregarTudo = async () => {
     await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais()]);
   };
 
   useEffect(() => { carregarTudo(); iniciarHistoricoBase(); }, []);
   useEffect(() => { resolverUtilizadorAutenticado(); }, [profissionais, utilizadores, tAdmin.tituloPainel]);
-  
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setDropdownAberto(false);
