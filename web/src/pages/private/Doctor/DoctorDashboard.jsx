@@ -18,14 +18,14 @@ const SERVICOS = ['Cardiologia', 'Medicina', 'Ortopedia', 'Cirurgia'];
 
 const PREFIXO_SERVICO = {
   'Cardiologia': 'CAR',
-  'Medicina':    'MED',
-  'Ortopedia':   'ORT',
-  'Cirurgia':    'CIR',
+  'Medicina': 'MED',
+  'Ortopedia': 'ORT',
+  'Cirurgia': 'CIR',
 };
 
 const gerarNumeroCama = (servico) => {
   const prefixo = PREFIXO_SERVICO[servico] || 'GER';
-  const numero  = String(Math.floor(Math.random() * 50) + 1).padStart(2, '0');
+  const numero = String(Math.floor(Math.random() * 50) + 1).padStart(2, '0');
   return `${prefixo}-${numero}`;
 };
 const MOTIVOS_INTERNAMENTO = [
@@ -36,10 +36,10 @@ const MOTIVOS_INTERNAMENTO = [
 const TRIAGE_ORDER = { Vermelho: 1, Laranja: 2, Amarelo: 3, Verde: 4, Azul: 5 };
 const TRIAGE_CLASS = {
   Vermelho: 'triage-badge triage-badge--vermelho',
-  Laranja:  'triage-badge triage-badge--laranja',
-  Amarelo:  'triage-badge triage-badge--amarelo',
-  Verde:    'triage-badge triage-badge--verde',
-  Azul:     'triage-badge triage-badge--azul',
+  Laranja: 'triage-badge triage-badge--laranja',
+  Amarelo: 'triage-badge triage-badge--amarelo',
+  Verde: 'triage-badge triage-badge--verde',
+  Azul: 'triage-badge triage-badge--azul',
 };
 
 const calcularIdade = (dataNasc) => {
@@ -170,41 +170,41 @@ export default function DoctorDashboard() {
   const { textos } = useLanguage();
   const { toast, mostrarToast, fecharToast } = useToast();
 
-  const [medicamentos, setMedicamentos]                 = useState([]);
-  const [isSidebarCollapsed, setIsSidebarCollapsed]     = useState(false);
-  const [activeMenu, setActiveMenu]                     = useState('informacao_geral');
-  const [subMenuFila, setSubMenuFila]                   = useState('em_espera');
-  const [episodios, setEpisodios]                       = useState([]);
-  const [episodioSelecionado, setEpisodioSelecionado]   = useState(null);
-  const [acaoClinica, setAcaoClinica]                   = useState('');
-  const [aSubmeterDecisao, setASubmeterDecisao]         = useState(false);
-  const [filtro, setFiltro]                             = useState('');
-  const [utente, setUtente]                             = useState(null);
-  const [alertas, setAlertas]                           = useState([]);
-  const [medicacaoAtiva, setMedicacaoAtiva]             = useState([]);
-  const [antecedentes, setAntecedentes]                 = useState(null);
-  const [dadosTriagem, setDadosTriagem]                 = useState(null);
-  const [tabAtendimento, setTabAtendimento]             = useState('vitais');
-  const [internamentos, setInternamentos]               = useState([]);
+  const [medicamentos, setMedicamentos] = useState([]);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('informacao_geral');
+  const [subMenuFila, setSubMenuFila] = useState('em_espera');
+  const [episodios, setEpisodios] = useState([]);
+  const [episodioSelecionado, setEpisodioSelecionado] = useState(null);
+  const [acaoClinica, setAcaoClinica] = useState('');
+  const [aSubmeterDecisao, setASubmeterDecisao] = useState(false);
+  const [filtro, setFiltro] = useState('');
+  const [utente, setUtente] = useState(null);
+  const [alertas, setAlertas] = useState([]);
+  const [medicacaoAtiva, setMedicacaoAtiva] = useState([]);
+  const [antecedentes, setAntecedentes] = useState(null);
+  const [dadosTriagem, setDadosTriagem] = useState(null);
+  const [tabAtendimento, setTabAtendimento] = useState('vitais');
+  const [internamentos, setInternamentos] = useState([]);
   const [internamentoSelecionado, setInternamentoSelecionado] = useState(null);
-  const [altaInternamento, setAltaInternamento]         = useState({ tipo_alta: 'clinica', observacoes: '' });
-  const [modoEdicaoTriagem, setModoEdicaoTriagem]       = useState(false);
-  const [formTriagem, setFormTriagem]                   = useState({
+  const [altaInternamento, setAltaInternamento] = useState({ tipo_alta: 'clinica', observacoes: '' });
+  const [modoEdicaoTriagem, setModoEdicaoTriagem] = useState(false);
+  const [formTriagem, setFormTriagem] = useState({
     cortriagem: '', tempoesperaprevisto: '', temperatura: '', freqcard: '',
     freqresp: '', spo2: '', sistolica: '', diastolica: '', niveldor: '',
     consciencia: '', sintomas: '', nomeenfermeiro: '',
   });
-  const [prescricao, setPrescricao]                     = useState({ codmedicamento: '', dosagem: '', observacoes: '' });
+  const [prescricao, setPrescricao] = useState({ codmedicamento: '', dosagem: '', observacoes: '' });
   const [temposMediosHospital, setTemposMediosHospital] = useState({
     vermelho: '—', laranja: '—', amarelo: '—', verde: '—', azul: '—',
   });
-  const [alergias, setAlergias]                         = useState([]);
-  const [atos, setAtos]                                 = useState([]);
-  const atosRef                                         = useRef([]);
-  const [riscoIA, setRiscoIA]                           = useState(null);
-  const [avaliacaoRisco, setAvaliacaoRisco]             = useState(false);
-  const [aSubmeterAlta, setASubmeterAlta]               = useState(false);
-  const [alta, setAlta]                                 = useState({
+  const [alergias, setAlergias] = useState([]);
+  const [atos, setAtos] = useState([]);
+  const atosRef = useRef([]);
+  const [riscoIA, setRiscoIA] = useState(null);
+  const [avaliacaoRisco, setAvaliacaoRisco] = useState(false);
+  const [aSubmeterAlta, setASubmeterAlta] = useState(false);
+  const [alta, setAlta] = useState({
     destino: 'alta', observacoes: '', servico: '', numero_cama: '',
     motivo_int: '', motivo_int_outro: '', tipo_alta: 'clinica',
   });
@@ -235,7 +235,7 @@ export default function DoctorDashboard() {
   const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
 
   // CORRIGIDO: token é função, sempre chamado como token()
-  const token   = () => sessionStorage.getItem('token');
+  const token = () => sessionStorage.getItem('token');
   const headers = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token()}`,
@@ -291,10 +291,10 @@ export default function DoctorDashboard() {
         const tempos = data?.tempos_espera || data || {};
         setTemposMediosHospital({
           vermelho: tempos?.vermelho?.minutos != null ? `${tempos.vermelho.minutos} min` : '—',
-          laranja:  tempos?.laranja?.minutos  != null ? `${tempos.laranja.minutos} min`  : '—',
-          amarelo:  tempos?.amarelo?.minutos  != null ? `${tempos.amarelo.minutos} min`  : '—',
-          verde:    tempos?.verde?.minutos    != null ? `${tempos.verde.minutos} min`    : '—',
-          azul:     tempos?.azul?.minutos     != null ? `${tempos.azul.minutos} min`     : '—',
+          laranja: tempos?.laranja?.minutos != null ? `${tempos.laranja.minutos} min` : '—',
+          amarelo: tempos?.amarelo?.minutos != null ? `${tempos.amarelo.minutos} min` : '—',
+          verde: tempos?.verde?.minutos != null ? `${tempos.verde.minutos} min` : '—',
+          azul: tempos?.azul?.minutos != null ? `${tempos.azul.minutos} min` : '—',
         });
       }
     } catch (e) { console.error(e); }
@@ -360,7 +360,7 @@ export default function DoctorDashboard() {
   const abrirEpisodio = async (ep) => {
     if (!ep) { mostrarToast('Episódio inválido.', 'erro'); return; }
 
-    const numUtente   = getCodUtente(ep);
+    const numUtente = getCodUtente(ep);
     const codEpisodio = getCodEpisodio(ep);
 
     if (!numUtente || !codEpisodio) {
@@ -376,22 +376,22 @@ export default function DoctorDashboard() {
     try {
       const [rUtente, rTriagem, rMedicacao, rAtos, rAlergias, rAntecedentes] =
         await Promise.all([
-          fetch(`${API_URL}/utentes/${numUtente}`,                    { headers: headers() }),
-          fetch(`${API_URL}/triagens/${codEpisodio}`,                 { headers: headers() }),
-          fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`,     { headers: headers() }),
-          fetch(`${API_URL}/atos/episodio/${codEpisodio}`,            { headers: headers() }),
-          fetch(`${API_URL}/alergias/utente/${numUtente}`,            { headers: headers() }),
+          fetch(`${API_URL}/utentes/${numUtente}`, { headers: headers() }),
+          fetch(`${API_URL}/triagens/${codEpisodio}`, { headers: headers() }),
+          fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, { headers: headers() }),
+          fetch(`${API_URL}/atos/episodio/${codEpisodio}`, { headers: headers() }),
+          fetch(`${API_URL}/alergias/utente/${numUtente}`, { headers: headers() }),
           fetch(`${API_URL}/utente-antecedentes/utente/${numUtente}`, { headers: headers() }),
         ]);
 
-      if (rUtente.ok)    { setUtente(await rUtente.json()); }
-      else               { setUtente(null); }
+      if (rUtente.ok) { setUtente(await rUtente.json()); }
+      else { setUtente(null); }
 
-      if (rTriagem.ok)   { setDadosTriagem(await rTriagem.json()); }
-      else               { setDadosTriagem(null); }
+      if (rTriagem.ok) { setDadosTriagem(await rTriagem.json()); }
+      else { setDadosTriagem(null); }
 
       if (rMedicacao.ok) { const m = await rMedicacao.json(); setMedicacaoAtiva(Array.isArray(m) ? m : []); }
-      else               { setMedicacaoAtiva([]); }
+      else { setMedicacaoAtiva([]); }
 
       if (rAtos.ok) {
         const lista = await rAtos.json();
@@ -403,11 +403,11 @@ export default function DoctorDashboard() {
         atosRef.current = [];
       }
 
-      if (rAlergias.ok)  { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); }
-      else               { setAlergias([]); }
+      if (rAlergias.ok) { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); }
+      else { setAlergias([]); }
 
       if (rAntecedentes.ok) { setAntecedentes(await rAntecedentes.json()); }
-      else                  { setAntecedentes(null); }
+      else { setAntecedentes(null); }
 
       setAlertas([]);
 
@@ -446,17 +446,17 @@ export default function DoctorDashboard() {
       }
 
       const [rUtente, rMedicacao, rAlergias, rAntecedentes, rAtos] = await Promise.all([
-        numUtente   ? fetch(`${API_URL}/utentes/${numUtente}`,                  { headers: headers() }) : Promise.resolve(null),
-        numUtente   ? fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`,   { headers: headers() }) : Promise.resolve(null),
-        numUtente   ? fetch(`${API_URL}/alergias/utente/${numUtente}`,          { headers: headers() }) : Promise.resolve(null),
-        numUtente   ? fetch(`${API_URL}/historico/${numUtente}`,                { headers: headers() }) : Promise.resolve(null),
-        codEpisodio ? fetch(`${API_URL}/atos/episodio/${codEpisodio}`,          { headers: headers() }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/utentes/${numUtente}`, { headers: headers() }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, { headers: headers() }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/alergias/utente/${numUtente}`, { headers: headers() }) : Promise.resolve(null),
+        numUtente ? fetch(`${API_URL}/historico/${numUtente}`, { headers: headers() }) : Promise.resolve(null),
+        codEpisodio ? fetch(`${API_URL}/atos/episodio/${codEpisodio}`, { headers: headers() }) : Promise.resolve(null),
       ]);
 
-      if (rUtente?.ok)        { setUtente(await rUtente.json()); }          else { setUtente(null); }
-      if (rMedicacao?.ok)     { const d = await rMedicacao.json();   setMedicacaoAtiva(Array.isArray(d) ? d : []); } else { setMedicacaoAtiva([]); }
-      if (rAlergias?.ok)      { const d = await rAlergias.json();    setAlergias(Array.isArray(d) ? d : []); }       else { setAlergias([]); }
-      if (rAntecedentes?.ok)  { setAntecedentes(await rAntecedentes.json()); } else { setAntecedentes(null); }
+      if (rUtente?.ok) { setUtente(await rUtente.json()); } else { setUtente(null); }
+      if (rMedicacao?.ok) { const d = await rMedicacao.json(); setMedicacaoAtiva(Array.isArray(d) ? d : []); } else { setMedicacaoAtiva([]); }
+      if (rAlergias?.ok) { const d = await rAlergias.json(); setAlergias(Array.isArray(d) ? d : []); } else { setAlergias([]); }
+      if (rAntecedentes?.ok) { setAntecedentes(await rAntecedentes.json()); } else { setAntecedentes(null); }
       if (rAtos?.ok) {
         const d = await rAtos.json();
         const lista = Array.isArray(d) ? d : [];
@@ -496,10 +496,10 @@ export default function DoctorDashboard() {
 
       // CORRIGIDO: chaves alinhadas com o schema Pydantic (id_ato, cod_medicamento)
       const body = {
-        id_ato:          Number(idAto),
+        id_ato: Number(idAto),
         cod_medicamento: Number(prescricao.codmedicamento),
-        dosagem:         String(prescricao.dosagem).trim(),
-        observacoes:     prescricao.observacoes?.trim() || null,
+        dosagem: String(prescricao.dosagem).trim(),
+        observacoes: prescricao.observacoes?.trim() || null,
       };
 
       // CORRIGIDO: headers: headers()
@@ -529,14 +529,14 @@ export default function DoctorDashboard() {
         getMedicamentoNome(medicamentoSelecionado) || 'Medicamento';
 
       const novaMedicacao = {
-        id:                 created?.id_prescricao ?? `tmp-${Date.now()}`,
-        idprescricao:       created?.id_prescricao ?? null,
-        idato:              created?.id_ato ?? Number(idAto),
-        codmedicamento:     created?.cod_medicamento ?? Number(prescricao.codmedicamento),
-        dosagem:            created?.dosagem ?? prescricao.dosagem,
-        observacoes:        created?.observacoes ?? prescricao.observacoes ?? '',
-        estadoprescricao:   created?.estado_prescricao ?? 'pendente',
-        nomeApresentacao:   nomeMedicamento,
+        id: created?.id_prescricao ?? `tmp-${Date.now()}`,
+        idprescricao: created?.id_prescricao ?? null,
+        idato: created?.id_ato ?? Number(idAto),
+        codmedicamento: created?.cod_medicamento ?? Number(prescricao.codmedicamento),
+        dosagem: created?.dosagem ?? prescricao.dosagem,
+        observacoes: created?.observacoes ?? prescricao.observacoes ?? '',
+        estadoprescricao: created?.estado_prescricao ?? 'pendente',
+        nomeApresentacao: nomeMedicamento,
       };
 
       setMedicacaoAtiva((prev) => [novaMedicacao, ...(Array.isArray(prev) ? prev : [])]);
@@ -553,11 +553,11 @@ export default function DoctorDashboard() {
             method: 'POST',
             headers: headers(),
             body: JSON.stringify({
-              num_utent:       Number(numUtente),
+              num_utent: Number(numUtente),
               cod_medicamento: Number(prescricao.codmedicamento),
-              data_inicio:     new Date().toISOString().split('T')[0], // date only — schema espera date não datetime
-              data_fim:        null,
-              dosagem:         String(prescricao.dosagem).trim(),
+              data_inicio: new Date().toISOString().split('T')[0], // date only — schema espera date não datetime
+              data_fim: null,
+              dosagem: String(prescricao.dosagem).trim(),
             }),
           });
           // Recarregar medicação ativa para reflectir a nova entrada
@@ -629,8 +629,8 @@ export default function DoctorDashboard() {
       const med = medicamentos.find(
         (m) => String(getMedicamentoId(m)) === String(prescricao.codmedicamento)
       );
-      const nomeMed      = med ? getMedicamentoNome(med) : 'Medicamento';
-      const classeMed    = med?.classe_terapeutica_id ?? med?.classeterapeuticaid ?? 1;
+      const nomeMed = med ? getMedicamentoNome(med) : 'Medicamento';
+      const classeMed = med?.classe_terapeutica_id ?? med?.classeterapeuticaid ?? 1;
 
       // Verificar alergia à classe do medicamento
       const temAlergia = alergias.some((a) => {
@@ -661,11 +661,11 @@ export default function DoctorDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          Classe_Novo_Med:    classeMed,
+          Classe_Novo_Med: classeMed,
           Tem_Alergia_Classe: temAlergia ? 1 : 0,
-          Gravidade_Alergia:  gravidadeAlergia,
+          Gravidade_Alergia: gravidadeAlergia,
           Tem_Interacao_Ativa: temInteracao ? 1 : 0,
-          Idade_Utente:       idade,
+          Idade_Utente: idade,
         }),
       });
 
@@ -674,14 +674,14 @@ export default function DoctorDashboard() {
       const data = await res.json();
 
       const resultado = {
-        risco:     data.risco,
+        risco: data.risco,
         riscoalto: data.risco === 1,
-        mensagem:  data.risco === 1
+        mensagem: data.risco === 1
           ? `Risco elevado — ${nomeMed} (prob. ${(data.probabilidade * 100).toFixed(1)}%)`
           : `Sem risco identificado — ${nomeMed} (prob. ${(data.probabilidade * 100).toFixed(1)}%)`,
         explicacao: [
-          temAlergia    ? 'Alergia à classe detetada.' : null,
-          temInteracao  ? 'Interação com medicação ativa.' : null,
+          temAlergia ? 'Alergia à classe detetada.' : null,
+          temInteracao ? 'Interação com medicação ativa.' : null,
         ].filter(Boolean).join(' ') || 'Sem fatores de risco identificados.',
       };
 
@@ -703,10 +703,10 @@ export default function DoctorDashboard() {
 
       const codEpisodio =
         episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codep_urgenc ||
-        episodioSelecionado?.cod_epurgenc  || episodioSelecionado?.codepurgenc;
+        episodioSelecionado?.cod_epurgenc || episodioSelecionado?.codepurgenc;
 
       if (!codEpisodio) { mostrarToast('Episódio inválido.', 'erro'); return; }
-      if (!acaoClinica)  { mostrarToast('Selecione Alta ou Internamento.', 'erro'); return; }
+      if (!acaoClinica) { mostrarToast('Selecione Alta ou Internamento.', 'erro'); return; }
       if (acaoClinica === 'internamento' && !alta.servico) {
         mostrarToast('Selecione o serviço de internamento.', 'erro');
         return;
@@ -724,18 +724,18 @@ export default function DoctorDashboard() {
       // (antes só atualizava o episódio — por isso nunca aparecia na lista de internamentos)
       if (acaoClinica === 'internamento') {
         const payloadInt = {
-          cod_ep_urgenc:      Number(codEpisodio),
-          id_func:            null,
-          data_hora_int:      agora,
+          cod_ep_urgenc: Number(codEpisodio),
+          id_func: null,
+          data_hora_int: agora,
           data_hora_consulta: null,
-          data_hora_alta:     null,
+          data_hora_alta: null,
           motivo_int:
             alta.motivo_int === 'Outro'
               ? alta.motivo_int_outro || 'Outro'
               : alta.motivo_int,
           numero_cama: gerarNumeroCama(alta.servico),
-          servico:     alta.servico     || null,
-          tipo_alta:   null,
+          servico: alta.servico || null,
+          tipo_alta: null,
         };
 
         const rInt = await fetch(`${API_URL}/internamentos/`, {
@@ -771,7 +771,7 @@ export default function DoctorDashboard() {
           if (String(epCod) !== String(codEpisodio)) return ep;
           return {
             ...ep,
-            estado:       acaoClinica === 'alta' ? 'terminado' : 'internado',
+            estado: acaoClinica === 'alta' ? 'terminado' : 'internado',
             estado_local: acaoClinica === 'alta' ? 'terminado' : 'internado',
           };
         })
@@ -819,7 +819,7 @@ export default function DoctorDashboard() {
       // CORRIGIDO: chaves alinhadas com InternamentoUpdate (tipo_alta, data_hora_alta)
       // estado não existe no schema — a alta é identificada pela presença de data_hora_alta
       const payload = {
-        tipo_alta:      altaInternamento.tipo_alta || 'clinica',
+        tipo_alta: altaInternamento.tipo_alta || 'clinica',
         data_hora_alta: new Date().toISOString(),
       };
 
@@ -858,12 +858,12 @@ export default function DoctorDashboard() {
 
       const payload = {
         temperatura: formTriagem.temperatura || null,
-        freq_card:   formTriagem.freqcard    || null,
-        freq_resp:   formTriagem.freqresp    || null,
-        sp_o2:       formTriagem.spo2        || null,
-        sistolica:   formTriagem.sistolica   || null,
-        diastolica:  formTriagem.diastolica  || null,
-        sintomas:    formTriagem.sintomas    || null,
+        freq_card: formTriagem.freqcard || null,
+        freq_resp: formTriagem.freqresp || null,
+        sp_o2: formTriagem.spo2 || null,
+        sistolica: formTriagem.sistolica || null,
+        diastolica: formTriagem.diastolica || null,
+        sintomas: formTriagem.sintomas || null,
       };
 
       // CORRIGIDO: headers: headers()
@@ -875,19 +875,19 @@ export default function DoctorDashboard() {
 
       if (!response.ok) throw new Error(`Erro ao guardar triagem: ${response.status}`);
 
-      const responseText    = await response.text();
+      const responseText = await response.text();
       const triagemAtualizada = responseText ? JSON.parse(responseText) : {};
 
       setDadosTriagem((prev) => ({
         ...(prev || {}),
         ...triagemAtualizada,
-        temperatura: triagemAtualizada?.temperatura  ?? formTriagem.temperatura ?? prev?.temperatura ?? '',
-        freqcard:    triagemAtualizada?.freqcard ?? triagemAtualizada?.freq_card ?? formTriagem.freqcard ?? prev?.freqcard ?? '',
-        freqresp:    triagemAtualizada?.freqresp ?? triagemAtualizada?.freq_resp ?? formTriagem.freqresp ?? prev?.freqresp ?? '',
-        spo2:        triagemAtualizada?.spo2     ?? triagemAtualizada?.sp_o2     ?? formTriagem.spo2     ?? prev?.spo2     ?? '',
-        sistolica:   triagemAtualizada?.sistolica  ?? formTriagem.sistolica  ?? prev?.sistolica  ?? '',
-        diastolica:  triagemAtualizada?.diastolica ?? formTriagem.diastolica ?? prev?.diastolica ?? '',
-        sintomas:    triagemAtualizada?.sintomas   ?? formTriagem.sintomas   ?? prev?.sintomas   ?? '',
+        temperatura: triagemAtualizada?.temperatura ?? formTriagem.temperatura ?? prev?.temperatura ?? '',
+        freqcard: triagemAtualizada?.freqcard ?? triagemAtualizada?.freq_card ?? formTriagem.freqcard ?? prev?.freqcard ?? '',
+        freqresp: triagemAtualizada?.freqresp ?? triagemAtualizada?.freq_resp ?? formTriagem.freqresp ?? prev?.freqresp ?? '',
+        spo2: triagemAtualizada?.spo2 ?? triagemAtualizada?.sp_o2 ?? formTriagem.spo2 ?? prev?.spo2 ?? '',
+        sistolica: triagemAtualizada?.sistolica ?? formTriagem.sistolica ?? prev?.sistolica ?? '',
+        diastolica: triagemAtualizada?.diastolica ?? formTriagem.diastolica ?? prev?.diastolica ?? '',
+        sintomas: triagemAtualizada?.sintomas ?? formTriagem.sintomas ?? prev?.sintomas ?? '',
       }));
 
       setModoEdicaoTriagem(false);
@@ -911,7 +911,7 @@ export default function DoctorDashboard() {
     const inicio = new Date(dataTriagem).getTime();
     if (Number.isNaN(inicio)) return null;
     const diff = agora - inicio;
-    const min  = Math.floor(diff / 60000);
+    const min = Math.floor(diff / 60000);
     return min < 0 ? 0 : min;
   };
 
@@ -920,7 +920,7 @@ export default function DoctorDashboard() {
   const episodiosOrdenados = useMemo(() => {
     return [...episodios]
       .filter((ep) => {
-        const estado     = ep.estado || ep.estado_local || ep.estado_episodio;
+        const estado = ep.estado || ep.estado_local || ep.estado_episodio;
         const corTriagem = ep.cor_triagem || ep.cortriagem;
         if (estado === 'terminado') return false;
         if (!corTriagem) return false;
@@ -935,14 +935,14 @@ export default function DoctorDashboard() {
       });
   }, [episodios, filtro]);
 
-  const totalEmEspera    = episodios.length;
-  const altasHoje        = 0;
+  const totalEmEspera = episodios.length;
+  const altasHoje = 0;
   const totalInternamentos = internamentos.length;
 
   const menus = [
-    { id: 'informacao_geral', label: 'Informação Geral',      icon: <IconChart /> },
-    { id: 'fila_triagens',    label: 'Fila de Triagens',      icon: <IconQueue /> },
-    { id: 'internamentos',    label: 'Internamentos Ativos',  icon: <IconBed />   },
+    { id: 'informacao_geral', label: 'Informação Geral', icon: <IconChart /> },
+    { id: 'fila_triagens', label: 'Fila de Triagens', icon: <IconQueue /> },
+    { id: 'internamentos', label: 'Internamentos Ativos', icon: <IconBed /> },
   ];
 
   // ── Renders ────────────────────────────────────────────────
@@ -968,7 +968,7 @@ export default function DoctorDashboard() {
         <h3 className="doctor-card-title">Tempo de Espera por Cor de Triagem</h3>
         <p className="doctor-card-subtitle">Distribuição atual do tempo médio no hospital</p>
         <div className="doctor-triage-times-grid">
-          {[['vermelho','Vermelho'],['laranja','Laranja'],['amarelo','Amarelo'],['verde','Verde'],['azul','Azul']].map(([key, label]) => (
+          {[['vermelho', 'Vermelho'], ['laranja', 'Laranja'], ['amarelo', 'Amarelo'], ['verde', 'Verde'], ['azul', 'Azul']].map(([key, label]) => (
             <div key={key} className="doctor-triage-time-item">
               <span className={`doctor-triage-time-dot doctor-triage-time-dot--${key}`} />
               <span className="doctor-triage-time-label">{label}</span>
@@ -986,7 +986,7 @@ export default function DoctorDashboard() {
     const episodiosFiltrados = episodios.filter((ep) => {
       const estado = String(ep?.estado || ep?.estadolocal || ep?.estadoepisodio || '').toLowerCase();
       // CORRIGIDO: estados consistentes com DoctorQueue ("terminado" em vez de "concluido")
-      if (subMenuFila === 'em_espera')  return estado !== 'terminado' && estado !== 'desistiu' && estado !== 'internado';
+      if (subMenuFila === 'em_espera') return estado !== 'terminado' && estado !== 'desistiu' && estado !== 'internado';
       if (subMenuFila === 'atendimento') return estado === 'emconsulta' || estado === 'atendimento';
       // tab concluidos removida
       return true;
@@ -1011,9 +1011,9 @@ export default function DoctorDashboard() {
   };
 
   const renderTabVitais = () => {
-    const corTriagem    = getField(dadosTriagem, 'cor_triagem', 'cortriagem');
+    const corTriagem = getField(dadosTriagem, 'cor_triagem', 'cortriagem');
     const inicioTriagem = getField(dadosTriagem, 'data_hora_inicio', 'datahorainicio');
-    const dataTriagem   = getField(dadosTriagem, 'datahorainicio', 'data_hora_inicio');
+    const dataTriagem = getField(dadosTriagem, 'datahorainicio', 'data_hora_inicio');
     const tempoEsperaAtual = calcularTempoEsperaMin(dataTriagem);
 
     return (
@@ -1041,19 +1041,19 @@ export default function DoctorDashboard() {
               <button type="button" className="doctor-outline-btn" onClick={() => {
                 setFormTriagem({
                   temperatura: getField(dadosTriagem, 'temperatura') === '—' ? '' : getField(dadosTriagem, 'temperatura'),
-                  freqcard:    getField(dadosTriagem, 'freq_card', 'freqcard') === '—' ? '' : getField(dadosTriagem, 'freq_card', 'freqcard'),
-                  freqresp:    getField(dadosTriagem, 'freq_resp', 'freqresp') === '—' ? '' : getField(dadosTriagem, 'freq_resp', 'freqresp'),
-                  spo2:        getField(dadosTriagem, 'sp_o2', 'spo2') === '—' ? '' : getField(dadosTriagem, 'sp_o2', 'spo2'),
-                  sistolica:   getField(dadosTriagem, 'sistolica') === '—' ? '' : getField(dadosTriagem, 'sistolica'),
-                  diastolica:  getField(dadosTriagem, 'diastolica') === '—' ? '' : getField(dadosTriagem, 'diastolica'),
-                  sintomas:    getField(dadosTriagem, 'sintomas') === '—' ? '' : getField(dadosTriagem, 'sintomas'),
+                  freqcard: getField(dadosTriagem, 'freq_card', 'freqcard') === '—' ? '' : getField(dadosTriagem, 'freq_card', 'freqcard'),
+                  freqresp: getField(dadosTriagem, 'freq_resp', 'freqresp') === '—' ? '' : getField(dadosTriagem, 'freq_resp', 'freqresp'),
+                  spo2: getField(dadosTriagem, 'sp_o2', 'spo2') === '—' ? '' : getField(dadosTriagem, 'sp_o2', 'spo2'),
+                  sistolica: getField(dadosTriagem, 'sistolica') === '—' ? '' : getField(dadosTriagem, 'sistolica'),
+                  diastolica: getField(dadosTriagem, 'diastolica') === '—' ? '' : getField(dadosTriagem, 'diastolica'),
+                  sintomas: getField(dadosTriagem, 'sintomas') === '—' ? '' : getField(dadosTriagem, 'sintomas'),
                 });
                 setModoEdicaoTriagem(true);
               }}>Editar</button>
             ) : (
               <div className="doctor-actions-inline">
                 <button type="button" className="doctor-action-btn doctor-action-btn--secondary" onClick={() => setModoEdicaoTriagem(false)}>Cancelar</button>
-                <button type="button" className="doctor-action-btn doctor-action-btn--primary"   onClick={guardarEdicaoTriagem}>Guardar</button>
+                <button type="button" className="doctor-action-btn doctor-action-btn--primary" onClick={guardarEdicaoTriagem}>Guardar</button>
               </div>
             )}
           </div>
@@ -1084,7 +1084,7 @@ export default function DoctorDashboard() {
           ) : (
             <>
               <div className="doctor-vitals-table">
-                {[['Temperatura','temperatura'],['Freq. Cardíaca','freqcard'],['Freq. Respiratória','freqresp'],['SpO2','spo2']].map(([label, campo]) => (
+                {[['Temperatura', 'temperatura'], ['Freq. Cardíaca', 'freqcard'], ['Freq. Respiratória', 'freqresp'], ['SpO2', 'spo2']].map(([label, campo]) => (
                   <div key={campo} className="doctor-vital-row">
                     <span>{label}</span>
                     <input className="doctor-field" type="number" value={formTriagem[campo] ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, [campo]: e.target.value }))} />
@@ -1093,7 +1093,7 @@ export default function DoctorDashboard() {
                 <div className="doctor-vital-row">
                   <span>Tensão Arterial</span>
                   <div className="doctor-bp-grid">
-                    <input className="doctor-field" type="number" placeholder="Sistólica"  value={formTriagem.sistolica  ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, sistolica:  e.target.value }))} />
+                    <input className="doctor-field" type="number" placeholder="Sistólica" value={formTriagem.sistolica ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, sistolica: e.target.value }))} />
                     <input className="doctor-field" type="number" placeholder="Diastólica" value={formTriagem.diastolica ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, diastolica: e.target.value }))} />
                   </div>
                 </div>
@@ -1116,8 +1116,8 @@ export default function DoctorDashboard() {
   const renderTabDecisao = () => {
     const getCodEp = () =>
       episodioSelecionado?.cod_ep_urgenc ??
-      episodioSelecionado?.codepurgenc   ??
-      episodioSelecionado?.cod_epurgenc  ??
+      episodioSelecionado?.codepurgenc ??
+      episodioSelecionado?.cod_epurgenc ??
       null;
 
     const submeterAlta = async () => {
@@ -1263,13 +1263,13 @@ export default function DoctorDashboard() {
 
   const renderAtendimento = () => {
     const tabs = [
-      ['vitais',    'Dados Vitais'],
-      ['prescricao','Prescrever'],
-      ['decisao',   'Alta / Internamento'],
+      ['vitais', 'Dados Vitais'],
+      ['prescricao', 'Prescrever'],
+      ['decisao', 'Alta / Internamento'],
     ];
 
-    const codEpisodio  = episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codepurgenc || '—';
-    const dataEntrada  = dadosTriagem?.data_hora_inicio ? new Date(dadosTriagem.data_hora_inicio).toLocaleString('pt-PT') : '—';
+    const codEpisodio = episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codepurgenc || '—';
+    const dataEntrada = dadosTriagem?.data_hora_inicio ? new Date(dadosTriagem.data_hora_inicio).toLocaleString('pt-PT') : '—';
 
     return (
       <div className="doctor-attendance-page">
@@ -1367,147 +1367,147 @@ export default function DoctorDashboard() {
     const medicacaoAtivaEnriquecida = enriquecerMedicacaoAtiva(medicacaoAtiva, medicamentos);
 
     return (
-    <div className="doctor-panel-card doctor-panel-card--wide">
-      <div className="doctor-patient-banner">
-        <div>
-          <button className="doctor-back-link" onClick={() => setInternamentoSelecionado(null)}>← Voltar aos internamentos</button>
-          <h3 className="doctor-patient-banner__name">{internamentoSelecionado?.nome_utente || '—'}</h3>
-          <p className="doctor-patient-banner__meta">Internamento #{internamentoSelecionado?.cod_internamento}</p>
-        </div>
-      </div>
-
-      <div className="doctor-internamento-grid">
-        <div className="doctor-subcard">
-          <SectionHeader title="Dados do internamento" />
-          <div className="doctor-detail-list">
-            <div><span>Episódio</span><strong>#{internamentoSelecionado?.cod_ep_urgenc || '—'}</strong></div>
-            <div><span>Serviço</span><strong>{internamentoSelecionado?.servico || '—'}</strong></div>
-            <div><span>Cama</span><strong>{internamentoSelecionado?.numero_cama || '—'}</strong></div>
-            <div><span>Motivo</span><strong>{internamentoSelecionado?.motivo_int || '—'}</strong></div>
-            <div><span>Entrada</span><strong>{internamentoSelecionado?.data_hora_int ? new Date(internamentoSelecionado.data_hora_int).toLocaleString('pt-PT') : '—'}</strong></div>
+      <div className="doctor-panel-card doctor-panel-card--wide">
+        <div className="doctor-patient-banner">
+          <div>
+            <button className="doctor-back-link" onClick={() => setInternamentoSelecionado(null)}>← Voltar aos internamentos</button>
+            <h3 className="doctor-patient-banner__name">{internamentoSelecionado?.nome_utente || '—'}</h3>
+            <p className="doctor-patient-banner__meta">Internamento #{internamentoSelecionado?.cod_internamento}</p>
           </div>
         </div>
 
-        <div className="doctor-subcard">
-          <SectionHeader title="Prescrever medicação" subtitle="Medicação ativa e nova prescrição" />
+        <div className="doctor-internamento-grid">
+          <div className="doctor-subcard">
+            <SectionHeader title="Dados do internamento" />
+            <div className="doctor-detail-list">
+              <div><span>Episódio</span><strong>#{internamentoSelecionado?.cod_ep_urgenc || '—'}</strong></div>
+              <div><span>Serviço</span><strong>{internamentoSelecionado?.servico || '—'}</strong></div>
+              <div><span>Cama</span><strong>{internamentoSelecionado?.numero_cama || '—'}</strong></div>
+              <div><span>Motivo</span><strong>{internamentoSelecionado?.motivo_int || '—'}</strong></div>
+              <div><span>Entrada</span><strong>{internamentoSelecionado?.data_hora_int ? new Date(internamentoSelecionado.data_hora_int).toLocaleString('pt-PT') : '—'}</strong></div>
+            </div>
+          </div>
 
-          {/* Medicação ativa */}
-          {medicacaoAtivaEnriquecida.length === 0 ? (
-            <div className="doctor-empty-box" style={{ marginBottom: '1rem' }}>Sem medicação ativa registada.</div>
-          ) : (
-            <div className="doctor-alert-list" style={{ marginBottom: '1rem' }}>
-              {medicacaoAtivaEnriquecida.map((m, i) => (
-                <div key={`med-int-ativa-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0.6rem 1rem', border: '1px solid #d1d5db', borderRadius: '8px', width: '100%', boxSizing: 'border-box', marginBottom: '0.5rem', background: '#fff' }}>
-                  <span style={{ flex: '1 1 0', fontWeight: 600, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nomeApresentacao || `Medicamento ${i + 1}`}</span>
-                  <span style={{ flex: '1 1 0', color: '#6b7280', fontSize: '0.9rem', textAlign: 'center' }}>
-                    {m?.dosagem || '—'}
-                  </span>
-                  <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center' }}>
-                    <button
-                      type="button"
-                      style={{ fontSize: '0.8rem', padding: '4px 12px', background: 'none', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', color: '#dc2626', whiteSpace: 'nowrap' }}
-                      onClick={() => eliminarMedicacao(m)}
-                    >
-                      Eliminar
-                    </button>
+          <div className="doctor-subcard">
+            <SectionHeader title="Prescrever medicação" subtitle="Medicação ativa e nova prescrição" />
+
+            {/* Medicação ativa */}
+            {medicacaoAtivaEnriquecida.length === 0 ? (
+              <div className="doctor-empty-box" style={{ marginBottom: '1rem' }}>Sem medicação ativa registada.</div>
+            ) : (
+              <div className="doctor-alert-list" style={{ marginBottom: '1rem' }}>
+                {medicacaoAtivaEnriquecida.map((m, i) => (
+                  <div key={`med-int-ativa-${i}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0.6rem 1rem', border: '1px solid #d1d5db', borderRadius: '8px', width: '100%', boxSizing: 'border-box', marginBottom: '0.5rem', background: '#fff' }}>
+                    <span style={{ flex: '1 1 0', fontWeight: 600, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nomeApresentacao || `Medicamento ${i + 1}`}</span>
+                    <span style={{ flex: '1 1 0', color: '#6b7280', fontSize: '0.9rem', textAlign: 'center' }}>
+                      {m?.dosagem || '—'}
+                    </span>
+                    <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'center' }}>
+                      <button
+                        type="button"
+                        style={{ fontSize: '0.8rem', padding: '4px 12px', background: 'none', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', color: '#dc2626', whiteSpace: 'nowrap' }}
+                        onClick={() => eliminarMedicacao(m)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          {/* Formulário de prescrição */}
-          <div className="doctor-form-grid">
-            <div className="doctor-form-grid__full">
-              <label>Medicamento</label>
-              <select className="doctor-field" name="codmedicamento" value={prescricao.codmedicamento} onChange={handlePrescricaoChange}>
-                <option value="">Selecione...</option>
-                {Array.isArray(medicamentos) && medicamentos.map((m, index) => {
-                  const medId   = getMedicamentoId(m, index);
-                  const medNome = getMedicamentoNome(m, index);
-                  const principio = m?.principioativo || m?.principio_ativo || '';
-                  return (
-                    <option key={`med-int-${medId}-${index}`} value={medId}>
-                      {principio && principio !== medNome ? `${medNome} — ${principio}` : medNome}
-                    </option>
-                  );
-                })}
-              </select>
+            {/* Formulário de prescrição */}
+            <div className="doctor-form-grid">
+              <div className="doctor-form-grid__full">
+                <label>Medicamento</label>
+                <select className="doctor-field" name="codmedicamento" value={prescricao.codmedicamento} onChange={handlePrescricaoChange}>
+                  <option value="">Selecione...</option>
+                  {Array.isArray(medicamentos) && medicamentos.map((m, index) => {
+                    const medId = getMedicamentoId(m, index);
+                    const medNome = getMedicamentoNome(m, index);
+                    const principio = m?.principioativo || m?.principio_ativo || '';
+                    return (
+                      <option key={`med-int-${medId}-${index}`} value={medId}>
+                        {principio && principio !== medNome ? `${medNome} — ${principio}` : medNome}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="doctor-form-grid__full">
+                <label>Dosagem</label>
+                <input className="doctor-field" type="text" name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} />
+              </div>
+              <div className="doctor-form-grid__full">
+                <label>Observações</label>
+                <input className="doctor-field" type="text" name="observacoes" value={prescricao.observacoes} onChange={handlePrescricaoChange} />
+              </div>
             </div>
-            <div className="doctor-form-grid__full">
-              <label>Dosagem</label>
-              <input className="doctor-field" type="text" name="dosagem" value={prescricao.dosagem} onChange={handlePrescricaoChange} />
-            </div>
-            <div className="doctor-form-grid__full">
-              <label>Observações</label>
-              <input className="doctor-field" type="text" name="observacoes" value={prescricao.observacoes} onChange={handlePrescricaoChange} />
-            </div>
-          </div>
 
-          {/* Avaliação IA de alergias */}
-          {alergias.length > 0 ? (
-            <div className="doctor-risk-box" style={{ margin: '0.75rem 0' }}>
-              {riscoIA && (
-                <div
-                  className={`doctor-risk-result ${riscoIA?.risco === 1 || riscoIA?.riscoalto ? 'is-danger' : 'is-safe'}`}
-                  style={{ marginBottom: '0.75rem' }}
+            {/* Avaliação IA de alergias */}
+            {alergias.length > 0 ? (
+              <div className="doctor-risk-box" style={{ margin: '0.75rem 0' }}>
+                {riscoIA && (
+                  <div
+                    className={`doctor-risk-result ${riscoIA?.risco === 1 || riscoIA?.riscoalto ? 'is-danger' : 'is-safe'}`}
+                    style={{ marginBottom: '0.75rem' }}
+                  >
+                    <strong>
+                      {riscoIA?.risco === 1 || riscoIA?.riscoalto
+                        ? 'Utente com risco/alergia para a medicação selecionada'
+                        : 'Sem alergia conhecida para a medicação selecionada'}
+                    </strong>
+                    <span>{riscoIA?.mensagem || riscoIA?.explicacao || 'Avaliação concluída.'}</span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="doctor-action-btn doctor-action-btn--secondary"
+                  onClick={avaliarRiscoIAFn}
+                  disabled={avaliacaoRisco || !prescricao.codmedicamento}
                 >
-                  <strong>
-                    {riscoIA?.risco === 1 || riscoIA?.riscoalto
-                      ? 'Utente com risco/alergia para a medicação selecionada'
-                      : 'Sem alergia conhecida para a medicação selecionada'}
-                  </strong>
-                  <span>{riscoIA?.mensagem || riscoIA?.explicacao || 'Avaliação concluída.'}</span>
-                </div>
-              )}
+                  {avaliacaoRisco ? 'A avaliar...' : 'Ajuda IA: avaliar alergias e risco'}
+                </button>
+              </div>
+            ) : (
+              <div className="doctor-empty-box" style={{ margin: '0.75rem 0' }}>
+                O utente não tem alergias registadas para validação automática.
+              </div>
+            )}
+
+            <div className="doctor-actions-inline" style={{ marginTop: '0.5rem' }}>
               <button
-                type="button"
-                className="doctor-action-btn doctor-action-btn--secondary"
-                onClick={avaliarRiscoIAFn}
-                disabled={avaliacaoRisco || !prescricao.codmedicamento}
+                className="doctor-action-btn doctor-action-btn--primary"
+                onClick={submeterPrescricao}
+                disabled={!prescricao.codmedicamento || !prescricao.dosagem}
               >
-                {avaliacaoRisco ? 'A avaliar...' : 'Ajuda IA: avaliar alergias e risco'}
+                Prescrever
               </button>
             </div>
-          ) : (
-            <div className="doctor-empty-box" style={{ margin: '0.75rem 0' }}>
-              O utente não tem alergias registadas para validação automática.
+          </div>
+        </div>
+
+        {/* Alta de internamento — dentro do doctor-panel-card */}
+        <div className="doctor-subcard" style={{ marginTop: '1rem' }}>
+          <SectionHeader title="Registar alta de internamento" />
+          <div className="doctor-form-grid">
+            <div>
+              <label>Tipo de Alta</label>
+              {/* CORRIGIDO: Transferência removida — processo simplificado */}
+              <select className="doctor-field" value={altaInternamento.tipo_alta} onChange={(e) => setAltaInternamento((p) => ({ ...p, tipo_alta: e.target.value }))}>
+                <option value="clinica">Alta Clínica</option>
+                <option value="voluntaria">Alta Voluntária</option>
+                <option value="obito">Óbito</option>
+              </select>
             </div>
-          )}
-
-          <div className="doctor-actions-inline" style={{ marginTop: '0.5rem' }}>
-            <button
-              className="doctor-action-btn doctor-action-btn--primary"
-              onClick={submeterPrescricao}
-              disabled={!prescricao.codmedicamento || !prescricao.dosagem}
-            >
-              Prescrever
-            </button>
+            <div>
+              <label>Observações</label>
+              <input className="doctor-field" type="text" value={altaInternamento.observacoes} onChange={(e) => setAltaInternamento((p) => ({ ...p, observacoes: e.target.value }))} />
+            </div>
           </div>
+          <button className="doctor-action-btn doctor-action-btn--primary" onClick={submeterAltaInternamento}>Registar alta</button>
         </div>
       </div>
-
-      {/* Alta de internamento — dentro do doctor-panel-card */}
-      <div className="doctor-subcard" style={{ marginTop: '1rem' }}>
-        <SectionHeader title="Registar alta de internamento" />
-        <div className="doctor-form-grid">
-          <div>
-            <label>Tipo de Alta</label>
-            {/* CORRIGIDO: Transferência removida — processo simplificado */}
-            <select className="doctor-field" value={altaInternamento.tipo_alta} onChange={(e) => setAltaInternamento((p) => ({ ...p, tipo_alta: e.target.value }))}>
-              <option value="clinica">Alta Clínica</option>
-              <option value="voluntaria">Alta Voluntária</option>
-              <option value="obito">Óbito</option>
-            </select>
-          </div>
-          <div>
-            <label>Observações</label>
-            <input className="doctor-field" type="text" value={altaInternamento.observacoes} onChange={(e) => setAltaInternamento((p) => ({ ...p, observacoes: e.target.value }))} />
-          </div>
-        </div>
-        <button className="doctor-action-btn doctor-action-btn--primary" onClick={submeterAltaInternamento}>Registar alta</button>
-      </div>
-    </div>
     );
   };
 
@@ -1552,21 +1552,19 @@ export default function DoctorDashboard() {
 
       <div className="doctor-layout-main">
         <div className="doctor-layout-container">
-          <div className="doctor-breadcrumbs">Início <span>›</span> {nomeHospital}</div>
-          <div className="doctor-hero-card">
-            <div>
-              <h1 className="doctor-hero-card__title">
-                {activeMenu === 'informacao_geral' ? 'Painel do Médico' : activeMenu === 'fila_triagens' ? 'Fila de Triagens' : 'Internamentos Ativos'}
-              </h1>
-              <p className="doctor-hero-card__subtitle">{textos?.doctor?.descricaoPainel || 'Prioridade, detalhe clínico completo, prescrição e decisão final.'}</p>
-            </div>
-            <button type="button" className="doctor-action-link" onClick={carregarTudo}>Atualizar</button>
+          <div className="admin-content-top">
+            <h1>Painel do Médico</h1>
+            <p>{nomeHospital}</p>
           </div>
 
           {activeMenu === 'informacao_geral' && renderInformacaoGeral()}
-          {activeMenu === 'fila_triagens'    && (subMenuFila === 'atendimento' && episodioSelecionado ? renderAtendimento() : renderFilaTriagens())}
-          {activeMenu === 'internamentos'    && renderInternamentos()}
+          {activeMenu === 'fila_triagens' &&
+            (subMenuFila === 'atendimento' && episodioSelecionado
+              ? renderAtendimento()
+              : renderFilaTriagens())}
+          {activeMenu === 'internamentos' && renderInternamentos()}
         </div>
+
         <FooterLayout />
       </div>
     </div>
