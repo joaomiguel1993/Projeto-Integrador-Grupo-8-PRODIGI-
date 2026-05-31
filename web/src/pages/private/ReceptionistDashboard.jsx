@@ -105,6 +105,8 @@ export default function ReceptionistDashboard() {
     hospitalAtivo?.designacao_hospital ||
     'Dashboard Rececionista';
 
+  const hoje = new Date().toISOString().split("T")[0];
+
   const utilizadorLogado = useMemo(() => {
     const possibleKeys = [
       STORAGE_KEYS?.USER,
@@ -275,14 +277,19 @@ export default function ReceptionistDashboard() {
       ? `${API_URL}/api/v1/utentes/${numUtente}`
       : `${API_URL}/api/v1/utentes/`;
 
+    if (novoUtente.datanasc && novoUtente.datanasc > hoje) {
+      setErro("A data de nascimento não pode ser superior à data de hoje.");
+      return;
+    }
+
     const payloadUtente = {
-      nome: novoUtente.nome,
-      nif: novoUtente.nif,
-      data_nasc: novoUtente.data_nasc,
+      nome: novoUtente.nome?.trim(),
+      nif: novoUtente.nif?.trim(),
+      data_nasc: novoUtente.datanasc || null,
       sexo: novoUtente.sexo,
-      localidade: novoUtente.localidade,
-      telefone: novoUtente.telefone,
-      email: novoUtente.email,
+      localidade: novoUtente.localidade?.trim() || null,
+      telefone: novoUtente.telefone?.trim() || null,
+      email: novoUtente.email?.trim() ? novoUtente.email.trim() : null,
     };
 
     console.log('Payload enviado:', payloadUtente);
@@ -299,9 +306,41 @@ export default function ReceptionistDashboard() {
       console.log('Resposta backend:', data);
 
       if (!res.ok) {
-        throw new Error(
-          JSON.stringify(data?.detail || data || 'Erro ao guardar utente.')
-        );
+        let mensagemErro = "Erro ao guardar utente.";
+
+        if (data?.detail) {
+          if (typeof data.detail === "string") {
+            mensagemErro = data.detail;
+          } else if (Array.isArray(data.detail)) {
+            mensagemErro = data.detail
+              .map((e) => {
+                const campo = Array.isArray(e?.loc) ? e.loc[e.loc.length - 1] : "campo";
+
+                if (campo === "nif") {
+                  return "O NIF deve ter no máximo 9 caracteres.";
+                }
+
+                if (campo === "data_nasc" || campo === "datanasc") {
+                  return "A data de nascimento é obrigatória e tem de ser válida.";
+                }
+
+                if (campo === "email") {
+                  return "O email introduzido não é válido.";
+                }
+
+                if (e?.msg) {
+                  return `${campo}: ${e.msg}`;
+                }
+
+                return "Existe um campo inválido no formulário.";
+              })
+              .join(" ");
+          } else if (typeof data.detail === "object") {
+            mensagemErro = JSON.stringify(data.detail);
+          }
+        }
+
+        throw new Error(mensagemErro);
       }
 
       setMensagem(
@@ -371,7 +410,7 @@ export default function ReceptionistDashboard() {
         throw new Error(mensagemErro);
       }
       setMensagem(textos?.receptionist?.sucessoEpisodio || 'Episódio aberto com sucesso.');
-      setEpisodioAberto(data?.cod_ep_urgenc || data?.codepurgenc || data?.id); 
+      setEpisodioAberto(data?.cod_ep_urgenc || data?.codepurgenc || data?.id);
       setUtenteSelecionado(null);
       setFiltroEntrada('');
       await carregarTudo();
@@ -429,7 +468,13 @@ export default function ReceptionistDashboard() {
               </div>
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.dataNascimento || 'Data de nascimento'}</label>
-                <input type="date" name="data_nasc" value={novoUtente.data_nasc || ''} onChange={(e) => handleInputChange(e, setNovoUtente)} />
+                <input
+                  type="date"
+                  name="datanasc"
+                  value={novoUtente.datanasc}
+                  max={hoje}
+                  onChange={(e) => handleInputChange(e, setNovoUtente)}
+                />
               </div>
               <div className="admin-form__group">
                 <label>{textos?.receptionist?.sexo || 'Sexo'}</label>
@@ -985,7 +1030,7 @@ export default function ReceptionistDashboard() {
           </div>
           <button type="button" className="admin-logout-button" onClick={fazerLogout}>
             <IconExit />
-            <span className="link-text">{textos?.geral?.sair || 'Sair'}</span>
+            <span className="link-text">{textos?.geral?.sair || 'Terminar Sessão'}</span>
           </button>
         </div>
       </aside>
