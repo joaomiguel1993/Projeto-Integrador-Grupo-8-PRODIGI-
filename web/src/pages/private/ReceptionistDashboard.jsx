@@ -96,6 +96,7 @@ export default function ReceptionistDashboard() {
   const [mensagem, setMensagem] = useState('');
   const [utenteSelecionado, setUtenteSelecionado] = useState(null);
   const [novoUtente, setNovoUtente] = useState(emptyUtente);
+  const [episodioAberto, setEpisodioAberto] = useState(null);
 
   const nomeHospital =
     hospitalAtivo?.nome ||
@@ -370,6 +371,7 @@ export default function ReceptionistDashboard() {
         throw new Error(mensagemErro);
       }
       setMensagem(textos?.receptionist?.sucessoEpisodio || 'Episódio aberto com sucesso.');
+      setEpisodioAberto(data?.cod_ep_urgenc || data?.codepurgenc || data?.id); 
       setUtenteSelecionado(null);
       setFiltroEntrada('');
       await carregarTudo();
@@ -1006,6 +1008,37 @@ export default function ReceptionistDashboard() {
 
         <FooterLayout />
       </section>
+
+      {episodioAberto && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: '12px', padding: '2rem',
+            textAlign: 'center', maxWidth: '320px', width: '90%'
+          }}>
+            <h3 style={{ marginBottom: '0.5rem' }}>Episódio #{episodioAberto}</h3>
+            <p style={{ color: '#6b7280', marginBottom: '1rem', fontSize: '0.9rem' }}>
+              Imprima a pulseira e entregue ao utente.
+            </p>
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${episodioAberto}`}
+              alt={`QR Code episódio #${episodioAberto}`}
+              width={200}
+              height={200}
+            />
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', justifyContent: 'center' }}>
+              <button className="admin-form__submit" onClick={() => window.print()}>
+                Imprimir pulseira
+              </button>
+              <button className="admin-secondary-button" onClick={() => setEpisodioAberto(null)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
