@@ -97,13 +97,13 @@ export default function ReceptionistDashboard() {
   const [utenteSelecionado, setUtenteSelecionado] = useState(null);
   const [novoUtente, setNovoUtente] = useState(emptyUtente);
 
-   const nomeHospital =
+  const nomeHospital =
     hospitalAtivo?.nome ||
     hospitalAtivo?.Nome ||
     hospitalAtivo?.designacao ||
     hospitalAtivo?.designacao_hospital ||
     'Dashboard Rececionista';
-  
+
   const utilizadorLogado = useMemo(() => {
     const possibleKeys = [
       STORAGE_KEYS?.USER,
@@ -179,7 +179,7 @@ export default function ReceptionistDashboard() {
       ]);
       const uData = await uRes.json().catch(() => []);
       const eData = await eRes.json().catch(() => []);
-      
+
       if (!uRes.ok || !eRes.ok) {
         throw new Error(textos?.receptionist?.erroCarga || 'Erro ao carregar dados.');
       }
@@ -991,17 +991,19 @@ export default function ReceptionistDashboard() {
 
 
       <section className="admin-content-wrapper">
-        <div className="admin-panel-section">
-          <div className="admin-panel-section">
+        <div className="admin-content-inner">
+          <div className="admin-content-top">
             <h1>Painel do rececionista</h1>
-            <h3>{nomeHospital}</h3>
+            <p>{nomeHospital}</p>
           </div>
+
           <div className="admin-content-body">
             {erro && <p className="admin-form__error" role="alert">{erro}</p>}
             {mensagem && <p className="admin-form__success" role="status">{mensagem}</p>}
             {renderCenter()}
           </div>
         </div>
+
         <FooterLayout />
       </section>
     </main>
