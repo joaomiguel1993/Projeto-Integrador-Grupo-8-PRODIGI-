@@ -346,10 +346,18 @@ export default function NurseDashboard() {
         consciencia: triagem.consciencia !== '' ? triagem.consciencia : null,
       };
 
-      const res = await authFetch(`${API_URL}/api/v1/triagens/`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+      const triagemExistente = await authFetch(`${API_URL}/api/v1/triagens/${codEp}`);
+      const jaExiste = triagemExistente.ok;
+
+      const res = await authFetch(
+        jaExiste
+          ? `${API_URL}/api/v1/triagens/${codEp}`
+          : `${API_URL}/api/v1/triagens/`,
+        {
+          method: jaExiste ? 'PUT' : 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.detail || 'Erro ao gravar triagem.');
