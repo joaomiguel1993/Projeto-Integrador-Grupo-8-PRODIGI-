@@ -48,12 +48,13 @@ async function consultarIACompleta(hospital) {
     if (!data || !data.tempos_espera) return null;
     
     const t = data.tempos_espera;
+    const clamp = (v) => (v != null ? Math.max(0, v) : null);
     return {
-      Critical: t.vermelho?.minutos,
-      High: t.laranja?.minutos,
-      Medium: t.amarelo?.minutos,
-      Low: t.verde?.minutos,
-      'Not Urgent': t.azul?.minutos,
+      Critical:    clamp(t.vermelho?.minutos),
+      High:        clamp(t.laranja?.minutos),
+      Medium:      clamp(t.amarelo?.minutos),
+      Low:         clamp(t.verde?.minutos),
+      'Not Urgent': clamp(t.azul?.minutos),
     };
   } catch (err) {
     console.error('Erro na predição IA:', err);

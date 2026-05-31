@@ -355,13 +355,13 @@ export default function DoctorDashboard() {
       if (r.ok) {
         const data = await r.json();
         const tempos = data?.tempos_espera || data || {};
-        setTemposMediosHospital({
-          vermelho: tempos?.vermelho?.minutos != null ? `${tempos.vermelho.minutos} min` : '—',
-          laranja: tempos?.laranja?.minutos != null ? `${tempos.laranja.minutos} min` : '—',
-          amarelo: tempos?.amarelo?.minutos != null ? `${tempos.amarelo.minutos} min` : '—',
-          verde: tempos?.verde?.minutos != null ? `${tempos.verde.minutos} min` : '—',
-          azul: tempos?.azul?.minutos != null ? `${tempos.azul.minutos} min` : '—',
-        });
+          setTemposMediosHospital({
+            vermelho: tempos?.vermelho?.minutos != null ? `${Math.max(0, tempos.vermelho.minutos)} min` : '—',
+            laranja:  tempos?.laranja?.minutos  != null ? `${Math.max(0, tempos.laranja.minutos)} min`  : '—',
+            amarelo:  tempos?.amarelo?.minutos  != null ? `${Math.max(0, tempos.amarelo.minutos)} min`  : '—',
+            verde:    tempos?.verde?.minutos    != null ? `${Math.max(0, tempos.verde.minutos)} min`    : '—',
+            azul:     tempos?.azul?.minutos     != null ? `${Math.max(0, tempos.azul.minutos)} min`     : '—',
+          });
       }
     } catch (e) { console.error(e); }
   };
