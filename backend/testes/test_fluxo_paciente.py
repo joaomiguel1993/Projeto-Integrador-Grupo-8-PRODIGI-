@@ -13,28 +13,36 @@ async def obter_token(ac):
     })
     return r.json().get("access_token")
 
+
+@pytest.fixture(scope="module")
+def estado():
+    return {}
+
+
 @pytest.mark.asyncio
-async def test_ciclo_vida_paciente():
+async def test_ct02_1_admissao(estado):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url=BASE) as ac:
-
         token = await obter_token(ac)
-        headers = {"Authorization": f"Bearer {token}"}
+        estado["headers"] = {"Authorization": f"Bearer {token}"}
 
-        # 1. ADMISSÃO — cria episódio
         r = await ac.post("/api/v1/episodios/", json={
             "num_utent": 1,
             "id_hosp": 1,
-        }, headers=headers)
+        }, headers=estado["headers"])
         assert r.status_code == 201, r.text
-        ep = r.json()
-        ep_id = ep["cod_ep_urgenc"]
+        estado["ep_id"] = r.json()["cod_ep_urgenc"]
 
-        r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
+        r = await ac.get(f"/api/v1/episodios/{estado['ep_id']}", headers=estado["headers"])
         assert r.json()["estado"] == "aberto"
 
-        # 2. TRIAGEM
-        from datetime import datetime, timezone
+
+@pytest.mark.asyncio
+async def test_ct02_2_triagem(estado):
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url=BASE) as ac:
+        ep_id = estado["ep_id"]
+        headers = estado["headers"]
 
         r = await ac.post("/api/v1/triagens/", json={
             "cod_ep_urgenc": ep_id,
@@ -44,15 +52,20 @@ async def test_ciclo_vida_paciente():
         }, headers=headers)
         assert r.status_code == 201, r.text
 
-        r = await ac.put(f"/api/v1/episodios/{ep_id}", json={
-            "estado": "em_atendimento"
-        }, headers=headers)
+        r = await ac.put(f"/api/v1/episodios/{ep_id}", json={"estado": "em_atendimento"}, headers=headers)
         assert r.status_code == 200
 
         r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
         assert r.json()["estado"] == "em_atendimento"
 
-        # 3. ATO CLÍNICO
+
+@pytest.mark.asyncio
+async def test_ct02_3_ato_clinico(estado):
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url=BASE) as ac:
+        ep_id = estado["ep_id"]
+        headers = estado["headers"]
+
         r = await ac.post("/api/v1/atos/", json={
             "cod_ep_urgenc": ep_id,
             "tipo": "consulta",
@@ -64,14 +77,19 @@ async def test_ciclo_vida_paciente():
         r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
         assert r.json()["estado"] == "em_atendimento"
 
-        # 4. ALTA
+
+@pytest.mark.asyncio
+async def test_ct02_4_alta(estado):
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url=BASE) as ac:
+        ep_id = estado["ep_id"]
+        headers = estado["headers"]
+
         r = await ac.put(f"/api/v1/episodios/{ep_id}", json={
             "estado": "terminado",
-            "data_hora_saida": "2026-05-31T20:00:00"
+            "data_hora_saida": datetime.now(timezone.utc).isoformat(),
         }, headers=headers)
         assert r.status_code == 200
 
         r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
         assert r.json()["estado"] == "terminado"
-
-        print(f"✅ Ciclo de vida do episódio #{ep_id} validado com sucesso!")
