@@ -1,4 +1,3 @@
-// src/pages/private/Perfil.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -6,26 +5,35 @@ import { apiFetch } from '../../services/api';
 import { STORAGE_KEYS } from '../../constants/roles';
 import '../../styles/main.css';
 
+/**
+ * Componente de Gestão de Perfil (Perfil).
+ * Permite que o utilizador autenticado visualize e edite os seus dados profissionais,
+ * biografia, contactos e credenciais de acesso ao sistema SIAGUH.
+ * @component
+ */
 export default function Perfil() {
   const { textos } = useLanguage();
   const navigate = useNavigate();
 
   const [dadosIniciais, setDadosAtuais] = useState(null);
-  const [idfunc,    setIdfunc]    = useState('');
-  const [nome,      setNome]      = useState('');
-  const [tipofunc,  setTipofunc]  = useState('');
-  const [username,  setUsername]  = useState('');
-  const [password,  setPassword]  = useState('');
-  const [email,     setEmail]     = useState('');
-  const [telefone,  setTelefone]  = useState('');
+  const [idfunc, setIdfunc] = useState('');
+  const [nome, setNome] = useState('');
+  const [tipofunc, setTipofunc] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [biografia, setBiografia] = useState('');
-  const [fotoUrl,   setFotoUrl]   = useState('');
-  const [mensagem,  setMensagem]  = useState('');
-  const [erro,      setErro]      = useState('');
-  const [loading,   setLoading]   = useState(true);
-  const [submitting,setSubmitting]= useState(false);
-  const [imgErro,   setImgErro]   = useState(false);
+  const [fotoUrl, setFotoUrl] = useState('');
+  const [mensagem, setMensagem] = useState('');
+  const [erro, setErro] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [imgErro, setImgErro] = useState(false);
 
+  /**
+   * Obtém o ID do utilizador logado a partir do armazenamento da sessão.
+   */
   const getUserId = () => {
     const rawUser = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
     if (!rawUser) return null;
@@ -35,9 +43,15 @@ export default function Perfil() {
     } catch { return null; }
   };
 
+  /**
+   * Gera um avatar de fallback baseado no nome do utilizador.
+   */
   const getFallbackAvatar = (nomeValor) =>
     `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeValor || 'Utilizador')}&background=e2e8f0&color=7f8c8d`;
 
+  /**
+   * Resolve a URL da imagem de perfil garantindo que o caminho é absoluto para a API.
+   */
   const getFotoSrc = (src) => {
     if (!src) return getFallbackAvatar(nome);
     if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('blob:')) return src;
@@ -46,6 +60,9 @@ export default function Perfil() {
     return `${apiBase.replace(/\/+$/, '')}/${src.replace(/^\/+/, '')}`;
   };
 
+  /**
+   * Carrega os dados agregados (utilizador + perfil profissional) da API.
+   */
   const carregarTudo = async () => {
     const myId = getUserId();
     if (!myId) { setErro(textos.perfil.erroSessao); setLoading(false); return; }
@@ -76,6 +93,9 @@ export default function Perfil() {
   const handleVoltar = () =>
     window.history.length > 1 ? navigate(-1) : navigate('/admin');
 
+  /**
+   * Persiste as alterações do perfil na API.
+   */
   const handleGuardar = async (e) => {
     e.preventDefault();
     setMensagem(''); setErro('');
@@ -95,13 +115,13 @@ export default function Perfil() {
       await apiFetch(`/api/v1/profissionais/${idfunc}`, {
         method: 'PUT',
         body: JSON.stringify({
-          nome:      dadosIniciais.nome || nome,
-          tipofunc:  dadosIniciais.tipofunc || tipofunc,
-          sexo:      dadosIniciais.sexo,
-          email:     email     || null,
-          telefone:  telefone  || null,
+          nome: dadosIniciais.nome || nome,
+          tipofunc: dadosIniciais.tipofunc || tipofunc,
+          sexo: dadosIniciais.sexo,
+          email: email || null,
+          telefone: telefone || null,
           biografia: biografia || null,
-          foto_url:  fotoUrl   || null,
+          foto_url: fotoUrl || null,
         }),
       });
       setMensagem(textos.perfil.sucessoGuardar);
@@ -113,7 +133,7 @@ export default function Perfil() {
           userObj.username = dadosIniciais.username || username;
           userObj.foto_url = fotoUrl;
           sessionStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userObj));
-        } catch { /* ignorar */ }
+        } catch { /* ignorar erro de parse */ }
       }
       await carregarTudo();
     } catch (err) {
@@ -136,8 +156,6 @@ export default function Perfil() {
 
   return (
     <div className="perfil-shell">
-
-      {/* Cabeçalho */}
       <div className="perfil-header">
         <button type="button" className="btn-back" onClick={handleVoltar}>
           ← {textos.geral?.voltar || 'Voltar'}
@@ -147,16 +165,11 @@ export default function Perfil() {
         </div>
       </div>
 
-      {/* Alertas */}
       {mensagem && <div className="perfil-alert perfil-alert--success">{mensagem}</div>}
-      {erro     && <div className="perfil-alert perfil-alert--error"  >{erro}</div>}
+      {erro && <div className="perfil-alert perfil-alert--error">{erro}</div>}
 
-      {/* Grid de conteúdo */}
       <div className="perfil-grid">
-
-        {/* ── COLUNA ESQUERDA: avatar + contactos ── */}
         <aside className="perfil-card perfil-card--side">
-
           <div className="perfil-avatar-block">
             <div className="perfil-avatar-wrap">
               <img
@@ -167,14 +180,12 @@ export default function Perfil() {
               />
             </div>
             <h2 className="perfil-avatar-block__name">{nome}</h2>
-            <p  className="perfil-avatar-block__role">{tipofunc}</p>
+            <p className="perfil-avatar-block__role">{tipofunc}</p>
             <span className="perfil-badge">
               {textos.perfil.numFuncionario} {idfunc}
             </span>
           </div>
-
           <hr className="perfil-divider" />
-
           <div className="perfil-fields">
             <div className="perfil-field">
               <label className="perfil-field__label">{textos.perfil.linkFotografia}</label>
@@ -207,10 +218,8 @@ export default function Perfil() {
           </div>
         </aside>
 
-        {/* ── COLUNA DIREITA: formulário ── */}
         <section className="perfil-card perfil-card--main">
           <form className="perfil-form" onSubmit={handleGuardar}>
-
             <h3 className="perfil-form__section-title">{textos.perfil.sobreMim}</h3>
             <textarea
               className="perfil-form__textarea"
@@ -251,10 +260,8 @@ export default function Perfil() {
                 {submitting ? textos.perfil.botaoGuardarLoading : textos.perfil.botaoGuardar}
               </button>
             </div>
-
           </form>
         </section>
-
       </div>
     </div>
   );
