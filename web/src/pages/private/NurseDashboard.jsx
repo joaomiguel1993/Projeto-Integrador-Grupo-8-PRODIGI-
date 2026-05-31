@@ -199,7 +199,7 @@ export default function NurseDashboard() {
     },
     triados: (ep) => {
       const estado = normalizar(ep?.estado);
-      return estado === 'em_atendimento' || estado === 'internado' || estado.includes('triad') || estado.includes('conclu');
+      return estado === 'em_atendimento' || estado.includes('triad') || estado.includes('conclu');
     },
     desistencias: (ep) => {
       const estado = normalizar(ep?.estado);
