@@ -295,7 +295,7 @@ export default function DoctorDashboard() {
 
   /** @type {function(): string|null} token - Retorna o JWT ativo armazenado em cache */
   const token = () => sessionStorage.getItem('token');
-  
+
   /** @type {function(): Object} headers - Constrói os cabeçalhos HTTP padrões com a Bearer auth */
   const headers = () => ({
     'Content-Type': 'application/json',
@@ -355,13 +355,13 @@ export default function DoctorDashboard() {
       if (r.ok) {
         const data = await r.json();
         const tempos = data?.tempos_espera || data || {};
-          setTemposMediosHospital({
-            vermelho: tempos?.vermelho?.minutos != null ? `${Math.max(0, tempos.vermelho.minutos)} min` : '—',
-            laranja:  tempos?.laranja?.minutos  != null ? `${Math.max(0, tempos.laranja.minutos)} min`  : '—',
-            amarelo:  tempos?.amarelo?.minutos  != null ? `${Math.max(0, tempos.amarelo.minutos)} min`  : '—',
-            verde:    tempos?.verde?.minutos    != null ? `${Math.max(0, tempos.verde.minutos)} min`    : '—',
-            azul:     tempos?.azul?.minutos     != null ? `${Math.max(0, tempos.azul.minutos)} min`     : '—',
-          });
+        setTemposMediosHospital({
+          vermelho: tempos?.vermelho?.minutos != null ? `${Math.max(0, tempos.vermelho.minutos)} min` : '—',
+          laranja: tempos?.laranja?.minutos != null ? `${Math.max(0, tempos.laranja.minutos)} min` : '—',
+          amarelo: tempos?.amarelo?.minutos != null ? `${Math.max(0, tempos.amarelo.minutos)} min` : '—',
+          verde: tempos?.verde?.minutos != null ? `${Math.max(0, tempos.verde.minutos)} min` : '—',
+          azul: tempos?.azul?.minutos != null ? `${Math.max(0, tempos.azul.minutos)} min` : '—',
+        });
       }
     } catch (e) { console.error(e); }
   };
@@ -487,7 +487,7 @@ export default function DoctorDashboard() {
         setAtos([]);
         atosRef.current = [];
       }
-      
+
       if (rAlergias.ok) { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); } else { setAlergias([]); }
       if (rAntecedentes.ok) { setAntecedentes(await rAntecedentes.json()); } else { setAntecedentes(null); }
       setAlertas([]);
@@ -735,7 +735,7 @@ export default function DoctorDashboard() {
       if (!res.ok) throw new Error(`Erro no modelo IA (${res.status})`);
 
       const data = await res.json();
-      
+
       const msgSucesso = (textos?.doctor?.semRiscoIdentificadoMed || "Sem risco identificado — {nomeMed} (prob. {prob}%)")
         .replace("{nomeMed}", nomeMed).replace("{prob}", (data.probabilidade * 100).toFixed(1));
       const msgErro = (textos?.doctor?.riscoElevadoMed || "Risco elevado — {nomeMed} (prob. {prob}%)")
@@ -896,25 +896,36 @@ export default function DoctorDashboard() {
   const guardarEdicaoTriagem = async () => {
     try {
       const codEpisodio = getCodEpisodio(episodioSelecionado);
-      if (!codEpisodio) { mostrarToast(textos?.doctor?.erroCodEpNaoEncontrado || 'Código do episódio não encontrado.', 'erro'); return; }
+
+      if (!codEpisodio) {
+        mostrarToast(
+          textos?.doctor?.erroCodEpNaoEncontrado || "Código do episódio não encontrado.",
+          "erro"
+        );
+        return;
+      }
 
       const payload = {
-        temperatura: formTriagem.temperatura || null,
-        freq_card: formTriagem.freqcard || null,
-        freq_resp: formTriagem.freqresp || null,
-        sp_o2: formTriagem.spo2 || null,
-        sistolica: formTriagem.sistolica || null,
-        diastolica: formTriagem.diastolica || null,
+        temperatura: formTriagem.temperatura === "" ? null : Number(formTriagem.temperatura),
+        freq_card: formTriagem.freqcard === "" ? null : Number(formTriagem.freqcard),
+        freq_resp: formTriagem.freqresp === "" ? null : Number(formTriagem.freqresp),
+        sp_o2: formTriagem.spo2 === "" ? null : Number(formTriagem.spo2),
+        sistolica: formTriagem.sistolica === "" ? null : Number(formTriagem.sistolica),
+        diastolica: formTriagem.diastolica === "" ? null : Number(formTriagem.diastolica),
+        nivel_dor: formTriagem.niveldor === "" ? null : Number(formTriagem.niveldor),
+        consciencia: formTriagem.consciencia || null,
         sintomas: formTriagem.sintomas || null,
       };
 
       const response = await fetch(`${API_URL}/triagens/${codEpisodio}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: headers(),
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error(`Erro ao guardar triagem: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Erro ao guardar triagem: ${response.status}`);
+      }
 
       const responseText = await response.text();
       const triagemAtualizada = responseText ? JSON.parse(responseText) : {};
@@ -922,19 +933,74 @@ export default function DoctorDashboard() {
       setDadosTriagem((prev) => ({
         ...(prev || {}),
         ...triagemAtualizada,
-        temperatura: triagemAtualizada?.temperatura ?? formTriagem.temperatura ?? prev?.temperatura ?? '',
-        freqcard: triagemAtualizada?.freqcard ?? triagemAtualizada?.freq_card ?? formTriagem.freqcard ?? prev?.freqcard ?? '',
-        freqresp: triagemAtualizada?.freqresp ?? triagemAtualizada?.freq_resp ?? formTriagem.freqresp ?? prev?.freqresp ?? '',
-        spo2: triagemAtualizada?.spo2 ?? triagemAtualizada?.sp_o2 ?? formTriagem.spo2 ?? prev?.spo2 ?? '',
-        sistolica: triagemAtualizada?.sistolica ?? formTriagem.sistolica ?? prev?.sistolica ?? '',
-        diastolica: triagemAtualizada?.diastolica ?? formTriagem.diastolica ?? prev?.diastolica ?? '',
-        sintomas: triagemAtualizada?.sintomas ?? formTriagem.sintomas ?? prev?.sintomas ?? '',
+        temperatura:
+          triagemAtualizada?.temperatura ??
+          formTriagem.temperatura ??
+          prev?.temperatura ??
+          "",
+        freqcard:
+          triagemAtualizada?.freqcard ??
+          triagemAtualizada?.freq_card ??
+          formTriagem.freqcard ??
+          prev?.freqcard ??
+          "",
+        freqresp:
+          triagemAtualizada?.freqresp ??
+          triagemAtualizada?.freq_resp ??
+          formTriagem.freqresp ??
+          prev?.freqresp ??
+          "",
+        spo2:
+          triagemAtualizada?.spo2 ??
+          triagemAtualizada?.sp_o2 ??
+          triagemAtualizada?.["sp_o2"] ??
+          formTriagem.spo2 ??
+          prev?.spo2 ??
+          "",
+        sistolica:
+          triagemAtualizada?.sistolica ??
+          formTriagem.sistolica ??
+          prev?.sistolica ??
+          "",
+        diastolica:
+          triagemAtualizada?.diastolica ??
+          formTriagem.diastolica ??
+          prev?.diastolica ??
+          "",
+        niveldor:
+          triagemAtualizada?.niveldor ??
+          triagemAtualizada?.nivel_dor ??
+          formTriagem.niveldor ??
+          prev?.niveldor ??
+          "",
+        nivel_dor:
+          triagemAtualizada?.nivel_dor ??
+          triagemAtualizada?.niveldor ??
+          formTriagem.niveldor ??
+          prev?.nivel_dor ??
+          "",
+        consciencia:
+          triagemAtualizada?.consciencia ??
+          formTriagem.consciencia ??
+          prev?.consciencia ??
+          "",
+        sintomas:
+          triagemAtualizada?.sintomas ??
+          formTriagem.sintomas ??
+          prev?.sintomas ??
+          "",
       }));
 
       setModoEdicaoTriagem(false);
-      mostrarToast(textos?.doctor?.sucessoTriagemAtu || 'Triagem atualizada com sucesso.', 'sucesso');
+      mostrarToast(
+        textos?.doctor?.sucessoTriagemAtu || "Triagem atualizada com sucesso.",
+        "sucesso"
+      );
     } catch (error) {
-      mostrarToast(textos?.doctor?.erroTriagemAtu || 'Erro ao guardar edição da triagem.', 'erro');
+      mostrarToast(
+        textos?.doctor?.erroTriagemAtu || "Erro ao guardar edição da triagem.",
+        "erro"
+      );
     }
   };
 
@@ -1055,24 +1121,48 @@ export default function DoctorDashboard() {
 
         <section className="doctor-medical-card">
           <div className="doctor-medical-card__header">
-            <div><h3>{textos?.doctor?.triagem || "Triagem"}</h3><p>{textos?.doctor?.dadosClinicosIniciais || "Dados clínicos iniciais do episódio"}</p></div>
+            <div>
+              <h3>{textos?.doctor?.triagem || "Triagem"}</h3>
+              <p>{textos?.doctor?.dadosClinicosIniciais || "Dados clínicos iniciais do episódio"}</p>
+            </div>
+
             {!modoEdicaoTriagem ? (
-              <button type="button" className="doctor-outline-btn" onClick={() => {
-                setFormTriagem({
-                  temperatura: getField(dadosTriagem, 'temperatura') === '—' ? '' : getField(dadosTriagem, 'temperatura'),
-                  freqcard: getField(dadosTriagem, 'freq_card', 'freqcard') === '—' ? '' : getField(dadosTriagem, 'freq_card', 'freqcard'),
-                  freqresp: getField(dadosTriagem, 'freq_resp', 'freqresp') === '—' ? '' : getField(dadosTriagem, 'freq_resp', 'freqresp'),
-                  spo2: getField(dadosTriagem, 'sp_o2', 'spo2') === '—' ? '' : getField(dadosTriagem, 'sp_o2', 'spo2'),
-                  sistolica: getField(dadosTriagem, 'sistolica') === '—' ? '' : getField(dadosTriagem, 'sistolica'),
-                  diastolica: getField(dadosTriagem, 'diastolica') === '—' ? '' : getField(dadosTriagem, 'diastolica'),
-                  sintomas: getField(dadosTriagem, 'sintomas') === '—' ? '' : getField(dadosTriagem, 'sintomas'),
-                });
-                setModoEdicaoTriagem(true);
-              }}>{textos?.doctor?.editar || "Editar"}</button>
+              <button
+                type="button"
+                className="doctor-outline-btn"
+                onClick={() => {
+                  setFormTriagem({
+                    temperatura: getField(dadosTriagem, "temperatura") === "—" ? "" : getField(dadosTriagem, "temperatura"),
+                    freqcard: getField(dadosTriagem, "freq_card", "freqcard") === "—" ? "" : getField(dadosTriagem, "freq_card", "freqcard"),
+                    freqresp: getField(dadosTriagem, "freq_resp", "freqresp") === "—" ? "" : getField(dadosTriagem, "freq_resp", "freqresp"),
+                    spo2: getField(dadosTriagem, "sp_o2", "spo2") === "—" ? "" : getField(dadosTriagem, "sp_o2", "spo2"),
+                    sistolica: getField(dadosTriagem, "sistolica") === "—" ? "" : getField(dadosTriagem, "sistolica"),
+                    diastolica: getField(dadosTriagem, "diastolica") === "—" ? "" : getField(dadosTriagem, "diastolica"),
+                    niveldor: getField(dadosTriagem, "nivel_dor", "niveldor") === "—" ? "" : String(getField(dadosTriagem, "nivel_dor", "niveldor")),
+                    consciencia: getField(dadosTriagem, "consciencia") === "—" ? "" : getField(dadosTriagem, "consciencia"),
+                    sintomas: getField(dadosTriagem, "sintomas") === "—" ? "" : getField(dadosTriagem, "sintomas"),
+                  });
+                  setModoEdicaoTriagem(true);
+                }}
+              >
+                {textos?.doctor?.editar || "Editar"}
+              </button>
             ) : (
               <div className="doctor-actions-inline">
-                <button type="button" className="doctor-action-btn doctor-action-btn--secondary" onClick={() => setModoEdicaoTriagem(false)}>{textos?.doctor?.cancelar || "Cancelar"}</button>
-                <button type="button" className="doctor-action-btn doctor-action-btn--primary" onClick={guardarEdicaoTriagem}>{textos?.doctor?.guardar || "Guardar"}</button>
+                <button
+                  type="button"
+                  className="doctor-action-btn doctor-action-btn--secondary"
+                  onClick={() => setModoEdicaoTriagem(false)}
+                >
+                  {textos?.doctor?.cancelar || "Cancelar"}
+                </button>
+                <button
+                  type="button"
+                  className="doctor-action-btn doctor-action-btn--primary"
+                  onClick={guardarEdicaoTriagem}
+                >
+                  {textos?.doctor?.guardar || "Guardar"}
+                </button>
               </div>
             )}
           </div>
@@ -1080,48 +1170,171 @@ export default function DoctorDashboard() {
           <div className="doctor-triage-banner">
             <div className="doctor-triage-banner__priority">
               <span>{textos?.doctor?.prioridade || "Prioridade"}</span>
-              <div className={TRIAGE_CLASS[corTriagem] || 'triage-badge'}>{corTriagem}</div>
+              <div className={TRIAGE_CLASS[corTriagem] || "triage-badge"}>{corTriagem}</div>
             </div>
-            <div className="doctor-triage-banner__info"><span>{textos?.doctor?.tempoEspera || "Tempo Espera"}</span><th>{tempoEsperaAtual != null ? `${tempoEsperaAtual} min` : '—'}</th></div>
-            <div className="doctor-triage-banner__info"><span>{textos?.doctor?.inicio || "Início"}</span><th>{inicioTriagem !== '—' ? new Date(inicioTriagem).toLocaleString('pt-PT') : '—'}</th></div>
-            <div className="doctor-triage-banner__info"><span>{textos?.doctor?.enfermeiro || "Enfermeiro"}</span><th>{getField(dadosTriagem, 'nome_enfermeiro', 'nomeenfermeiro')}</th></div>
+
+            <div className="doctor-triage-banner__info">
+              <span>{textos?.doctor?.tempoEspera || "Tempo Espera"}</span>
+              <strong>{tempoEsperaAtual != null ? `${tempoEsperaAtual} min` : "—"}</strong>
+            </div>
+
+            <div className="doctor-triage-banner__info">
+              <span>{textos?.doctor?.inicio || "Início"}</span>
+              <strong>{inicioTriagem !== "—" ? new Date(inicioTriagem).toLocaleString("pt-PT") : "—"}</strong>
+            </div>
+
+            <div className="doctor-triage-banner__info">
+              <span>{textos?.doctor?.enfermeiro || "Enfermeiro"}</span>
+              <strong>{getField(dadosTriagem, "nome_enfermeiro", "nomeenfermeiro")}</strong>
+            </div>
           </div>
 
           {!modoEdicaoTriagem ? (
             <>
               <div className="doctor-vitals-table">
-                <div className="doctor-vital-row"><span>{textos?.doctor?.temperatura || "Temperatura"}</span>        <th>{getField(dadosTriagem, 'temperatura')} °C</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.freqCardiaca || "Freq. Cardíaca"}</span>     <th>{getField(dadosTriagem, 'freq_card', 'freqcard')} bpm</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.freqRespiratoria || "Freq. Respiratória"}</span> <th>{getField(dadosTriagem, 'freq_resp', 'freqresp')} rpm</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.spo2 || "SpO2"}</span>               <th>{getField(dadosTriagem, 'sp_o2', 'spo2')} %</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.tensaoArterial || "Tensão Arterial"}</span>    <th>{getField(dadosTriagem, 'sistolica')}/{getField(dadosTriagem, 'diastolica')} mmHg</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.nivelDor || "Nível Dor"}</span>          <th>{getField(dadosTriagem, 'nivel_dor', 'niveldor')} /10</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.consciencia || "Consciência"}</span>        <th>{getField(dadosTriagem, 'consciencia')}</th></div>
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.temperatura || "Temperatura"}</span>
+                  <strong>{getField(dadosTriagem, "temperatura")} °C</strong>
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.freqCardiaca || "Freq. Cardíaca"}</span>
+                  <strong>{getField(dadosTriagem, "freq_card", "freqcard")} bpm</strong>
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.freqRespiratoria || "Freq. Respiratória"}</span>
+                  <strong>{getField(dadosTriagem, "freq_resp", "freqresp")} rpm</strong>
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.spo2 || "SpO2"}</span>
+                  <strong>{getField(dadosTriagem, "sp_o2", "spo2")} %</strong>
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.tensaoArterial || "Tensão Arterial"}</span>
+                  <strong>{getField(dadosTriagem, "sistolica")}/{getField(dadosTriagem, "diastolica")} mmHg</strong>
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.nivelDor || "Nível Dor"}</span>
+                  <strong>{getField(dadosTriagem, "nivel_dor", "niveldor")} /10</strong>
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.consciencia || "Consciência"}</span>
+                  <strong>{getField(dadosTriagem, "consciencia")}</strong>
+                </div>
               </div>
-              <div className="doctor-clinical-note"><span>{textos?.doctor?.sintomasReferidos || "Sintomas Referidos"}</span><p>{getField(dadosTriagem, 'sintomas')}</p></div>
+
+              <div className="doctor-clinical-note">
+                <span>{textos?.doctor?.sintomasReferidos || "Sintomas Referidos"}</span>
+                <p>{getField(dadosTriagem, "sintomas")}</p>
+              </div>
             </>
           ) : (
             <>
               <div className="doctor-vitals-table">
-                {[[textos?.doctor?.temperatura || 'Temperatura', 'temperatura'], [textos?.doctor?.freqCardiaca || 'Freq. Cardíaca', 'freqcard'], [textos?.doctor?.freqRespiratoria || 'Freq. Respiratória', 'freqresp'], [textos?.doctor?.spo2 || 'SpO2', 'spo2']].map(([label, campo]) => (
+                {[
+                  [textos?.doctor?.temperatura || "Temperatura", "temperatura"],
+                  [textos?.doctor?.freqCardiaca || "Freq. Cardíaca", "freqcard"],
+                  [textos?.doctor?.freqRespiratoria || "Freq. Respiratória", "freqresp"],
+                  [textos?.doctor?.spo2 || "SpO2", "spo2"],
+                ].map(([label, campo]) => (
                   <div key={campo} className="doctor-vital-row">
                     <span>{label}</span>
-                    <input className="doctor-field" type="number" value={formTriagem[campo] ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, [campo]: e.target.value }))} />
+                    <input
+                      className="doctor-field"
+                      type="number"
+                      value={formTriagem[campo] ?? ""}
+                      onChange={(e) =>
+                        setFormTriagem((p) => ({
+                          ...p,
+                          [campo]: e.target.value,
+                        }))
+                      }
+                    />
                   </div>
                 ))}
+
                 <div className="doctor-vital-row">
                   <span>{textos?.doctor?.tensaoArterial || "Tensão Arterial"}</span>
                   <div className="doctor-bp-grid">
-                    <input className="doctor-field" type="number" placeholder="Sistólica" value={formTriagem.sistolica ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, sistolica: e.target.value }))} />
-                    <input className="doctor-field" type="number" placeholder="Diastólica" value={formTriagem.diastolica ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, diastolica: e.target.value }))} />
+                    <input
+                      className="doctor-field"
+                      type="number"
+                      placeholder="Sistólica"
+                      value={formTriagem.sistolica ?? ""}
+                      onChange={(e) =>
+                        setFormTriagem((p) => ({
+                          ...p,
+                          sistolica: e.target.value,
+                        }))
+                      }
+                    />
+                    <input
+                      className="doctor-field"
+                      type="number"
+                      placeholder="Diastólica"
+                      value={formTriagem.diastolica ?? ""}
+                      onChange={(e) =>
+                        setFormTriagem((p) => ({
+                          ...p,
+                          diastolica: e.target.value,
+                        }))
+                      }
+                    />
                   </div>
                 </div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.nivelDor || "Nível Dor"}</span>  <th>{getField(dadosTriagem, 'nivel_dor', 'niveldor')} /10</th></div>
-                <div className="doctor-vital-row"><span>{textos?.doctor?.consciencia || "Consciência"}</span> <th>{getField(dadosTriagem, 'consciencia')}</th></div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.nivelDor || "Nível Dor"}</span>
+                  <input
+                    className="doctor-field"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value={formTriagem.niveldor ?? ""}
+                    onChange={(e) =>
+                      setFormTriagem((p) => ({
+                        ...p,
+                        niveldor: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="doctor-vital-row">
+                  <span>{textos?.doctor?.consciencia || "Consciência"}</span>
+                  <input
+                    className="doctor-field"
+                    type="text"
+                    value={formTriagem.consciencia ?? ""}
+                    onChange={(e) =>
+                      setFormTriagem((p) => ({
+                        ...p,
+                        consciencia: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </div>
+
               <div className="doctor-clinical-note">
                 <span>{textos?.doctor?.sintomasReferidos || "Sintomas Referidos"}</span>
-                <textarea className="doctor-field" rows={3} value={formTriagem.sintomas ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, sintomas: e.target.value }))} />
+                <textarea
+                  className="doctor-field"
+                  rows={3}
+                  value={formTriagem.sintomas ?? ""}
+                  onChange={(e) =>
+                    setFormTriagem((p) => ({
+                      ...p,
+                      sintomas: e.target.value,
+                    }))
+                  }
+                />
               </div>
             </>
           )}
@@ -1564,24 +1777,24 @@ export default function DoctorDashboard() {
       <Toast mensagem={toast.mensagem} tipo={toast.tipo} onFechar={fecharToast} />
 
       <aside className="admin-sidebar" role="navigation" aria-label={textos?.doctor?.menuLateralAria || "Menu lateral"}>
-        <button 
-          type="button" 
-          className="admin-sidebar__toggle" 
-          onClick={() => setIsSidebarCollapsed((v) => !v)} 
+        <button
+          type="button"
+          className="admin-sidebar__toggle"
+          onClick={() => setIsSidebarCollapsed((v) => !v)}
           aria-label={textos?.doctor?.alternarSidebarAria || "Alternar menu lateral"}
         >
           <IconMenu />
         </button>
-        
+
         <div className="admin-sidebar__brand">
           <img src={logo} alt="SIAGUH" className="admin-sidebar__logo" />
         </div>
-        
+
         <div className="admin-sidebar__divider" />
-        
-        <button 
-          type="button" 
-          className="admin-sidebar__profile" 
+
+        <button
+          type="button"
+          className="admin-sidebar__profile"
           onClick={() => navigate('/perfil')}
           aria-label={textos?.doctor?.perfilAvatarAria || "Ver meu perfil"}
         >
@@ -1590,14 +1803,14 @@ export default function DoctorDashboard() {
           </div>
           <span className="admin-sidebar__profile-name">{nomeUtilizador}</span>
         </button>
-        
+
         <div className="admin-sidebar__divider" />
-        
+
         <nav className="admin-sidebar__nav">
           {menus.map((menu) => (
-            <button 
-              key={menu.id} 
-              type="button" 
+            <button
+              key={menu.id}
+              type="button"
               className={`admin-sidebar__link ${activeMenu === menu.id ? 'is-active' : ''}`}
               onClick={() => { setActiveMenu(menu.id); setEpisodioSelecionado(null); setInternamentoSelecionado(null); }}
             >
@@ -1606,7 +1819,7 @@ export default function DoctorDashboard() {
             </button>
           ))}
         </nav>
-        
+
         <div className="admin-sidebar__footer">
           <div className="admin-sidebar__lang-switcher">
             <button type="button" className={`admin-lang-btn ${idioma === 'pt' ? 'is-active' : ''}`} onClick={() => mudarIdioma('pt')}>PT</button>
@@ -1622,7 +1835,7 @@ export default function DoctorDashboard() {
 
       <section className="admin-content-wrapper">
         <div className="admin-content-inner">
-          
+
           <div className="admin-content-top">
             <h1>{textos?.doctor?.painelMedico || "Painel do Médico"}</h1>
             <p>{nomeHospital}</p>
