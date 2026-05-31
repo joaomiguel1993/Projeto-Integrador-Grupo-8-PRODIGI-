@@ -1,15 +1,17 @@
-// ============================================================
-// renderTabVitais — snippet para integrar dentro de DoctorDashboard
-//
-// NOTA: Este snippet deve ser colado DENTRO do componente
-// DoctorDashboard, substituindo a renderTabVitais existente.
-// Usa os seguintes estados/funções do componente pai:
-//   dadosTriagem, modoEdicaoTriagem, formTriagem, setFormTriagem,
-//   guardarEdicaoTriagem, utente, antecedentes, medicacaoAtiva, atos,
-//   SectionHeader, setModoEdicaoTriagem
-// ============================================================
-
+/**
+ * Gera e renderiza a sub-aba de Sinais Vitais, Histórico e Dados Demográficos do Utente.
+ * Mapeia dinamicamente formulários de edição e grades de dados tabulares.
+ * * @function renderTabVitais
+ * @returns {JSX.Element} Painel estruturado com dados vitais, antecedentes e medicação ativa.
+ */
 const renderTabVitais = () => {
+  const { textos } = useLanguage();
+
+  /**
+   * Varre sequencialmente chaves no objeto de triagem até obter um valor válido não vazio.
+   * @param {...string} keys - Chaves prioritárias de busca.
+   * @returns {string} Valor resolvido ou traço identificador nulo.
+   */
   const readTriagem = (...keys) => {
     for (const key of keys) {
       const value = dadosTriagem?.[key];
@@ -18,25 +20,26 @@ const renderTabVitais = () => {
     return "—";
   };
 
+  /** @constant {Array[]} campos - Configuração matricial de metadados para renderização de campos reativos */
   const campos = [
-    ['Cor de Triagem',          'cortriagem',          'select', ['Vermelho', 'Laranja', 'Amarelo', 'Verde', 'Azul']],
-    ['Tempo de Espera (min)',    'tempoesperaprevisto', 'number'],
-    ['Temperatura (°C)',         'temperatura',         'number'],
-    ['Freq. Cardíaca (bpm)',     'freqcard',            'number'],
-    ['Freq. Respiratória (rpm)', 'freqresp',            'number'],
-    ['SpO2 (%)',                 'spo2',                'number'],
-    ['Nível de Dor',             'niveldor',            'number'],
-    ['Consciência',              'consciencia',         'select', ['Acordado', 'Confuso', 'Inconsciente']],
+    [textos?.vitais?.corTriagemLabel || 'Cor de Triagem',          'cortriagem',          'select', ['Vermelho', 'Laranja', 'Amarelo', 'Verde', 'Azul']],
+    [textos?.vitais?.tempoEsperaLabel || 'Tempo de Espera (min)',    'tempoesperaprevisto', 'number'],
+    [textos?.vitais?.temperaturaLabel || 'Temperatura (°C)',         'temperatura',         'number'],
+    [textos?.vitais?.freqCardiacaLabel || 'Freq. Cardíaca (bpm)',     'freqcard',            'number'],
+    [textos?.vitais?.freqRespiratoriaLabel || 'Freq. Respiratória (rpm)', 'freqresp',            'number'],
+    [textos?.vitais?.spo2Label || 'SpO2 (%)',                 'spo2',                'number'],
+    [textos?.vitais?.nivelDorLabel || 'Nível de Dor',             'niveldor',            'number'],
+    [textos?.vitais?.conscienciaLabel || 'Consciência',              'consciencia',         'select', ['Acordado', 'Confuso', 'Inconsciente']],
   ];
 
   return (
     <div className="doctor-stacked-sections">
-      {/* ── Triagem ── */}
+      {/* ── SECÇÃO: TRIAGEM & SINAIS VITAIS ── */}
       <section className="doctor-subcard">
         <div className="doctor-tab-topbar">
           <SectionHeader
-            title="Dados vitais da triagem"
-            subtitle="Registos clínicos iniciais e parâmetros observados"
+            title={textos?.vitais?.dadosVitaisTitle || "Dados vitais da triagem"}
+            subtitle={textos?.vitais?.registosClinicosSubtitle || "Registos clínicos iniciais e parâmetros observados"}
           />
 
           {!modoEdicaoTriagem ? (
@@ -50,7 +53,7 @@ const renderTabVitais = () => {
                   temperatura:         readTriagem('temperatura')                                  === '—' ? '' : readTriagem('temperatura'),
                   freqcard:            readTriagem('freqcard', 'freq_card')                        === '—' ? '' : readTriagem('freqcard', 'freq_card'),
                   freqresp:            readTriagem('freqresp', 'freq_resp')                        === '—' ? '' : readTriagem('freqresp', 'freq_resp'),
-                  spo2:                readTriagem('spo2', 'sp_o2')                               === '—' ? '' : readTriagem('spo2', 'sp_o2'),
+                  spo2:                readTriagem('spo2', 'sp_o2')                                === '—' ? '' : readTriagem('spo2', 'sp_o2'),
                   sistolica:           readTriagem('sistolica')                                    === '—' ? '' : readTriagem('sistolica'),
                   diastolica:          readTriagem('diastolica')                                   === '—' ? '' : readTriagem('diastolica'),
                   niveldor:            readTriagem('niveldor', 'nivel_dor')                        === '—' ? '' : readTriagem('niveldor', 'nivel_dor'),
@@ -61,12 +64,12 @@ const renderTabVitais = () => {
                 setModoEdicaoTriagem(true);
               }}
             >
-              Editar dados
+              {textos?.vitais?.editarDadosBtn || "Editar dados"}
             </button>
           ) : (
             <div className="doctor-actions-inline">
-              <button type="button" className="doctor-action-btn doctor-action-btn--secondary" onClick={() => setModoEdicaoTriagem(false)}>Cancelar</button>
-              <button type="button" className="doctor-action-btn doctor-action-btn--primary"   onClick={guardarEdicaoTriagem}>Guardar</button>
+              <button type="button" className="doctor-action-btn doctor-action-btn--secondary" onClick={() => setModoEdicaoTriagem(false)}>{textos?.vitais?.cancelarBtn || "Cancelar"}</button>
+              <button type="button" className="doctor-action-btn doctor-action-btn--primary"   onClick={guardarEdicaoTriagem}>{textos?.vitais?.guardarBtn || "Guardar"}</button>
             </div>
           )}
         </div>
@@ -113,9 +116,9 @@ const renderTabVitais = () => {
             </div>
           ))}
 
-          {/* Tensão arterial — campo composto */}
+          {/* TENSÃO ARTERIAL (CAMPO COMPOSTO) */}
           <div className="doctor-info-card">
-            <span className="doctor-info-card__label">Tensão Arterial</span>
+            <span className="doctor-info-card__label">{textos?.vitais?.tensaoArterialLabel || "Tensão Arterial"}</span>
             {modoEdicaoTriagem ? (
               <div className="doctor-bp-grid">
                 <input
@@ -137,33 +140,33 @@ const renderTabVitais = () => {
           </div>
 
           <div className="doctor-info-card">
-            <span className="doctor-info-card__label">Sintomas</span>
+            <span className="doctor-info-card__label">{textos?.vitais?.sintomasLabel || "Sintomas"}</span>
             <span className="doctor-info-card__value">{dadosTriagem?.sintomas || '—'}</span>
           </div>
 
           <div className="doctor-info-card">
-            <span className="doctor-info-card__label">Enfermeiro</span>
-            <span className="doctor-info-card__value">{dadosTriagem?.nomeenfermeiro || '—'}</span>
+            <span className="doctor-info-card__label">{textos?.vitais?.enfermeiroLabel || "Enfermeiro"}</span>
+            <span className="doctor-info-card__value">{dadosTriagem?.nomeenfermeiro || dadosTriagem?.nome_enfermeiro || '—'}</span>
           </div>
         </div>
       </section>
 
-      {/* ── Dados do Utente ── */}
+      {/* ── SECÇÃO: DADOS DEMOGRÁFICOS DO UTENTE ── */}
       <section className="doctor-subcard">
-        <SectionHeader title="Dados do Utente" subtitle="Informação principal do utente" />
+        <SectionHeader title={textos?.vitais?.dadosUtenteTitle || "Dados do Utente"} subtitle={textos?.vitais?.infoPrincipalSubtitle || "Informação principal do utente"} />
         <div className="doctor-vitals-grid">
-          <div className="doctor-info-card"><span className="doctor-info-card__label">Nome</span>            <span className="doctor-info-card__value">{utente?.nome || '—'}</span></div>
-          <div className="doctor-info-card"><span className="doctor-info-card__label">Nº Utente</span>       <span className="doctor-info-card__value">{utente?.num_utente || utente?.num_utent || '—'}</span></div>
-          <div className="doctor-info-card"><span className="doctor-info-card__label">NIF</span>             <span className="doctor-info-card__value">{utente?.nif || '—'}</span></div>
-          <div className="doctor-info-card"><span className="doctor-info-card__label">Sexo</span>            <span className="doctor-info-card__value">{utente?.sexo || '—'}</span></div>
-          <div className="doctor-info-card"><span className="doctor-info-card__label">Data Nascimento</span> <span className="doctor-info-card__value">{utente?.datanascimento || utente?.data_nasc || '—'}</span></div>
-          <div className="doctor-info-card"><span className="doctor-info-card__label">Contacto</span>        <span className="doctor-info-card__value">{utente?.telefone || '—'}</span></div>
+          <div className="doctor-info-card"><span className="doctor-info-card__label">{textos?.vitais?.nomeLabel || "Nome"}</span>            <span className="doctor-info-card__value">{utente?.nome || '—'}</span></div>
+          <div className="doctor-info-card"><span className="doctor-info-card__label">{textos?.vitais?.numUtenteLabel || "Nº Utente"}</span>       <span className="doctor-info-card__value">{utente?.num_utente || utente?.num_utent || '—'}</span></div>
+          <div className="doctor-info-card"><span className="doctor-info-card__label">{textos?.vitais?.nifLabel || "NIF"}</span>             <span className="doctor-info-card__value">{utente?.nif || '—'}</span></div>
+          <div className="doctor-info-card"><span className="doctor-info-card__label">{textos?.vitais?.sexoLabel || "Sexo"}</span>            <span className="doctor-info-card__value">{utente?.sexo || '—'}</span></div>
+          <div className="doctor-info-card"><span className="doctor-info-card__label">{textos?.vitais?.dataNascLabel || "Data Nascimento"}</span> <span className="doctor-info-card__value">{utente?.datanascimento || utente?.data_nasc || '—'}</span></div>
+          <div className="doctor-info-card"><span className="doctor-info-card__label">{textos?.vitais?.contactoLabel || "Contacto"}</span>        <span className="doctor-info-card__value">{utente?.telefone || '—'}</span></div>
         </div>
       </section>
 
-      {/* ── Antecedentes ── */}
+      {/* ── SECÇÃO: ANTECEDENTES RELEVANTES ── */}
       <section className="doctor-subcard">
-        <SectionHeader title="Antecedentes" subtitle="Histórico pessoal e clínico relevante do utente" />
+        <SectionHeader title={textos?.vitais?.antecedentesTitle || "Antecedentes"} subtitle={textos?.vitais?.historicoPessoalSubtitle || "Histórico pessoal e clínico relevante do utente"} />
         {antecedentes && Object.keys(antecedentes).length > 0 ? (
           <div className="doctor-vitals-grid">
             {Object.entries(antecedentes).map(([k, v]) => (
@@ -174,24 +177,29 @@ const renderTabVitais = () => {
             ))}
           </div>
         ) : (
-          <div className="doctor-empty-box">Sem antecedentes registados.</div>
+          <div className="doctor-empty-box">{textos?.vitais?.semAntecedentes || "Sem antecedentes registados."}</div>
         )}
       </section>
 
-      {/* ── Medicação ativa ── */}
+      {/* ── SECÇÃO: MEDICAÇÃO ATIVA DO UTENTE ── */}
       <section className="doctor-subcard">
-        <SectionHeader title="Medicação Ativa" subtitle="Medicação atualmente registada para o utente" />
+        <SectionHeader title={textos?.vitais?.medicaoAtivaTitle || "Medicação Ativa"} subtitle={textos?.vitais?.medicaoRegistadaSubtitle || "Medicação atualmente registada para o utente"} />
         <div className="doctor-table-shell">
           <table className="doctor-modern-table">
             <thead>
-              <tr><th>Medicamento</th><th>Dosagem</th><th>Frequência</th><th>Início</th></tr>
+              <tr>
+                <th>{textos?.vitais?.medicamentoTh || "Medicamento"}</th>
+                <th>{textos?.vitais?.dosagemTh || "Dosagem"}</th>
+                <th>{textos?.vitais?.frequenciaTh || "Frequência"}</th>
+                <th>{textos?.vitais?.inicioTh || "Início"}</th>
+              </tr>
             </thead>
             <tbody>
               {medicacaoAtiva.length === 0 ? (
-                <tr><td colSpan="4" className="doctor-table-empty">Sem medicação ativa registada.</td></tr>
+                <tr><td colSpan="4" className="doctor-table-empty">{textos?.vitais?.semMedicaoAtiva || "Sem medicação ativa registada."}</td></tr>
               ) : (
-                medicacaoAtiva.map((m) => (
-                  <tr key={m.cod_medicacao_ativa}>
+                medicacaoAtiva.map((m, index) => (
+                  <tr key={m.cod_medicacao_ativa || `med-vit-${index}`}>
                     <td>{m.nome_medicamento || m.nomemedicamento || m.nomeApresentacao || '—'}</td>
                     <td>{m.dosagem    || '—'}</td>
                     <td>{m.frequencia || '—'}</td>
@@ -204,17 +212,23 @@ const renderTabVitais = () => {
         </div>
       </section>
 
-      {/* ── Histórico clínico ── */}
+      {/* ── SECÇÃO: ATOS CLÍNICOS DO EPISÓDIO ── */}
       <section className="doctor-subcard">
-        <SectionHeader title="Histórico clínico" subtitle="Atos clínicos registados neste episódio" />
+        <SectionHeader title={textos?.vitais?.historicoClinicoTitle || "Histórico clínico"} subtitle={textos?.vitais?.atosClinicosSubtitle || "Atos clínicos registados neste episódio"} />
         <div className="doctor-table-shell">
           <table className="doctor-modern-table">
             <thead>
-              <tr><th>#</th><th>Tipo</th><th>Descrição</th><th>Início</th><th>Fim</th></tr>
+              <tr>
+                <th>#</th>
+                <th>{textos?.vitais?.tipoTh || "Tipo"}</th>
+                <th>{textos?.vitais?.descricaoTh || "Descrição"}</th>
+                <th>{textos?.vitais?.inicioTh || "Início"}</th>
+                <th>{textos?.vitais?.fimTh || "Fim"}</th>
+              </tr>
             </thead>
             <tbody>
               {atos.length === 0 ? (
-                <tr><td colSpan="5" className="doctor-table-empty">Sem atos clínicos registados para este episódio.</td></tr>
+                <tr><td colSpan="5" className="doctor-table-empty">{textos?.vitais?.semAtosRegistados || "Sem atos clínicos registados para este episódio."}</td></tr>
               ) : (
                 atos.map((a) => (
                   <tr key={a.idato || a.id_ato}>

@@ -1,9 +1,27 @@
-// ============================================================
-// DoctorPrescription.jsx
-// Correções aplicadas:
-//   - Removido botão e prop imprimirPrescricao
-// ============================================================
+import { useLanguage } from '../../../contexts/LanguageContext';
 
+/**
+ * Componente de Prescrição Médica (DoctorPrescription).
+ * Renderiza o histórico de medicação ativa, os antecedentes clínicos gerais e o formulário de emissão
+ * de novas receitas com suporte a análise preditiva de risco por IA e internacionalização.
+ * * @component
+ * @param {Object} props - Propriedades do componente.
+ * @param {Array} props.medicacaoAtiva - Lista bruta das medicações atuais do utente.
+ * @param {function} props.enriquecerMedicacaoAtiva - Função utilitária para acoplar designações comerciais à medicação.
+ * @param {React.Component} props.SectionHeader - Componente reutilizável para renderização de cabeçalhos de bloco.
+ * @param {Array|Object} props.antecedentes - Lista ou dicionário contendo o histórico patológico do utente.
+ * @param {Array} props.medicamentos - Catálogo geral de fármacos disponíveis no sistema.
+ * @param {function} props.getMedicamentoId - Callback para extração segura da chave ID do medicamento.
+ * @param {function} props.getMedicamentoNome - Callback para resolução da designação legível do medicamento.
+ * @param {Object} props.prescricao - Estado do formulário de nova prescrição clínica.
+ * @param {function} props.handlePrescricaoChange - Manipulador de eventos para alterações nos campos de entrada.
+ * @param {Array} props.alergias - Array contendo o registo de hipersensibilidades do utente.
+ * @param {Object|null} props.riscoIA - Estado contendo o veredito retornado pelo microsserviço de inteligência artificial.
+ * @param {boolean} props.avaliacaoRisco - Flag indicadora de carregamento assíncrono da inferência de IA.
+ * @param {function} props.avaliarRiscoIAFn - Callback acionador da análise preditiva de risco farmacológico.
+ * @param {function} props.submeterPrescricao - Callback persistente para gravação do novo registo de receita.
+ * @param {function} props.onEliminarMedicacao - Callback para revogação/eliminação de itens da medicação ativa.
+ */
 export default function DoctorPrescription({
   medicacaoAtiva,
   enriquecerMedicacaoAtiva,
@@ -21,18 +39,22 @@ export default function DoctorPrescription({
   submeterPrescricao,
   onEliminarMedicacao,
 }) {
+  const { textos } = useLanguage();
+  
+  /** @type {Array} medicacaoAtivaEnriquecida - Medicação do utente acoplada com chaves de exibição do catálogo */
   const medicacaoAtivaEnriquecida = enriquecerMedicacaoAtiva(medicacaoAtiva);
 
   return (
     <div className="doctor-stacked-sections">
+      {/* SECÇÃO: MEDICAÇÃO ATIVA */}
       <section className="doctor-subcard">
         <SectionHeader
-          title="Medicação ativa"
-          subtitle="Terapêutica habitual e medicação atualmente registada"
+          title={textos?.prescription?.medicaoAtivaTitle || "Medicação ativa"}
+          subtitle={textos?.prescription?.medicaoAtivaSubtitle || "Terapêutica habitual e medicação atualmente registada"}
         />
 
         {medicacaoAtivaEnriquecida.length === 0 ? (
-          <div className="doctor-empty-box">Nenhum medicamento ativo associado.</div>
+          <div className="doctor-empty-box">{textos?.prescription?.nenhumMedicamentoAtivo || "Nenhum medicamento ativo associado."}</div>
         ) : (
           <div className="doctor-alert-list">
             {medicacaoAtivaEnriquecida.map((m, i) => (
@@ -48,7 +70,7 @@ export default function DoctorPrescription({
                       style={{ fontSize: '0.8rem', padding: '4px 12px', background: 'none', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', color: '#dc2626', whiteSpace: 'nowrap' }}
                       onClick={() => onEliminarMedicacao(m)}
                     >
-                      Eliminar
+                      {textos?.prescription?.eliminarBtn || "Eliminar"}
                     </button>
                   )}
                 </div>
@@ -58,14 +80,15 @@ export default function DoctorPrescription({
         )}
       </section>
 
+      {/* SECÇÃO: ANTECEDENTES */}
       <section className="doctor-subcard">
         <SectionHeader
-          title="Antecedentes"
-          subtitle="Atenção clínica, alergias e observações críticas"
+          title={textos?.prescription?.antecedentesTitle || "Antecedentes"}
+          subtitle={textos?.prescription?.antecedentesSubtitle || "Atenção clínica, alergias e observações críticas"}
         />
 
         {!antecedentes || (Array.isArray(antecedentes) ? antecedentes.length === 0 : Object.keys(antecedentes).length === 0) ? (
-          <div className="doctor-empty-box">Sem antecedentes registados.</div>
+          <div className="doctor-empty-box">{textos?.prescription?.semAntecedentes || "Sem antecedentes registados."}</div>
         ) : (
           <div className="doctor-alert-list">
             {(Array.isArray(antecedentes) ? antecedentes : Object.values(antecedentes)).map((a, i) => (
@@ -81,22 +104,23 @@ export default function DoctorPrescription({
         )}
       </section>
 
+      {/* SECÇÃO: FORMULÁRIO DE PRESCRIÇÃO E INTEGRAÇÃO IA */}
       <section className="doctor-subcard">
         <SectionHeader
-          title="Prescrever medicação"
-          subtitle="Selecionar fármaco, validar risco e emitir prescrição"
+          title={textos?.prescription?.prescreverTitle || "Prescrever medicação"}
+          subtitle={textos?.prescription?.prescreverSubtitle || "Selecionar fármaco, validar risco e emitir prescrição"}
         />
 
         <div className="doctor-form-grid">
           <div>
-            <label>Medicamento</label>
+            <label>{textos?.prescription?.medicamentoLabel || "Medicamento"}</label>
             <select
               className="doctor-field"
               name="codmedicamento"
               value={prescricao.codmedicamento || ''}
               onChange={handlePrescricaoChange}
             >
-              <option value="">Selecione...</option>
+              <option value="">{textos?.prescription?.selecioneOption || "Selecione..."}</option>
 
               {Array.isArray(medicamentos) &&
                 medicamentos.map((m, index) => {
@@ -112,13 +136,13 @@ export default function DoctorPrescription({
 
             {Array.isArray(medicamentos) && medicamentos.length === 0 && (
               <div className="doctor-empty-box" style={{ marginTop: '0.5rem' }}>
-                Catálogo de medicamentos vazio.
+                {textos?.prescription?.catalogoVazio || "Catálogo de medicamentos vazio."}
               </div>
             )}
           </div>
 
           <div>
-            <label>Dosagem</label>
+            <label>{textos?.prescription?.dosagemLabel || "Dosagem"}</label>
             <input
               className="doctor-field"
               type="text"
@@ -129,7 +153,7 @@ export default function DoctorPrescription({
           </div>
 
           <div className="doctor-form-grid-full">
-            <label>Observações</label>
+            <label>{textos?.prescription?.observacoesLabel || "Observações"}</label>
             <input
               className="doctor-field"
               type="text"
@@ -140,6 +164,7 @@ export default function DoctorPrescription({
           </div>
         </div>
 
+        {/* VALIDAÇÃO CLÍNICA DE SEGURANÇA E ALERTAS DE IA */}
         {alergias.length > 0 ? (
           <div className="doctor-risk-box">
             {riscoIA ? (
@@ -151,10 +176,10 @@ export default function DoctorPrescription({
               >
                 <strong>
                   {riscoIA?.risco === 1 || riscoIA?.riscoalto
-                    ? 'Utente com risco/alergia para a medicação selecionada'
-                    : 'Sem alergia conhecida para a medicação selecionada'}
+                    ? (textos?.prescription?.riscoElevadoUtente || 'Utente com risco/alergia para a medicação selecionada')
+                    : (textos?.prescription?.semRiscoUtente || 'Sem alergia conhecida para a medicação selecionada')}
                 </strong>
-                <span>{riscoIA?.mensagem || riscoIA?.explicacao || 'Avaliação concluída.'}</span>
+                <span>{riscoIA?.mensagem || riscoIA?.explicacao || (textos?.prescription?.avaliacaoConcluida || 'Avaliação concluída.')}</span>
               </div>
             ) : null}
 
@@ -164,12 +189,12 @@ export default function DoctorPrescription({
               onClick={avaliarRiscoIAFn}
               disabled={avaliacaoRisco || !prescricao.codmedicamento}
             >
-              {avaliacaoRisco ? 'A avaliar...' : 'Ajuda IA: avaliar alergias e risco'}
+              {avaliacaoRisco ? (textos?.prescription?.aAvaliar || 'A avaliar...') : (textos?.prescription?.ajudaIaBtn || 'Ajuda IA: avaliar alergias e risco')}
             </button>
           </div>
         ) : (
           <div className="doctor-empty-box">
-            O utente não tem alergias registadas para validação automática.
+            {textos?.prescription?.semAlergiasRegistadas || "O utente não tem alergias registadas para validação automática."}
           </div>
         )}
 
@@ -180,7 +205,7 @@ export default function DoctorPrescription({
             onClick={submeterPrescricao}
             disabled={!prescricao.codmedicamento || !prescricao.dosagem}
           >
-            Registar prescrição
+            {textos?.prescription?.registarPrescricaoBtn || "Registar prescrição"}
           </button>
         </div>
       </section>

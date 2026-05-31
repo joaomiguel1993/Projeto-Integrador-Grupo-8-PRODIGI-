@@ -1,12 +1,26 @@
-// ============================================================
-// DoctorQueue.jsx
-// Correções aplicadas:
-//   - Triagens carregadas com token JWT (recebe prop headers)
-//   - Filtro "concluidos" alinhado com o dashboard ("terminado")
-// ============================================================
-
 import { useEffect, useState } from "react";
+// CORRIGIDO: Importação alterada para garantir que lê o mesmo Provider do main.jsx
+import { useLanguage } from "/src/contexts/LanguageContext";
 
+/**
+ * Componente de Fila de Espera Médica (DoctorQueue).
+ * Renderiza, filtra e ordena de forma dinâmica a listagem de episódios de urgência ativos,
+ * sincronizando os tempos decorridos e as cores prioritárias da Triagem de Manchester.
+ * * @component
+ * @param {Object} props - Propriedades do componente.
+ * @param {Array} props.episodios - Lista bruta de episódios injetados pelo dashboard.
+ * @param {Array} props.episodiosOrdenados - Lista filtrada ou pré-ordenada do componente pai.
+ * @param {function} props.setEpisodios - Callback para manipulação de estado do array geral de episódios.
+ * @param {string} props.subMenuFila - Aba ativa no sub-menu da fila ("em_espera" ou "atendimento").
+ * @param {function} props.setSubMenuFila - Callback mutador da aba ativa do sub-menu.
+ * @param {string} props.filtro - Query de pesquisa para pesquisa em tempo real.
+ * @param {function} props.setFiltro - Callback associado à pesquisa manual.
+ * @param {function} props.abrirEpisodio - Routine assíncrona executada para carregar e abrir a ficha clínica de atendimento.
+ * @param {Object.<string, string>} props.TRIAGECLASS - Dicionário de classes CSS acopladas às cores da triagem.
+ * @param {Object|null} props.episodioSelecionado - Episódio que se encontra em monitorização activa ou nulo.
+ * @param {function} props.setEpisodioSelecionado - Callback mutador do episódio selecionado.
+ * @param {function|Object} props.headers - Cabeçalhos padrões de autorização Bearer JWT para os pedidos HTTP.
+ */
 export default function DoctorQueue({
   episodios,
   episodiosOrdenados,
@@ -19,9 +33,16 @@ export default function DoctorQueue({
   TRIAGECLASS,
   episodioSelecionado,
   setEpisodioSelecionado,
-  // CORRIGIDO: recebe headers como prop para autenticar o pedido de triagens
   headers,
 }) {
+  const { textos } = useLanguage();
+
+  /**
+   * Lê sequencialmente chaves dentro de uma estrutura em profundidade até obter um valor válido não vazio.
+   * @param {Object} obj - Estrutura alvo.
+   * @param {...string} keys - Lista ordenada de chaves para verificação.
+   * @returns {*} O primeiro valor não nulo/vazio encontrado ou uma string vazia.
+   */
   const readField = (obj, ...keys) => {
     for (const key of keys) {
       const value = obj?.[key];
@@ -30,12 +51,15 @@ export default function DoctorQueue({
     return "";
   };
 
+  /** @type {[Object, function]} triagensMap - Estado reativo guardando o hashmap das triagens indexado por cod_ep_urgenc */
   const [triagensMap, setTriagensMap] = useState({});
 
   useEffect(() => {
+    /**
+     * Consome a API buscando todas as triagens globais para popular o hashmap de prioridades.
+     */
     const carregarTriagens = async () => {
       try {
-        // CORRIGIDO: inclui token de autenticação
         const res = await fetch("/api/v1/triagens/", {
           headers: typeof headers === "function" ? headers() : headers,
         });
@@ -43,6 +67,7 @@ export default function DoctorQueue({
 
         const data = await res.json();
 
+        /** @type {Object} mapa - Dicionário optimizado O(1) de mapeamento de episódios clínicos */
         const mapa = Object.fromEntries(
           (data || []).map((t) => [String(t.cod_ep_urgenc), t])
         );
@@ -54,8 +79,9 @@ export default function DoctorQueue({
     };
 
     carregarTriagens();
-  }, []);
+  }, [headers]);
 
+  /** @constant {Object.<string, number>} TRIAGE_ORDER - Pesos numéricos padrões de Manchester para ordenação estável */
   const TRIAGE_ORDER = {
     vermelho: 1,
     laranja:  2,
@@ -72,6 +98,11 @@ export default function DoctorQueue({
 
   const textoFiltro = String(filtro || "").trim().toLowerCase();
 
+  /**
+   * Resolve a cor da triagem de um episódio verificando recursivamente os estados injetados e locais.
+   * @param {Object} ep - Registro do episódio clínico.
+   * @returns {string} Cor da triagem identificada.
+   */
   const getCorTriagemRaw = (ep) => {
     const codEpisodio = String(
       readField(ep, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc") || ""
@@ -87,6 +118,7 @@ export default function DoctorQueue({
     );
   };
 
+  /** @type {Array} listaAtual - Lista final de episódios filtrada por abas, filtrada por pesquisa e ordenada de forma estável */
   const listaAtual = [...listaBase]
     .filter((ep) => {
       const estadoBruto = String(
@@ -104,7 +136,6 @@ export default function DoctorQueue({
       if (subMenuFila === "atendimento") {
         if (estadoBruto !== "emconsulta" && estadoBruto !== "atendimento") return false;
       }
-
 
       if (!textoFiltro) return true;
 
@@ -133,6 +164,11 @@ export default function DoctorQueue({
       return dataA - dataB;
     });
 
+  /**
+   * Calcula os minutos absolutos em espera decorridos com base no timestamp de disparo reativo do relógio.
+   * @param {string|Date} dataInicio - Carimbo de data hora de entrada.
+   * @returns {number|null} Minutos inteiros decorridos.
+   */
   const calcularTempoDecorridoMin = (dataInicio) => {
     if (!dataInicio) return null;
     const inicioMs = new Date(dataInicio).getTime();
@@ -151,7 +187,7 @@ export default function DoctorQueue({
             className={`doctor-pill ${subMenuFila === "em_espera" ? "is-active" : ""}`}
             onClick={() => { setSubMenuFila("em_espera"); setEpisodioSelecionado(null); }}
           >
-            Em espera
+            {textos?.queue?.emEsperaPill || "Em espera"}
           </button>
 
           <button
@@ -159,15 +195,14 @@ export default function DoctorQueue({
             className={`doctor-pill ${subMenuFila === "atendimento" ? "is-active" : ""}`}
             onClick={() => setSubMenuFila("atendimento")}
           >
-            Atendimento
+            {textos?.queue?.atendimentoPill || "Atendimento"}
           </button>
-
         </div>
 
         <input
           className="doctor-search-input"
           type="text"
-          placeholder="Utente, cor ou episódio..."
+          placeholder={textos?.queue?.pesquisarPlaceholder || "Utente, cor ou episódio..."}
           value={filtro}
           onChange={(e) => setFiltro(e.target.value)}
         />
@@ -177,18 +212,20 @@ export default function DoctorQueue({
         <table className="doctor-modern-table">
           <thead>
             <tr>
-              <th>Episódio</th>
-              <th>Utente</th>
-              <th>Triagem</th>
-              <th>Espera</th>
-              <th>Ações</th>
+              <th>{textos?.queue?.episodioTh || "Episódio"}</th>
+              <th>{textos?.queue?.utenteTh || "Utente"}</th>
+              <th>{textos?.queue?.triagemTh || "Triagem"}</th>
+              <th>{textos?.queue?.esperaTh || "Espera"}</th>
+              <th>{textos?.queue?.acoesTh || "Ações"}</th>
             </tr>
           </thead>
 
           <tbody>
             {listaAtual.length === 0 ? (
               <tr>
-                <td colSpan="5" className="doctor-table-empty">Sem episódios para apresentar.</td>
+                <td colSpan="5" className="doctor-table-empty">
+                  {textos?.queue?.semEpisodios || "Sem episódios para apresentar."}
+                </td>
               </tr>
             ) : (
               listaAtual.map((ep, index) => {
@@ -232,7 +269,7 @@ export default function DoctorQueue({
                           type="button"
                           className="doctor-action-btn doctor-action-btn--primary"
                           onClick={() => {
-                            const atualizado = {
+                            const updated = {
                               ...ep,
                               estado:       "emconsulta",
                               estadolocal:  "emconsulta",
@@ -241,16 +278,16 @@ export default function DoctorQueue({
                             setEpisodios((prev) =>
                               (prev || []).map((item) => {
                                 const codItem = readField(item, "codepurgenc", "codEpisodio", "codepisodio", "cod_ep_urgenc");
-                                return codItem === codEpisodio ? atualizado : item;
+                                return codItem === codEpisodio ? updated : item;
                               })
                             );
 
-                            setEpisodioSelecionado(atualizado);
+                            setEpisodioSelecionado(updated);
                             setSubMenuFila("atendimento");
-                            abrirEpisodio(atualizado);
+                            abrirEpisodio(updated);
                           }}
                         >
-                          Atender
+                          {textos?.queue?.atenderBtn || "Atender"}
                         </button>
                       </div>
                     </td>

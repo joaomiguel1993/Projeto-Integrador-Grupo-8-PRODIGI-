@@ -1,6 +1,8 @@
 /**
  * @file AdminDashboard.jsx
  * @description Painel central de gestão para os administradores do sistema SIAGUH.
+ * Permite o controlo de utilizadores (RBAC), bloqueios, gestão de equipas médicas (Funcionários),
+ * parametrização de hospitais e exportação de relatórios de auditoria para Excel.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,12 +16,22 @@ import { ROLES, STORAGE_KEYS } from '../../constants/roles';
 import { FiUserPlus, FiEdit2, FiLock, FiMenu } from 'react-icons/fi';
 import * as XLSX from "xlsx";
 
+/**
+ * Normaliza uma string de texto removendo acentuações e diacríticos, convertendo-a para minúsculas.
+ * @param {string} texto - Texto a ser tratado.
+ * @returns {string} Texto normalizado.
+ */
 const normalizar = (texto) =>
   String(texto || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
+/**
+ * Gera automaticamente um formato padrão de username (nome.apelido) com base no nome completo fornecido.
+ * @param {string} nome - Nome completo do funcionário.
+ * @returns {string} Username sugerido.
+ */
 const gerarUsername = (nome) => {
   const partes = normalizar(nome).trim().split(/\s+/).filter(Boolean);
   if (partes.length === 0) return '';
@@ -27,6 +39,11 @@ const gerarUsername = (nome) => {
   return `${partes[0]}.${partes[partes.length - 1]}`;
 };
 
+/**
+ * Extrai e normaliza IDs de hospitais de uma estrutura genérica de entidade recebida da API.
+ * @param {Object} entidade - Dados estruturados do utilizador ou funcionário.
+ * @returns {number[]} Array contendo IDs numéricos únicos de hospitais associados.
+ */
 const extrairHospitais = (entidade) => {
   if (!entidade) return [];
 
@@ -41,7 +58,7 @@ const extrairHospitais = (entidade) => {
     try {
       raw = JSON.parse(raw);
     } catch {
-      // ignorar
+      // ignorar falha de parsing
     }
   }
 
@@ -66,6 +83,11 @@ const extrairHospitais = (entidade) => {
   )];
 };
 
+/**
+ * Mapeia as propriedades variantes de um objeto Hospital retornado pela base de dados SQL para chaves consistentes.
+ * @param {Object} hospital - Objeto cru da API.
+ * @returns {Object} Hospital com chaves normalizadas.
+ */
 const mapHospitalFromApi = (hospital) => ({
   ...hospital,
   idhosp: Number(
@@ -81,6 +103,11 @@ const mapHospitalFromApi = (hospital) => ({
   contacto: hospital?.telefone ?? hospital?.contacto ?? '',
 });
 
+/**
+ * Extrai com segurança o ID numérico do funcionário tratando redundâncias e nós aninhados.
+ * @param {Object} item - Registo do utilizador ou funcionário.
+ * @returns {number|null} Código funcional detetado ou nulo.
+ */
 const obterIdFunc = (item) =>
   item?.id_func ??
   item?.idfunc ??
@@ -91,25 +118,29 @@ const obterIdFunc = (item) =>
   item?.funcionario?.idFunc ??
   null;
 
-
+/**
+ * Resolve strings textuais válidas a partir de um conjunto de dados candidatos dinâmicos.
+ * @param {...*} candidatos - Chaves candidatas à extração.
+ * @returns {string} String limpa validada.
+ */
 const valorTexto = (...candidatos) => {
   for (const candidato of candidatos) {
-
     if (typeof candidato === 'object' && candidato !== null) {
       continue;
     }
     const texto = String(candidato ?? '').trim();
-    if (
-      texto &&
-      texto !== '[object Object]'
-    ) {
+    if (texto && texto !== '[object Object]') {
       return texto;
     }
   }
-
   return '';
 };
 
+/**
+ * Puxa a chave Nome correspondente ao utilizador avaliando heranças relacionais do SQL.
+ * @param {Object} item - Nó a avaliar.
+ * @returns {string} Nome mapeado.
+ */
 const obterNome = (item) =>
   item?.nome ??
   item?.Nome ??
@@ -117,6 +148,11 @@ const obterNome = (item) =>
   item?.funcionario?.Nome ??
   '—';
 
+/**
+ * Retorna o Tipo funcional (string pura) sem tratamentos de tradução idiomática.
+ * @param {Object} item - Nó funcional.
+ * @returns {string} Tipo funcional bruto.
+ */
 const obterTipoFuncRaw = (item) =>
   valorTexto(
     item?.role,
@@ -129,6 +165,12 @@ const obterTipoFuncRaw = (item) =>
     item?.funcionario?.TipoFunc
   );
 
+/**
+ * Devolve a legenda traduzida da função com base no dicionário do LanguageContext.
+ * @param {Object} item - Objeto profissional.
+ * @param {Object} textos - Nó de idiomas ativo.
+ * @returns {string} Função localizada.
+ */
 const obterFuncaoTraduzida = (item, textos) => {
   const valor =
     item?.tipo_func ??
@@ -150,71 +192,16 @@ const obterFuncaoTraduzida = (item, textos) => {
   return valor || '—';
 };
 
-const exportarRelatorioExcel = (dados) => {
-  const lista = Array.isArray(dados) ? dados : [];
-
-  if (lista.length === 0) {
-    alert(ta('semHistorico', 'Sem histórico.'));
-    return;
-  }
-
-  const extrairDataHora = (valor) => {
-    if (!valor) return { data: '', hora: '' };
-    const d = new Date(valor);
-    if (Number.isNaN(d.getTime())) return { data: String(valor), hora: '' };
-
-    return {
-      data: d.toLocaleDateString('pt-PT'),
-      hora: d.toLocaleTimeString('pt-PT', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }),
-    };
-  };
-
-  const rows = lista.map((log) => {
-    const { data, hora } = extrairDataHora(log.criado_em || log.data);
-
-    return {
-      Data: data,
-      Hora: hora,
-      Utilizador: log.username || '',
-      Ação: log.acao || '',
-      Detalhe: log.detalhe || '',
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-
-  ws['!cols'] = [
-    { wch: 14 },
-    { wch: 10 },
-    { wch: 20 },
-    { wch: 30 },
-    { wch: 70 },
-  ];
-
-  ws['!autofilter'] = { ref: `A1:E${rows.length + 1}` };
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Relatórios');
-  XLSX.writeFile(wb, 'relatorio_logs.xlsx');
-};
-
 const obterNumFunc = (item) => obterIdFunc(item);
-
-const getText = (path, fallback, textos) => {
-  const parts = path.split('.');
-  let cur = textos;
-  for (const p of parts) cur = cur?.[p];
-  return cur ?? fallback;
-};
 
 const Button = ({ children, className = '', ...props }) => (
   <button className={className} {...props}>{children}</button>
 );
 
+/**
+ * Seletor de atribuição bilateral de hospitais para utilizadores e funcionários.
+ * @component
+ */
 const SelectorHospitais = ({
   hospitaisDisponiveisTotais = [],
   valoresSelecionados = [],
@@ -225,17 +212,6 @@ const SelectorHospitais = ({
   onPesquisaSelecionadosChange,
   textos = {},
 }) => {
-  const {
-    hospitaisDisponiveis = 'Hospitais disponíveis',
-    hospitaisSelecionados = 'Hospitais selecionados',
-    semHospitaisDisponiveis = 'Sem hospitais disponíveis.',
-    nenhumHospitalSelecionado = 'Nenhum hospital selecionado.',
-    semLocalizacao = 'Sem localização',
-    adicionar = 'Adicionar',
-    remover = 'Remover',
-    pesquisarHospital = 'Pesquisar hospital',
-  } = textos;
-
   const getHospitalId = (h) => Number(h?.idhosp ?? h?.id_hosp ?? h?.idHosp ?? h?.id ?? 0);
 
   const idsSelecionados = (valoresSelecionados || [])
@@ -274,30 +250,30 @@ const SelectorHospitais = ({
   return (
     <div className="selector-hospitais">
       <div className="selector-hospitais-coluna">
-        <h4 className="selector-hospitais-titulo">{hospitaisDisponiveis}</h4>
+        <h4 className="selector-hospitais-titulo">{textos?.hospitaisDisponiveis || "Hospitais disponíveis"}</h4>
         <input
           type="text"
           className="selector-hospitais-search"
           value={pesquisaDisponiveis}
           onChange={(e) => onPesquisaDisponiveisChange?.(e.target.value)}
-          placeholder={pesquisarHospital}
+          placeholder={textos?.pesquisarHospital || "Pesquisar hospital..."}
         />
         <div className="selector-hospitais-lista">
           {disponiveis.length === 0 ? (
-            <p className="selector-hospitais-vazio">{semHospitaisDisponiveis}</p>
+            <p className="selector-hospitais-vazio">{textos?.semHospitaisDisponiveis || "Sem hospitais disponíveis."}</p>
           ) : (
             disponiveis.map((h) => (
               <div key={getHospitalId(h)} className="selector-hospitais-item">
                 <div className="selector-hospitais-info">
                   <span className="selector-hospitais-nome">{h.nome}</span>
-                  <span className="selector-hospitais-meta">{h.localidade || semLocalizacao}</span>
+                  <span className="selector-hospitais-meta">{h.localidade || (textos?.semLocalizacao || "Sem localização")}</span>
                 </div>
                 <button
                   type="button"
                   className="selector-hospitais-acao selector-hospitais-acao--add"
                   onClick={() => adicionarHospital(getHospitalId(h))}
                 >
-                  {adicionar}
+                  {textos?.adicionar || "Adicionar"}
                 </button>
               </div>
             ))
@@ -306,30 +282,30 @@ const SelectorHospitais = ({
       </div>
 
       <div className="selector-hospitais-coluna">
-        <h4 className="selector-hospitais-titulo">{hospitaisSelecionados}</h4>
+        <h4 className="selector-hospitais-titulo">{textos?.hospitaisSelecionados || "Hospitais selecionados"}</h4>
         <input
           type="text"
           className="selector-hospitais-search"
           value={pesquisaSelecionados}
           onChange={(e) => onPesquisaSelecionadosChange?.(e.target.value)}
-          placeholder={pesquisarHospital}
+          placeholder={textos?.pesquisarHospital || "Pesquisar hospital..."}
         />
         <div className="selector-hospitais-lista">
           {selecionadosFiltrados.length === 0 ? (
-            <p className="selector-hospitais-vazio">{nenhumHospitalSelecionado}</p>
+            <p className="selector-hospitais-vazio">{textos?.nenhumHospitalSelecionado || "Nenhum hospital selecionado."}</p>
           ) : (
             selecionadosFiltrados.map((h) => (
               <div key={getHospitalId(h)} className="selector-hospitais-item">
                 <div className="selector-hospitais-info">
                   <span className="selector-hospitais-nome">{h.nome}</span>
-                  <span className="selector-hospitais-meta">{h.localidade || semLocalizacao}</span>
+                  <span className="selector-hospitais-meta">{h.localidade || (textos?.semLocalizacao || "Sem localização")}</span>
                 </div>
                 <button
                   type="button"
                   className="selector-hospitais-acao selector-hospitais-acao--remove"
                   onClick={() => removerHospital(getHospitalId(h))}
                 >
-                  {remover}
+                  {textos?.remover || "Remover"}
                 </button>
               </div>
             ))
@@ -340,6 +316,10 @@ const SelectorHospitais = ({
   );
 };
 
+/**
+ * Componente Geral do Dashboard de Administração (SIAGUH).
+ * @component
+ */
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -351,7 +331,6 @@ export default function AdminDashboard() {
 
   const tt = (key, fallback) => tGeral?.[key] ?? fallback;
   const ta = (key, fallback) => tAdmin?.[key] ?? fallback;
-
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [mainMenu, setMainMenu] = useState('utilizadores');
@@ -416,7 +395,6 @@ export default function AdminDashboard() {
   const [funcionarioAutenticadoNome, setFuncionarioAutenticadoNome] = useState(ta('tituloPainel', 'Administrator Panel'));
   const [fotoUtilizador, setFotoUtilizador] = useState('');
 
- 
   const resetMensagens = () => {
     setMensagemUser(''); setErroUser('');
     setMensagemFunc(''); setErroFunc('');
@@ -439,12 +417,10 @@ export default function AdminDashboard() {
 
   const normalizarRole = (valor) => {
     const v = normalizar(valor || "");
-
     if (v === "admin") return ROLES.ADMIN;
     if (v === "medico" || v === "médico" || v === "doctor") return ROLES.MEDICO;
     if (v === "enfermeiro") return ROLES.ENFERMEIRO;
     if (v === "rececionista" || v === "recepcionista") return ROLES.RECECIONISTA;
-
     return ROLES.ADMIN;
   };
 
@@ -562,13 +538,9 @@ export default function AdminDashboard() {
     await Promise.all([carregarProfissionais(), carregarUtilizadores(), carregarHospitais()]);
   };
 
-
-  useEffect(() => {
-    console.log('PROFISSIONAIS', profissionais);
-  }, [profissionais]);
-
   useEffect(() => { carregarTudo(); iniciarHistoricoBase(); }, []);
   useEffect(() => { resolverUtilizadorAutenticado(); }, [profissionais, utilizadores, tAdmin.tituloPainel]);
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setDropdownAberto(false);
@@ -576,6 +548,7 @@ export default function AdminDashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
   useEffect(() => {
     if (mainMenu === 'relatorios') carregarLogs();
   }, [mainMenu]);
@@ -605,8 +578,6 @@ export default function AdminDashboard() {
 
   const logsFiltrados = useMemo(() => {
     let resultado = logs;
-
-    // filtrar por termo (ação, detalhe, username)
     if (filtroLogTermo) {
       const termo = normalizar(filtroLogTermo);
       resultado = resultado.filter(log =>
@@ -615,8 +586,6 @@ export default function AdminDashboard() {
         normalizar(log?.username || '').includes(termo)
       );
     }
-
-    // filtrar por data
     if (filtroLogData) {
       const dataAlvo = filtroLogData;
       resultado = resultado.filter(log => {
@@ -624,8 +593,6 @@ export default function AdminDashboard() {
         return dataLog && new Date(dataLog).toISOString().split('T')[0] === dataAlvo;
       });
     }
-
-    // filtrar por tipo de ação (se tiveres)
     if (tipoAcao) {
       const nAcao = normalizar(tipoAcao);
       const mapAcao = {
@@ -649,35 +616,24 @@ export default function AdminDashboard() {
         'criar-medicacao': /criar_medicacao/i,
         'remover-medicacao': /remover_medicacao/i,
       };
-
       const regex = mapAcao[nAcao];
-
-      if (!regex) return []; // não filtra se não for um tipo conhecido
-
+      if (!regex) return [];
       resultado = resultado.filter(log => {
         const acao = (log?.acao || '').toLowerCase();
         return regex.test(normalizar(acao));
       });
     }
-
     return resultado;
   }, [logs, filtroLogTermo, filtroLogData, tipoAcao]);
 
   const utilizadoresComConta = utilizadores.filter((u) => u.bloqueado !== true);
   const utilizadoresBloqueados = utilizadores.filter((u) => u.bloqueado === true);
-
-  const funcionariosSemConta = profissionais.filter(
-    (p) => !idsComConta.has(Number(obterIdFunc(p)))
-  );
-
-
+  const funcionariosSemConta = profissionais.filter((p) => !idsComConta.has(Number(obterIdFunc(p))));
 
   const utilizadoresComContaFiltrados = utilizadoresComConta.filter((u) => {
     const prof = profissionais.find((p) => obterIdFunc(p) === obterIdFunc(u));
     const nome = obterNome(prof || u);
-    const funcao = obterFuncaoTraduzida(prof || u, textos);
     const numero = obterNumFunc(u);
-
     return (
       normalizar(u?.username || '').includes(normalizar(filtroUserUsername)) &&
       normalizar(nome).includes(normalizar(filtroUserNome)) &&
@@ -688,9 +644,7 @@ export default function AdminDashboard() {
   const utilizadoresBloqueadosFiltrados = utilizadoresBloqueados.filter((u) => {
     const prof = profissionais.find((p) => obterIdFunc(p) === obterIdFunc(u));
     const nome = obterNome(prof || u);
-    const funcao = obterFuncaoTraduzida(prof || u, textos);
     const numero = obterNumFunc(u);
-
     return (
       normalizar(u?.username || '').includes(normalizar(filtroUserUsername)) &&
       normalizar(nome).includes(normalizar(filtroUserNome)) &&
@@ -701,7 +655,6 @@ export default function AdminDashboard() {
   const funcionariosSemContaFiltrados = funcionariosSemConta.filter((p) => {
     const nome = obterNome(p);
     const numero = obterNumFunc(p);
-
     return (
       normalizar(nome).includes(normalizar(filtroUserNome)) &&
       String(numero).includes(filtroUserNumero)
@@ -712,7 +665,6 @@ export default function AdminDashboard() {
     const nome = obterNome(p);
     const numero = obterNumFunc(p);
     const funcao = String(obterTipoFuncRaw(p) || '').toLowerCase();
-
     return (
       normalizar(nome).includes(normalizar(filtroFuncNome)) &&
       String(numero).includes(filtroFuncNumero) &&
@@ -723,7 +675,6 @@ export default function AdminDashboard() {
   const funcionariosPesquisaNovoUser = funcionariosSemConta.filter((p) => {
     const nome = obterNome(p);
     const numero = obterNumFunc(p);
-
     return (
       normalizar(nome).includes(normalizar(pesquisaFuncionarioNovoUser)) ||
       String(numero).includes(pesquisaFuncionarioNovoUser)
@@ -736,7 +687,6 @@ export default function AdminDashboard() {
       normalizar(h.localidade || '').includes(normalizar(filtroHospitalLocalidade))
   );
 
-
   const selecionarFuncionarioNovoUser = (funcionario) => {
     setNovoUtilizador((prev) => ({
       ...prev,
@@ -745,7 +695,6 @@ export default function AdminDashboard() {
       role: obterTipoFuncRaw(funcionario) || ROLES.ADMIN,
       hospitais: extrairHospitais(funcionario),
     }));
-
     setPesquisaFuncionarioNovoUser(obterNome(funcionario));
     setDropdownAberto(false);
   };
@@ -761,11 +710,9 @@ export default function AdminDashboard() {
 
   const abrirEditarUtilizador = async (utilizador) => {
     resetMensagens();
-
     try {
       const idFunc = Number(obterIdFunc(utilizador));
-
-      const [utilizadorData, hospitaisData, profissionalData] = await Promise.all([
+      const [utilizadorData, hospitaisData, profesionalData] = await Promise.all([
         apiFetch(`/api/v1/utilizadores/${idFunc}`),
         apiFetch(`/api/v1/trabalha/funcionario/${idFunc}`),
         apiFetch(`/api/v1/profissionais/${idFunc}`),
@@ -777,53 +724,26 @@ export default function AdminDashboard() {
           .filter((id) => !Number.isNaN(id) && id > 0)
         : [];
 
-      const prof =
-        profissionalData ||
-        profissionais.find((p) => Number(obterIdFunc(p)) === idFunc);
+      const prof = profesionalData || profissionais.find((p) => Number(obterIdFunc(p)) === idFunc);
 
       setUtilizadorEditando({
         idfunc: idFunc,
         username: utilizadorData?.username ?? utilizador?.username ?? "",
         password: "",
         role: normalizarRole(
-          prof?.tipofunc ??
-          prof?.tipo_func ??
-          utilizadorData?.tipofunc ??
-          utilizadorData?.tipo_func ??
-          utilizador?.tipofunc ??
-          utilizador?.tipo_func ??
-          utilizadorData?.role ??
-          utilizador?.role
+          prof?.tipofunc ?? prof?.tipo_func ?? utilizadorData?.tipofunc ?? utilizadorData?.tipo_func ??
+          utilizador?.tipofunc ?? utilizador?.tipo_func ?? utilizadorData?.role ?? utilizador?.role
         ),
         nome: prof?.nome ?? utilizador?.nome ?? "",
         sexo: prof?.sexo ?? utilizador?.sexo ?? "M",
         bloqueado: utilizadorData?.bloqueado ?? utilizador?.bloqueado ?? false,
         hospitais: hospitaisIds,
       });
-
       setUserView("editar");
     } catch (err) {
       console.error("Erro ao abrir edição do utilizador:", err);
       setErroUser("Não foi possível carregar os dados do utilizador.");
     }
-  };
-
-  const abrirCriarAPartirFuncionario = (funcionario) => {
-    resetMensagens();
-
-    setUtilizadorEditando({
-      idfunc: obterIdFunc(funcionario),
-      nome: obterNome(funcionario),
-      tipo_func: obterTipoFuncRaw(funcionario),
-      sexo: funcionario?.sexo ?? funcionario?.Sexo ?? 'M',
-      username: gerarUsername(obterNome(funcionario)),
-      password: '',
-      role: obterTipoFuncRaw(funcionario) || ROLES.ADMIN,
-      hospitais: extrairHospitais(funcionario),
-      isNovo: true,
-    });
-
-    setUserView('editar');
   };
 
   const abrirNovoFuncionario = () => {
@@ -835,20 +755,12 @@ export default function AdminDashboard() {
 
   const abrirEditarFuncionario = async (funcionario) => {
     resetMensagens();
-
     const idfunc = Number(obterIdFunc(funcionario));
-    console.log('FUNCIONARIO CLICADO', funcionario);
-    console.log('IDFUNC', idfunc);
 
     setFuncionarioEditando({
       idfunc,
       nome: funcionario?.nome ?? '',
-      tipo_func: String(
-        funcionario?.tipo_func ??
-        funcionario?.tipofunc ??
-        funcionario?.role ??
-        ROLES.ADMIN
-      ).toLowerCase(),
+      tipo_func: String(funcionario?.tipo_func ?? funcionario?.tipofunc ?? funcionario?.role ?? ROLES.ADMIN).toLowerCase(),
       sexo: funcionario?.sexo ?? 'M',
       email: funcionario?.email ?? '',
       telefone: funcionario?.telefone ?? '',
@@ -856,29 +768,18 @@ export default function AdminDashboard() {
       foto_url: funcionario?.foto_url ?? '',
       hospitais: [],
     });
-
     setEmployeeView('editar');
 
     try {
       setLoadingProfissionais(true);
-
       const hospitaisData = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
-      console.log('HOSPITAIS DO FUNCIONARIO', hospitaisData);
-
       const idsHospitais = Array.isArray(hospitaisData)
         ? hospitaisData
           .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
           .filter((id) => !Number.isNaN(id) && id > 0)
         : [];
-
-      console.log('IDS HOSPITAIS EXTRAIDOS', idsHospitais);
-
-      setFuncionarioEditando((prev) => ({
-        ...prev,
-        hospitais: idsHospitais,
-      }));
+      setFuncionarioEditando((prev) => ({ ...prev, hospitais: idsHospitais }));
     } catch (err) {
-      console.error('ERRO HOSPITAIS FUNCIONARIO', err);
       setErroFunc('Aviso: não foi possível carregar os hospitais atuais deste funcionário.');
     } finally {
       setLoadingProfissionais(false);
@@ -987,12 +888,9 @@ export default function AdminDashboard() {
     e.preventDefault();
     setMensagemUser('');
     setErroUser('');
-
     try {
       setSubmittingUser(true);
-
       const idfunc = Number(utilizadorEditando.idfunc);
-
       const payloadUser = {
         username: utilizadorEditando.username,
         role: utilizadorEditando.role,
@@ -1021,66 +919,37 @@ export default function AdminDashboard() {
       try {
         const resAntigos = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
         hospitaisAntigos = Array.isArray(resAntigos)
-          ? resAntigos
-            .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
-            .filter((id) => !Number.isNaN(id) && id > 0)
+          ? resAntigos.map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id())).filter((id) => !Number.isNaN(id) && id > 0)
           : [];
       } catch (err) {
         console.warn('Erro ao carregar hospitais antigos do utilizador:', err);
       }
 
       const hospitaisSelecionados = Array.isArray(utilizadorEditando.hospitais)
-        ? utilizadorEditando.hospitais
-          .map((id) => Number(id))
-          .filter((id) => !Number.isNaN(id) && id > 0)
+        ? utilizadorEditando.hospitais.map((id) => Number(id)).filter((id) => !Number.isNaN(id) && id > 0)
         : [];
 
       const adicionar = hospitaisSelecionados.filter((h) => !hospitaisAntigos.includes(h));
       const remover = hospitaisAntigos.filter((h) => !hospitaisSelecionados.includes(h));
 
       for (const idhosp of adicionar) {
-        console.log('A adicionar hospital', {
-          id_func: idfunc,
-          id_hosp: idhosp,
-        });
-
         await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
-          body: JSON.stringify({
-            id_func: idfunc,
-            id_hosp: idhosp,
-          }),
+          body: JSON.stringify({ id_func: idfunc, id_hosp: idhosp }),
         });
       }
-
       for (const idhosp of remover) {
-        await apiFetch(`/api/v1/trabalha/${idfunc}/${idhosp}`, {
-          method: 'DELETE',
-        });
+        await apiFetch(`/api/v1/trabalha/${idfunc}/${idhosp}`, { method: 'DELETE' });
       }
 
       setMensagemUser(textos.admin.sucessoEditarUser);
-      adicionarHistorico(
-        'Editar utilizador',
-        `Foram atualizados os dados de ${utilizadorEditando.username}.`
-      );
-
+      adicionarHistorico('Editar utilizador', `Foram atualizados os dados de ${utilizadorEditando.username}.`);
       await carregarUtilizadores();
       await carregarProfissionais();
-
       setUtilizadorEditando(null);
       setUserView('lista');
     } catch (err) {
-      console.error('Erro ao guardar utilizador:', err);
-
-      const mensagem =
-        err?.message ||
-        err?.detail ||
-        err?.erro ||
-        (Array.isArray(err) ? JSON.stringify(err) : null) ||
-        (typeof err === 'object' ? JSON.stringify(err) : String(err));
-
-      setErroUser(mensagem);
+      setErroUser(err?.message || "Erro ao guardar alterações.");
     } finally {
       setSubmittingUser(false);
     }
@@ -1090,12 +959,9 @@ export default function AdminDashboard() {
     e.preventDefault();
     setMensagemFunc('');
     setErroFunc('');
-
     try {
       setSubmittingFunc(true);
-
       const idfunc = Number(funcionarioEditando.idfunc);
-
       const payloadFunc = {
         nome: funcionarioEditando.nome,
         tipo_func: String(funcionarioEditando.tipo_func),
@@ -1115,18 +981,14 @@ export default function AdminDashboard() {
       try {
         const resAntigos = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
         hospitaisAntigos = Array.isArray(resAntigos)
-          ? resAntigos
-            .map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id))
-            .filter((id) => !Number.isNaN(id) && id > 0)
+          ? resAntigos.map((h) => Number(h?.id_hosp ?? h?.idhosp ?? h?.idHosp ?? h?.id)).filter((id) => !Number.isNaN(id) && id > 0)
           : [];
       } catch (e) {
         console.warn('Sem hospitais anteriores ou erro ao consultar.', e);
       }
 
       const hospitaisSelecionados = Array.isArray(funcionarioEditando.hospitais)
-        ? funcionarioEditando.hospitais
-          .map((id) => Number(id))
-          .filter((id) => !Number.isNaN(id) && id > 0)
+        ? funcionarioEditando.hospitais.map((id) => Number(id)).filter((id) => !Number.isNaN(id) && id > 0)
         : [];
 
       const adicionar = hospitaisSelecionados.filter((h) => !hospitaisAntigos.includes(h));
@@ -1135,40 +997,20 @@ export default function AdminDashboard() {
       for (const idhosp of adicionar) {
         await apiFetch('/api/v1/trabalha/', {
           method: 'POST',
-          body: JSON.stringify({
-            id_func: idfunc,
-            id_hosp: idhosp,
-          }),
+          body: JSON.stringify({ id_func: idfunc, id_hosp: idhosp }),
         });
       }
-
       for (const idhosp of remover) {
-        await apiFetch(`/api/v1/trabalha/${idfunc}/${idhosp}`, {
-          method: 'DELETE',
-        });
+        await apiFetch(`/api/v1/trabalha/${idfunc}/${idhosp}`, { method: 'DELETE' });
       }
 
       setMensagemFunc(textos.admin.sucessoEditarFunc);
-      adicionarHistorico(
-        'Editar funcionário',
-        `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`
-      );
-
+      adicionarHistorico('Editar funcionário', `Foram atualizados os dados do funcionário ${funcionarioEditando.nome}.`);
       await carregarProfissionais();
-
       setFuncionarioEditando(null);
       setEmployeeView('lista');
     } catch (err) {
-      console.error('Erro ao guardar funcionário:', err);
-
-      const mensagem =
-        err?.message ||
-        err?.detail ||
-        err?.erro ||
-        (Array.isArray(err) ? JSON.stringify(err) : null) ||
-        (typeof err === 'object' ? JSON.stringify(err) : String(err));
-
-      setErroFunc(mensagem);
+      setErroFunc(err?.message || "Erro ao guardar funcionário.");
     } finally {
       setSubmittingFunc(false);
     }
@@ -1203,7 +1045,7 @@ export default function AdminDashboard() {
   };
 
   const bloquearUtilizador = async (utilizador) => {
-    if (!window.confirm(`Tens a certeza que pretendes bloquear "${utilizador.username}"?`)) return;
+    if (!window.confirm(`${ta('confirmarBloquear', 'Tens a certeza que pretendes bloquear o utilizador')} "${utilizador.username}"?`)) return;
     try {
       await apiFetch(`/api/v1/utilizadores/${utilizador.idfunc}`, {
         method: 'PUT',
@@ -1217,7 +1059,7 @@ export default function AdminDashboard() {
   };
 
   const desbloquearUtilizador = async (utilizador) => {
-    if (!window.confirm(`Tens a certeza que pretendes desbloquear "${utilizador.username}"?`)) return;
+    if (!window.confirm(`${ta('confirmarDesbloquear', 'Tens a certeza que pretendes desbloquear o utilizador')} "${utilizador.username}"?`)) return;
     try {
       await apiFetch(`/api/v1/utilizadores/${utilizador.idfunc}`, {
         method: 'PUT',
@@ -1230,39 +1072,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const exportarRelatorioSeguro = () => {
-    if (logsFiltrados.length === 0) return alert('Sem dados para exportar.');
-    const cabecalhos = ['Data/Hora', 'Utilizador', 'Ação', 'Detalhe'];
-    const linhas = logsFiltrados.map((log) => [
-      log.criado_em ? new Date(log.criado_em).toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB') : '',
-      `"${(log.username || '').replace(/"/g, '""')}"`,
-      `"${(log.acao || '').replace(/"/g, '""')}"`,
-      `"${(log.detalhe || '').replace(/"/g, '""')}"`,
-    ]);
-    const csvContent = '\uFEFF' + [cabecalhos.join(';'), ...linhas.map((l) => l.join(';'))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'relatorio_logs.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const getHospitalNomeFuncionario = (funcionario) => {
-    const arrHosp = extrairHospitais(funcionario);
-    if (arrHosp.length === 0) return '—';
-    if (arrHosp.length === 1) {
-      const hObj = hospitais.find((h) => Number(h.idhosp) === arrHosp[0]);
-      return hObj ? hObj.nome : '—';
+  const removerHospital = async (hospitalId) => {
+    if (!window.confirm(ta('confirmarRemoverHospital', 'Tem a certeza que deseja remover este hospital?'))) return;
+    try {
+      const response = await fetch(`http://localhost:3001/hospitais/${hospitalId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error(ta('erroRemoverHosp', 'Erro ao remover hospital'));
+      setHospitais((prevHospitais) => prevHospitais.filter((hospital) => hospital.idhosp !== hospitalId));
+      alert(ta('sucessoRemoverHosp', 'Hospital removido com sucesso!'));
+    } catch (error) {
+      console.error(error);
+      alert(ta('erroRemoverHosp', 'Erro ao remover hospital.'));
     }
-    return `${arrHosp.length} Hospitais`;
-  };
-
-  const getHospitalCountFuncionario = (funcionario) => {
-    const arrHosp = extrairHospitais(funcionario);
-    return arrHosp.length;
   };
 
   const [hospitaisPorFuncionario, setHospitaisPorFuncionario] = useState({});
@@ -1270,22 +1090,16 @@ export default function AdminDashboard() {
   const carregarHospitaisPorFuncionario = async () => {
     try {
       const resultado = {};
-
       for (const f of profissionais) {
         const idfunc = Number(obterIdFunc(f));
         if (!idfunc) continue;
-
         try {
           const data = await apiFetch(`/api/v1/trabalha/funcionario/${idfunc}`);
-          console.log('CONTAGEM HOSPITAIS - IDFUNC', idfunc, data);
           resultado[idfunc] = Array.isArray(data) ? data.length : 0;
         } catch (err) {
-          console.error(`Erro ao carregar hospitais do funcionário ${idfunc}:`, err);
           resultado[idfunc] = 0;
         }
       }
-
-      console.log('MAPA FINAL HOSPITAIS POR FUNCIONARIO', resultado);
       setHospitaisPorFuncionario(resultado);
     } catch (err) {
       console.error('Erro ao carregar contagem de hospitais por funcionário:', err);
@@ -1294,14 +1108,12 @@ export default function AdminDashboard() {
 
   const renderUserCenter = () => {
     if (userView === 'novo') {
-      const funcSelecionado = profissionais.find(
-        (p) => p.idfunc === Number(novoUtilizador.idfunc)
-      );
+      const funcSelecionado = profissionais.find((p) => p.idfunc === Number(novoUtilizador.idfunc));
       return (
         <section className="admin-panel-section">
           <div className="admin-edit-header">
             <div className="admin-edit-header__title-wrap">
-              <span className="admin-edit-header__eyebrow">Utilizadores</span>
+              <span className="admin-edit-header__eyebrow">{ta('menuUtilizadores', 'Users')}</span>
               <h2 className="admin-edit-header__title">{ta('btnNovoUtilizador', 'New user')}</h2>
               <p className="admin-edit-header__subtitle">{ta('descNovoUtilizador', 'Cria uma nova conta de utilizador no sistema.')}</p>
             </div>
@@ -1316,14 +1128,12 @@ export default function AdminDashboard() {
                     id="search-func"
                     type="text"
                     className="admin-dropdown__input"
-                    placeholder={tt('pesquisarNome', 'Pesquisar nome')}
+                    placeholder={tt('pesquisarNome', 'Pesquisar nome...')}
                     value={pesquisaFuncionarioNovoUser}
                     onChange={(e) => {
                       setPesquisaFuncionarioNovoUser(e.target.value);
                       setDropdownAberto(true);
-                      if (!e.target.value) {
-                        setNovoUtilizador((prev) => ({ ...prev, idfunc: '', username: '' }));
-                      }
+                      if (!e.target.value) setNovoUtilizador((prev) => ({ ...prev, idfunc: '', username: '' }));
                     }}
                     onFocus={() => setDropdownAberto(true)}
                     autoComplete="off"
@@ -1346,9 +1156,7 @@ export default function AdminDashboard() {
                             onClick={() => selecionarFuncionarioNovoUser(p)}
                           >
                             <span className="admin-dropdown__item-name">{p.nome}</span>
-                            <span className="admin-dropdown__item-meta">
-                              #{p.idfunc} · {p.tipo_func}
-                            </span>
+                            <span className="admin-dropdown__item-meta">#{p.idfunc} · {p.tipo_func}</span>
                           </button>
                         ))
                       )}
@@ -1359,38 +1167,17 @@ export default function AdminDashboard() {
 
               <div className="admin-form__group">
                 <label htmlFor="user-username">{ta('lblUsername', 'Username')}</label>
-                <input
-                  id="user-username"
-                  name="username"
-                  type="text"
-                  value={novoUtilizador.username}
-                  onChange={handleNovoUserChange}
-                  required
-                />
+                <input id="user-username" name="username" type="text" value={novoUtilizador.username} onChange={handleNovoUserChange} required />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="user-password">{ta('lblPassword', 'Password')}</label>
-                <input
-                  id="user-password"
-                  name="password"
-                  type="password"
-                  value={novoUtilizador.password}
-                  onChange={handleNovoUserChange}
-                  required
-                />
+                <input id="user-password" name="password" type="password" value={novoUtilizador.password} onChange={handleNovoUserChange} required />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="user-role">{ta('lblFuncao', 'Role')}</label>
-                <select
-                  id="user-role"
-                  name="role"
-                  value={novoUtilizador.role}
-                  onChange={handleNovoUserChange}
-                >
+                <select id="user-role" name="role" value={novoUtilizador.role} onChange={handleNovoUserChange}>
                   <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
-                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médio')}</option>
+                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médico')}</option>
                   <option value={ROLES.ENFERMEIRO}>{ta('roleEnfermeiro', 'Enfermeiro')}</option>
                   <option value={ROLES.RECECIONISTA}>{ta('roleRececionista', 'Rececionista')}</option>
                 </select>
@@ -1402,8 +1189,18 @@ export default function AdminDashboard() {
                   hospitaisDisponiveisTotais={hospitais}
                   valoresSelecionados={novoUtilizador.hospitais}
                   onChange={(novosIds) => setNovoUtilizador(prev => ({ ...prev, hospitais: novosIds }))}
-                  pesquisa={pesquisaHospitalAssociacao}
-                  onPesquisaChange={setPesquisaHospitalAssociacao}
+                  pesquisaDisponiveis={pesquisaHospitalAssociacao}
+                  onPesquisaDisponiveisChange={setPesquisaHospitalAssociacao}
+                  textos={{
+                    hospitaisDisponiveis: ta('hospitaisDisponiveis'),
+                    hospitaisSelecionados: ta('hospitaisSelecionados'),
+                    semHospitaisDisponiveis: ta('semHospitaisDisponiveis'),
+                    nenhumHospitalSelecionado: ta('nenhumHospitalSelecionado'),
+                    semLocalizacao: ta('semLocalizacao'),
+                    adicionar: ta('adicionar'),
+                    remover: ta('remover'),
+                    pesquisarHospital: ta('pesquisarHospital'),
+                  }}
                 />
               </div>
             </div>
@@ -1414,21 +1211,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className="admin-actions-row">
-              <button
-                type="submit"
-                className="admin-form__submit"
-                disabled={submittingUser || !novoUtilizador.idfunc}
-              >
+              <button type="submit" className="admin-form__submit" disabled={submittingUser || !novoUtilizador.idfunc}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span>{submittingUser ? tt('aCarregar', 'A carregar') : ta('btnNovoUtilizador', 'New user')}</span>
               </button>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                onClick={() => setUserView('lista')}
-              >
+              <button type="button" className="admin-secondary-button" onClick={() => setUserView('lista')}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -1445,60 +1234,31 @@ export default function AdminDashboard() {
         <section className="admin-panel-section">
           <div className="admin-edit-header">
             <div className="admin-edit-header__title-wrap">
-              <span className="admin-edit-header__eyebrow">Utilizadores</span>
-              <h2 className="admin-edit-header__title">
-                {utilizadorEditando.isNovo ? ta('btnNovoUtilizador', 'New user') : tt('editar', 'Editar')}
-              </h2>
+              <span className="admin-edit-header__eyebrow">{ta('menuUtilizadores', 'Users')}</span>
+              <h2 className="admin-edit-header__title">{utilizadorEditando.isNovo ? ta('btnNovoUtilizador', 'New user') : tt('editar', 'Editar')}</h2>
               <p className="admin-edit-header__subtitle">
-                {utilizadorEditando.isNovo
-                  ? ta('descNovoUtilizador', 'Cria uma nova conta de utilizador.')
-                  : ta('descEditarUtilizador', 'Atualiza os dados do utilizador.')}
+                {utilizadorEditando.isNovo ? ta('descNovoUtilizador', 'Cria uma nova conta.') : ta('descEditarUtilizador', 'Atualiza os dados do utilizador.')}
               </p>
             </div>
-
-            <div className="admin-edit-header__badge">
-              #{utilizadorEditando.idfunc} — {utilizadorEditando.nome}
-            </div>
+            <div className="admin-edit-header__badge">#{utilizadorEditando.idfunc} — {utilizadorEditando.nome}</div>
           </div>
 
-          <form
-            className="admin-form"
-            onSubmit={utilizadorEditando.isNovo ? criarUtilizador : guardarUtilizadorEditado}
-          >
+          <form className="admin-form" onSubmit={utilizadorEditando.isNovo ? criarUtilizador : guardarUtilizadorEditado}>
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label htmlFor="edit-user-id">{ta('lblNumFuncionario', 'Employee No.')}</label>
                 <input id="edit-user-id" type="text" value={utilizadorEditando.idfunc || ''} readOnly />
               </div>
-
-              <div className="admin-formgroup">
+              <div className="admin-form__group">
                 <label htmlFor="edit-user-nome">{ta("lblNome", "Name")}</label>
-                <input
-                  id="edit-user-nome"
-                  name="nome"
-                  type="text"
-                  value={utilizadorEditando.nome}
-                  readOnly
-                />
+                <input id="edit-user-nome" name="nome" type="text" value={utilizadorEditando.nome} readOnly />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-user-username">{ta('lblUsername', 'Username')}</label>
-                <input
-                  id="edit-user-username"
-                  name="username"
-                  type="text"
-                  value={utilizadorEditando.username || ''}
-                  onChange={handleEditarUserChange}
-                />
+                <input id="edit-user-username" name="username" type="text" value={utilizadorEditando.username || ''} onChange={handleEditarUserChange} />
               </div>
-
               <div className="admin-form__group">
-                <label htmlFor="edit-user-password">
-                  {utilizadorEditando.isNovo
-                    ? ta('lblPassword', 'Password')
-                    : `${ta('lblPassword', 'Password')} (opcional)`}
-                </label>
+                <label htmlFor="edit-user-password">{utilizadorEditando.isNovo ? ta('lblPassword', 'Password') : `${ta('lblPassword', 'Password')} (opcional)`}</label>
                 <input
                   id="edit-user-password"
                   name="password"
@@ -1506,37 +1266,21 @@ export default function AdminDashboard() {
                   value={utilizadorEditando.password || ''}
                   onChange={handleEditarUserChange}
                   required={!!utilizadorEditando.isNovo}
-                  placeholder={
-                    utilizadorEditando.isNovo
-                      ? ta('lblPassword', 'Password')
-                      : ta('placeholderPasswordOpcional', 'Deixa vazio para manter a password atual')
-                  }
+                  placeholder={utilizadorEditando.isNovo ? ta('lblPassword', 'Password') : ta('placeholderPasswordOpcional')}
                 />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-user-role">{ta('lblFuncao', 'Role')}</label>
-                <select
-                  id="edit-user-role"
-                  name="role"
-                  value={utilizadorEditando.role || ROLES.ADMIN}
-                  onChange={handleEditarUserChange}
-                >
+                <select id="edit-user-role" name="role" value={utilizadorEditando.role || ROLES.ADMIN} onChange={handleEditarUserChange}>
                   <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
-                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médio')}</option>
+                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médico')}</option>
                   <option value={ROLES.ENFERMEIRO}>{ta('roleEnfermeiro', 'Enfermeiro')}</option>
                   <option value={ROLES.RECECIONISTA}>{ta('roleRececionista', 'Rececionista')}</option>
                 </select>
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-user-sexo">{ta('lblSexo', 'Gender')}</label>
-                <select
-                  id="edit-user-sexo"
-                  name="sexo"
-                  value={utilizadorEditando.sexo || 'M'}
-                  onChange={handleEditarUserChange}
-                >
+                <select id="edit-user-sexo" name="sexo" value={utilizadorEditando.sexo || 'M'} onChange={handleEditarUserChange}>
                   <option value="M">{ta('sexoMasculino', 'Masculino')}</option>
                   <option value="F">{ta('sexoFeminino', 'Feminino')}</option>
                 </select>
@@ -1548,8 +1292,18 @@ export default function AdminDashboard() {
                   hospitaisDisponiveisTotais={hospitais}
                   valoresSelecionados={utilizadorEditando.hospitais}
                   onChange={(novosIds) => setUtilizadorEditando(prev => ({ ...prev, hospitais: novosIds }))}
-                  pesquisa={pesquisaHospitalAssociacao}
-                  onPesquisaChange={setPesquisaHospitalAssociacao}
+                  pesquisaDisponiveis={pesquisaHospitalAssociacao}
+                  onPesquisaDisponiveisChange={setPesquisaHospitalAssociacao}
+                  textos={{
+                    hospitaisDisponiveis: ta('hospitaisDisponiveis'),
+                    hospitaisSelecionados: ta('hospitaisSelecionados'),
+                    semHospitaisDisponiveis: ta('semHospitaisDisponiveis'),
+                    nenhumHospitalSelecionado: ta('nenhumHospitalSelecionado'),
+                    semLocalizacao: ta('semLocalizacao'),
+                    adicionar: ta('adicionar'),
+                    remover: ta('remover'),
+                    pesquisarHospital: ta('pesquisarHospital'),
+                  }}
                 />
               </div>
             </div>
@@ -1559,7 +1313,6 @@ export default function AdminDashboard() {
               {erroUser && <p className="admin-form__error">{erroUser}</p>}
             </div>
 
-
             <div className="admin-actions-row">
               <button type="submit" className="admin-form__submit">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1567,14 +1320,7 @@ export default function AdminDashboard() {
                 </svg>
                 <span>{tt('guardar', 'Guardar')}</span>
               </button>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                onClick={() => {
-                  setUtilizadorEditando(null);
-                  setUserView('lista');
-                }}
-              >
+              <button type="button" className="admin-secondary-button" onClick={() => { setUtilizadorEditando(null); setUserView('lista'); }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -1589,8 +1335,8 @@ export default function AdminDashboard() {
     return (
       <section className="admin-panel-section">
         <div className="admin-edit-header">
-         <div className="admin-content-top">
-            <h2>Painel do administrador</h2>
+          <div className="admin-content-top">
+            <h2>{ta('tituloPainel', 'Painel do administrador')}</h2>
           </div>
         </div>
 
@@ -1609,30 +1355,15 @@ export default function AdminDashboard() {
         <div className="admin-filters">
           <div className="admin-form__group">
             <label htmlFor="filter-user-username">{ta('lblUsername', 'Username')}</label>
-            <input
-              id="filter-user-username"
-              type="text"
-              value={filtroUserUsername}
-              onChange={(e) => setFiltroUserUsername(e.target.value)}
-            />
+            <input id="filter-user-username" type="text" value={filtroUserUsername} onChange={(e) => setFiltroUserUsername(e.target.value)} />
           </div>
           <div className="admin-form__group">
             <label htmlFor="filter-user-nome">{tt('pesquisarNome', 'Pesquisar nome')}</label>
-            <input
-              id="filter-user-nome"
-              type="text"
-              value={filtroUserNome}
-              onChange={(e) => setFiltroUserNome(e.target.value)}
-            />
+            <input id="filter-user-nome" type="text" value={filtroUserNome} onChange={(e) => setFiltroUserNome(e.target.value)} />
           </div>
           <div className="admin-form__group">
             <label htmlFor="filter-user-num">{tt('pesquisarNumero', 'Pesquisar número')}</label>
-            <input
-              id="filter-user-num"
-              type="text"
-              value={filtroUserNumero}
-              onChange={(e) => setFiltroUserNumero(e.target.value)}
-            />
+            <input id="filter-user-num" type="text" value={filtroUserNumero} onChange={(e) => setFiltroUserNumero(e.target.value)} />
           </div>
         </div>
 
@@ -1654,23 +1385,14 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {loadingUtilizadores || loadingProfissionais ? (
-                  <tr>
-                    <td colSpan="5">{textos.geral.aCarregar}</td>
-                  </tr>
+                  <tr><td colSpan="5">{tt('aCarregar', 'A carregar')}</td></tr>
                 ) : utilizadoresComContaFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan="5">{textos.geral.semResultados}</td>
-                  </tr>
+                  <tr><td colSpan="5">{tt('semResultados', 'Sem resultados')}</td></tr>
                 ) : (
                   utilizadoresComContaFiltrados.map((u, index) => {
-                    const prof = profissionais.find(
-                      (p) =>
-                        Number(p?.idfunc ?? p?.id_func ?? p?.IdFunc) ===
-                        Number(u?.idfunc ?? u?.id_func ?? u?.IdFunc)
-                    );
+                    const prof = profissionais.find(p => Number(p?.idfunc ?? p?.id_func ?? p?.IdFunc) === Number(u?.idfunc ?? u?.id_func ?? u?.IdFunc));
                     const nome = obterNome(prof || u);
                     const funcao = obterFuncaoTraduzida(prof || u, textos);
-
                     return (
                       <tr key={`user-${u?.idfunc ?? u?.id_func ?? u?.username ?? index}`}>
                         <td>{u?.idfunc ?? '—'}</td>
@@ -1678,26 +1400,18 @@ export default function AdminDashboard() {
                         <td>{u?.username ?? '—'}</td>
                         <td>{funcao}</td>
                         <td style={{ display: 'flex', gap: '0.6rem' }}>
-                          <button
-                            type="button"
-                            className="admin-secondary-button"
-                            onClick={() => abrirEditarUtilizador(u)}
-                          >
+                          <button type="button" className="admin-secondary-button" onClick={() => abrirEditarUtilizador(u)}>
                             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M12.854.146a.5.5 0 0 0-.708 0L10.5 1.793 14.207 5.5l1.646-1.647a.5.5 0 0 0 0-.708l-3-3zM13.5 6.207 9.793 2.5 3 9.293V13h3.707L13.5 6.207z" />
                             </svg>
-                            <span>{textos.geral.editar}</span>
+                            <span>{tt('editar', 'Editar')}</span>
                           </button>
-                          <button
-                            type="button"
-                            className="admin-secondary-button admin-button--danger"
-                            onClick={() => bloquearUtilizador(u)}
-                          >
+                          <button type="button" className="admin-secondary-button admin-button--danger" onClick={() => bloquearUtilizador(u)}>
                             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <circle cx="12" cy="12" r="10" />
                               <path d="M15 9l-6 6M9 9l6 6" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                            <span>{textos.admin.btnBloquear}</span>
+                            <span>{ta('btnBloquear', 'Bloquear')}</span>
                           </button>
                         </td>
                       </tr>
@@ -1727,20 +1441,12 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {loadingUtilizadores ? (
-                  <tr>
-                    <td colSpan="5">{tt('aCarregar', 'A carregar')}</td>
-                  </tr>
+                  <tr><td colSpan="5">{tt('aCarregar', 'A carregar')}</td></tr>
                 ) : utilizadoresBloqueadosFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan="5">{ta('semBloqueados', 'No blocked users.')}</td>
-                  </tr>
+                  <tr><td colSpan="5">{ta('semBloqueados', 'No blocked users.')}</td></tr>
                 ) : (
                   utilizadoresBloqueadosFiltrados.map((u) => {
-                    const prof = profissionais.find(
-                      (p) =>
-                        Number(p?.idfunc ?? p?.id_func ?? p?.IdFunc) ===
-                        Number(u?.idfunc ?? u?.id_func ?? u?.IdFunc)
-                    );
+                    const prof = profissionais.find(p => Number(p?.idfunc ?? p?.id_func ?? p?.IdFunc) === Number(u?.idfunc ?? u?.id_func ?? u?.IdFunc));
                     return (
                       <tr key={u.idfunc || u.username}>
                         <td>{u.idfunc}</td>
@@ -1748,11 +1454,7 @@ export default function AdminDashboard() {
                         <td>{u.username}</td>
                         <td>{u.role || prof?.tipofunc || '—'}</td>
                         <td>
-                          <button
-                            type="button"
-                            className="admin-button--success admin-secondary-button"
-                            onClick={() => desbloquearUtilizador(u)}
-                          >
+                          <button type="button" className="admin-button--success admin-secondary-button" onClick={() => desbloquearUtilizador(u)}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                               <path d="M7 11V7a5 5 0 0 1 9.9-1" />
@@ -1772,14 +1474,13 @@ export default function AdminDashboard() {
     );
   };
 
-
   const renderEmployeeCenter = () => {
     if (employeeView === 'novo') {
       return (
         <section className="admin-panel-section">
           <div className="admin-edit-header">
             <div className="admin-edit-header__title-wrap">
-              <span className="admin-edit-header__eyebrow">Funcionários</span>
+              <span className="admin-edit-header__eyebrow">{ta('menuFuncionarios', 'Employees')}</span>
               <h2 className="admin-edit-header__title">{ta('btnNovoFuncionario', 'New employee')}</h2>
               <p className="admin-edit-header__subtitle">{ta('descNovoFuncionario', 'Cria um novo registo de funcionário no sistema.')}</p>
             </div>
@@ -1789,39 +1490,20 @@ export default function AdminDashboard() {
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label htmlFor="func-nome">{ta('lblNome', 'Name')}</label>
-                <input
-                  id="func-nome"
-                  name="nome"
-                  type="text"
-                  value={novoProfissional.nome || ''}
-                  onChange={handleNovoProfChange}
-                  required
-                />
+                <input id="func-nome" name="nome" type="text" value={novoProfissional.nome || ''} onChange={handleNovoProfChange} required />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="func-role">{ta('lblFuncao', 'Role')}</label>
-                <select
-                  id="func-role"
-                  name="tipo_func"
-                  value={novoProfissional.tipo_func || ''}
-                  onChange={handleNovoProfChange}
-                >
+                <select id="func-role" name="tipo_func" value={novoProfissional.tipo_func || ''} onChange={handleNovoProfChange}>
                   <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
-                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médio')}</option>
+                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médico')}</option>
                   <option value={ROLES.ENFERMEIRO}>{ta('roleEnfermeiro', 'Enfermeiro')}</option>
                   <option value={ROLES.RECECIONISTA}>{ta('roleRececionista', 'Rececionista')}</option>
                 </select>
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="func-sexo">{ta('lblSexo', 'Gender')}</label>
-                <select
-                  id="func-sexo"
-                  name="sexo"
-                  value={novoProfissional.sexo || 'M'}
-                  onChange={handleNovoProfChange}
-                >
+                <select id="func-sexo" name="sexo" value={novoProfissional.sexo || 'M'} onChange={handleNovoProfChange}>
                   <option value="M">{ta('sexoMasculino', 'Masculino')}</option>
                   <option value="F">{ta('sexoFeminino', 'Feminino')}</option>
                 </select>
@@ -1832,11 +1514,19 @@ export default function AdminDashboard() {
                 <SelectorHospitais
                   hospitaisDisponiveisTotais={hospitais}
                   valoresSelecionados={novoProfissional.hospitais || []}
-                  onChange={(novosIds) =>
-                    setNovoProfissional((prev) => ({ ...prev, hospitais: novosIds }))
-                  }
-                  pesquisa={pesquisaHospitalAssociacao}
-                  onPesquisaChange={setPesquisaHospitalAssociacao}
+                  onChange={(novosIds) => setNovoProfissional((prev) => ({ ...prev, hospitais: novosIds }))}
+                  pesquisaDisponiveis={pesquisaHospitalAssociacao}
+                  onPesquisaDisponiveisChange={setPesquisaHospitalAssociacao}
+                  textos={{
+                    hospitaisDisponiveis: ta('hospitaisDisponiveis'),
+                    hospitaisSelecionados: ta('hospitaisSelecionados'),
+                    semHospitaisDisponiveis: ta('semHospitaisDisponiveis'),
+                    nenhumHospitalSelecionado: ta('nenhumHospitalSelecionado'),
+                    semLocalizacao: ta('semLocalizacao'),
+                    adicionar: ta('adicionar'),
+                    remover: ta('remover'),
+                    pesquisarHospital: ta('pesquisarHospital'),
+                  }}
                 />
               </div>
             </div>
@@ -1853,11 +1543,7 @@ export default function AdminDashboard() {
                 </svg>
                 <span>{submittingFunc ? tt('aCarregar', 'A carregar') : tt('guardar', 'Guardar')}</span>
               </button>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                onClick={() => setEmployeeView('lista')}
-              >
+              <button type="button" className="admin-secondary-button" onClick={() => setEmployeeView('lista')}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -1874,98 +1560,50 @@ export default function AdminDashboard() {
         <section className="admin-panel-section">
           <div className="admin-edit-header">
             <div className="admin-edit-header__title-wrap">
-              <span className="admin-edit-header__eyebrow">Funcionários</span>
+              <span className="admin-edit-header__eyebrow">{ta('menuFuncionarios', 'Employees')}</span>
               <h2 className="admin-edit-header__title">{tt('editar', 'Editar')}</h2>
               <p className="admin-edit-header__subtitle">{ta('descEditarFuncionario', 'Atualiza os dados profissionais e os hospitais associados.')}</p>
             </div>
-
-            <div className="admin-edit-header__badge">
-              #{funcionarioEditando?.idfunc ?? '—'} — {funcionarioEditando?.nome}
-            </div>
+            <div className="admin-edit-header__badge">#{funcionarioEditando?.idfunc ?? '—'} — {funcionarioEditando?.nome}</div>
           </div>
 
           <form className="admin-form" onSubmit={guardarFuncionarioEditado}>
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label htmlFor="edit-func-id">{ta('lblNumFuncionario', 'Employee No.')}</label>
-                <input
-                  id="edit-func-id"
-                  type="text"
-                  value={funcionarioEditando.idfunc || ''}
-                  readOnly
-                />
+                <input id="edit-func-id" type="text" value={funcionarioEditando.idfunc || ''} readOnly />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-func-nome">{ta('lblNome', 'Name')}</label>
-                <input
-                  id="edit-func-nome"
-                  name="nome"
-                  type="text"
-                  value={funcionarioEditando.nome || ''}
-                  onChange={handleEditarFuncChange}
-                />
+                <input id="edit-func-nome" name="nome" type="text" value={funcionarioEditando.nome || ''} onChange={handleEditarFuncChange} />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-func-role">{ta('lblFuncao', 'Role')}</label>
-                <select
-                  id="edit-func-role"
-                  name="tipo_func"
-                  value={funcionarioEditando.tipo_func || ''}
-                  onChange={handleEditarFuncChange}
-                >
+                <select id="edit-func-role" name="tipo_func" value={funcionarioEditando.tipo_func || ''} onChange={handleEditarFuncChange}>
                   <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
-                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médio')}</option>
+                  <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médico')}</option>
                   <option value={ROLES.ENFERMEIRO}>{ta('roleEnfermeiro', 'Enfermeiro')}</option>
                   <option value={ROLES.RECECIONISTA}>{ta('roleRececionista', 'Rececionista')}</option>
                 </select>
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-func-sexo">{ta('lblSexo', 'Gender')}</label>
-                <select
-                  id="edit-func-sexo"
-                  name="sexo"
-                  value={funcionarioEditando.sexo || 'M'}
-                  onChange={handleEditarFuncChange}
-                >
+                <select id="edit-func-sexo" name="sexo" value={funcionarioEditando.sexo || 'M'} onChange={handleEditarFuncChange}>
                   <option value="M">{ta('sexoMasculino', 'Masculino')}</option>
                   <option value="F">{ta('sexoFeminino', 'Feminino')}</option>
                 </select>
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-func-email">{ta('lblEmail', 'Email')}</label>
-                <input
-                  id="edit-func-email"
-                  name="email"
-                  type="email"
-                  value={funcionarioEditando.email || ''}
-                  onChange={handleEditarFuncChange}
-                />
+                <input id="edit-func-email" name="email" type="email" value={funcionarioEditando.email || ''} onChange={handleEditarFuncChange} />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="edit-func-telefone">{ta('lblContacto', 'Contact')}</label>
-                <input
-                  id="edit-func-telefone"
-                  name="telefone"
-                  type="text"
-                  value={funcionarioEditando.telefone || ''}
-                  onChange={handleEditarFuncChange}
-                />
+                <input id="edit-func-telefone" name="telefone" type="text" value={funcionarioEditando.telefone || ''} onChange={handleEditarFuncChange} />
               </div>
-
               <div className="admin-form__group admin-form__group--full">
                 <label htmlFor="edit-func-biografia">{ta('lblBiografia', 'Biography')}</label>
-                <textarea
-                  id="edit-func-biografia"
-                  name="biografia"
-                  className="admin-form__textarea"
-                  value={funcionarioEditando.biografia || ''}
-                  onChange={handleEditarFuncChange}
-                />
+                <textarea id="edit-func-biografia" name="biografia" className="admin-form__textarea" value={funcionarioEditando.biografia || ''} onChange={handleEditarFuncChange} />
               </div>
 
               <div className="admin-form__group admin-form__group--full">
@@ -1973,11 +1611,19 @@ export default function AdminDashboard() {
                 <SelectorHospitais
                   hospitaisDisponiveisTotais={hospitais}
                   valoresSelecionados={funcionarioEditando.hospitais || []}
-                  onChange={(novosIds) =>
-                    setFuncionarioEditando((prev) => ({ ...prev, hospitais: novosIds }))
-                  }
-                  pesquisa={pesquisaHospitalAssociacao}
-                  onPesquisaChange={setPesquisaHospitalAssociacao}
+                  onChange={(novosIds) => setFuncionarioEditando((prev) => ({ ...prev, hospitais: novosIds }))}
+                  pesquisaDisponiveis={pesquisaHospitalAssociacao}
+                  onPesquisaDisponiveisChange={setPesquisaHospitalAssociacao}
+                  textos={{
+                    hospitaisDisponiveis: ta('hospitaisDisponiveis'),
+                    hospitaisSelecionados: ta('hospitaisSelecionados'),
+                    semHospitaisDisponiveis: ta('semHospitaisDisponiveis'),
+                    nenhumHospitalSelecionado: ta('nenhumHospitalSelecionado'),
+                    semLocalizacao: ta('semLocalizacao'),
+                    adicionar: ta('adicionar'),
+                    remover: ta('remover'),
+                    pesquisarHospital: ta('pesquisarHospital'),
+                  }}
                 />
               </div>
             </div>
@@ -1994,14 +1640,7 @@ export default function AdminDashboard() {
                 </svg>
                 <span>{tt('guardar', 'Guardar')}</span>
               </button>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                onClick={() => {
-                  setFuncionarioEditando(null);
-                  setEmployeeView('lista');
-                }}
-              >
+              <button type="button" className="admin-secondary-button" onClick={() => { setFuncionarioEditando(null); setEmployeeView('lista'); }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -2017,9 +1656,9 @@ export default function AdminDashboard() {
       <section className="admin-panel-section">
         <div className="admin-edit-header">
           <div className="admin-edit-header__title-wrap">
-            <span className="admin-edit-header__eyebrow">Funcionários</span>
+            <span className="admin-edit-header__eyebrow">{ta('menuFuncionarios', 'Employees')}</span>
             <h2 className="admin-edit-header__title">{ta('menuFuncionarios', 'Employees')}</h2>
-            <p className="admin-edit-header__subtitle">{ta('descFuncionarios', 'Manage employees, create new records and assign hospitals.')}</p>
+            <p className="admin-edit-header__subtitle">{ta('descFuncionarios', 'Gere funcionários, cria novos registos e atribui hospitais.')}</p>
           </div>
         </div>
 
@@ -2035,34 +1674,18 @@ export default function AdminDashboard() {
         <div className="admin-filters">
           <div className="admin-form__group">
             <label htmlFor="filter-func-nome">{tt('pesquisarNome', 'Pesquisar nome')}</label>
-            <input
-              id="filter-func-nome"
-              type="text"
-              value={filtroFuncNome}
-              onChange={(e) => setFiltroFuncNome(e.target.value)}
-            />
+            <input id="filter-func-nome" type="text" value={filtroFuncNome} onChange={(e) => setFiltroFuncNome(e.target.value)} />
           </div>
-
           <div className="admin-form__group">
             <label htmlFor="filter-func-num">{tt('pesquisarNumero', 'Pesquisar número')}</label>
-            <input
-              id="filter-func-num"
-              type="text"
-              value={filtroFuncNumero}
-              onChange={(e) => setFiltroFuncNumero(e.target.value)}
-            />
+            <input id="filter-func-num" type="text" value={filtroFuncNumero} onChange={(e) => setFiltroFuncNumero(e.target.value)} />
           </div>
-
           <div className="admin-form__group">
             <label htmlFor="filter-func-tipo">{ta('lblFuncao', 'Role')}</label>
-            <select
-              id="filter-func-tipo"
-              value={filtroFuncTipo}
-              onChange={(e) => setFiltroFuncTipo(e.target.value)}
-            >
+            <select id="filter-func-tipo" value={filtroFuncTipo} onChange={(e) => setFiltroFuncTipo(e.target.value)}>
               <option value="">{ta('todasFuncoes', 'Todas as funções')}</option>
               <option value={ROLES.ADMIN}>{ta('roleAdmin', 'Admin')}</option>
-              <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médio')}</option>
+              <option value={ROLES.MEDICO}>{ta('roleMedico', 'Médico')}</option>
               <option value={ROLES.ENFERMEIRO}>{ta('roleEnfermeiro', 'Enfermeiro')}</option>
               <option value={ROLES.RECECIONISTA}>{ta('roleRececionista', 'Rececionista')}</option>
             </select>
@@ -2083,41 +1706,29 @@ export default function AdminDashboard() {
                   <th>{textos.admin.lblNome}</th>
                   <th>{textos.admin.lblFuncao}</th>
                   <th>{textos.admin.lblHospitais}</th>
-                  <th>{ta('ações', 'Ações')}</th>
+                  <th>{ta('lblAcoes', 'Ações')}</th>
                 </tr>
               </thead>
               <tbody>
                 {loadingProfissionais ? (
-                  <tr>
-                    <td colSpan="5">{textos.geral.aCarregar}</td>
-                  </tr>
+                  <tr><td colSpan="5">{textos.geral.aCarregar}</td></tr>
                 ) : funcionariosFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan="5">{textos.geral.semResultados}</td>
-                  </tr>
+                  <tr><td colSpan="5">{textos.geral.semResultados}</td></tr>
                 ) : (
                   funcionariosFiltrados.map((f, index) => {
-                    const numero = obterNumFunc(f);
-                    const nome = obterNome(f);
-                    const funcao = obterFuncaoTraduzida(f, textos);
-                    const hospitaisCount = getHospitaisCount(f);
-
+                    const funcionariosList = funcionariosFiltrados;
                     return (
                       <tr key={`func-${obterIdFunc(f) || index}`}>
-                        <td>{numero}</td>
-                        <td>{nome}</td>
-                        <td>{funcao}</td>
+                        <td>{obterNumFunc(f)}</td>
+                        <td>{obterNome(f)}</td>
+                        <td>{obterFuncaoTraduzida(f, textos)}</td>
                         <td>
-                          <span className={`hospitais-badge count-${hospitaisCount}`}>
-                            {hospitaisCount}
+                          <span className={`hospitais-badge count-${getHospitaisCount(f)}`}>
+                            {getHospitaisCount(f)}
                           </span>
                         </td>
                         <td>
-                          <button
-                            type="button"
-                            className="admin-secondary-button"
-                            onClick={() => abrirEditarFuncionario(f)}
-                          >
+                          <button type="button" className="admin-secondary-button" onClick={() => abrirEditarFuncionario(f)}>
                             <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M12.854.146a.5.5 0 0 0-.708 0L10.5 1.793 14.207 5.5l1.646-1.647a.5.5 0 0 0 0-.708l-3-3zM13.5 6.207 9.793 2.5 3 9.293V13h3.707L13.5 6.207z" />
                             </svg>
@@ -2136,46 +1747,13 @@ export default function AdminDashboard() {
     );
   };
 
-  const removerHospital = async (hospitalId) => {
-    const confirmar = window.confirm(
-      'Tem a certeza que deseja remover este hospital?'
-    );
-
-    if (!confirmar) return;
-
-    try {
-      const response = await fetch(
-        `http://localhost:3001/hospitais/${hospitalId}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Erro ao remover hospital');
-      }
-
-      setHospitais((prevHospitais) =>
-        prevHospitais.filter(
-          (hospital) => hospital.idhosp !== hospitalId
-        )
-      );
-
-      alert('Hospital removido com sucesso!');
-    } catch (error) {
-      console.error(error);
-      alert('Erro ao remover hospital.');
-    }
-  };
-
-
   const renderHospitalCenter = () => {
     if (hospitalView === 'novo') {
       return (
         <section className={`admin-panel-section ${employeeView === 'editar' ? 'is-editing' : ''}`}>
           <div className="admin-edit-header">
             <div className="admin-edit-header__title-wrap">
-              <span className="admin-edit-header__eyebrow">Hospitais</span>
+              <span className="admin-edit-header__eyebrow">{ta('menuHospitais', 'Hospitals')}</span>
               <h2 className="admin-edit-header__title">{ta('btnNovoHospital', 'New hospital')}</h2>
               <p className="admin-edit-header__subtitle">{ta('descNovoHospital', 'Cria um novo registo de hospital no sistema.')}</p>
             </div>
@@ -2185,48 +1763,19 @@ export default function AdminDashboard() {
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label htmlFor="hosp-nome">{ta('lblNome', 'Name')}</label>
-                <input
-                  id="hosp-nome"
-                  name="nome"
-                  type="text"
-                  value={novoHospital.nome}
-                  onChange={handleNovoHospitalChange}
-                  required
-                />
+                <input id="hosp-nome" name="nome" type="text" value={novoHospital.nome} onChange={handleNovoHospitalChange} required />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="hosp-loc">{ta('lblLocalizacao', 'Location')}</label>
-                <input
-                  id="hosp-loc"
-                  name="localidade"
-                  type="text"
-                  value={novoHospital.localidade}
-                  onChange={handleNovoHospitalChange}
-                  required
-                />
+                <input id="hosp-loc" name="localidade" type="text" value={novoHospital.localidade} onChange={handleNovoHospitalChange} required />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="hosp-email">{ta('lblEmail', 'Email')}</label>
-                <input
-                  id="hosp-email"
-                  name="email"
-                  type="email"
-                  value={novoHospital.email}
-                  onChange={handleNovoHospitalChange}
-                />
+                <input id="hosp-email" name="email" type="email" value={novoHospital.email} onChange={handleNovoHospitalChange} />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="hosp-contacto">{ta('lblContacto', 'Contact')}</label>
-                <input
-                  id="hosp-contacto"
-                  name="contacto"
-                  type="text"
-                  value={novoHospital.contacto}
-                  onChange={handleNovoHospitalChange}
-                />
+                <input id="hosp-contacto" name="contacto" type="text" value={novoHospital.contacto} onChange={handleNovoHospitalChange} />
               </div>
             </div>
 
@@ -2242,11 +1791,7 @@ export default function AdminDashboard() {
                 </svg>
                 <span>{tt('guardar', 'Guardar')}</span>
               </button>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                onClick={() => setHospitalView('lista')}
-              >
+              <button type="button" className="admin-secondary-button" onClick={() => setHospitalView('lista')}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -2263,60 +1808,30 @@ export default function AdminDashboard() {
         <section className="admin-panel-section">
           <div className="admin-edit-header">
             <div className="admin-edit-header__title-wrap">
-              <span className="admin-edit-header__eyebrow">Hospitais</span>
+              <span className="admin-edit-header__eyebrow">{ta('menuHospitais', 'Hospitals')}</span>
               <h2 className="admin-edit-header__title">{tt('editar', 'Editar')}</h2>
               <p className="admin-edit-header__subtitle">{ta('descEditarHospital', 'Atualiza os dados do hospital.')}</p>
             </div>
-
-            <div className="admin-edit-header__badge">
-              {hospitalEditando.nome}
-            </div>
+            <div className="admin-edit-header__badge">{hospitalEditando.nome}</div>
           </div>
 
           <form className="admin-form" onSubmit={guardarHospitalEditado}>
             <div className="admin-form__grid">
               <div className="admin-form__group">
                 <label htmlFor="ehosp-nome">{ta('lblNome', 'Name')}</label>
-                <input
-                  id="ehosp-nome"
-                  name="nome"
-                  type="text"
-                  value={hospitalEditando.nome || ''}
-                  onChange={handleEditarHospitalChange}
-                />
+                <input id="ehosp-nome" name="nome" type="text" value={hospitalEditando.nome || ''} onChange={handleEditarHospitalChange} />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="ehosp-loc">{ta('lblLocalizacao', 'Location')}</label>
-                <input
-                  id="ehosp-loc"
-                  name="localidade"
-                  type="text"
-                  value={hospitalEditando.localidade || ''}
-                  onChange={handleEditarHospitalChange}
-                />
+                <input id="ehosp-loc" name="localidade" type="text" value={hospitalEditando.localidade || ''} onChange={handleEditarHospitalChange} />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="ehosp-email">{ta('lblEmail', 'Email')}</label>
-                <input
-                  id="ehosp-email"
-                  name="email"
-                  type="email"
-                  value={hospitalEditando.email || ''}
-                  onChange={handleEditarHospitalChange}
-                />
+                <input id="ehosp-email" name="email" type="email" value={hospitalEditando.email || ''} onChange={handleEditarHospitalChange} />
               </div>
-
               <div className="admin-form__group">
                 <label htmlFor="ehosp-contacto">{ta('lblContacto', 'Contact')}</label>
-                <input
-                  id="ehosp-contacto"
-                  name="contacto"
-                  type="text"
-                  value={hospitalEditando.contacto || ''}
-                  onChange={handleEditarHospitalChange}
-                />
+                <input id="ehosp-contacto" name="contacto" type="text" value={hospitalEditando.contacto || ''} onChange={handleEditarHospitalChange} />
               </div>
             </div>
 
@@ -2326,24 +1841,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className="admin-actions-row">
-              <button
-                type="submit"
-                className="admin-form__submit"
-                disabled={submittingHospital}
-              >
+              <button type="submit" className="admin-form__submit" disabled={submittingHospital}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span>{tt('guardar', 'Guardar')}</span>
               </button>
-              <button
-                type="button"
-                className="admin-secondary-button"
-                onClick={() => {
-                  setHospitalEditando(null);
-                  setHospitalView('lista');
-                }}
-              >
+              <button type="button" className="admin-secondary-button" onClick={() => { setHospitalEditando(null); setHospitalView('lista'); }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -2359,7 +1863,7 @@ export default function AdminDashboard() {
       <section className="admin-panel-section">
         <div className="admin-edit-header">
           <div className="admin-edit-header__title-wrap">
-            <span className="admin-edit-header__eyebrow">Hospitais</span>
+            <span className="admin-edit-header__eyebrow">{ta('menuHospitais', 'Hospitals')}</span>
             <h2 className="admin-edit-header__title">{ta('menuHospitais', 'Hospitals')}</h2>
             <p className="admin-edit-header__subtitle">{ta('descHospitais', 'List of existing hospitals and editing in the central panel.')}</p>
           </div>
@@ -2377,22 +1881,11 @@ export default function AdminDashboard() {
         <div className="admin-filters">
           <div className="admin-form__group">
             <label htmlFor="filter-hosp-nome">{tt('pesquisarNome', 'Pesquisar nome')}</label>
-            <input
-              id="filter-hosp-nome"
-              type="text"
-              value={filtroHospitalNome}
-              onChange={(e) => setFiltroHospitalNome(e.target.value)}
-            />
+            <input id="filter-hosp-nome" type="text" value={filtroHospitalNome} onChange={(e) => setFiltroHospitalNome(e.target.value)} />
           </div>
-
-          <div className="admin-form__group">
+          <div className="admin-filters-group">
             <label htmlFor="filter-hosp-loc">{ta('lblLocalizacao', 'Location')}</label>
-            <input
-              id="filter-hosp-loc"
-              type="text"
-              value={filtroHospitalLocalidade}
-              onChange={(e) => setFiltroHospitalLocalidade(e.target.value)}
-            />
+            <input id="filter-hosp-loc" type="text" value={filtroHospitalLocalidade} onChange={(e) => setFiltroHospitalLocalidade(e.target.value)} />
           </div>
         </div>
 
@@ -2415,13 +1908,9 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {loadingHospitais ? (
-                  <tr>
-                    <td colSpan="5">{tt('aCarregar', 'A carregar')}</td>
-                  </tr>
+                  <tr><td colSpan="5">{tt('aCarregar', 'A carregar')}</td></tr>
                 ) : hospitaisFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan="5">{tt('semResultados', 'Sem resultados')}</td>
-                  </tr>
+                  <tr><td colSpan="5">{tt('semResultados', 'Sem resultados')}</td></tr>
                 ) : (
                   hospitaisFiltrados.map((h) => (
                     <tr key={h.idhosp}>
@@ -2431,33 +1920,18 @@ export default function AdminDashboard() {
                       <td>{h.contacto || '—'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px' }}>
-
-                          <button
-                            type="button"
-                            className="admin-secondary-button"
-                            onClick={() => abrirEditarHospital(h)}
-                          >
+                          <button type="button" className="admin-secondary-button" onClick={() => abrirEditarHospital(h)}>
                             <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M12.854.146a.5.5 0 0 0-.708 0L10.5 1.793 14.207 5.5l1.646-1.647a.5.5 0 0 0 0-.708l-3-3zM13.5 6.207 9.793 2.5 3 9.293V13h3.707L13.5 6.207z" />
                             </svg>
                             <span>{textos.geral.editar}</span>
                           </button>
-
-                          <button
-                            type="button"
-                            className="admin-secondary-button admin-button--danger"
-                            onClick={() => removerHospital(h.idhosp)}
-                          >
+                          <button type="button" className="admin-secondary-button admin-button--danger" onClick={() => removerHospital(h.idhosp)}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path
-                                d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6h10z"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
+                              <path d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6h10z" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                            <span>Remover</span>
+                            <span>{ta('remover', 'Remover')}</span>
                           </button>
-
                         </div>
                       </td>
                     </tr>
@@ -2470,13 +1944,14 @@ export default function AdminDashboard() {
       </section>
     );
   };
+
   const renderReportsCenter = () => (
     <section className="admin-panel-section">
       <div className="admin-edit-header">
-        <div className="admin-edit-headertitle-wrap">
-          <span className="admin-edit-headereyebrow">Relatórios</span>
-          <h2 className="admin-edit-headertitle">{ta('menuRelatorios', 'Reports')}</h2>
-          <p className="admin-edit-headersubtitle">{ta('descRelatorios', 'View logs, statistics and export data.')}</p>
+        <div className="admin-edit-header__title-wrap">
+          <span className="admin-edit-header__eyebrow">{ta('menuRelatorios', 'Reports')}</span>
+          <h2 className="admin-edit-header__title">{ta('menuRelatoriosTitle', 'Reports')}</h2>
+          <p className="admin-edit-header__subtitle">{ta('descRelatorios', 'View logs, statistics and export data.')}</p>
         </div>
       </div>
 
@@ -2485,17 +1960,14 @@ export default function AdminDashboard() {
           <div className="admin-stat-card__label">{ta('lblTotalUtilizadores', 'Total Users')}</div>
           <div className="admin-stat-card__value">{utilizadoresComContaFiltrados.length}</div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__label">{ta('lblTotalFuncionarios', 'Total Employees')}</div>
           <div className="admin-stat-card__value">{funcionariosFiltrados.length}</div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__label">{ta('lblTotalHospitais', 'Total Hospitals')}</div>
           <div className="admin-stat-card__value">{hospitaisFiltrados.length}</div>
         </div>
-
         <div className="admin-stat-card">
           <div className="admin-stat-card__label">{ta('lblTotalLogs', 'Total Logs')}</div>
           <div className="admin-stat-card__value">{logsFiltrados.length}</div>
@@ -2506,27 +1978,16 @@ export default function AdminDashboard() {
 
       <div className="admin-filters">
         <div className="admin-form__group">
-          <label>{ta('lblPesquisarLogs', 'Pesquisar (Ação, Detalhe, Utilizador)')}</label>
-          <input
-            type="text"
-            value={filtroLogTermo}
-            onChange={(e) => setFiltroLogTermo(e.target.value)}
-            placeholder={ta('placeholderPesquisarLogs', 'Escreve aqui...')}
-          />
+          <label htmlFor="filter-log-termo">{ta('lblPesquisarLogs', 'Pesquisar')}</label>
+          <input id="filter-log-termo" type="text" value={filtroLogTermo} onChange={(e) => setFiltroLogTermo(e.target.value)} placeholder={ta('placeholderPesquisarLogs', 'Escreve aqui...')} />
         </div>
-
         <div className="admin-form__group">
-          <label>{ta('lblData', 'Data')}</label>
-          <input
-            type="date"
-            value={filtroLogData}
-            onChange={(e) => setFiltroLogData(e.target.value)}
-          />
+          <label htmlFor="filter-log-data">{ta('lblData', 'Data')}</label>
+          <input id="filter-log-data" type="date" value={filtroLogData} onChange={(e) => setFiltroLogData(e.target.value)} />
         </div>
-
         <div className="admin-form__group">
-          <label>{ta('lblTipoAcao', 'Tipo de ação')}</label>
-          <select value={tipoAcao} onChange={(e) => setTipoAcao(e.target.value)}>
+          <label htmlFor="filter-log-acao">{ta('lblTipoAcao', 'Tipo de ação')}</label>
+          <select id="filter-log-acao" value={tipoAcao} onChange={(e) => setTipoAcao(e.target.value)}>
             <option value="">{ta('todasAcoes', 'Todas')}</option>
             <option value="login">Login</option>
             <option value="logout">Logout</option>
@@ -2558,11 +2019,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-toolbar admin-toolbar--left">
-          <button
-            type="button"
-            className="admin-primary-big-button"
-            onClick={() => exportarRelatorioExcel(logsFiltrados)}
-          >
+          <button type="button" className="admin-primary-big-button" onClick={() => exportarRelatorioExcel(logsFiltrados)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
               <polyline points="7 10 12 15 17 10" strokeLinecap="round" strokeLinejoin="round" />
@@ -2584,21 +2041,13 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {loadingLogs ? (
-                <tr className="is-loading">
-                  <td colSpan="4">{tt('aCarregar', 'A carregar')}</td>
-                </tr>
+                <tr className="is-loading"><td colSpan="4">{tt('aCarregar', 'A carregar')}</td></tr>
               ) : logsFiltrados.length === 0 ? (
-                <tr className="is-empty">
-                  <td colSpan="4">{ta('semHistorico', 'No history.')}</td>
-                </tr>
+                <tr className="is-empty"><td colSpan="4">{ta('semHistorico', 'No history.')}</td></tr>
               ) : (
                 logsFiltrados.map((item) => (
                   <tr key={item.idlog || item.id}>
-                    <td>
-                      {item.criado_em
-                        ? new Date(item.criado_em).toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB')
-                        : item.data || '—'}
-                    </td>
+                    <td>{item.criado_em ? new Date(item.criado_em).toLocaleString(idioma === 'pt' ? 'pt-PT' : 'en-GB') : item.data || '—'}</td>
                     <td>{item.username || '—'}</td>
                     <td>{item.acao || '—'}</td>
                     <td>{item.detalhe || '—'}</td>
@@ -2623,7 +2072,7 @@ export default function AdminDashboard() {
   return (
     <div className="admin-page-wrapper">
       <main className={`admin-layout ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
-        <aside className="admin-sidebar" aria-label="Navegação lateral do Administrador">
+        <aside className="admin-sidebar" aria-label={ta('menuLateralAria', 'Navegação lateral do Administrador')}>
           <button
             className="admin-sidebar__toggle"
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -2664,11 +2113,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               className={`admin-sidebar__link ${mainMenu === 'utilizadores' ? 'is-active' : ''}`}
-              onClick={() => {
-                resetMensagens();
-                setMainMenu('utilizadores');
-                setUserView('lista');
-              }}
+              onClick={() => { resetMensagens(); setMainMenu('utilizadores'); setUserView('lista'); }}
             >
               <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -2679,11 +2124,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               className={`admin-sidebar__link ${mainMenu === 'funcionarios' ? 'is-active' : ''}`}
-              onClick={() => {
-                resetMensagens();
-                setMainMenu('funcionarios');
-                setEmployeeView('lista');
-              }}
+              onClick={() => { resetMensagens(); setMainMenu('funcionarios'); setEmployeeView('lista'); }}
             >
               <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
@@ -2694,11 +2135,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               className={`admin-sidebar__link ${mainMenu === 'hospitais' ? 'is-active' : ''}`}
-              onClick={() => {
-                resetMensagens();
-                setMainMenu('hospitais');
-                setHospitalView('lista');
-              }}
+              onClick={() => { resetMensagens(); setMainMenu('hospitais'); setHospitalView('lista'); }}
             >
               <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -2709,10 +2146,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               className={`admin-sidebar__link ${mainMenu === 'relatorios' ? 'is-active' : ''}`}
-              onClick={() => {
-                resetMensagens();
-                setMainMenu('relatorios');
-              }}
+              onClick={() => { resetMensagens(); setMainMenu('relatorios'); }}
             >
               <svg aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -2739,11 +2173,8 @@ export default function AdminDashboard() {
 
         <div className="admin-content-wrapper">
           <div className="admin-content-inner">
-            
-
             <div className="admin-content__body">{renderCenter()}</div>
-                      </div>
-
+          </div>
           <FooterLayout />
         </div>
       </main>
