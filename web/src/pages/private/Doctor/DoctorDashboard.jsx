@@ -369,12 +369,32 @@ export default function DoctorDashboard() {
       if (rAtos.ok) {
         const lista = await rAtos.json();
         const final = Array.isArray(lista) ? lista : [];
-        setAtos(final);
-        atosRef.current = final;
+
+        const agora = new Date().toISOString();
+        const rNovoAto = await fetch(`${API_URL}/atos/`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({
+            cod_ep_urgenc: codEpisodio,
+            tipo: 'consulta',
+            descricao: 'Atendimento médico iniciado.',
+            data_hora_inicio: agora,
+            data_hora_fim: null,
+          }),
+        });
+        if (rNovoAto.ok) {
+          const novoAto = await rNovoAto.json();
+          setAtos([novoAto, ...final]);
+          atosRef.current = [novoAto, ...final];
+        } else {
+          setAtos(final);
+          atosRef.current = final;
+        }
       } else {
         setAtos([]);
         atosRef.current = [];
       }
+      
       if (rAlergias.ok) { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); } else { setAlergias([]); }
       if (rAntecedentes.ok) { setAntecedentes(await rAntecedentes.json()); } else { setAntecedentes(null); }
       setAlertas([]);
@@ -1000,11 +1020,22 @@ export default function DoctorDashboard() {
       setASubmeterAlta(true);
       try {
         const agora = new Date().toISOString();
+
+        // Fechar ato de consulta
+        const idAtoConsulta = atos[0]?.idato ?? atos[0]?.id_ato ?? null;
+        if (idAtoConsulta) {
+          await fetch(`${API_URL}/atos/${idAtoConsulta}`, {
+            method: 'PUT', headers: headers(),
+            body: JSON.stringify({ data_hora_fim: agora }),
+          });
+        }
+
         const resEpisodio = await fetch(`${API_URL}/episodios/${codEp}`, {
           method: 'PUT', headers: headers(),
           body: JSON.stringify({ estado: 'terminado', data_hora_saida: agora }),
         });
         if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para alta.');
+
         const resAto = await fetch(`${API_URL}/atos/`, {
           method: 'POST', headers: headers(),
           body: JSON.stringify({
@@ -1016,6 +1047,7 @@ export default function DoctorDashboard() {
           }),
         });
         if (!resAto.ok) throw new Error('Falha ao registar ato de alta.');
+
         setEpisodios((prev) => (prev || []).map((ep) => ep?.cod_ep_urgenc === codEp ? { ...ep, estado: 'terminado', data_hora_saida: agora } : ep));
         setSubMenuFila('em_espera');
         setEpisodioSelecionado(null);
@@ -1037,6 +1069,16 @@ export default function DoctorDashboard() {
       setASubmeterAlta(true);
       try {
         const agora = new Date().toISOString();
+
+        // Fechar ato de consulta
+        const idAtoConsulta = atos[0]?.idato ?? atos[0]?.id_ato ?? null;
+        if (idAtoConsulta) {
+          await fetch(`${API_URL}/atos/${idAtoConsulta}`, {
+            method: 'PUT', headers: headers(),
+            body: JSON.stringify({ data_hora_fim: agora }),
+          });
+        }
+
         const resInternamento = await fetch(`${API_URL}/internamentos/`, {
           method: 'POST', headers: headers(),
           body: JSON.stringify({
@@ -1048,20 +1090,29 @@ export default function DoctorDashboard() {
           }),
         });
         if (!resInternamento.ok) throw new Error('Falha ao criar internamento.');
+
         const resEpisodio = await fetch(`${API_URL}/episodios/${codEp}`, {
           method: 'PUT', headers: headers(),
           body: JSON.stringify({ estado: 'internado' }),
         });
         if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para internado.');
+
         const resAto = await fetch(`${API_URL}/atos/`, {
           method: 'POST', headers: headers(),
-          body: JSON.stringify({ cod_ep_urgenc: codEp, tipo: 'internamento', descricao: alta.observacoes || 'Encaminhado para internamento.', data_hora_inicio: agora, data_hora_fim: agora }),
+          body: JSON.stringify({
+            cod_ep_urgenc: codEp,
+            tipo: 'internamento',
+            descricao: alta.observacoes || 'Encaminhado para internamento.',
+            data_hora_inicio: agora,
+            data_hora_fim: agora,
+          }),
         });
         if (!resAto.ok) throw new Error('Falha ao registar ato de internamento.');
+
         setEpisodios((prev) => (prev || []).map((ep) => ep?.cod_ep_urgenc === codEp ? { ...ep, estado: 'internado' } : ep));
         setSubMenuFila('em_espera');
         setEpisodioSelecionado(null);
-        setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '' });
+        setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '', tipo_alta: 'clinica' });
         setTipoDecisao('alta');
         await carregarInternamentos();
         mostrarToast('Internamento registado com sucesso.', 'sucesso');
