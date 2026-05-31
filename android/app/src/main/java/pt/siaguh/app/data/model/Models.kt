@@ -37,6 +37,8 @@ data class Utente(
 data class Antecedente(
     @SerializedName("cod_antecedente", alternate = ["codantecedente", "CodAntecedente"])
     val codantecedente: Int?,
+    @SerializedName("nome", alternate = ["Nome"])
+    val nome: String?,
     @SerializedName("descricao", alternate = ["Descricao"])
     val descricao: String?,
     @SerializedName("tipo", alternate = ["Tipo"])

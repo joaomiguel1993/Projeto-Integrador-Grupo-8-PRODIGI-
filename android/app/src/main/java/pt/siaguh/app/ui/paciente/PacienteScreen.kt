@@ -113,7 +113,8 @@ private fun PacienteContent(uiState: PacienteUiState, userRole: String) {
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                             Text("• ", color = MaterialTheme.colorScheme.primary)
                             Column {
-                                ant.descricao?.let { Text(it, fontSize = 14.sp) }
+                                ant.nome?.let { Text(it, fontSize = 14.sp, fontWeight = FontWeight.Medium) }
+                                ant.descricao?.let { Text(it, fontSize = 13.sp) }
                                 ant.tipo?.let { Text(it, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             }
                         }
