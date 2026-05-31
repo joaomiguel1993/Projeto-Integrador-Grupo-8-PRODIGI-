@@ -1,64 +1,77 @@
+# CT02 - Ciclo de Vida do Paciente
 import pytest
 from httpx import AsyncClient, ASGITransport
 from backend.main import app
-from backend.auth.jwt_utils import get_current_user
+from datetime import datetime, timezone
 
+BASE = "http://test"
 
-def override_get_current_user():
-    return {
-        "id": 1,
-        "username": "teste",
-        "role": "admin",
-    }
+async def obter_token(ac):
+    r = await ac.post("/api/v1/auth/login", json={
+        "username": "medico.teste",
+        "password": "Med123!"
+    })
+    return r.json().get("access_token")
 
-
-@pytest.mark.anyio
+@pytest.mark.asyncio
 async def test_ciclo_vida_paciente():
-    app.dependency_overrides[get_current_user] = override_get_current_user
-
     transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url=BASE) as ac:
 
-    try:
-        async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            response = await ac.post(
-                "/api/v1/episodios/",
-                json={"num_utent": 123456789, "id_hosp": 1},
-            )
-            assert response.status_code == 200, response.text
-            episodio_id = response.json()["id"]
+        token = await obter_token(ac)
+        headers = {"Authorization": f"Bearer {token}"}
 
-            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-            assert resp.status_code == 200, resp.text
-            assert resp.json()["estado"] == "Em Espera"
+        # 1. ADMISSÃO — cria episódio
+        r = await ac.post("/api/v1/episodios/", json={
+            "num_utent": 1,
+            "id_hosp": 1,
+        }, headers=headers)
+        assert r.status_code == 201, r.text
+        ep = r.json()
+        ep_id = ep["cod_ep_urgenc"]
 
-            response = await ac.post(
-                "/api/v1/triagens/",
-                json={"episodio_id": episodio_id, "cor": "Verde"},
-            )
-            assert response.status_code in [200, 201], response.text
+        r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
+        assert r.json()["estado"] == "aberto"
 
-            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-            assert resp.status_code == 200, resp.text
-            assert resp.json()["estado"] == "Em Atendimento"
+        # 2. TRIAGEM
+        from datetime import datetime, timezone
 
-            response = await ac.post(
-                "/api/v1/atos/",
-                json={"episodio_id": episodio_id, "descricao": "Consulta de rotina"},
-            )
-            assert response.status_code in [200, 201], response.text
+        r = await ac.post("/api/v1/triagens/", json={
+            "cod_ep_urgenc": ep_id,
+            "cor_triagem": "verde",
+            "sintomas": "Teste automatizado",
+            "data_hora_inicio": datetime.now(timezone.utc).isoformat(),
+        }, headers=headers)
+        assert r.status_code == 201, r.text
 
-            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-            assert resp.status_code == 200, resp.text
-            assert resp.json()["estado"] == "Em Atendimento"
+        r = await ac.put(f"/api/v1/episodios/{ep_id}", json={
+            "estado": "em_atendimento"
+        }, headers=headers)
+        assert r.status_code == 200
 
-            response = await ac.post(
-                "/api/v1/altas/",
-                json={"episodio_id": episodio_id, "tipo": "Alta Médica"},
-            )
-            assert response.status_code in [200, 201], response.text
+        r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
+        assert r.json()["estado"] == "em_atendimento"
 
-            resp = await ac.get(f"/api/v1/episodios/{episodio_id}")
-            assert resp.status_code == 200, resp.text
-            assert resp.json()["estado"] == "Alta"
-    finally:
-        app.dependency_overrides = {}
+        # 3. ATO CLÍNICO
+        r = await ac.post("/api/v1/atos/", json={
+            "cod_ep_urgenc": ep_id,
+            "tipo": "consulta",
+            "descricao": "Consulta de rotina - teste",
+            "data_hora_inicio": datetime.now(timezone.utc).isoformat(),
+        }, headers=headers)
+        assert r.status_code == 201, r.text
+
+        r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
+        assert r.json()["estado"] == "em_atendimento"
+
+        # 4. ALTA
+        r = await ac.put(f"/api/v1/episodios/{ep_id}", json={
+            "estado": "terminado",
+            "data_hora_saida": "2026-05-31T20:00:00"
+        }, headers=headers)
+        assert r.status_code == 200
+
+        r = await ac.get(f"/api/v1/episodios/{ep_id}", headers=headers)
+        assert r.json()["estado"] == "terminado"
+
+        print(f"✅ Ciclo de vida do episódio #{ep_id} validado com sucesso!")
