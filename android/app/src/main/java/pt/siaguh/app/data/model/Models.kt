@@ -10,6 +10,8 @@ data class Hospital(val idhosp: Int, val nome: String, val localizacao: String?)
 
 data class LoginResponse(
     val message: String,
+    @SerializedName("access_token", alternate = ["token"])
+    val accessToken: String,
     val username: String,
     val nome: String,
     val role: String,

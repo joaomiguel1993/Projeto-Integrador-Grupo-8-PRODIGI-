@@ -1279,6 +1279,16 @@ export default function DoctorDashboard() {
             <h1 className="doctor-episode-title">Episódio #{codEpisodio}</h1>
             <p className="doctor-episode-subtitle">UCIP · Urgência Central</p>
           </div>
+          {codEpisodio !== '—' && (
+            <div style={{ textAlign: 'center' }}>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${codEpisodio}`}
+                alt={`QR Code episódio #${codEpisodio}`}
+                width={100}
+                height={100}
+              />
+            </div>
+          )}
 
         </div>
 

@@ -16,7 +16,7 @@ class AuthRepository(
             val response = api.login(LoginRequest(username, password))
             if (response.isSuccessful) {
                 val body = response.body()!!
-                tokenManager.saveToken(body.username)
+                tokenManager.saveToken(body.accessToken)
                 tokenManager.saveRole(body.role)
                 Result.Success(body)
             } else {
