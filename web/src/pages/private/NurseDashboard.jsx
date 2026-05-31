@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../../imagens/Logo.png';
 import '../../styles/main.css';
 import FooterLayout from '../../components/layout/FooterLayout';
-import Breadcrumbs from '../../components/layout/Breadcrumbs.jsx';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { STORAGE_KEYS } from '../../constants/roles';
 import Toast, { useToast } from '../../components/ui/Toast';
@@ -140,10 +139,7 @@ export default function NurseDashboard() {
     hospitalAtivo?.designacao_hospital ||
     'Dashboard Enfermeiro';
 
-  const breadcrumbsLinks = [
-    { name: 'Início', path: '/' },
-    { name: nomeHospital, path: '/nurse' },
-  ];
+
 
   useEffect(() => {
     const storedHospital = sessionStorage.getItem(STORAGE_KEYS.ACTIVE_HOSPITAL);
@@ -1009,9 +1005,7 @@ export default function NurseDashboard() {
 
       <section className="admin-content-wrapper">
         <div className="admin-content-inner">
-          <div className="admin-breadcrumbs-row">
-            <Breadcrumbs items={breadcrumbsLinks} />
-          </div>
+          <h1>Painel do enfermeiro</h1>
           <div className="admin-content-top">
             <h1>{nomeHospital}</h1>
             <p>{textos?.nurse?.descricaoPainel || 'Fila de episódios, contexto clínico e triagem assistida.'}</p>

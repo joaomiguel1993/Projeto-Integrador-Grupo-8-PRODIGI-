@@ -441,6 +441,17 @@ export default function AdminDashboard() {
     ]);
   };
 
+  const normalizarRole = (valor) => {
+    const v = normalizar(valor || "");
+
+    if (v === "admin") return ROLES.ADMIN;
+    if (v === "medico" || v === "médico" || v === "doctor") return ROLES.MEDICO;
+    if (v === "enfermeiro") return ROLES.ENFERMEIRO;
+    if (v === "rececionista" || v === "recepcionista") return ROLES.RECECIONISTA;
+
+    return ROLES.ADMIN;
+  };
+
   const resolverUtilizadorAutenticado = () => {
     try {
       const rawUser = sessionStorage.getItem(STORAGE_KEYS.USER_DATA) || sessionStorage.getItem('user');
@@ -478,11 +489,11 @@ export default function AdminDashboard() {
       .join('');
 
   const fazerLogout = async () => {
-  try {
-    await apiFetch('/api/v1/auth/logout', {
-      method: 'POST',
-    });
-  } catch { }
+    try {
+      await apiFetch('/api/v1/auth/logout', {
+        method: 'POST',
+      });
+    } catch { }
 
     sessionStorage.removeItem('user');
     Object.values(STORAGE_KEYS).forEach((key) => sessionStorage.removeItem(key));
@@ -622,25 +633,25 @@ export default function AdminDashboard() {
     if (tipoAcao) {
       const nAcao = normalizar(tipoAcao);
       const mapAcao = {
-        'login':               /^login$/i,
-        'logout':              /^logout$/i,
-        'criar-utilizador':    /criar_utilizador/i,
-        'editar-utilizador':   /editar_utilizador/i,
-        'criar-hospital':      /criar_hospital/i,
-        'editar-hospital':     /editar_hospital/i,
-        'criar-funcionario':   /criar_funcionario/i,
-        'editar-funcionario':  /editar_funcionario/i,
-        'gravar-triagem':      /gravar_triagem/i,
-        'atualizar-triagem':   /atualizar_triagem/i,
-        'criar-episodio':      /criar_episodio/i,
-        'atualizar-episodio':  /atualizar_episodio/i,
-        'criar-internamento':  /criar_internamento/i,
-        'alta-internamento':   /alta_internamento/i,
-        'criar-prescricao':    /criar_prescricao/i,
-        'remover-prescricao':  /remover_prescricao/i,
-        'criar-ato':           /criar_ato/i,
-        'criar-medicacao':     /criar_medicacao/i,
-        'remover-medicacao':   /remover_medicacao/i,
+        'login': /^login$/i,
+        'logout': /^logout$/i,
+        'criar-utilizador': /criar_utilizador/i,
+        'editar-utilizador': /editar_utilizador/i,
+        'criar-hospital': /criar_hospital/i,
+        'editar-hospital': /editar_hospital/i,
+        'criar-funcionario': /criar_funcionario/i,
+        'editar-funcionario': /editar_funcionario/i,
+        'gravar-triagem': /gravar_triagem/i,
+        'atualizar-triagem': /atualizar_triagem/i,
+        'criar-episodio': /criar_episodio/i,
+        'atualizar-episodio': /atualizar_episodio/i,
+        'criar-internamento': /criar_internamento/i,
+        'alta-internamento': /alta_internamento/i,
+        'criar-prescricao': /criar_prescricao/i,
+        'remover-prescricao': /remover_prescricao/i,
+        'criar-ato': /criar_ato/i,
+        'criar-medicacao': /criar_medicacao/i,
+        'remover-medicacao': /remover_medicacao/i,
       };
 
       const regex = mapAcao[nAcao];
@@ -770,31 +781,34 @@ export default function AdminDashboard() {
           .filter((id) => !Number.isNaN(id) && id > 0)
         : [];
 
-      const prof = profissionalData || profissionais.find(
-        (p) => Number(obterIdFunc(p)) === idFunc
-      );
+      const prof =
+        profissionalData ||
+        profissionais.find((p) => Number(obterIdFunc(p)) === idFunc);
 
       setUtilizadorEditando({
         idfunc: idFunc,
-        username: utilizadorData?.username ?? utilizador?.username ?? '',
-        password: '',
-        role: String(
-          utilizadorData?.role ??
-          prof?.tipo_func ??
+        username: utilizadorData?.username ?? utilizador?.username ?? "",
+        password: "",
+        role: normalizarRole(
           prof?.tipofunc ??
-          utilizador?.role ??
-          ROLES.ADMIN
-        ).toLowerCase(),
-        nome: prof?.nome ?? utilizador?.nome ?? '',
-        sexo: prof?.sexo ?? utilizador?.sexo ?? 'M',
+          prof?.tipo_func ??
+          utilizadorData?.tipofunc ??
+          utilizadorData?.tipo_func ??
+          utilizador?.tipofunc ??
+          utilizador?.tipo_func ??
+          utilizadorData?.role ??
+          utilizador?.role
+        ),
+        nome: prof?.nome ?? utilizador?.nome ?? "",
+        sexo: prof?.sexo ?? utilizador?.sexo ?? "M",
         bloqueado: utilizadorData?.bloqueado ?? utilizador?.bloqueado ?? false,
         hospitais: hospitaisIds,
       });
 
-      setUserView('editar');
+      setUserView("editar");
     } catch (err) {
-      console.error('Erro ao abrir edição do utilizador:', err);
-      setErroUser('Não foi possível carregar os dados do utilizador.');
+      console.error("Erro ao abrir edição do utilizador:", err);
+      setErroUser("Não foi possível carregar os dados do utilizador.");
     }
   };
 
@@ -1461,14 +1475,14 @@ export default function AdminDashboard() {
                 <input id="edit-user-id" type="text" value={utilizadorEditando.idfunc || ''} readOnly />
               </div>
 
-              <div className="admin-form__group">
-                <label htmlFor="edit-user-nome">{ta('lblNome', 'Name')}</label>
+              <div className="admin-formgroup">
+                <label htmlFor="edit-user-nome">{ta("lblNome", "Name")}</label>
                 <input
                   id="edit-user-nome"
                   name="nome"
                   type="text"
-                  value={utilizadorEditando.nome || ''}
-                  onChange={handleEditarUserChange}
+                  value={utilizadorEditando.nome}
+                  readOnly
                 />
               </div>
 
@@ -2423,7 +2437,7 @@ export default function AdminDashboard() {
                       <td>{h.contacto || '—'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          
+
                           <button
                             type="button"
                             className="admin-secondary-button"
