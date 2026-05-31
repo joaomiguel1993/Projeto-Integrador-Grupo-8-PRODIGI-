@@ -41,3 +41,4 @@ async def test_ct03_ato_em_episodio_encerrado(
         headers=medico_headers,
     )
     assert ato.status_code == 400, ato.text
+    assert "episódio encerrado" in ato.text.lower()

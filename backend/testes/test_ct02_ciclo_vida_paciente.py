@@ -21,9 +21,9 @@ async def test_ct02_ciclo_vida_paciente(
     assert admissao.status_code in [200, 201], admissao.text
     ep_id = admissao.json()["cod_ep_urgenc"]
 
-    obter = await client.get(f"/api/v1/episodios/{ep_id}", headers=medico_headers)
-    assert obter.status_code == 200, obter.text
-    assert obter.json()["estado"] == "aberto"
+    r1 = await client.get(f"/api/v1/episodios/{ep_id}", headers=medico_headers)
+    assert r1.status_code == 200, r1.text
+    assert r1.json()["estado"] == "aberto"
 
     triagem = await client.post(
         "/api/v1/triagens/",
@@ -52,6 +52,10 @@ async def test_ct02_ciclo_vida_paciente(
     )
     assert atualizar.status_code == 200, atualizar.text
 
+    r2 = await client.get(f"/api/v1/episodios/{ep_id}", headers=medico_headers)
+    assert r2.status_code == 200, r2.text
+    assert r2.json()["estado"] == "em_atendimento"
+
     ato = await client.post(
         "/api/v1/atos/",
         json={
@@ -64,6 +68,10 @@ async def test_ct02_ciclo_vida_paciente(
     )
     assert ato.status_code in [200, 201], ato.text
 
+    r3 = await client.get(f"/api/v1/episodios/{ep_id}", headers=medico_headers)
+    assert r3.status_code == 200, r3.text
+    assert r3.json()["estado"] == "em_atendimento"
+
     alta = await client.put(
         f"/api/v1/episodios/{ep_id}",
         json={
@@ -74,6 +82,6 @@ async def test_ct02_ciclo_vida_paciente(
     )
     assert alta.status_code == 200, alta.text
 
-    final = await client.get(f"/api/v1/episodios/{ep_id}", headers=medico_headers)
-    assert final.status_code == 200, final.text
-    assert final.json()["estado"] == "terminado"
+    r4 = await client.get(f"/api/v1/episodios/{ep_id}", headers=medico_headers)
+    assert r4.status_code == 200, r4.text
+    assert r4.json()["estado"] == "terminado"

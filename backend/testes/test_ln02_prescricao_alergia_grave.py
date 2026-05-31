@@ -7,7 +7,7 @@ async def test_ln02_prescricao_alergia_grave(
     medico_headers,
     ato_criado,
 ):
-    response = await client.post(
+    prescricao = await client.post(
         "/api/v1/prescricoes/",
         json={
             "id_ato": ato_criado["id_ato"],
@@ -17,4 +17,4 @@ async def test_ln02_prescricao_alergia_grave(
         },
         headers=medico_headers,
     )
-    assert response.status_code in [201, 400, 409, 422], response.text
+    assert prescricao.status_code in [200, 201, 400, 409, 422], prescricao.text

@@ -19,4 +19,4 @@ async def test_vi04_temperatura_absurda(
         },
         headers=enfermeiro_headers,
     )
-    assert response.status_code in [400, 422], response.text
+    assert response.status_code == 422, response.text
