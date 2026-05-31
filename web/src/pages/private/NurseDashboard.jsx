@@ -162,20 +162,31 @@ export default function NurseDashboard() {
 
   // Usa /api/v1/episodios/ para carregar TODOS os episódios
   // (as tabs filtram por estado no frontend)
-  const carregarEpisodios = async () => {
-    setLoading(true);
-    try {
-      const res = await authFetch(`${API_URL}/api/v1/episodios/`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
-      setEpisodios(Array.isArray(data) ? data : []);
-    } catch (e) {
-      mostrarToast(e.message, 'erro');
-      setEpisodios([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const carregarEpisodios = async () => {
+      setLoading(true);
+      try {
+        const hospitalId =
+          utilizadorLogado?.hospitais?.[0]?.idhosp ||
+          utilizadorLogado?.hospitais?.[0]?.id_hosp ||
+          utilizadorLogado?.hospitais?.[0]?.id;
+
+        if (!hospitalId) {
+          mostrarToast('Hospital não encontrado.', 'erro');
+          setEpisodios([]);
+          return;
+        }
+
+        const res = await authFetch(`${API_URL}/api/v1/episodios/hospital/${hospitalId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.detail || 'Erro ao carregar episódios.');
+        setEpisodios(Array.isArray(data) ? data : []);
+      } catch (e) {
+        mostrarToast(e.message, 'erro');
+        setEpisodios([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const mapEstado = {
     sem: (ep) => {
