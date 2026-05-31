@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from "../../../imagens/Logo.png";
 import '../../../styles/main.css';
@@ -28,11 +28,13 @@ const gerarNumeroCama = (servico) => {
   const numero = String(Math.floor(Math.random() * 50) + 1).padStart(2, '0');
   return `${prefixo}-${numero}`;
 };
+
 const MOTIVOS_INTERNAMENTO = [
   'Insuficiência cardíaca', 'Pneumonia', 'Fratura óssea', 'Pós-operatório',
   'Monitorização clínica', 'AVC', 'Sépsis', 'Descompensação diabética',
   'Dor torácica', 'Outro',
 ];
+
 const TRIAGE_ORDER = { Vermelho: 1, Laranja: 2, Amarelo: 3, Verde: 4, Azul: 5 };
 const TRIAGE_CLASS = {
   Vermelho: 'triage-badge triage-badge--vermelho',
@@ -72,7 +74,6 @@ const getCodEpisodio = (obj) =>
 
 const getMedicamentoNome = (m, index = 0) => {
   if (!m) return `Medicamento ${String(index + 1).padStart(3, '0')}`;
-  // Priorizar princípio ativo em vez do nome comercial
   const nome =
     m?.principioativo ?? m?.principio_ativo ?? m?.farmaco ??
     m?.nome ?? m?.nome_medicamento ?? m?.nomemedicamento ?? m?.medicamento_nome ??
@@ -81,7 +82,6 @@ const getMedicamentoNome = (m, index = 0) => {
   return String(nome).trim() || `Medicamento ${String(index + 1).padStart(3, '0')}`;
 };
 
-// CORRIGIDO: enriquecerMedicacaoAtiva recebe medicamentos como segundo argumento
 const enriquecerMedicacaoAtiva = (lista = [], medicamentos = []) =>
   lista.map((item, index) => {
     const itemId = String(
@@ -93,7 +93,6 @@ const enriquecerMedicacaoAtiva = (lista = [], medicamentos = []) =>
       (med) => String(getMedicamentoId(med)) === itemId
     );
 
-    // Priorizar princípio ativo em vez do nome comercial
     const nomeApresentacao =
       item?.principioativo || item?.principio_ativo ||
       item?.nomeApresentacao || item?.nome || item?.nome_medicamento ||
@@ -135,12 +134,6 @@ const SvgList = () => (
     <path d="M3 6h.01" /><path d="M3 12h.01" /><path d="M3 18h.01" />
   </svg>
 );
-const SvgClipboard = () => (
-  <svg {...iconProps}>
-    <rect x="9" y="3" width="6" height="4" rx="1" />
-    <path d="M9 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-  </svg>
-);
 const SvgExit = () => (
   <svg {...iconProps}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -167,7 +160,7 @@ const IconBed = SvgFileText;
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
-  const { textos } = useLanguage();
+  const { textos, idioma, mudarIdioma } = useLanguage();
   const { toast, mostrarToast, fecharToast } = useToast();
 
   const [medicamentos, setMedicamentos] = useState([]);
@@ -208,8 +201,6 @@ export default function DoctorDashboard() {
     destino: 'alta', observacoes: '', servico: '', numero_cama: '',
     motivo_int: '', motivo_int_outro: '', tipo_alta: 'clinica',
   });
-
-  // CORRIGIDO: tipoDecisao para a tab de decisão clínica (F1)
   const [tipoDecisao, setTipoDecisao] = useState('alta');
 
   const utilizadorLogado = useMemo(() => {
@@ -230,11 +221,10 @@ export default function DoctorDashboard() {
     utilizadorLogado?.username || 'Utilizador';
 
   const nomeHospital =
-    utilizadorLogado?.hospitais?.[0]?.nome || 'Hospital de Santa Maria';
+    utilizadorLogado?.hospitais?.[0]?.nome || 'Hospital';
 
   const iniciaisUtilizador = nomeUtilizador.slice(0, 2).toUpperCase();
 
-  // CORRIGIDO: token é função, sempre chamado como token()
   const token = () => sessionStorage.getItem('token');
   const headers = () => ({
     'Content-Type': 'application/json',
@@ -249,8 +239,6 @@ export default function DoctorDashboard() {
     carregarInternamentos();
     carregarMedicamentos();
   };
-
-  // ── Loaders ────────────────────────────────────────────────
 
   const carregarEpisodios = async () => {
     const hospitalId =
@@ -269,11 +257,9 @@ export default function DoctorDashboard() {
         const data = await r.json();
         setEpisodios(Array.isArray(data) ? data : []);
       } else {
-        console.error('Erro carregarEpisodios:', r.status);
         setEpisodios([]);
       }
     } catch (e) {
-      console.error(e);
       setEpisodios([]);
     }
   };
@@ -316,7 +302,6 @@ export default function DoctorDashboard() {
         setInternamentos([]);
       }
     } catch (e) {
-      console.error(e);
       setInternamentos([]);
     }
   };
@@ -328,11 +313,9 @@ export default function DoctorDashboard() {
         const data = await r.json();
         setMedicamentos(Array.isArray(data) ? data : []);
       } else {
-        console.error('Erro carregarMedicamentos:', r.status);
         setMedicamentos([]);
       }
     } catch (e) {
-      console.error(e);
       setMedicamentos([]);
     }
   };
@@ -348,14 +331,10 @@ export default function DoctorDashboard() {
     navigate('/login', { replace: true });
   };
 
-  // ── Handlers ───────────────────────────────────────────────
-
   const handlePrescricaoChange = (e) => {
     const { name, value } = e.target;
     setPrescricao((prev) => ({ ...prev, [name]: value }));
   };
-
-  // ── Abrir episódio ─────────────────────────────────────────
 
   const abrirEpisodio = async (ep) => {
     if (!ep) { mostrarToast('Episódio inválido.', 'erro'); return; }
@@ -384,15 +363,9 @@ export default function DoctorDashboard() {
           fetch(`${API_URL}/utente-antecedentes/utente/${numUtente}`, { headers: headers() }),
         ]);
 
-      if (rUtente.ok) { setUtente(await rUtente.json()); }
-      else { setUtente(null); }
-
-      if (rTriagem.ok) { setDadosTriagem(await rTriagem.json()); }
-      else { setDadosTriagem(null); }
-
-      if (rMedicacao.ok) { const m = await rMedicacao.json(); setMedicacaoAtiva(Array.isArray(m) ? m : []); }
-      else { setMedicacaoAtiva([]); }
-
+      if (rUtente.ok) { setUtente(await rUtente.json()); } else { setUtente(null); }
+      if (rTriagem.ok) { setDadosTriagem(await rTriagem.json()); } else { setDadosTriagem(null); }
+      if (rMedicacao.ok) { const m = await rMedicacao.json(); setMedicacaoAtiva(Array.isArray(m) ? m : []); } else { setMedicacaoAtiva([]); }
       if (rAtos.ok) {
         const lista = await rAtos.json();
         const final = Array.isArray(lista) ? lista : [];
@@ -402,22 +375,13 @@ export default function DoctorDashboard() {
         setAtos([]);
         atosRef.current = [];
       }
-
-      if (rAlergias.ok) { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); }
-      else { setAlergias([]); }
-
-      if (rAntecedentes.ok) { setAntecedentes(await rAntecedentes.json()); }
-      else { setAntecedentes(null); }
-
+      if (rAlergias.ok) { const al = await rAlergias.json(); setAlergias(Array.isArray(al) ? al : []); } else { setAlergias([]); }
+      if (rAntecedentes.ok) { setAntecedentes(await rAntecedentes.json()); } else { setAntecedentes(null); }
       setAlertas([]);
-
     } catch (e) {
-      console.error(e);
       mostrarToast('Erro ao abrir episódio.', 'erro');
     }
   };
-
-  // ── Abrir internamento ─────────────────────────────────────
 
   const abrirInternamento = async (int) => {
     if (!int) { mostrarToast('Internamento inválido.', 'erro'); return; }
@@ -428,8 +392,6 @@ export default function DoctorDashboard() {
       setActiveMenu('internamentos');
 
       const codEpisodio = getField(int, 'cod_ep_urgenc', 'codEpisodio', 'codepisodio', 'cod_epurgenc');
-
-      // Obter episódio primeiro para extrair numUtente — InternamentoOut não tem num_utent
       let numUtente = getField(int, 'num_utent', 'numUtente', 'numutente', 'num_utente', 'codutente');
       if (!numUtente || numUtente === '—') {
         if (codEpisodio && codEpisodio !== '—') {
@@ -437,9 +399,7 @@ export default function DoctorDashboard() {
             const rEp = await fetch(`${API_URL}/episodios/${codEpisodio}`, { headers: headers() });
             if (rEp.ok) {
               const epData = await rEp.json();
-              numUtente =
-                epData?.num_utent ?? epData?.numutent ?? epData?.cod_utente ??
-                epData?.codutente ?? epData?.utente_id ?? null;
+              numUtente = epData?.num_utent ?? epData?.numutent ?? epData?.cod_utente ?? epData?.codutente ?? epData?.utente_id ?? null;
             }
           } catch { numUtente = null; }
         }
@@ -466,16 +426,12 @@ export default function DoctorDashboard() {
         setAtos([]);
         atosRef.current = [];
       }
-
       setAlertas([]);
       setTabAtendimento('prescricao');
     } catch (e) {
-      console.error('Erro ao abrir internamento:', e);
       mostrarToast('Erro ao abrir internamento.', 'erro');
     }
   };
-
-  // ── Prescrição ─────────────────────────────────────────────
 
   const submeterPrescricao = async () => {
     try {
@@ -494,7 +450,6 @@ export default function DoctorDashboard() {
         return;
       }
 
-      // CORRIGIDO: chaves alinhadas com o schema Pydantic (id_ato, cod_medicamento)
       const body = {
         id_ato: Number(idAto),
         cod_medicamento: Number(prescricao.codmedicamento),
@@ -502,7 +457,6 @@ export default function DoctorDashboard() {
         observacoes: prescricao.observacoes?.trim() || null,
       };
 
-      // CORRIGIDO: headers: headers()
       const r = await fetch(`${API_URL}/prescricoes`, {
         method: 'POST',
         headers: headers(),
@@ -517,7 +471,6 @@ export default function DoctorDashboard() {
       }
 
       const created = responseText ? JSON.parse(responseText) : null;
-
       const medicamentoSelecionado = medicamentos.find(
         (m, index) => String(getMedicamentoId(m, index)) === String(prescricao.codmedicamento)
       );
@@ -541,7 +494,6 @@ export default function DoctorDashboard() {
 
       setMedicacaoAtiva((prev) => [novaMedicacao, ...(Array.isArray(prev) ? prev : [])]);
 
-      // Alimentar medicação ativa com a prescrição acabada de criar
       const numUtente =
         utente?.num_utent ?? utente?.numutent ?? utente?.num_utente ??
         episodioSelecionado?.num_utent ?? episodioSelecionado?.numutent ??
@@ -555,19 +507,17 @@ export default function DoctorDashboard() {
             body: JSON.stringify({
               num_utent: Number(numUtente),
               cod_medicamento: Number(prescricao.codmedicamento),
-              data_inicio: new Date().toISOString().split('T')[0], // date only — schema espera date não datetime
+              data_inicio: new Date().toISOString().split('T')[0],
               data_fim: null,
               dosagem: String(prescricao.dosagem).trim(),
             }),
           });
-          // Recarregar medicação ativa para reflectir a nova entrada
           const rMed = await fetch(`${API_URL}/medicacao-ativa/utente/${numUtente}`, { headers: headers() });
           if (rMed.ok) {
             const mData = await rMed.json();
             setMedicacaoAtiva(Array.isArray(mData) ? mData : []);
           }
         } catch (eMed) {
-          console.warn('Aviso: não foi possível atualizar medicação ativa:', eMed);
           mostrarToast('Prescrição gravada, mas não foi possível atualizar a medicação ativa.', 'aviso');
         }
       }
@@ -576,12 +526,9 @@ export default function DoctorDashboard() {
       setRiscoIA(null);
       mostrarToast(`Prescrição de ${nomeMedicamento} registada com sucesso.`, 'sucesso');
     } catch (e) {
-      console.error('ERRO submeterPrescricao:', e);
       mostrarToast('Erro ao prescrever.', 'erro');
     }
   };
-
-  // ── Avaliação de risco IA ──────────────────────────────────
 
   const eliminarMedicacao = async (med) => {
     const codMedicacaoAtiva =
@@ -609,7 +556,6 @@ export default function DoctorDashboard() {
 
       mostrarToast('Prescrição eliminada com sucesso.', 'sucesso');
     } catch (e) {
-      console.error('ERRO eliminarMedicacao:', e);
       mostrarToast(e.message || 'Erro ao eliminar prescrição.', 'erro');
     }
   };
@@ -624,24 +570,18 @@ export default function DoctorDashboard() {
 
     try {
       const API_IA = import.meta.env.VITE_API_IA_URL || 'http://localhost:8001';
-
-      // Obter dados do medicamento selecionado
       const med = medicamentos.find(
         (m) => String(getMedicamentoId(m)) === String(prescricao.codmedicamento)
       );
       const nomeMed = med ? getMedicamentoNome(med) : 'Medicamento';
       const classeMed = med?.classe_terapeutica_id ?? med?.classeterapeuticaid ?? 1;
 
-      // Verificar alergia à classe do medicamento
       const temAlergia = alergias.some((a) => {
         const txt = String(a?.descricao || a?.substancia || a?.alergia || '').toLowerCase();
         return txt.includes(nomeMed.toLowerCase());
       });
 
-      // Verificar gravidade da alergia (0=Nenhuma até 4=Muito Grave)
       const gravidadeAlergia = temAlergia ? 2 : 0;
-
-      // Verificar interação ativa — se já toma medicamento da mesma classe
       const temInteracao = medicacaoAtiva.some((m) => {
         const medAtivo = medicamentos.find(
           (med) => String(getMedicamentoId(med)) === String(
@@ -651,12 +591,10 @@ export default function DoctorDashboard() {
         return medAtivo?.classe_terapeutica_id === classeMed;
       });
 
-      // Calcular idade do utente
       const idade = utente?.data_nasc
         ? Math.floor((Date.now() - new Date(utente.data_nasc).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
         : 50;
 
-      // Chamar modelo de IA real
       const res = await fetch(`${API_IA}/predict/v1/medicine-risk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -672,7 +610,6 @@ export default function DoctorDashboard() {
       if (!res.ok) throw new Error(`Erro no modelo IA (${res.status})`);
 
       const data = await res.json();
-
       const resultado = {
         risco: data.risco,
         riscoalto: data.risco === 1,
@@ -688,24 +625,21 @@ export default function DoctorDashboard() {
       setRiscoIA(resultado);
       mostrarToast('Avaliação IA concluída.', 'sucesso');
     } catch (e) {
-      console.error(e);
       mostrarToast('Erro na avaliação IA.', 'erro');
     } finally {
       setAvaliacaoRisco(false);
     }
   };
 
-  // ── Decisão clínica (urgência) ─────────────────────────────
-
   const submeterDecisaoClinica = async () => {
     try {
       if (aSubmeterDecisao) return;
 
-      const codEpisodio =
+      const codEp =
         episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codep_urgenc ||
         episodioSelecionado?.cod_epurgenc || episodioSelecionado?.codepurgenc;
 
-      if (!codEpisodio) { mostrarToast('Episódio inválido.', 'erro'); return; }
+      if (!codEp) { mostrarToast('Episódio inválido.', 'erro'); return; }
       if (!acaoClinica) { mostrarToast('Selecione Alta ou Internamento.', 'erro'); return; }
       if (acaoClinica === 'internamento' && !alta.servico) {
         mostrarToast('Selecione o serviço de internamento.', 'erro');
@@ -717,22 +651,16 @@ export default function DoctorDashboard() {
       }
 
       setASubmeterDecisao(true);
-
       const agora = new Date().toISOString();
 
-      // CORRIGIDO: quando é internamento, cria primeiro o registo em /internamentos
-      // (antes só atualizava o episódio — por isso nunca aparecia na lista de internamentos)
       if (acaoClinica === 'internamento') {
         const payloadInt = {
-          cod_ep_urgenc: Number(codEpisodio),
+          cod_ep_urgenc: Number(codEp),
           id_func: null,
           data_hora_int: agora,
           data_hora_consulta: null,
           data_hora_alta: null,
-          motivo_int:
-            alta.motivo_int === 'Outro'
-              ? alta.motivo_int_outro || 'Outro'
-              : alta.motivo_int,
+          motivo_int: alta.motivo_int === 'Outro' ? alta.motivo_int_outro || 'Outro' : alta.motivo_int,
           numero_cama: gerarNumeroCama(alta.servico),
           servico: alta.servico || null,
           tipo_alta: null,
@@ -744,20 +672,15 @@ export default function DoctorDashboard() {
           body: JSON.stringify(payloadInt),
         });
 
-        if (!rInt.ok) {
-          const txt = await rInt.text();
-          console.error('Erro POST internamento:', rInt.status, txt);
-          throw new Error(`Erro ao criar internamento (${rInt.status})`);
-        }
+        if (!rInt.ok) throw new Error(`Erro ao criar internamento (${rInt.status})`);
       }
 
-      // Atualizar estado do episódio
       const payloadEp = {
         estado: acaoClinica === 'alta' ? 'terminado' : 'internado',
         data_hora_saida: acaoClinica === 'alta' ? agora : null,
       };
 
-      const r = await fetch(`${API_URL}/episodios/${codEpisodio}`, {
+      const r = await fetch(`${API_URL}/episodios/${codEp}`, {
         method: 'PUT',
         headers: headers(),
         body: JSON.stringify(payloadEp),
@@ -768,7 +691,7 @@ export default function DoctorDashboard() {
       setEpisodios((prev) =>
         prev.map((ep) => {
           const epCod = ep?.cod_ep_urgenc || ep?.codep_urgenc || ep?.cod_epurgenc || ep?.codepurgenc;
-          if (String(epCod) !== String(codEpisodio)) return ep;
+          if (String(epCod) !== String(codEp)) return ep;
           return {
             ...ep,
             estado: acaoClinica === 'alta' ? 'terminado' : 'internado',
@@ -777,11 +700,7 @@ export default function DoctorDashboard() {
         })
       );
 
-      mostrarToast(
-        acaoClinica === 'alta' ? 'Alta registada com sucesso.' : 'Internamento registado com sucesso.',
-        'success'
-      );
-
+      mostrarToast(acaoClinica === 'alta' ? 'Alta registada com sucesso.' : 'Internamento registado com sucesso.', 'success');
       setAlta({ destino: 'alta', servico: '', numero_cama: '', motivo_int: '', motivo_int_outro: '', observacoes: '', tipo_alta: 'clinica' });
       setAcaoClinica('');
       setEpisodioSelecionado(null);
@@ -796,34 +715,23 @@ export default function DoctorDashboard() {
       await carregarEpisodios();
       await carregarInternamentos();
     } catch (e) {
-      console.error('ERRO submeterDecisaoClinica', e);
       mostrarToast(e.message || 'Erro ao registar decisão clínica.', 'erro');
     } finally {
       setASubmeterDecisao(false);
     }
   };
 
-  // ── Alta de internamento ───────────────────────────────────
-
   const submeterAltaInternamento = async () => {
     try {
       if (!internamentoSelecionado) { mostrarToast('Internamento inválido.', 'erro'); return; }
-
-      const codInternamento = getField(
-        internamentoSelecionado,
-        'codinternamento', 'cod_internamento', 'idinternamento', 'id_internamento'
-      );
-
+      const codInternamento = getField(internamentoSelecionado, 'codinternamento', 'cod_internamento', 'idinternamento', 'id_internamento');
       if (!codInternamento) { mostrarToast('Código do internamento inválido.', 'erro'); return; }
 
-      // CORRIGIDO: chaves alinhadas com InternamentoUpdate (tipo_alta, data_hora_alta)
-      // estado não existe no schema — a alta é identificada pela presença de data_hora_alta
       const payload = {
         tipo_alta: altaInternamento.tipo_alta || 'clinica',
         data_hora_alta: new Date().toISOString(),
       };
 
-      // CORRIGIDO: API_URL (não APIURL) + headers: headers()
       const r = await fetch(`${API_URL}/internamentos/${codInternamento}`, {
         method: 'PUT',
         headers: headers(),
@@ -833,7 +741,6 @@ export default function DoctorDashboard() {
       if (!r.ok) throw new Error(`Erro ao registar alta do internamento (${r.status})`);
 
       mostrarToast('Alta de internamento registada com sucesso.', 'sucesso');
-
       setAltaInternamento({ tipo_alta: 'clinica', observacoes: '' });
       setInternamentoSelecionado(null);
       setUtente(null);
@@ -844,12 +751,9 @@ export default function DoctorDashboard() {
 
       await carregarInternamentos();
     } catch (e) {
-      console.error('ERRO submeterAltaInternamento:', e);
       mostrarToast(e.message || 'Erro ao registar alta do internamento.', 'erro');
     }
   };
-
-  // ── Guardar edição de triagem ──────────────────────────────
 
   const guardarEdicaoTriagem = async () => {
     try {
@@ -866,7 +770,6 @@ export default function DoctorDashboard() {
         sintomas: formTriagem.sintomas || null,
       };
 
-      // CORRIGIDO: headers: headers()
       const response = await fetch(`${API_URL}/triagens/${codEpisodio}`, {
         method: 'PUT',
         headers: headers(),
@@ -891,18 +794,15 @@ export default function DoctorDashboard() {
       }));
 
       setModoEdicaoTriagem(false);
-      mostrarToast('Triagem atualizada com sucesso.', 'sucesso');
+      mostrarToast('Triagem updated successfully.', 'sucesso');
     } catch (error) {
-      console.error('ERRO guardarEdicaoTriagem', error);
       mostrarToast('Erro ao guardar edição da triagem.', 'erro');
     }
   };
 
-  // ── Tempo de espera ────────────────────────────────────────
-
-  const [agora, setAgora] = useState(Date.now());
+  const [agoraTempo, setAgoraTempo] = useState(Date.now());
   useEffect(() => {
-    const id = setInterval(() => setAgora(Date.now()), 60000);
+    const id = setInterval(() => setAgoraTempo(Date.now()), 60000);
     return () => clearInterval(id);
   }, []);
 
@@ -910,30 +810,10 @@ export default function DoctorDashboard() {
     if (!dataTriagem) return null;
     const inicio = new Date(dataTriagem).getTime();
     if (Number.isNaN(inicio)) return null;
-    const diff = agora - inicio;
+    const diff = agoraTempo - inicio;
     const min = Math.floor(diff / 60000);
     return min < 0 ? 0 : min;
   };
-
-  // ── Listas derivadas ───────────────────────────────────────
-
-  const episodiosOrdenados = useMemo(() => {
-    return [...episodios]
-      .filter((ep) => {
-        const estado = ep.estado || ep.estado_local || ep.estado_episodio;
-        const corTriagem = ep.cor_triagem || ep.cortriagem;
-        if (estado === 'terminado') return false;
-        if (!corTriagem) return false;
-        if (!filtro) return true;
-        const f = normalizar(filtro);
-        return normalizar(ep.nome_utente || '').includes(f) || normalizar(corTriagem || '').includes(f);
-      })
-      .sort((a, b) => {
-        const corA = a.cor_triagem || a.cortriagem;
-        const corB = b.cor_triagem || b.cortriagem;
-        return (TRIAGE_ORDER[corA] || 9) - (TRIAGE_ORDER[corB] || 9);
-      });
-  }, [episodios, filtro]);
 
   const totalEmEspera = episodios.length;
   const altasHoje = 0;
@@ -944,8 +824,6 @@ export default function DoctorDashboard() {
     { id: 'fila_triagens', label: 'Fila de Triagens', icon: <IconQueue /> },
     { id: 'internamentos', label: 'Internamentos Ativos', icon: <IconBed /> },
   ];
-
-  // ── Renders ────────────────────────────────────────────────
 
   const renderInformacaoGeral = () => (
     <div className="doctor-panel-card">
@@ -985,10 +863,8 @@ export default function DoctorDashboard() {
 
     const episodiosFiltrados = episodios.filter((ep) => {
       const estado = String(ep?.estado || ep?.estadolocal || ep?.estadoepisodio || '').toLowerCase();
-      // CORRIGIDO: estados consistentes com DoctorQueue ("terminado" em vez de "concluido")
       if (subMenuFila === 'em_espera') return estado !== 'terminado' && estado !== 'desistiu' && estado !== 'internado';
       if (subMenuFila === 'atendimento') return estado === 'emconsulta' || estado === 'atendimento';
-      // tab concluidos removida
       return true;
     });
 
@@ -1063,21 +939,21 @@ export default function DoctorDashboard() {
               <span>Prioridade</span>
               <div className={TRIAGE_CLASS[corTriagem] || 'triage-badge'}>{corTriagem}</div>
             </div>
-            <div className="doctor-triage-banner__info"><span>Tempo Espera</span><strong>{tempoEsperaAtual != null ? `${tempoEsperaAtual} min` : '—'}</strong></div>
-            <div className="doctor-triage-banner__info"><span>Início</span><strong>{inicioTriagem !== '—' ? new Date(inicioTriagem).toLocaleString('pt-PT') : '—'}</strong></div>
-            <div className="doctor-triage-banner__info"><span>Enfermeiro</span><strong>{getField(dadosTriagem, 'nome_enfermeiro', 'nomeenfermeiro')}</strong></div>
+            <div className="doctor-triage-banner__info"><span>Tempo Espera</span><th>{tempoEsperaAtual != null ? `${tempoEsperaAtual} min` : '—'}</th></div>
+            <div className="doctor-triage-banner__info"><span>Início</span><th>{inicioTriagem !== '—' ? new Date(inicioTriagem).toLocaleString('pt-PT') : '—'}</th></div>
+            <div className="doctor-triage-banner__info"><span>Enfermeiro</span><th>{getField(dadosTriagem, 'nome_enfermeiro', 'nomeenfermeiro')}</th></div>
           </div>
 
           {!modoEdicaoTriagem ? (
             <>
               <div className="doctor-vitals-table">
-                <div className="doctor-vital-row"><span>Temperatura</span>        <strong>{getField(dadosTriagem, 'temperatura')} °C</strong></div>
-                <div className="doctor-vital-row"><span>Freq. Cardíaca</span>     <strong>{getField(dadosTriagem, 'freq_card', 'freqcard')} bpm</strong></div>
-                <div className="doctor-vital-row"><span>Freq. Respiratória</span> <strong>{getField(dadosTriagem, 'freq_resp', 'freqresp')} rpm</strong></div>
-                <div className="doctor-vital-row"><span>SpO2</span>               <strong>{getField(dadosTriagem, 'sp_o2', 'spo2')} %</strong></div>
-                <div className="doctor-vital-row"><span>Tensão Arterial</span>    <strong>{getField(dadosTriagem, 'sistolica')}/{getField(dadosTriagem, 'diastolica')} mmHg</strong></div>
-                <div className="doctor-vital-row"><span>Nível Dor</span>          <strong>{getField(dadosTriagem, 'nivel_dor', 'niveldor')} /10</strong></div>
-                <div className="doctor-vital-row"><span>Consciência</span>        <strong>{getField(dadosTriagem, 'consciencia')}</strong></div>
+                <div className="doctor-vital-row"><span>Temperatura</span>        <th>{getField(dadosTriagem, 'temperatura')} °C</th></div>
+                <div className="doctor-vital-row"><span>Freq. Cardíaca</span>     <th>{getField(dadosTriagem, 'freq_card', 'freqcard')} bpm</th></div>
+                <div className="doctor-vital-row"><span>Freq. Respiratória</span> <th>{getField(dadosTriagem, 'freq_resp', 'freqresp')} rpm</th></div>
+                <div className="doctor-vital-row"><span>SpO2</span>               <th>{getField(dadosTriagem, 'sp_o2', 'spo2')} %</th></div>
+                <div className="doctor-vital-row"><span>Tensão Arterial</span>    <th>{getField(dadosTriagem, 'sistolica')}/{getField(dadosTriagem, 'diastolica')} mmHg</th></div>
+                <div className="doctor-vital-row"><span>Nível Dor</span>          <th>{getField(dadosTriagem, 'nivel_dor', 'niveldor')} /10</th></div>
+                <div className="doctor-vital-row"><span>Consciência</span>        <th>{getField(dadosTriagem, 'consciencia')}</th></div>
               </div>
               <div className="doctor-clinical-note"><span>Sintomas Referidos</span><p>{getField(dadosTriagem, 'sintomas')}</p></div>
             </>
@@ -1097,8 +973,8 @@ export default function DoctorDashboard() {
                     <input className="doctor-field" type="number" placeholder="Diastólica" value={formTriagem.diastolica ?? ''} onChange={(e) => setFormTriagem((p) => ({ ...p, diastolica: e.target.value }))} />
                   </div>
                 </div>
-                <div className="doctor-vital-row"><span>Nível Dor</span>  <strong>{getField(dadosTriagem, 'nivel_dor', 'niveldor')} /10</strong></div>
-                <div className="doctor-vital-row"><span>Consciência</span> <strong>{getField(dadosTriagem, 'consciencia')}</strong></div>
+                <div className="doctor-vital-row"><span>Nível Dor</span>  <th>{getField(dadosTriagem, 'nivel_dor', 'niveldor')} /10</th></div>
+                <div className="doctor-vital-row"><span>Consciência</span> <th>{getField(dadosTriagem, 'consciencia')}</th></div>
               </div>
               <div className="doctor-clinical-note">
                 <span>Sintomas Referidos</span>
@@ -1110,8 +986,6 @@ export default function DoctorDashboard() {
       </div>
     );
   };
-
-
 
   const renderTabDecisao = () => {
     const getCodEp = () =>
@@ -1269,7 +1143,6 @@ export default function DoctorDashboard() {
     ];
 
     const codEpisodio = episodioSelecionado?.cod_ep_urgenc || episodioSelecionado?.codepurgenc || '—';
-    const dataEntrada = dadosTriagem?.data_hora_inicio ? new Date(dadosTriagem.data_hora_inicio).toLocaleString('pt-PT') : '—';
 
     return (
       <div className="doctor-attendance-page">
@@ -1289,7 +1162,6 @@ export default function DoctorDashboard() {
               />
             </div>
           )}
-
         </div>
 
         <div className="doctor-tabs-row">
@@ -1302,7 +1174,6 @@ export default function DoctorDashboard() {
           {tabAtendimento === 'vitais' && renderTabVitais()}
 
           {tabAtendimento === 'prescricao' && (
-            // CORRIGIDO: imprimirPrescricao removido
             <DoctorPrescription
               medicacaoAtiva={medicacaoAtiva}
               enriquecerMedicacaoAtiva={(lista) => enriquecerMedicacaoAtiva(lista, medicamentos)}
@@ -1391,7 +1262,6 @@ export default function DoctorDashboard() {
           <div className="doctor-subcard">
             <SectionHeader title="Prescrever medicação" subtitle="Medicação ativa e nova prescrição" />
 
-            {/* Medicação ativa */}
             {medicacaoAtivaEnriquecida.length === 0 ? (
               <div className="doctor-empty-box" style={{ marginBottom: '1rem' }}>Sem medicação ativa registada.</div>
             ) : (
@@ -1416,7 +1286,6 @@ export default function DoctorDashboard() {
               </div>
             )}
 
-            {/* Formulário de prescrição */}
             <div className="doctor-form-grid">
               <div className="doctor-form-grid__full">
                 <label>Medicamento</label>
@@ -1444,7 +1313,6 @@ export default function DoctorDashboard() {
               </div>
             </div>
 
-            {/* Avaliação IA de alergias */}
             {alergias.length > 0 ? (
               <div className="doctor-risk-box" style={{ margin: '0.75rem 0' }}>
                 {riscoIA && (
@@ -1487,13 +1355,11 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        {/* Alta de internamento — dentro do doctor-panel-card */}
         <div className="doctor-subcard" style={{ marginTop: '1rem' }}>
           <SectionHeader title="Registar alta de internamento" />
           <div className="doctor-form-grid">
             <div>
               <label>Tipo de Alta</label>
-              {/* CORRIGIDO: Transferência removida — processo simplificado */}
               <select className="doctor-field" value={altaInternamento.tipo_alta} onChange={(e) => setAltaInternamento((p) => ({ ...p, tipo_alta: e.target.value }))}>
                 <option value="clinica">Alta Clínica</option>
                 <option value="voluntaria">Alta Voluntária</option>
@@ -1511,62 +1377,87 @@ export default function DoctorDashboard() {
     );
   };
 
-  // ── JSX principal ──────────────────────────────────────────
-
   return (
-    <div className={`doctor-layout-shell ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+    <main className={`admin-layout doctor-dashboard ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
       <Toast mensagem={toast.mensagem} tipo={toast.tipo} onFechar={fecharToast} />
 
-      <aside className="doctor-layout-sidebar">
-        <button type="button" className="doctor-layout-sidebar__toggle" onClick={() => setIsSidebarCollapsed((v) => !v)} aria-label="Alternar sidebar"><IconMenu /></button>
-        <div className="doctor-layout-sidebar__brand">
-          <img src={logo} alt="SIAGUH" className="doctor-layout-sidebar__logo" />
-          {!isSidebarCollapsed && <span className="doctor-layout-sidebar__hospital-name" />}
+      <aside className="admin-sidebar" role="navigation" aria-label="Menu lateral">
+        <button 
+          type="button" 
+          className="admin-sidebar__toggle" 
+          onClick={() => setIsSidebarCollapsed((v) => !v)} 
+          aria-label="Alternar menu lateral"
+        >
+          <IconMenu />
+        </button>
+        
+        <div className="admin-sidebar__brand">
+          <img src={logo} alt="SIAGUH" className="admin-sidebar__logo" />
         </div>
-        <div className="doctor-layout-sidebar__profile">
-          <div className="doctor-layout-sidebar__avatar">{iniciaisUtilizador}</div>
-          {!isSidebarCollapsed && (
-            <div>
-              <div className="doctor-layout-sidebar__name">{nomeUtilizador}</div>
-              <div className="doctor-layout-sidebar__role">Médico</div>
-            </div>
-          )}
-        </div>
-        <nav className="doctor-layout-sidebar__nav">
+        
+        <div className="admin-sidebar__divider" />
+        
+        <button 
+          type="button" 
+          className="admin-sidebar__profile" 
+          onClick={() => navigate('/perfil')}
+          aria-label="Ver meu perfil"
+        >
+          <div className="admin-sidebar__profile-avatar admin-sidebar__profile-avatar--fallback">
+            {iniciaisUtilizador}
+          </div>
+          <span className="admin-sidebar__profile-name">{nomeUtilizador}</span>
+        </button>
+        
+        <div className="admin-sidebar__divider" />
+        
+        <nav className="admin-sidebar__nav">
           {menus.map((menu) => (
-            <button key={menu.id} type="button" className={`doctor-layout-sidebar__link ${activeMenu === menu.id ? 'is-active' : ''}`}
+            <button 
+              key={menu.id} 
+              type="button" 
+              className={`admin-sidebar__link ${activeMenu === menu.id ? 'is-active' : ''}`}
               onClick={() => { setActiveMenu(menu.id); setEpisodioSelecionado(null); setInternamentoSelecionado(null); }}
-              title={isSidebarCollapsed ? menu.label : undefined}>
-              <span className="doctor-layout-sidebar__icon">{menu.icon}</span>
-              {!isSidebarCollapsed && <span className="doctor-layout-sidebar__text">{menu.label}</span>}
+            >
+              <span className="sidebar-icon">{menu.icon}</span>
+              <span className="link-text">{menu.label}</span>
             </button>
           ))}
         </nav>
-        <div className="doctor-layout-sidebar__footer">
-          <button type="button" className="doctor-layout-logout" onClick={fazerLogout} title={isSidebarCollapsed ? 'Terminar sessão' : undefined}>
-            <span className="doctor-layout-sidebar__icon"><IconExit /></span>
-            {!isSidebarCollapsed && <span>Terminar sessão</span>}
+        
+        <div className="admin-sidebar__footer">
+          <div className="admin-sidebar__lang-switcher">
+            <button type="button" className={`admin-lang-btn ${idioma === 'pt' ? 'is-active' : ''}`} onClick={() => mudarIdioma('pt')}>PT</button>
+            <span>/</span>
+            <button type="button" className={`admin-lang-btn ${idioma === 'en' ? 'is-active' : ''}`} onClick={() => mudarIdioma('en')}>EN</button>
+          </div>
+          <button type="button" className="admin-logout-button" onClick={fazerLogout}>
+            <IconExit />
+            <span className="link-text">Terminar sessão</span>
           </button>
         </div>
       </aside>
 
-      <div className="doctor-layout-main">
-        <div className="doctor-layout-container">
+<section className="admin-content-wrapper">
+        <div className="admin-content-inner">
+          
           <div className="admin-content-top">
             <h1>Painel do Médico</h1>
             <p>{nomeHospital}</p>
           </div>
 
-          {activeMenu === 'informacao_geral' && renderInformacaoGeral()}
-          {activeMenu === 'fila_triagens' &&
-            (subMenuFila === 'atendimento' && episodioSelecionado
-              ? renderAtendimento()
-              : renderFilaTriagens())}
-          {activeMenu === 'internamentos' && renderInternamentos()}
+          <div className="admin-content-body">
+            {activeMenu === 'informacao_geral' && renderInformacaoGeral()}
+            {activeMenu === 'fila_triagens' &&
+              (subMenuFila === 'atendimento' && episodioSelecionado
+                ? renderAtendimento()
+                : renderFilaTriagens())}
+            {activeMenu === 'internamentos' && renderInternamentos()}
+          </div>
         </div>
 
         <FooterLayout />
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
