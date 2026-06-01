@@ -43,4 +43,4 @@ async def test_ln04_internamento_apos_alta(
             "servico": "Medicina",
         },
     )
-    assert internamento.status_code in [200, 201], internamento.text
+    assert internamento.status_code == 400, internamento.text
