@@ -15,3 +15,6 @@ pandas
 httpx
 PyJWT[crypto]
 passlib[bcrypt]
+pytest
+anyio
+httpx

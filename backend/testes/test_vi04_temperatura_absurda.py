@@ -1,11 +1,15 @@
 import pytest
-from .conftest import agora_iso
+from datetime import datetime, timezone
+
+
+def agora_iso():
+    return datetime.now(timezone.utc).isoformat()
 
 
 @pytest.mark.anyio
 async def test_vi04_temperatura_absurda(
     client,
-    enfermeiro_headers,
+    override_user_enfermeiro,
     episodio_aberto,
 ):
     response = await client.post(
@@ -17,6 +21,5 @@ async def test_vi04_temperatura_absurda(
             "sintomas": "Teste",
             "temperatura": 200,
         },
-        headers=enfermeiro_headers,
     )
     assert response.status_code == 422, response.text

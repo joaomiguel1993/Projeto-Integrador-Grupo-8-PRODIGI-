@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from backend.repositories import internamentos_repository
+from backend.repositories import internamentos_repository, episodios_repository
 
 
 def listar_internamentos():
@@ -22,6 +22,19 @@ def obter_internamento_por_episodio(cod_ep_urgenc: int):
 
 def criar_internamento(data: dict):
     try:
+        cod_ep_urgenc = data.get("cod_ep_urgenc")
+        episodio = episodios_repository.obter_episodio_por_id(cod_ep_urgenc)
+
+        if episodio is None:
+            raise HTTPException(status_code=404, detail="Episódio não encontrado.")
+
+        estado = episodio.get("estado")
+        if estado not in {"aberto", "em_triagem", "em_atendimento"}:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Não é possível criar internamento para episódio com estado '{estado}'."
+            )
+
         resultado = internamentos_repository.criar_internamento(data)
         if resultado is None:
             raise HTTPException(status_code=400, detail="Não foi possível criar o internamento.")

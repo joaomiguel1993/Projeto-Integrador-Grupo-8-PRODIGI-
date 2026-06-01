@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from httpx import AsyncClient, ASGITransport
 
 from backend.main import app
+from backend.auth.jwt_utils import get_current_user
 
 BASE_URL = "http://test"
 
@@ -17,6 +18,65 @@ def anyio_backend():
     return "asyncio"
 
 
+@pytest.fixture(autouse=True)
+def clear_overrides():
+    app.dependency_overrides = {}
+    yield
+    app.dependency_overrides = {}
+
+
+@pytest.fixture
+def override_user_admin():
+    def _override():
+        return {
+            "username": "admin.teste",
+            "sub": "admin.teste",
+            "id_func": 1,
+            "role": "admin",
+        }
+    app.dependency_overrides[get_current_user] = _override
+    return _override
+
+
+@pytest.fixture
+def override_user_medico():
+    def _override():
+        return {
+            "username": "medico.teste",
+            "sub": "medico.teste",
+            "id_func": 2,
+            "role": "medico",
+        }
+    app.dependency_overrides[get_current_user] = _override
+    return _override
+
+
+@pytest.fixture
+def override_user_enfermeiro():
+    def _override():
+        return {
+            "username": "enfermeiro.teste",
+            "sub": "enfermeiro.teste",
+            "id_func": 3,
+            "role": "enfermeiro",
+        }
+    app.dependency_overrides[get_current_user] = _override
+    return _override
+
+
+@pytest.fixture
+def override_user_rececionista():
+    def _override():
+        return {
+            "username": "rececionista.teste",
+            "sub": "rececionista.teste",
+            "id_func": 4,
+            "role": "rececionista",
+        }
+    app.dependency_overrides[get_current_user] = _override
+    return _override
+
+
 @pytest.fixture
 async def client():
     transport = ASGITransport(app=app)
@@ -26,55 +86,6 @@ async def client():
         follow_redirects=True,
     ) as ac:
         yield ac
-
-
-@pytest.fixture
-def user_credentials():
-    return {
-        "admin": {"username": "admin.teste", "password": "Admin123!"},
-        "medico": {"username": "medico.teste", "password": "Med123!"},
-        "enfermeiro": {"username": "enfermeiro.teste", "password": "Enf123!"},
-        "rececionista": {"username": "rececionista.teste", "password": "Rec123!"},
-    }
-
-
-@pytest.fixture
-def login_as(client: AsyncClient, user_credentials):
-    async def _login(role: str):
-        creds = user_credentials[role]
-        response = await client.post(
-            "/api/v1/auth/login",
-            json={
-                "username": creds["username"],
-                "password": creds["password"],
-            },
-        )
-        assert response.status_code == 200, response.text
-        token = response.json().get("access_token")
-        assert token, response.text
-        return {"Authorization": f"Bearer {token}"}
-
-    return _login
-
-
-@pytest.fixture
-async def admin_headers(login_as):
-    return await login_as("admin")
-
-
-@pytest.fixture
-async def medico_headers(login_as):
-    return await login_as("medico")
-
-
-@pytest.fixture
-async def enfermeiro_headers(login_as):
-    return await login_as("enfermeiro")
-
-
-@pytest.fixture
-async def rececionista_headers(login_as):
-    return await login_as("rececionista")
 
 
 def build_utente_payload():
@@ -92,33 +103,31 @@ def build_utente_payload():
 
 
 @pytest.fixture
-async def utente_criado(client, rececionista_headers):
+async def utente_criado(client, override_user_rececionista):
     payload = build_utente_payload()
     response = await client.post(
         "/api/v1/utentes/",
         json=payload,
-        headers=rececionista_headers,
     )
     assert response.status_code in [200, 201], response.text
     return response.json()
 
 
 @pytest.fixture
-async def episodio_aberto(client, rececionista_headers, utente_criado):
+async def episodio_aberto(client, override_user_rececionista, utente_criado):
     response = await client.post(
         "/api/v1/episodios/",
         json={
             "num_utent": utente_criado["num_utent"],
             "id_hosp": 1,
         },
-        headers=rececionista_headers,
     )
     assert response.status_code in [200, 201], response.text
     return response.json()
 
 
 @pytest.fixture
-async def triagem_criada(client, enfermeiro_headers, episodio_aberto):
+async def triagem_criada(client, override_user_enfermeiro, episodio_aberto):
     response = await client.post(
         "/api/v1/triagens/",
         json={
@@ -135,14 +144,13 @@ async def triagem_criada(client, enfermeiro_headers, episodio_aberto):
             "nivel_dor": 2,
             "consciencia": "Acordado",
         },
-        headers=enfermeiro_headers,
     )
     assert response.status_code in [200, 201], response.text
     return response.json()
 
 
 @pytest.fixture
-async def ato_criado(client, medico_headers, episodio_aberto):
+async def ato_criado(client, override_user_medico, episodio_aberto):
     response = await client.post(
         "/api/v1/atos/",
         json={
@@ -151,7 +159,44 @@ async def ato_criado(client, medico_headers, episodio_aberto):
             "descricao": "Consulta de rotina - teste",
             "data_hora_inicio": agora_iso(),
         },
-        headers=medico_headers,
     )
     assert response.status_code in [200, 201], response.text
     return response.json()
+
+
+@pytest.fixture
+def set_test_user():
+    def _set(role: str):
+        role_map = {
+            "admin": {
+                "username": "admin.teste",
+                "sub": "admin.teste",
+                "id_func": 1,
+                "role": "admin",
+            },
+            "medico": {
+                "username": "medico.teste",
+                "sub": "medico.teste",
+                "id_func": 2,
+                "role": "medico",
+            },
+            "enfermeiro": {
+                "username": "enfermeiro.teste",
+                "sub": "enfermeiro.teste",
+                "id_func": 3,
+                "role": "enfermeiro",
+            },
+            "rececionista": {
+                "username": "rececionista.teste",
+                "sub": "rececionista.teste",
+                "id_func": 4,
+                "role": "rececionista",
+            },
+        }
+
+        def _override():
+            return role_map[role]
+
+        app.dependency_overrides[get_current_user] = _override
+
+    return _set

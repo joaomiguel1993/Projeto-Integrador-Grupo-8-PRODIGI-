@@ -1,12 +1,16 @@
 import pytest
-from .conftest import agora_iso
+from datetime import datetime, timezone
+
+
+def agora_iso():
+    return datetime.now(timezone.utc).isoformat()
 
 
 @pytest.mark.anyio
 async def test_ct03_ato_em_episodio_encerrado(
     client,
-    rececionista_headers,
-    medico_headers,
+    override_user_rececionista,
+    override_user_medico,
     utente_criado,
 ):
     admissao = await client.post(
@@ -15,7 +19,6 @@ async def test_ct03_ato_em_episodio_encerrado(
             "num_utent": utente_criado["num_utent"],
             "id_hosp": 1,
         },
-        headers=rececionista_headers,
     )
     assert admissao.status_code in [200, 201], admissao.text
     ep_id = admissao.json()["cod_ep_urgenc"]
@@ -26,7 +29,6 @@ async def test_ct03_ato_em_episodio_encerrado(
             "estado": "terminado",
             "data_hora_saida": agora_iso(),
         },
-        headers=medico_headers,
     )
     assert alta.status_code == 200, alta.text
 
@@ -38,7 +40,6 @@ async def test_ct03_ato_em_episodio_encerrado(
             "descricao": "Tentativa após alta",
             "data_hora_inicio": agora_iso(),
         },
-        headers=medico_headers,
     )
     assert ato.status_code == 400, ato.text
     assert "episódio encerrado" in ato.text.lower()

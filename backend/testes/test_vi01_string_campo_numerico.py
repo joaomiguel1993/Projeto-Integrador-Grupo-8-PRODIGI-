@@ -1,11 +1,15 @@
 import pytest
-from .conftest import agora_iso
+from datetime import datetime, timezone
+
+
+def agora_iso():
+    return datetime.now(timezone.utc).isoformat()
 
 
 @pytest.mark.anyio
 async def test_vi01_string_campo_numerico(
     client,
-    enfermeiro_headers,
+    override_user_enfermeiro,
     episodio_aberto,
 ):
     response = await client.post(
@@ -18,6 +22,5 @@ async def test_vi01_string_campo_numerico(
             "freq_card": "abc",
             "sp_o2": "xyz",
         },
-        headers=enfermeiro_headers,
     )
     assert response.status_code == 422, response.text
