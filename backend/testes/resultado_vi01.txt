@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.0.3, pluggy-1.6.0 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /app
+plugins: anyio-4.13.0
+collecting ... collected 1 item
+
+backend/testes/test_vi01_string_campo_numerico.py::test_vi01_string_campo_numerico PASSED [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.11/site-packages/passlib/utils/__init__.py:854
+  /usr/local/lib/python3.11/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+backend/schemas/alergia.py:19
+  /app/backend/schemas/alergia.py:19: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class AlergiaOut(AlergiaBase):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 1 passed, 2 warnings in 0.04s =========================
