@@ -4,3 +4,7 @@ pip install pyjwt
 pip install pytest pytest-asyncio httpx
 pytest test_fluxo_paciente.py
 
+
+
+_EXEMPLO_para rodar testes e criar txt com resultado
+docker compose exec -T app sh -lc "python -m pytest /app/backend/testes/test_ct01_nif_duplicado.py -v" > backend/testes/resultado_test_ct01.txt 2>&1
