@@ -4,7 +4,7 @@ import pytest
 @pytest.mark.anyio
 async def test_ln02_prescricao_alergia_grave(
     client,
-    medico_headers,
+    override_user_medico,
     ato_criado,
 ):
     prescricao = await client.post(
@@ -15,6 +15,5 @@ async def test_ln02_prescricao_alergia_grave(
             "dosagem": "500mg",
             "observacoes": "Teste alergia grave",
         },
-        headers=medico_headers,
     )
     assert prescricao.status_code in [200, 201, 400, 409, 422], prescricao.text

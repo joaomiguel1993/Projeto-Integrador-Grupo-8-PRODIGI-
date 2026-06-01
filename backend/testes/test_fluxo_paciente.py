@@ -19,7 +19,7 @@ def estado():
     return {}
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ct02_1_admissao(estado):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url=BASE) as ac:
@@ -37,7 +37,7 @@ async def test_ct02_1_admissao(estado):
         assert r.json()["estado"] == "aberto"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ct02_2_triagem(estado):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url=BASE) as ac:
@@ -59,7 +59,7 @@ async def test_ct02_2_triagem(estado):
         assert r.json()["estado"] == "em_atendimento"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ct02_3_ato_clinico(estado):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url=BASE) as ac:
@@ -78,7 +78,7 @@ async def test_ct02_3_ato_clinico(estado):
         assert r.json()["estado"] == "em_atendimento"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ct02_4_alta(estado):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url=BASE) as ac:

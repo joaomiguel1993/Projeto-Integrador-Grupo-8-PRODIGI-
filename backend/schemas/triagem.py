@@ -9,7 +9,7 @@ class TriagemBase(BaseModel):
     data_hora_fim: Optional[datetime] = None
     cor_triagem: Literal["vermelho", "laranja", "amarelo", "verde", "azul"]
     sintomas: str
-    temperatura: Optional[float] = None
+    temperatura: Optional[float] = Field(default=None, ge=30, le=45)
     freq_card: Optional[int] = None
     freq_resp: Optional[int] = None
     sp_o2: Optional[float] = None
@@ -29,7 +29,7 @@ class TriagemUpdate(BaseModel):
     data_hora_fim: Optional[datetime] = None
     cor_triagem: Optional[Literal["vermelho", "laranja", "amarelo", "verde", "azul"]] = None
     sintomas: Optional[str] = None
-    temperatura: Optional[float] = None
+    temperatura: Optional[float] = Field(default=None, ge=30, le=45)
     freq_card: Optional[int] = None
     freq_resp: Optional[int] = None
     sp_o2: Optional[float] = None
@@ -59,5 +59,5 @@ class TriagemOut(BaseModel):
     id_func: Optional[int] = None
     nome_enfermeiro: Optional[str] = None
     nome_utente: Optional[str] = None
-    num_utent:   Optional[int] = None
+    num_utent: Optional[int] = None
     estado_episodio: Optional[str] = None
