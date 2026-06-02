@@ -3,7 +3,7 @@ from typing import List
 
 from backend.schemas.ato import AtoCreate, AtoUpdate, AtoOut
 from backend.services import atos_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 router = APIRouter(prefix="/v1/atos", tags=["Atos"])
@@ -16,17 +16,20 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[AtoOut])
-def listar_atos():
+def listar_atos(current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return atos_service.listar_atos()
 
 
 @router.get("/episodio/{cod_ep_urgenc}", response_model=List[AtoOut])
-def listar_atos_por_episodio(cod_ep_urgenc: int):
+def listar_atos_por_episodio(cod_ep_urgenc: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return atos_service.listar_atos_por_episodio(cod_ep_urgenc)
 
 
 @router.get("/{id_ato}", response_model=AtoOut)
-def obter_ato(id_ato: int):
+def obter_ato(id_ato: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return atos_service.obter_ato(id_ato)
 
 
@@ -34,8 +37,10 @@ def obter_ato(id_ato: int):
 def criar_ato(
     data: AtoCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico", "enfermeiro"], current_user)
+
     result = atos_service.criar_ato(data.model_dump())
 
     insert_log(
@@ -53,8 +58,10 @@ def atualizar_ato(
     id_ato: int,
     data: AtoUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico", "enfermeiro"], current_user)
+
     result = atos_service.atualizar_ato(
         id_ato,
         data.model_dump(exclude_unset=True)
@@ -74,8 +81,10 @@ def atualizar_ato(
 def remover_ato(
     id_ato: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = atos_service.remover_ato(id_ato)
 
     insert_log(

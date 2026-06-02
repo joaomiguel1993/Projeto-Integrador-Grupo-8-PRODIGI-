@@ -7,7 +7,7 @@ from backend.schemas.utilizador import (
     UtilizadorOut,
 )
 from backend.services import utilizadores_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 
@@ -21,17 +21,20 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[UtilizadorOut])
-def listar_utilizadores():
+def listar_utilizadores(current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
     return utilizadores_service.listar_utilizadores()
 
 
 @router.get("/username/{username}", response_model=UtilizadorOut)
-def obter_utilizador_por_username(username: str):
+def obter_utilizador_por_username(username: str, current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
     return utilizadores_service.obter_utilizador_por_username(username)
 
 
 @router.get("/{id_func}", response_model=UtilizadorOut)
-def obter_utilizador(id_func: int):
+def obter_utilizador(id_func: int, current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
     return utilizadores_service.obter_utilizador(id_func)
 
 
@@ -39,8 +42,10 @@ def obter_utilizador(id_func: int):
 def criar_utilizador(
     data: UtilizadorCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = utilizadores_service.criar_utilizador(data.model_dump())
 
     insert_log(
@@ -58,8 +63,10 @@ def atualizar_utilizador(
     id_func: int,
     data: UtilizadorUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = utilizadores_service.atualizar_utilizador(
         id_func,
         data.model_dump(exclude_unset=True),
@@ -79,8 +86,10 @@ def atualizar_utilizador(
 def remover_utilizador(
     id_func: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = utilizadores_service.remover_utilizador(id_func)
 
     insert_log(

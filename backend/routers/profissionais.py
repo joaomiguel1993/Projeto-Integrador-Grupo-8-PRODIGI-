@@ -7,7 +7,7 @@ from backend.schemas.profissional import (
     ProfissionalOut,
 )
 from backend.services import profissionais_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 
@@ -21,12 +21,14 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[ProfissionalOut])
-def listar_profissionais():
+def listar_profissionais(current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
     return profissionais_service.listar_profissionais()
 
 
 @router.get("/{id_func}", response_model=ProfissionalOut)
-def obter_profissional(id_func: int):
+def obter_profissional(id_func: int, current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
     return profissionais_service.obter_profissional(id_func)
 
 
@@ -34,8 +36,10 @@ def obter_profissional(id_func: int):
 def criar_profissional(
     data: ProfissionalCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = profissionais_service.criar_profissional(data.model_dump())
 
     insert_log(
@@ -53,8 +57,10 @@ def atualizar_profissional(
     id_func: int,
     data: ProfissionalUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = profissionais_service.atualizar_profissional(
         id_func,
         data.model_dump(exclude_unset=True),
@@ -74,8 +80,10 @@ def atualizar_profissional(
 def remover_profissional(
     id_func: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = profissionais_service.remover_profissional(id_func)
 
     insert_log(

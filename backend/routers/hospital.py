@@ -3,7 +3,7 @@ from typing import List
 
 from backend.schemas.hospital import HospitalCreate, HospitalUpdate, HospitalOut
 from backend.services import hospitais_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 
@@ -30,8 +30,10 @@ def obter_hospital(id_hosp: int):
 def criar_hospital(
     data: HospitalCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = hospitais_service.criar_hospital(data.model_dump())
 
     insert_log(
@@ -49,8 +51,10 @@ def atualizar_hospital(
     id_hosp: int,
     data: HospitalUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = hospitais_service.atualizar_hospital(
         id_hosp,
         data.model_dump(exclude_unset=True),
@@ -70,8 +74,10 @@ def atualizar_hospital(
 def remover_hospital(
     id_hosp: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = hospitais_service.remover_hospital(id_hosp)
 
     insert_log(

@@ -7,7 +7,7 @@ from backend.schemas.triagem import (
     TriagemOut,
 )
 from backend.services import triagens_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 router = APIRouter(prefix="/v1/triagens", tags=["Triagens"])
@@ -20,12 +20,20 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[TriagemOut])
-def listar_triagens():
+def listar_triagens(current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return triagens_service.listar_triagens()
 
 
+@router.get("/hospital/{idhosp}", response_model=List[TriagemOut])
+def listar_triagens_por_hospital(idhosp: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
+    return triagens_service.listar_triagens_por_hospital(idhosp)
+
+
 @router.get("/{cod_ep_urgenc}", response_model=TriagemOut)
-def obter_triagem(cod_ep_urgenc: int):
+def obter_triagem(cod_ep_urgenc: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return triagens_service.obter_triagem(cod_ep_urgenc)
 
 
@@ -33,8 +41,10 @@ def obter_triagem(cod_ep_urgenc: int):
 def criar_triagem(
     data: TriagemCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["enfermeiro", "medico"], current_user)
+
     result = triagens_service.criar_triagem(data.model_dump())
 
     insert_log(
@@ -47,18 +57,15 @@ def criar_triagem(
     return result
 
 
-@router.get("/hospital/{idhosp}", response_model=List[TriagemOut])
-def listar_triagens_por_hospital(idhosp: int):
-    return triagens_service.listar_triagens_por_hospital(idhosp)
-
-
 @router.put("/{cod_ep_urgenc}", response_model=TriagemOut)
 def atualizar_triagem(
     cod_ep_urgenc: int,
     data: TriagemUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["enfermeiro", "medico"], current_user)
+
     result = triagens_service.atualizar_triagem(
         cod_ep_urgenc,
         data.model_dump(exclude_unset=True)
@@ -78,8 +85,10 @@ def atualizar_triagem(
 def remover_triagem(
     cod_ep_urgenc: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = triagens_service.remover_triagem(cod_ep_urgenc)
 
     insert_log(

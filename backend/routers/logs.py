@@ -1,9 +1,10 @@
 # routers/logs.py
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 from backend.dao.logs_dao import select_all_logs, insert_log
+from backend.auth.jwt_utils import get_current_user, require_roles
 import io
 
 router = APIRouter(prefix="/v1/logs", tags=["Logs"])
@@ -15,20 +16,24 @@ class LogCreate(BaseModel):
 
 
 @router.get("/")
-def get_logs():
+def get_logs(current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
     return select_all_logs()
 
 
 @router.post("/", status_code=201)
-def criar_log(data: LogCreate, request: Request):
-    username = request.headers.get('X-Username') or data.username or 'sistema'
+def criar_log(data: LogCreate, request: Request, current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
+    username = request.headers.get("X-Username") or "sistema"
     ip = request.client.host if request.client else None
     insert_log(username=username, acao=data.acao, detalhe=data.detalhe, ip=ip)
     return {"ok": True}
 
 
 @router.get("/export/excel")
-def export_logs_excel():
+def export_logs_excel(current_user=Depends(get_current_user)):
+    require_roles(["admin"], current_user)
+
     try:
         from openpyxl import Workbook
     except ImportError:

@@ -48,3 +48,11 @@ def get_current_user(request: Request) -> dict:
     if payload.get("type") != "access":
         raise HTTPException(status_code=401, detail="Token inválido.")
     return payload
+
+    # ── Verificação de role (RBAC) ────────────────────────────────
+def require_roles(allowed: list[str], user: dict):
+    if user.get("role") not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Perfil '{user.get('role')}' não autorizado para esta operação."
+        )

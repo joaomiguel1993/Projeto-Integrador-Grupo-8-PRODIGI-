@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from backend.schemas.episodio import EpisodioCreate, EpisodioUpdate, EpisodioOut
 from backend.services import episodios_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 router = APIRouter(prefix="/v1/episodios", tags=["Episódios"])
@@ -16,27 +16,32 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[EpisodioOut])
-def listar_episodios():
+def listar_episodios(current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro", "rececionista"], current_user)
     return episodios_service.listar_episodios()
 
 
+@router.get("/sem-triagem", response_model=List[EpisodioOut])
+def listar_episodios_sem_triagem(id_hosp: Optional[int] = None, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
+    return episodios_service.listar_episodios_sem_triagem(id_hosp)
+
+
 @router.get("/utente/{num_utent}", response_model=List[EpisodioOut])
-def listar_episodios_por_utente(num_utent: int):
+def listar_episodios_por_utente(num_utent: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro", "rececionista"], current_user)
     return episodios_service.listar_episodios_por_utente(num_utent)
 
 
 @router.get("/hospital/{id_hosp}", response_model=List[EpisodioOut])
-def listar_episodios_por_hospital(id_hosp: int):
+def listar_episodios_por_hospital(id_hosp: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro", "rececionista"], current_user)
     return episodios_service.listar_episodios_por_hospital(id_hosp)
 
 
-@router.get("/sem-triagem", response_model=List[EpisodioOut])
-def listar_episodios_sem_triagem(id_hosp: Optional[int] = None):
-    return episodios_service.listar_episodios_sem_triagem(id_hosp)
-
-
 @router.get("/{cod_ep_urgenc}", response_model=EpisodioOut)
-def obter_episodio(cod_ep_urgenc: int):
+def obter_episodio(cod_ep_urgenc: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro", "rececionista"], current_user)
     return episodios_service.obter_episodio(cod_ep_urgenc)
 
 
@@ -44,8 +49,10 @@ def obter_episodio(cod_ep_urgenc: int):
 def criar_episodio(
     data: EpisodioCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["rececionista", "admin"], current_user)
+
     result = episodios_service.criar_episodio(data.model_dump())
 
     insert_log(
@@ -63,8 +70,10 @@ def atualizar_episodio(
     cod_ep_urgenc: int,
     data: EpisodioUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
+
     result = episodios_service.atualizar_episodio(
         cod_ep_urgenc,
         data.model_dump(exclude_unset=True)
@@ -84,8 +93,10 @@ def atualizar_episodio(
 def remover_episodio(
     cod_ep_urgenc: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = episodios_service.remover_episodio(cod_ep_urgenc)
 
     insert_log(

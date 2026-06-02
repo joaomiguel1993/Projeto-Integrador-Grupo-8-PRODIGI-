@@ -3,7 +3,7 @@ from typing import List
 
 from backend.schemas.prescricao import PrescricaoCreate, PrescricaoUpdate, PrescricaoOut
 from backend.services import prescricoes_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 router = APIRouter(prefix="/v1/prescricoes", tags=["Prescrições"])
@@ -16,17 +16,20 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[PrescricaoOut])
-def listar_prescricoes():
+def listar_prescricoes(current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return prescricoes_service.listar_prescricoes()
 
 
 @router.get("/ato/{id_ato}", response_model=List[PrescricaoOut])
-def obter_prescricoes_por_ato(id_ato: int):
+def obter_prescricoes_por_ato(id_ato: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return prescricoes_service.obter_prescricoes_por_ato(id_ato)
 
 
 @router.get("/{id_prescricao}", response_model=PrescricaoOut)
-def obter_prescricao(id_prescricao: int):
+def obter_prescricao(id_prescricao: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return prescricoes_service.obter_prescricao(id_prescricao)
 
 
@@ -34,8 +37,10 @@ def obter_prescricao(id_prescricao: int):
 def criar_prescricao(
     data: PrescricaoCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico"], current_user)
+
     result = prescricoes_service.criar_prescricao(data.model_dump())
 
     insert_log(
@@ -53,8 +58,10 @@ def atualizar_prescricao(
     id_prescricao: int,
     data: PrescricaoUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico"], current_user)
+
     result = prescricoes_service.atualizar_prescricao(
         id_prescricao,
         data.model_dump(exclude_unset=True)
@@ -74,8 +81,10 @@ def atualizar_prescricao(
 def remover_prescricao(
     id_prescricao: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = prescricoes_service.remover_prescricao(id_prescricao)
 
     insert_log(

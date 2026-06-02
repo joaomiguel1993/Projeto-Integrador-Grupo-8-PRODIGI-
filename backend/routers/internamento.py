@@ -7,7 +7,7 @@ from backend.schemas.internamento import (
     InternamentoOut,
 )
 from backend.services import internamentos_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 router = APIRouter(prefix="/v1/internamentos", tags=["Internamentos"])
@@ -20,22 +20,26 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[InternamentoOut])
-def listar_internamentos():
+def listar_internamentos(current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico"], current_user)
     return internamentos_service.listar_internamentos()
 
 
 @router.get("/hospital/{idhosp}", response_model=List[InternamentoOut])
-def listar_internamentos_por_hospital(idhosp: int):
+def listar_internamentos_por_hospital(idhosp: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico"], current_user)
     return internamentos_service.listar_internamentos_por_hospital(idhosp)
 
 
 @router.get("/episodio/{cod_ep_urgenc}", response_model=InternamentoOut)
-def obter_internamento_por_episodio(cod_ep_urgenc: int):
+def obter_internamento_por_episodio(cod_ep_urgenc: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico"], current_user)
     return internamentos_service.obter_internamento_por_episodio(cod_ep_urgenc)
 
 
 @router.get("/{cod_internamento}", response_model=InternamentoOut)
-def obter_internamento(cod_internamento: int):
+def obter_internamento(cod_internamento: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico"], current_user)
     return internamentos_service.obter_internamento(cod_internamento)
 
 
@@ -43,8 +47,10 @@ def obter_internamento(cod_internamento: int):
 def criar_internamento(
     data: InternamentoCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico"], current_user)
+
     result = internamentos_service.criar_internamento(data.model_dump())
 
     insert_log(
@@ -62,8 +68,10 @@ def atualizar_internamento(
     cod_internamento: int,
     data: InternamentoUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico"], current_user)
+
     result = internamentos_service.atualizar_internamento(
         cod_internamento,
         data.model_dump(exclude_unset=True)
@@ -86,8 +94,10 @@ def atualizar_internamento(
 def remover_internamento(
     cod_internamento: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = internamentos_service.remover_internamento(cod_internamento)
 
     insert_log(

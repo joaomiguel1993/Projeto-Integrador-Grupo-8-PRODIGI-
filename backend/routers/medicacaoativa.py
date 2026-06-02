@@ -7,7 +7,7 @@ from backend.schemas.medicacaoativa import (
     MedicacaoAtivaOut,
 )
 from backend.services import medicacaoativa_service
-from backend.auth.jwt_utils import get_current_user
+from backend.auth.jwt_utils import get_current_user, require_roles
 from backend.dao.logs_dao import insert_log
 
 router = APIRouter(prefix="/v1/medicacao-ativa", tags=["Medicação Ativa"])
@@ -20,17 +20,20 @@ def get_client_ip(request: Request) -> str:
 
 
 @router.get("/", response_model=List[MedicacaoAtivaOut])
-def listar_medicacoes_ativas():
+def listar_medicacoes_ativas(current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return medicacaoativa_service.listar_medicacoes_ativas()
 
 
 @router.get("/utente/{num_utent}", response_model=List[MedicacaoAtivaOut])
-def listar_medicacoes_ativas_por_utente(num_utent: int):
+def listar_medicacoes_ativas_por_utente(num_utent: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return medicacaoativa_service.listar_medicacoes_ativas_por_utente(num_utent)
 
 
 @router.get("/{cod_medicacao_ativa}", response_model=MedicacaoAtivaOut)
-def obter_medicacao_ativa(cod_medicacao_ativa: int):
+def obter_medicacao_ativa(cod_medicacao_ativa: int, current_user=Depends(get_current_user)):
+    require_roles(["admin", "medico", "enfermeiro"], current_user)
     return medicacaoativa_service.obter_medicacao_ativa(cod_medicacao_ativa)
 
 
@@ -38,8 +41,10 @@ def obter_medicacao_ativa(cod_medicacao_ativa: int):
 def criar_medicacao_ativa(
     data: MedicacaoAtivaCreate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico"], current_user)
+
     result = medicacaoativa_service.criar_medicacao_ativa(data.model_dump())
 
     insert_log(
@@ -57,8 +62,10 @@ def atualizar_medicacao_ativa(
     cod_medicacao_ativa: int,
     data: MedicacaoAtivaUpdate,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["medico"], current_user)
+
     result = medicacaoativa_service.atualizar_medicacao_ativa(
         cod_medicacao_ativa,
         data.model_dump(exclude_unset=True)
@@ -78,8 +85,10 @@ def atualizar_medicacao_ativa(
 def remover_medicacao_ativa(
     cod_medicacao_ativa: int,
     request: Request,
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
+    require_roles(["admin"], current_user)
+
     result = medicacaoativa_service.remover_medicacao_ativa(cod_medicacao_ativa)
 
     insert_log(
