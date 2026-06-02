@@ -177,7 +177,7 @@ export default function DoctorPrescription({
                 <strong>
                   {riscoIA?.risco === 1 || riscoIA?.riscoalto
                     ? (textos?.prescription?.riscoElevadoUtente || 'Utente com risco/alergia para a medicação selecionada')
-                    : (textos?.prescription?.semRiscoUtente || 'Sem alergia conhecida para a medicação selecionada')}
+                    : (textos?.prescription?.semAlergiaConhecida || 'Sem alergia conhecida para a medicação selecionada')}
                 </strong>
                 <span>{riscoIA?.mensagem || riscoIA?.explicacao || (textos?.prescription?.avaliacaoConcluida || 'Avaliação concluída.')}</span>
               </div>
