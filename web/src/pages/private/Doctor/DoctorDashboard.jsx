@@ -1357,6 +1357,8 @@ export default function DoctorDashboard() {
       try {
         const agora = new Date().toISOString();
         const idAtoConsulta = atos[0]?.idato ?? atos[0]?.id_ato ?? null;
+
+        // 1. Fecha o ato de consulta
         if (idAtoConsulta) {
           await fetch(`${API_URL}/atos/${idAtoConsulta}`, {
             method: 'PUT', headers: headers(),
@@ -1364,12 +1366,7 @@ export default function DoctorDashboard() {
           });
         }
 
-        const resEpisodio = await fetch(`${API_URL}/episodios/${codEp}`, {
-          method: 'PUT', headers: headers(),
-          body: JSON.stringify({ estado: 'terminado', data_hora_saida: agora }),
-        });
-        if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para alta.');
-
+        // 2. Cria o ato de alta (ANTES de encerrar o episódio)
         const resAto = await fetch(`${API_URL}/atos/`, {
           method: 'POST', headers: headers(),
           body: JSON.stringify({
@@ -1381,6 +1378,13 @@ export default function DoctorDashboard() {
           }),
         });
         if (!resAto.ok) throw new Error('Falha ao registar ato de alta.');
+
+        // 3. Atualiza o episódio para terminado (POR ÚLTIMO)
+        const resEpisodio = await fetch(`${API_URL}/episodios/${codEp}`, {
+          method: 'PUT', headers: headers(),
+          body: JSON.stringify({ estado: 'terminado', data_hora_saida: agora }),
+        });
+        if (!resEpisodio.ok) throw new Error('Falha ao atualizar episódio para alta.');
 
         setEpisodios((prev) => (prev || []).map((ep) => ep?.cod_ep_urgenc === codEp ? { ...ep, estado: 'terminado', data_hora_saida: agora } : ep));
         setSubMenuFila('em_espera');
