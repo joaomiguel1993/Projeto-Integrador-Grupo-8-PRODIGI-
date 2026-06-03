@@ -570,6 +570,19 @@ export default function DoctorDashboard() {
         return;
       }
 
+      // Bloquear se o medicamento já está na medicação ativa
+      const jaExisteAtivo = medicacaoAtiva.some(
+        (m) => String(m?.cod_medicamento ?? m?.codmedicamento ?? '') === String(prescricao.codmedicamento)
+      );
+
+      if (jaExisteAtivo) {
+        mostrarToast(
+          textos?.doctor?.medJaAtivo || 'Medicamento já consta na medicação ativa. Para nova prescrição elimine o registo existente.',
+          'aviso'
+        );
+        return;
+      }
+
       const body = {
         id_ato: Number(idAto),
         cod_medicamento: Number(prescricao.codmedicamento),
