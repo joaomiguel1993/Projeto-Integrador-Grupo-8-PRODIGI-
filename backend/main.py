@@ -14,11 +14,37 @@ from backend.routers import (
     alergia, painel_router
 )
 
+from fastapi.openapi.utils import get_openapi
+
 app = FastAPI(
     title="SIAGUH – Sistema Integrado de Apoio à Gestão de Urgências Hospitalares",
     description="API desenvolvida pelo G08 para gestão de utentes, episódios, triagem e módulos de IA.",
     version="0.69.0"
 )
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    for path in schema["paths"].values():
+        for method in path.values():
+            method["security"] = [{"BearerAuth": []}]
+    app.openapi_schema = schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 ALLOWED_ORIGINS = [
     "http://localhost:4173",
