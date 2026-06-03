@@ -87,7 +87,7 @@ def remover_medicacao_ativa(
     request: Request,
     current_user=Depends(get_current_user),
 ):
-    require_roles(["admin"], current_user)
+    require_roles(["admin", "medico"], current_user)
 
     result = medicacaoativa_service.remover_medicacao_ativa(cod_medicacao_ativa)
 
